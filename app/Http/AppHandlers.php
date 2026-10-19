@@ -23,12 +23,14 @@ final readonly class AppHandlers
      * @param ResponseBuilder $responseBuilder Makes the PSR-7 responses.
      * @param string          $bootedAt        When this worker booted, ISO 8601 in UTC.
      * @param string          $resources       The app's resources directory.
+     * @param list<object>    $greeters        The Greeter plugins.
      */
     public function __construct(
         private AppConfig $appConfig,
         private ResponseBuilder $responseBuilder,
         private string $bootedAt,
         private string $resources,
+        private array $greeters,
     ) {
     }
 
@@ -42,7 +44,7 @@ final readonly class AppHandlers
         $psr7ResponseWriter = new Psr7ResponseWriter($this->responseBuilder);
 
         return [
-            GreetingPage::class => new PageHandler(new GreetingPage($htmlLayout), $psr7ResponseWriter),
+            GreetingPage::class => new PageHandler(new GreetingPage($htmlLayout, $this->greeters), $psr7ResponseWriter),
             GreetingPost::class => new PageHandler(new GreetingPost($htmlLayout, $greetingForm), $psr7ResponseWriter),
             PlaceholderPage::class => new PageHandler(
                 new PlaceholderPage($htmlLayout, $greetingForm, $this->appConfig, $this->bootedAt),

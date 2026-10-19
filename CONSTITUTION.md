@@ -25,7 +25,7 @@ The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every fai
 | 5 | no baselines, no suppressions | no baseline files, no `ignoreErrors`, no psalm `suppress`/`info` levels |
 | 6 | Pint | `pint.json`: PSR-12, strict types, ordered imports, 100+ rules |
 | 7 | Rector | PHP 8.5 sets, dead code, code quality, type coverage, naming (dry run; any change fails) |
-| 8 | PHPStan | level 10, bleeding edge, strict, deprecation, shipmonk, ergebnis, disallowed calls, type coverage 100%, cognitive complexity (class ≤ 50, function ≤ 8), dead code (shipmonk/dead-code-detector: methods, constants, enum cases, properties; calls over unknown types do not count) |
+| 8 | PHPStan | level 10, bleeding edge, strict, deprecation, shipmonk, ergebnis, disallowed calls, type coverage 100%, cognitive complexity (class ≤ 50, function ≤ 8), dead code (shipmonk/dead-code-detector: methods, constants, enum cases, properties; calls over unknown types do not count); AIC's own rules in `gates/src/PhpStan` (a tagged plugin implements its type) |
 | 9 | phpat | the architecture rules in `gates/architecture/`, each registered as a `phpat.test` service |
 | 10 | PHPMD | every ruleset; method ≤ 30 lines, class ≤ 300, cyclomatic < 8, NPath ≤ 80, parameters < 12, methods ≤ 15, coupling ≤ 15 |
 | 11 | PHPCS | PSR-12 + full slevomat; line length 140; forbidden suppression annotations; namespace allow-list |
