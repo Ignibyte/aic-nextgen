@@ -43,7 +43,7 @@ install_gitleaks() {
 
 install_semgrep() {
     if command -v semgrep >/dev/null 2>&1; then
-        echo "semgrep already on PATH: $(command -v semgrep) ($(semgrep --version 2>/dev/null | head -1))"
+        echo "semgrep already on PATH: $(command -v semgrep) ($(semgrep --version 2>/dev/null | awk 'NR == 1'))"
         return
     fi
     # A missing python3 is a hard fail: a warning would only surface later,

@@ -22,14 +22,16 @@ use const STDOUT;
 final readonly class SemgrepGate
 {
     /**
-     * Directory names always excluded from the semgrep scan.
+     * Paths always excluded from the semgrep scan. `.claude` is scanned for its
+     * hooks; only its worktrees and local settings stay out.
      */
     private const array EXCLUDES = [
         'vendor',
         'storage',
         'tools',
         '.ddev',
-        '.claude',
+        '.claude/worktrees',
+        '.claude/settings.local.json',
         '.playwright-mcp',
         '.native-gate',
         '.psalm-cache',

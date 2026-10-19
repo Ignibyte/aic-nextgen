@@ -69,7 +69,7 @@ VIOLATIONS=()
 
 # --- 1. strict types ---
 for file in "${FILE_LIST[@]}"; do
-    if head -5 "$file" | grep -q '<?php' && ! head -5 "$file" | grep -q 'declare(strict_types=1)'; then
+    if grep -q '<?php' < <(head -5 "$file") && ! grep -q 'declare(strict_types=1)' < <(head -5 "$file"); then
         VIOLATIONS+=("STRICT_TYPES: missing declare(strict_types=1) in $file")
     fi
 done
@@ -77,8 +77,8 @@ done
 # --- 2. class docblock on new files ---
 while IFS= read -r file; do
     [ -n "$file" ] && [ -f "$file" ] || continue
-    CLASS_LINE=$(grep -n -E '^(abstract |final |readonly )*(class|enum|interface|trait) ' "$file" | head -1 | cut -d: -f1 || true)
-    if [ -n "$CLASS_LINE" ] && ! sed -n "1,${CLASS_LINE}p" "$file" | grep -q '\*/'; then
+    CLASS_LINE=$(grep -m 1 -n -E '^(abstract |final |readonly )*(class|enum|interface|trait) ' "$file" | cut -d: -f1 || true)
+    if [ -n "$CLASS_LINE" ] && ! grep -q '\*/' < <(sed -n "1,${CLASS_LINE}p" "$file"); then
         VIOLATIONS+=("DOCBLOCK: missing class-level docblock in $file")
     fi
 done <<< "$UNTRACKED_PHP_FILES"

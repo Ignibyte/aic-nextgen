@@ -32,7 +32,7 @@ The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every fai
 | 12 | Deptrac | Contracts → Domain → Application → Infrastructure per system; `--fail-on-uncovered` |
 | 13 | Psalm | errorLevel 1, taint analysis, unused code, sealed properties and methods |
 | 14 | phpcpd | no copy-paste: 4 lines, 50 tokens, fuzzy |
-| 15 | semgrep | the AIC ruleset in `semgrep.yml` (no env outside config, no static state, no singletons, no eval, no Swoole, …) |
+| 15 | semgrep | the AIC ruleset in `semgrep.yml` (no env outside config, no static state, no singletons, no eval, no Swoole, no shell pipe into an early-exit reader, …) |
 | 16 | no dynamic require | no runtime-dynamic `require`/`include` in `framework/src` or `app` |
 | 17 | gitleaks | no secrets in the history; default rules plus AIC's (Anthropic, OpenAI, Google keys) |
 | 18 | shellcheck | every shell script in `bin/` and `.claude/hooks/`, at `-S warning` |

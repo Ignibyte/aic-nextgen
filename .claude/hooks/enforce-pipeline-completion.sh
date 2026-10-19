@@ -52,14 +52,14 @@ WRITTEN=$(jq -sr '
      .input.file_path // empty] | unique | .[]
 ' "$TRANSCRIPT_PATH" 2>/dev/null | while IFS= read -r path; do normalize_path "$path"; done || true)
 
-if ! echo "$WRITTEN" | grep -q '^docs/planning/pipeline/active/'; then
+if ! grep -q '^docs/planning/pipeline/active/' <<< "$WRITTEN"; then
     exit 0
 fi
 
 VIOLATIONS=()
 
 if [ "$(detect_active_command "$TRANSCRIPT_PATH")" = "complete" ]; then
-    if ! echo "$WRITTEN" | grep -qE '^CHANGELOG'; then
+    if ! grep -qE '^CHANGELOG' <<< "$WRITTEN"; then
         VIOLATIONS+=("CHANGELOG.md was not updated. Every delivered pipeline gets a changelog entry with its ticket number.")
     fi
 

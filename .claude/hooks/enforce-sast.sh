@@ -114,7 +114,7 @@ $SECURITY_ISSUES")
     # --- 6. phpcpd ---
     if [ -x vendor/bin/phpcpd ]; then
         PHPCPD_OUTPUT=$(vendor/bin/phpcpd --min-lines=4 --min-tokens=50 --fuzzy "${PHP_FILES[@]}" 2>&1) || true
-        if echo "$PHPCPD_OUTPUT" | grep -q 'duplicated lines'; then
+        if grep -q 'duplicated lines' <<< "$PHPCPD_OUTPUT"; then
             VIOLATIONS+=("PHPCPD: duplication in the changed files:
 $PHPCPD_OUTPUT")
         fi

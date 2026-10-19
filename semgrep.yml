@@ -175,3 +175,19 @@ rules:
       exclude:
         - "/gates/architecture/CoreArchitectureTest.php"
     severity: ERROR
+
+  # Every shell script here sets `pipefail`. A reader that stops early (grep -q,
+  # -m or -l, head) closes the pipe while the producer is still writing; the
+  # producer takes SIGPIPE and the pipeline fails with 141, so a check that
+  # matched reads as failed once the input passes the pipe buffer (#16). Feed
+  # the reader a here-string (<<< "$x") or a process substitution (< <(cmd)), or
+  # take the first line with awk 'NR == 1'. Comment lines are skipped.
+  - id: aic-no-early-exit-pipe
+    pattern-regex: '(?m)^(?!\s*#).*(?<!\|)\|(?!\|)\s*(?:grep\s+(?:-\S+\s+)*(?:-[A-Za-z]*[qml]|--(?:quiet|silent|max-count|files-with-matches))|head\b)'
+    message: "A pipe into an early-exit reader fails under pipefail once the input passes the pipe buffer: use a here-string, a process substitution, or awk 'NR == 1' (#16)."
+    languages: [generic]
+    paths:
+      include:
+        - "/.claude/hooks/*.sh"
+        - "/bin/*.sh"
+    severity: ERROR

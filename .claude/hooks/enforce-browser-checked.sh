@@ -71,11 +71,11 @@ BROWSER_TOOLS=$(jq -sr '
 
 VIOLATIONS=()
 
-if ! echo "$BROWSER_TOOLS" | grep -qE '^(playwright|marley) browser_navigate$'; then
+if ! grep -qE '^(playwright|marley) browser_navigate$' <<< "$BROWSER_TOOLS"; then
     VIOLATIONS+=("No browser navigation this session. Open the page with browser_navigate in Marley's Browser tab or the local Playwright MCP.")
 fi
 
-if ! echo "$BROWSER_TOOLS" | grep -qE '^(playwright (browser_snapshot|browser_take_screenshot)|marley (browser_snapshot|browser_look))$'; then
+if ! grep -qE '^(playwright (browser_snapshot|browser_take_screenshot)|marley (browser_snapshot|browser_look))$' <<< "$BROWSER_TOOLS"; then
     VIOLATIONS+=("No look at the page this session. Use browser_snapshot or browser_take_screenshot (Playwright), or browser_snapshot or browser_look (Marley).")
 fi
 

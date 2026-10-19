@@ -186,7 +186,7 @@ get_tool_calls() {
 tool_was_called() {
     local tool_calls="$1"
     local tool_name="$2"
-    echo "$tool_calls" | grep -q "^${tool_name}$"
+    grep -q "^${tool_name}$" <<< "$tool_calls"
 }
 
 # =============================================================================
