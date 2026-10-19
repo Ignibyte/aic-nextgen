@@ -79,6 +79,7 @@ $appServices = new AppServices(
     $sapiServices->requestExtractor(),
     $sapiServices->responseBuilder(),
     $bootedAt,
+    __DIR__ . '/../resources',
 );
 
 /**

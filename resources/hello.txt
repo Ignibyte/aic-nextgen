@@ -1,0 +1,3 @@
+Hello from AIC nextgen.
+
+This file is the demo download of the Stream kind (GET /download/hello.txt).

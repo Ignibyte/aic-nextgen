@@ -24,3 +24,7 @@ services:
         class: Gates\Architecture\CoreArchitectureTest
         tags:
             - phpat.test
+    -
+        class: Gates\Architecture\KindsArchitectureTest
+        tags:
+            - phpat.test

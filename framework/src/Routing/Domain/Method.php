@@ -7,13 +7,14 @@ namespace AIC\Routing\Domain;
 use function strtoupper;
 
 /**
- * The HTTP methods a route can be declared for. GET is the one RouteCollector
- * declares so far, with HEAD answered on it; the others join with their first
- * declaring method (the dead-code rule, plan.md).
+ * The HTTP methods a route can be declared for: GET (with HEAD answered on it)
+ * and POST so far; the others join with their first declaring method (the
+ * dead-code rule, plan.md).
  */
 enum Method: string
 {
     case GET = 'GET';
+    case POST = 'POST';
     case HEAD = 'HEAD';
 
     /**

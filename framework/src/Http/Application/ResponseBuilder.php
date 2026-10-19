@@ -9,6 +9,7 @@ use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use RuntimeException;
 
 /**
  * Makes a response with a content type and a body, and sets headers on one.
@@ -43,6 +44,23 @@ final readonly class ResponseBuilder
         $response = $this->withHeader($this->responseFactory->createResponse($status), 'Content-Type', $contentType);
 
         return self::response($response->withBody($this->streamFactory->createStream($body)));
+    }
+
+    /**
+     * @param int    $status      The status, 100 to 599.
+     * @param string $contentType The `Content-Type`.
+     * @param string $path        The file whose bytes are the body.
+     *
+     * @throws InvalidArgumentException When the status is out of range.
+     * @throws RuntimeException         When the file cannot be opened.
+     *
+     * @return ResponseInterface The response.
+     */
+    public function createFromFile(int $status, string $contentType, string $path): ResponseInterface
+    {
+        $response = $this->withHeader($this->responseFactory->createResponse($status), 'Content-Type', $contentType);
+
+        return self::response($response->withBody($this->streamFactory->createStreamFromFile($path, 'rb')));
     }
 
     /**
