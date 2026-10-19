@@ -171,3 +171,8 @@ parameters:
             allowIn:
                 - config/*.php
                 - bin/gate-*.php
+
+# AIC's own rules (gate:8), each seen to fail on a planted violation.
+rules:
+    # A plugin implements its type: tag(Type::class, Service::class) (#5).
+    - Gates\PhpStan\TaggedServiceTypeRule

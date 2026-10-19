@@ -56,6 +56,15 @@ deptrac:
       collectors:
         - type: classLike
           value: '^PHPat\\'
+    - name: PhpStanRules
+      collectors:
+        - type: classLike
+          value: '^Gates\\PhpStan\\'
+    - name: PhpstanVendor
+      collectors:
+        - type: classLike
+          value: '^(PHPStan|PhpParser)\\'
+
   ruleset:
     Contracts:
       - PsrVendor
@@ -92,6 +101,11 @@ deptrac:
       - PsrVendor
     Architecture:
       - PhpatVendor
+    # AIC's own PHPStan rules (gate:8) read the contracts they police and
+    # PHPStan's API; nothing else.
+    PhpStanRules:
+      - Contracts
+      - PhpstanVendor
   formatters:
     graphviz:
       hidden_layers:

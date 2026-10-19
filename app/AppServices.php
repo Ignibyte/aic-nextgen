@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App;
 
 use AIC\Config\Domain\AppConfig;
+use AIC\Container\Application\Container;
+use AIC\Container\Contracts\ServiceProvider;
 use AIC\Frankenphp\Contracts\RequestExtractor;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Kernel\Application\Kernel;
@@ -12,11 +14,13 @@ use AIC\Middleware\Application\MiddlewareStep;
 use AIC\Routing\Application\RouteErrorMiddleware;
 use AIC\Routing\Application\Router;
 use AIC\Routing\Domain\RouteTable;
+use App\Greeting\Greeter;
 use App\Http\AppHandlers;
 
 /**
- * The app's composition root: its handlers by route id, the router, the
- * middleware stack and the kernel, built once per worker. The worker builds the
+ * The app's composition root: its plugins in the container (AppProvider), its
+ * handlers by route id, the router, the middleware stack and the kernel, built
+ * once per worker. The worker builds the
  * framework's SAPI services and hands their pieces in.
  */
 final readonly class AppServices
@@ -42,7 +46,8 @@ final readonly class AppServices
         string $bootedAt,
         string $resources,
     ) {
-        $appHandlers = new AppHandlers($appConfig, $responseBuilder, $bootedAt, $resources);
+        $container = self::container(new AppProvider());
+        $appHandlers = new AppHandlers($appConfig, $responseBuilder, $bootedAt, $resources, $container->tagged(Greeter::class));
         $router = new Router($routeTable, $appHandlers->byId());
         $this->kernel = new Kernel(
             $requestExtractor,
@@ -57,5 +62,19 @@ final readonly class AppServices
     public function kernel(): Kernel
     {
         return $this->kernel;
+    }
+
+    /**
+     * @param ServiceProvider $serviceProvider Registers the app's services and plugins.
+     *
+     * @return Container The container, filled and frozen.
+     */
+    private static function container(ServiceProvider $serviceProvider): Container
+    {
+        $container = new Container();
+        $serviceProvider->register($container);
+        $container->freeze();
+
+        return $container;
     }
 }

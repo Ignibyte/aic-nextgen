@@ -27,7 +27,9 @@ handlers are in `app/Http`, so every gate runs, none deferred. #21: the kernel
 (`App\AppServices`, on the framework's `SapiServices`); the worker builds both once and emits
 each response. #22: the kinds (`AIC\Controller`): Page, Api and Stream with sealed responses that
 write themselves through `ResponseWriter`, guarded by phpat; the app's entry points are all kinds.
-#4 is done. Next is #5 (services and plugins, the PSR-11 container).
+#4 is done. #5: plugins: the PSR-11 container (`AIC\Container`) with `tag()` and `tagged()`,
+filled by service providers; a custom PHPStan rule checks a tagged plugin implements its type. M1
+is done. Next is #6 (the database and the console).
 
 ## Five kinds
 
@@ -137,7 +139,8 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 - The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
   `App\`; a phpat rule keeps runtime code from depending on it.
 - phpat runs only rule classes registered with the `phpat.test` tag in
-  `phpstan-architecture.neon`; a rule class that is not listed never runs.
+  `phpstan-architecture.neon`; a rule class that is not listed never runs. AIC's own PHPStan rules
+  live in `gates/src/PhpStan` and are listed under `rules:` in `phpstan.neon`.
 - PHPMD holds old AIC's Constitution limits (method <= 30 lines, class <= 300, <= 15 methods,
   coupling <= 15). Raise one only when code needs it, with the reason beside the value.
 - A new gate or rule is done only when it has been seen to fail on a planted violation.

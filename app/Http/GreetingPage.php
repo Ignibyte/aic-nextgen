@@ -7,6 +7,7 @@ namespace App\Http;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageDocument;
+use App\Greeting\Greeter;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -14,16 +15,18 @@ use function htmlspecialchars;
 use function is_string;
 
 /**
- * The greeting at `/hello/{name}`: the route's parameter reaches the controller
- * as a request attribute.
+ * The greetings at `/hello/{name}`: one per Greeter plugin, in tag order. The
+ * route's parameter reaches the controller as a request attribute.
  */
 final readonly class GreetingPage implements Page
 {
     /**
-     * @param HtmlLayout $htmlLayout The document around the page.
+     * @param HtmlLayout   $htmlLayout The document around the page.
+     * @param list<object> $greeters   The Greeter plugins, as the container's `tagged()` gives them.
      */
     public function __construct(
         private HtmlLayout $htmlLayout,
+        private array $greeters,
     ) {
     }
 
@@ -35,10 +38,20 @@ final readonly class GreetingPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $name = $serverRequest->getAttribute('name');
+        $attribute = $serverRequest->getAttribute('name');
+        $name = is_string($attribute)
+            ? $attribute
+            : '';
+        $items = '';
 
-        return new PageDocument($this->htmlLayout->document(
-            '<p id="greeting">Hello, ' . htmlspecialchars(is_string($name) ? $name : '') . '</p>',
-        ));
+        foreach ($this->greeters as $greeter) {
+            if (!($greeter instanceof Greeter)) {
+                continue;
+            }
+
+            $items .= '<li>' . htmlspecialchars($greeter->greet($name)) . '</li>';
+        }
+
+        return new PageDocument($this->htmlLayout->document('<ul id="greetings">' . $items . '</ul>'));
     }
 }
