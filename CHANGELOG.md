@@ -6,6 +6,7 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **HTTP with typed input** (#20, the second slice of #4). PSR-7 messages and PSR-17 factories (`AIC\Http`), and the SAPI request and response (`AIC\Frankenphp`): the worker narrows `$_SERVER`, the extractor builds the request, and the response goes out through the emitter and a SAPI sink the worker implements. A query or form field is a string, a list or a map of strings; deeper nesting answers 400. Headers are stored flat and refuse line breaks. `mixed` appears only on PSR overrides; semgrep's phpdoc rule gained the `#[Override]` exemption PHPCS has (Chad). All 21 runtime classes compile natively.
 - **Typed config** (#18, the first slice of #4). `config/app.php` returns an `AIC\Config\Domain\AppConfig`, a `final readonly` object whose `name` must not be blank. The worker requires the file once, at boot, and renders the name. Config files are analysed like code. `AppConfig` is the first runtime class since #15, so the native gate runs again.
 
 ### Changed

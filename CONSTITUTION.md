@@ -32,7 +32,7 @@ The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every fai
 | 12 | Deptrac | Contracts → Domain → Application → Infrastructure per system; `--fail-on-uncovered` |
 | 13 | Psalm | errorLevel 1, taint analysis, unused code, sealed properties and methods |
 | 14 | phpcpd | no copy-paste: 4 lines, 50 tokens, fuzzy |
-| 15 | semgrep | the AIC ruleset in `semgrep.yml` (no env outside config, no static state, no singletons, no eval, no Swoole, no shell pipe into an early-exit reader, …) |
+| 15 | semgrep | the AIC ruleset in `semgrep.yml` (no env outside config, no static state, no singletons, no eval, no Swoole, no shell pipe into an early-exit reader, no `mixed` in phpdoc generics outside PSR overrides, …) |
 | 16 | no dynamic require | no runtime-dynamic `require`/`include` in `framework/src` or `app` |
 | 17 | gitleaks | no secrets in the history; default rules plus AIC's (Anthropic, OpenAI, Google keys) |
 | 18 | shellcheck | every shell script in `bin/` and `.claude/hooks/`, at `-S warning` |
@@ -116,7 +116,7 @@ Every PHP file:
 4. Every public and protected method has `@param` for each parameter, `@return`, and `@throws` for every exception that can escape.
 5. Every property typed; `readonly` unless mutation is essential.
 6. Every parameter and return typed, including `void` and `never`.
-7. No `mixed`. Genericity goes in phpdoc (`array<string, Foo>`, `list<T>`).
+7. No `mixed`. Genericity goes in phpdoc (`array<string, Foo>`, `list<T>`). The one exception is a method marked `#[Override]` whose PSR interface dictates `mixed` (PSR-7's `getAttribute`, `withQueryParams(array $query)`): PHPCS and semgrep both exempt such overrides, and nothing else.
 8. `final` by default; `abstract` only when an extension hierarchy is intended.
 9. Modern PHP 8.5: `match` over `switch`, enums over class constants, first-class callables, named arguments where they read better.
 10. No `new` in business logic: the container wires.
@@ -151,4 +151,5 @@ This Constitution is amended by editing this file through the four phases (`/pip
 
 ### Amendment log
 
+- **2026-10-19 — PSR overrides (#20, Chad's decision).** §14 rule 7 names its one exception: a `#[Override]` method whose PSR interface dictates `mixed`. PHPStan accepts only `array<mixed>` as the contravariant phpdoc of PSR-7's `array` parameters, PHPCS `DisallowMixedTypeHint` already exempted overrides, and semgrep's `aic-no-mixed-in-phpdoc-template` now does the same, bite-checked both ways.
 - **2026-10-19 — nextgen (#3).** Ported from old AIC's Constitution at `e0778896` and trimmed to one package: the ward, Swoole and Forge history stays in the archive; the gates are renumbered from gate:0 with no gaps (#2, #14, #3); §3 restated for the FrankenPHP worker and native compilation from the first class; §4 collects the workflow rules old AIC cited as §9, §11, §15 and §16; §18.3 and §18.4 (the retired inspection checkpoint and worktrees) dropped.

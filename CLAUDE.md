@@ -18,8 +18,10 @@ Postgres 17, and `public/worker.php` serving a placeholder. The gate suite is in
 `composer run gate`, 23 gates, the native gate (gate:21, #14) among them; gate:3's root manifest
 and gate:4 defer while `app/` is empty. The four-phase workflow is in (#3): `CONSTITUTION.md`,
 the commands in `.claude/commands/`, the hooks in `.claude/hooks/`. #4, the foundation, runs as
-five vertical slices (#18 to #22); #18 is in: config is typed (`config/app.php` returns an
-`AIC\Config\Domain\AppConfig`, read by the worker at boot), the first runtime class. Next is #20.
+five vertical slices (#18 to #22). #18: config is typed (`config/app.php` returns an
+`AIC\Config\Domain\AppConfig`, read by the worker at boot). #20: PSR-7/17 with typed input
+(`AIC\Http`), and the SAPI request and response (`AIC\Frankenphp`); the worker answers through
+them, 400 on input that does not fit the field shapes. Next is #19.
 
 ## Five kinds
 
@@ -152,7 +154,8 @@ Every file:
   protected method.
 - All properties typed; `readonly` unless mutation is essential.
 - All parameters and returns typed, including `void` and `never`.
-- No `mixed`. No untyped arrays: `array<TKey, TValue>` in phpdoc.
+- No `mixed`, except on a `#[Override]` method whose PSR interface dictates it. No untyped arrays:
+  `array<TKey, TValue>` in phpdoc.
 - `final` by default; `abstract` only when designed for extension.
 - No `static` caches, no globals, no singletons: a worker serves request after request, and
   static state leaks between them.
