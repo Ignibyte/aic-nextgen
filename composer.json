@@ -1,0 +1,40 @@
+{
+    "name": "aic/app",
+    "description": "Absolute Insanity, AI (AIAI): the demo app that runs aic/framework.",
+    "license": "MIT",
+    "type": "project",
+    "require": {
+        "php": "^8.5",
+        "aic/framework": "0.1.x-dev"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "framework",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "aic/framework": "0.1.x-dev"
+                }
+            }
+        }
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "scripts": {
+        "build": "@php bin/aic-build"
+    },
+    "scripts-descriptions": {
+        "build": "Write the build-time manifests (none yet; #4 adds the first)."
+    }
+}

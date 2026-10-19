@@ -1,0 +1,14 @@
+# Worker mode for AIC, on top of the ddev/ddev-frankenphp add-on, whose own
+# files stay as shipped so the add-on can update them. Both variables are
+# read by the add-on's web-build/Caddyfile.frankenphp.
+#
+# FRANKENPHP_CONFIG boots public/worker.php once per worker. The try_files
+# rule is the front controller: a file that exists under public/ is served
+# as it is, and every other path goes to the worker.
+services:
+  web:
+    environment:
+      FRANKENPHP_CONFIG: |
+        worker /var/www/html/public/worker.php
+      CADDY_SERVER_EXTRA_DIRECTIVES: |
+        try_files {path} /worker.php

@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+ * bin/aic-build: write the build-time manifests (`composer run build`).
+ *
+ * AIC compiles its wiring at build time, never at boot: the container wiring,
+ * the route table and the manifest of every entry point with its kind. This is
+ * where that step runs. Nothing is built yet; #4 adds the first manifest.
+ */
+
+fwrite(STDOUT, "aic-build: nothing to build yet.\n");
+
+exit(0);
