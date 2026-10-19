@@ -9,6 +9,7 @@ use AIC\Controller\Application\ApiHandler;
 use AIC\Controller\Application\PageHandler;
 use AIC\Controller\Application\Psr7ResponseWriter;
 use AIC\Controller\Application\StreamHandler;
+use AIC\Database\Contracts\Database;
 use AIC\Http\Application\ResponseBuilder;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -24,6 +25,7 @@ final readonly class AppHandlers
      * @param string          $bootedAt        When this worker booted, ISO 8601 in UTC.
      * @param string          $resources       The app's resources directory.
      * @param list<object>    $greeters        The Greeter plugins.
+     * @param Database        $database        The database.
      */
     public function __construct(
         private AppConfig $appConfig,
@@ -31,6 +33,7 @@ final readonly class AppHandlers
         private string $bootedAt,
         private string $resources,
         private array $greeters,
+        private Database $database,
     ) {
     }
 
@@ -51,7 +54,7 @@ final readonly class AppHandlers
                 $psr7ResponseWriter,
             ),
             ResourceDownload::class => new StreamHandler(new ResourceDownload($this->resources), $psr7ResponseWriter),
-            StatusApi::class => new ApiHandler(new StatusApi($this->appConfig, $this->bootedAt), $psr7ResponseWriter),
+            StatusApi::class => new ApiHandler(new StatusApi($this->appConfig, $this->bootedAt, $this->database), $psr7ResponseWriter),
         ];
     }
 }

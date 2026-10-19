@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AIC\Database\Contracts;
+
+/**
+ * The database, as the app sees it: parameterised queries with `?`
+ * placeholders, returning typed rows.
+ */
+interface Database
+{
+    /**
+     * @param string                           $sql    The query, with `?` placeholders.
+     * @param list<string|int|float|bool|null> $params The values for the placeholders, in order.
+     *
+     * @throws QueryException When the query fails or returns no row.
+     *
+     * @return Row The first row.
+     */
+    public function fetchOne(string $sql, array $params): Row;
+}

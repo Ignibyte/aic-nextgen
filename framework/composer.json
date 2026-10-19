@@ -5,6 +5,7 @@
     "type": "library",
     "require": {
         "php": "^8.5",
+        "ext-pdo": "*",
         "psr/container": "^2.0",
         "psr/http-factory": "^1.1",
         "psr/http-message": "^2.0",

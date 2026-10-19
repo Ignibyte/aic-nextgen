@@ -29,7 +29,9 @@ each response. #22: the kinds (`AIC\Controller`): Page, Api and Stream with seal
 write themselves through `ResponseWriter`, guarded by phpat; the app's entry points are all kinds.
 #4 is done. #5: plugins: the PSR-11 container (`AIC\Container`) with `tag()` and `tagged()`,
 filled by service providers; a custom PHPStan rule checks a tagged plugin implements its type. M1
-is done. Next is #6 (the database and the console).
+is done. #6, the database, runs as four slices (#28 to #31); #28: `AIC\Database` (a `Database`
+contract, `PdoDatabase` over PDO pgsql, typed config from DDEV's `PG*` environment); `/api/status`
+reports the server's version. Next is #29 (the Command kind and the console).
 
 ## Five kinds
 

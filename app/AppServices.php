@@ -7,6 +7,7 @@ namespace App;
 use AIC\Config\Domain\AppConfig;
 use AIC\Container\Application\Container;
 use AIC\Container\Contracts\ServiceProvider;
+use AIC\Database\Contracts\Database;
 use AIC\Frankenphp\Contracts\RequestExtractor;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Kernel\Application\Kernel;
@@ -37,6 +38,7 @@ final readonly class AppServices
      * @param ResponseBuilder  $responseBuilder  Makes responses.
      * @param string           $bootedAt         When this worker booted, ISO 8601 in UTC.
      * @param string           $resources        The app's resources directory.
+     * @param Database         $database         The database.
      */
     public function __construct(
         AppConfig $appConfig,
@@ -45,9 +47,10 @@ final readonly class AppServices
         ResponseBuilder $responseBuilder,
         string $bootedAt,
         string $resources,
+        Database $database,
     ) {
         $container = self::container(new AppProvider());
-        $appHandlers = new AppHandlers($appConfig, $responseBuilder, $bootedAt, $resources, $container->tagged(Greeter::class));
+        $appHandlers = new AppHandlers($appConfig, $responseBuilder, $bootedAt, $resources, $container->tagged(Greeter::class), $database);
         $router = new Router($routeTable, $appHandlers->byId());
         $this->kernel = new Kernel(
             $requestExtractor,
