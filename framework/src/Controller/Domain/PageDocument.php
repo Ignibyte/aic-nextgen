@@ -13,28 +13,29 @@ use Psr\Http\Message\ResponseInterface;
 use function in_array;
 
 /**
- * A page answered as a whole HTML document: 200, or 422 when a form posted to
- * it is rendered again in place with its errors.
+ * A page answered as a whole HTML document: 200; 404 when what it shows does
+ * not exist; or 422 when a form posted to it is rendered again in place with
+ * its errors.
  */
 final readonly class PageDocument implements PageResponse
 {
     /**
      * The statuses a document may carry.
      */
-    private const array STATUSES = [200, 422];
+    private const array STATUSES = [200, 404, 422];
 
     /**
      * @param string $html   The whole document, escaped where it holds input.
-     * @param int    $status 200, or 422 for a form shown again with its errors.
+     * @param int    $status 200, 404 for a missing thing, or 422 for a form shown again with its errors.
      *
-     * @throws InvalidArgumentException When the status is neither.
+     * @throws InvalidArgumentException When the status is none of these.
      */
     public function __construct(
         private string $html,
         private int $status = 200,
     ) {
         if (!in_array($status, self::STATUSES, true)) {
-            throw new InvalidArgumentException('A page document answers 200 or 422; got ' . $status . '.');
+            throw new InvalidArgumentException('A page document answers 200, 404 or 422; got ' . $status . '.');
         }
     }
 

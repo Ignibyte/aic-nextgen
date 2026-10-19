@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Database\Contracts;
 
 use function array_key_exists;
+use function is_int;
 use function is_string;
 
 /**
@@ -35,6 +36,26 @@ final readonly class Row
 
         if (!is_string($value)) {
             throw new QueryException('The row has no string column ' . $column . '.');
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param string $column The column name.
+     *
+     * @throws QueryException When the column is missing or not an integer.
+     *
+     * @return int Its value.
+     */
+    public function int(string $column): int
+    {
+        $value = array_key_exists($column, $this->values)
+            ? $this->values[$column]
+            : null;
+
+        if (!is_int($value)) {
+            throw new QueryException('The row has no integer column ' . $column . '.');
         }
 
         return $value;

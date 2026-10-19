@@ -11,6 +11,11 @@ use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\RoutePatternCompiler;
 use App\Http\GreetingPage;
 use App\Http\GreetingPost;
+use App\Http\NoteCreatePost;
+use App\Http\NoteDeletePost;
+use App\Http\NoteListPage;
+use App\Http\NoteShowPage;
+use App\Http\NoteUpdatePost;
 use App\Http\PlaceholderPage;
 use App\Http\ResourceDownload;
 use App\Http\StatusApi;
@@ -21,4 +26,9 @@ return new RouteCollector(new RoutePatternCompiler())
     ->onPost('/hello', GreetingPost::class)
     ->onGet('/api/status', StatusApi::class)
     ->onGet('/download/{file}', ResourceDownload::class)
+    ->onGet('/notes', NoteListPage::class)
+    ->onPost('/notes', NoteCreatePost::class)
+    ->onGet('/notes/{id:int}', NoteShowPage::class)
+    ->onPost('/notes/{id:int}', NoteUpdatePost::class)
+    ->onPost('/notes/{id:int}/delete', NoteDeletePost::class)
     ->table();

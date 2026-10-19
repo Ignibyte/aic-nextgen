@@ -13,9 +13,11 @@ use AIC\Database\Contracts\Database;
 use AIC\Http\Application\ResponseBuilder;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use function array_merge;
+
 /**
  * The app's controllers, each wrapped in its kind's handler, by the handler id
- * config/routes.php names.
+ * config/routes.php names; the note pages come from NoteHandlers.
  */
 final readonly class AppHandlers
 {
@@ -46,7 +48,9 @@ final readonly class AppHandlers
         $greetingForm = new GreetingForm();
         $psr7ResponseWriter = new Psr7ResponseWriter($this->responseBuilder);
 
-        return [
+        $noteHandlers = new NoteHandlers($htmlLayout, $psr7ResponseWriter, $this->database);
+
+        return array_merge($noteHandlers->byId(), [
             GreetingPage::class => new PageHandler(new GreetingPage($htmlLayout, $this->greeters), $psr7ResponseWriter),
             GreetingPost::class => new PageHandler(new GreetingPost($htmlLayout, $greetingForm), $psr7ResponseWriter),
             PlaceholderPage::class => new PageHandler(
@@ -55,6 +59,6 @@ final readonly class AppHandlers
             ),
             ResourceDownload::class => new StreamHandler(new ResourceDownload($this->resources), $psr7ResponseWriter),
             StatusApi::class => new ApiHandler(new StatusApi($this->appConfig, $this->bootedAt, $this->database), $psr7ResponseWriter),
-        ];
+        ]);
     }
 }

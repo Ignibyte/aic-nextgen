@@ -34,8 +34,10 @@ contract, `PdoDatabase` over PDO pgsql, typed config from DDEV's `PG*` environme
 reports the server's version. #29: the Command kind (`Command`, the sealed `CommandResult` written
 through `CommandWriter`), `AIC\Console` and `bin/aic` with `db:ping` and `greet`. #30:
 `AIC\Schema` (a fluent table builder, Postgres DDL, forward-only migrations with a checksummed
-ledger), `bin/aic migrate` and `migrate:status`; the demo migration creates `notes`. Next is #31
-(entities, CRUD from a controller).
+ledger), `bin/aic migrate` and `migrate:status`; the demo migration creates `notes`. #31:
+`AIC\Entity` (entity types over a closed field set, a query builder, insert/update/delete by
+key) and the demo app's note pages doing CRUD on `notes`. #6 and M2 are done. Next is #7 (M3,
+pages); #32 (WebSockets) is filed and open.
 
 ## Five kinds
 
