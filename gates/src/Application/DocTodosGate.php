@@ -34,8 +34,6 @@ use const STDOUT;
  * and non-markdown link targets are ignored.
  *
  * Per-file scanning logic lives in MarkdownLineScanner.
- *
- * @api
  */
 final readonly class DocTodosGate
 {

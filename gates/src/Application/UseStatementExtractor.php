@@ -28,8 +28,6 @@ use const T_USE;
  * grouped (`use Foo\{Bar, Baz as Qux};`) forms. `use function` and
  * `use const` statements are skipped (out of scope — they reference
  * php / ext-* symbols, not vendor packages).
- *
- * @api
  */
 final readonly class UseStatementExtractor
 {

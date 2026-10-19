@@ -1,7 +1,7 @@
 # gate:8 — PHPStan level 10 with bleeding edge.
 #
 # phpstan-strict-rules, phpstan-deprecation-rules, phpat, shipmonk-rules,
-# ergebnis/phpstan-rules, spaze/phpstan-disallowed-calls, tomasvotruba/unused-public,
+# shipmonk/dead-code-detector, ergebnis/phpstan-rules, spaze/phpstan-disallowed-calls,
 # tomasvotruba/cognitive-complexity and tomasvotruba/type-coverage load through
 # phpstan/extension-installer from composer's require-dev. The custom rules of later
 # systems (blocks, layouts, forms, plugins) arrive with the tickets that port them.
@@ -17,7 +17,6 @@ parameters:
         - bin
         - bin/aic-build
         - gates/src
-        - gates/architecture
     excludePaths:
         - vendor
         - storage (?)
@@ -46,6 +45,23 @@ parameters:
     cognitive_complexity:
         class: 50
         function: 8
+    # shipmonk/dead-code-detector (#15, replacing the abandoned tomasvotruba/unused-public):
+    # dead methods, constants, enum cases and properties never read or never written,
+    # dead cycles and transitively dead methods, across the whole codebase. phpat rule
+    # methods count as used (the phpat.test tag). A call over an unknown type does not
+    # mark members used: the codebase has no `mixed`, so such a call is a type gap to fix,
+    # not evidence of use.
+    shipmonkDeadCode:
+        detect:
+            deadMethods: true
+            deadConstants: true
+            deadEnumCases: true
+            deadProperties:
+                neverRead: true
+                neverWritten: true
+        usageExcluders:
+            usageOverMixed:
+                enabled: true
     shipmonkRules:
         enableAllRules: true
         # Container::bind/singleton/instance store factory callables that

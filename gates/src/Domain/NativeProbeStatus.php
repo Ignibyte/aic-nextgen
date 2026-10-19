@@ -10,8 +10,6 @@ namespace Gates\Domain;
  * Only `Ok` passes. The others name the first step that went wrong, so a
  * failing root says where to look: the compiler, the linker, the native
  * binary, or a silent miscompile.
- *
- * @api
  */
 enum NativeProbeStatus: string
 {

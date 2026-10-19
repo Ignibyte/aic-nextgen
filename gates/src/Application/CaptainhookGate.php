@@ -33,8 +33,6 @@ use const STDOUT;
  *
  * `config:validate` does not exist in CaptainHook 5.29.x; this gate is
  * the AIC-side replacement specified in ADR 0005 row 18.
- *
- * @api
  */
 final readonly class CaptainhookGate
 {

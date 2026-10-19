@@ -18,8 +18,6 @@ use function str_ends_with;
  * Centralises the "does this directory contain at least one php file?"
  * predicate so the per-gate classes (DeduplicatorGate,
  * PhpSourceCollector, …) do not duplicate the iterator scaffolding.
- *
- * @api
  */
 final readonly class PhpFileFinder
 {

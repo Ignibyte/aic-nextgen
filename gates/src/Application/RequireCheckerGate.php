@@ -36,8 +36,6 @@ use const STDOUT;
  *           declared-prefix set.
  *   3. Print a `passed/failed/deferred` summary; exit 1 iff failed > 0
  *      (source-fix only; no baselines).
- *
- * @api
  */
 final readonly class RequireCheckerGate
 {

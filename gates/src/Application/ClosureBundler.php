@@ -25,8 +25,6 @@ use function str_contains;
  *
  * PHP built-ins that composer may back with a `symfony/polyfill` stub stay
  * out: elephc provides them itself, and the stubs read host-only constants.
- *
- * @api
  */
 final readonly class ClosureBundler
 {

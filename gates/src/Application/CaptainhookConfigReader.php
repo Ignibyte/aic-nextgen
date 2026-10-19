@@ -24,8 +24,6 @@ use const PHP_EOL;
  *
  * Split from CaptainhookGate, which keeps the checks on the installed hook
  * files and on `captainhook config:info`.
- *
- * @api
  */
 final readonly class CaptainhookConfigReader
 {

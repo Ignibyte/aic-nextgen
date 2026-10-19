@@ -32,8 +32,6 @@ use const STDOUT;
  * may be required in the first place. This gate holds the runtime `require`
  * of the root and `framework/composer.json` to `php`, `ext-*`, `psr/*` and
  * the framework itself.
- *
- * @api
  */
 final readonly class RequireAllowlistGate
 {

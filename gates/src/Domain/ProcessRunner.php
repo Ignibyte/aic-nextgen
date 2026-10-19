@@ -14,8 +14,6 @@ namespace Gates\Domain;
  *
  * The default production implementation is `Gates\Infrastructure\SystemProcessRunner`,
  * which uses `proc_open` with separate stdout/stderr pipes.
- *
- * @api
  */
 interface ProcessRunner
 {

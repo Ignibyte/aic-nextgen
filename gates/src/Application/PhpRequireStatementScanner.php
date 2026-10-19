@@ -51,9 +51,7 @@ use const T_WHITESPACE;
  * literals, `__DIR__`, global constants, and `.` concatenation of those.
  * `__FILE__` is NOT folded (H1 threaded only the directory), and a function
  * call such as `dirname(__DIR__)` is not foldable either, so both classify as
- * dynamic here.
- *
- * @api Public — consumed by {@see NoDynamicRequireGate} (gate:16).
+ * dynamic here. Consumed by {@see NoDynamicRequireGate} (gate:16).
  */
 final readonly class PhpRequireStatementScanner
 {

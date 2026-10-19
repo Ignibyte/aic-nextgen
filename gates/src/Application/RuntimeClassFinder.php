@@ -18,8 +18,6 @@ use function sort;
  * interpreted by design and stay out; keeping them outside the two runtime
  * roots means no scope list is needed. A runtime class that must be left out
  * goes in here, with its reason.
- *
- * @api
  */
 final readonly class RuntimeClassFinder
 {

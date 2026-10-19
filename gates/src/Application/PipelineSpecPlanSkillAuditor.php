@@ -35,8 +35,6 @@ use function str_contains;
  * Constructor takes no parameters; callers inject via `PipelineSpecSyncGate`
  * mirroring the pattern set by `PipelineSpecFrontmatterParser` and
  * `PipelineSpecLinkResolver`.
- *
- * @api
  */
 final readonly class PipelineSpecPlanSkillAuditor
 {

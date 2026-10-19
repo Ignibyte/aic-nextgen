@@ -25,8 +25,6 @@ use const STDOUT;
  * are predominantly stylistic. Auto-skips with a clear message when the
  * tool is not on PATH AND the run is not in CI; in CI the gate hard-fails
  * on missing shellcheck.
- *
- * @api
  */
 final readonly class ShellcheckGate
 {

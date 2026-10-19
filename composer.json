@@ -23,6 +23,7 @@
         "phpstan/phpstan-strict-rules": "^2.0",
         "rector/rector": "^2.0",
         "roave/security-advisories": "dev-latest",
+        "shipmonk/dead-code-detector": "^1.4",
         "shipmonk/phpstan-rules": "^4.0",
         "slevomat/coding-standard": "^8.15",
         "spaze/phpstan-disallowed-calls": "^4.11",
@@ -30,7 +31,6 @@
         "systemsdk/phpcpd": "^9.0",
         "tomasvotruba/cognitive-complexity": "^1.0",
         "tomasvotruba/type-coverage": "^2.0",
-        "tomasvotruba/unused-public": "^2.2",
         "vimeo/psalm": "^6.0"
     },
     "repositories": [

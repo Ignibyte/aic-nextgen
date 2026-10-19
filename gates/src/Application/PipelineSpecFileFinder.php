@@ -25,8 +25,6 @@ use function str_ends_with;
  *
  * Constructor takes no parameters; callers inject via `PipelineSpecSyncGate`
  * mirroring the pattern set by the other gate:22 collaborators.
- *
- * @api
  */
 final readonly class PipelineSpecFileFinder
 {

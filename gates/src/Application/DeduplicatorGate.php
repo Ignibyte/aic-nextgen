@@ -21,8 +21,6 @@ use const STDOUT;
  *
  * Min 4 lines, 50 tokens, fuzzy, threshold 0. Skips cleanly when no PHP
  * source exists yet. Ported from old AIC's gate:9 (#2).
- *
- * @api
  */
 final readonly class DeduplicatorGate
 {

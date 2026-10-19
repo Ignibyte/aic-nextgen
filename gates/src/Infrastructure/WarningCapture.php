@@ -14,8 +14,6 @@ namespace Gates\Infrastructure;
  * reference into closures" rule forbids the natural use (&$captured)
  * idiom — wrapping the slot in a value object lets the closure mutate
  * shared state through an object handle without the by-ref dance.
- *
- * @api
  */
 final class WarningCapture
 {

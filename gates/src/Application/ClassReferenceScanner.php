@@ -41,8 +41,6 @@ use const T_WHITESPACE;
  * the real ones. In one-class-per-file PSR-4 code that catches `use` lines,
  * qualified names, bare same-namespace names, trait uses and attributes
  * without a full name resolver.
- *
- * @api
  */
 final readonly class ClassReferenceScanner
 {

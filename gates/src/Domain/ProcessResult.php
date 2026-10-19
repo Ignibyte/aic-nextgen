@@ -11,8 +11,6 @@ namespace Gates\Domain;
  * its full stdout and stderr. Stdout and stderr are kept separate so callers
  * can apply different handling — e.g., echo stdout for human-readable summary
  * lines while routing stderr through structured failure reporting.
- *
- * @api
  */
 final readonly class ProcessResult
 {

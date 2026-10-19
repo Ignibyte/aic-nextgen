@@ -24,8 +24,6 @@ use function str_starts_with;
  *
  * Extracted from `PipelineSpecSyncGate` per ticket #56 to keep the gate
  * class under PHPMD class-length / class-complexity thresholds.
- *
- * @api
  */
 final readonly class PipelineSpecFrontmatterParser
 {

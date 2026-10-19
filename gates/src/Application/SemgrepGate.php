@@ -18,8 +18,6 @@ use const STDOUT;
  * Resolves a `semgrep` binary (`~/.local/bin/semgrep` then PATH fallback) and
  * invokes it via the {@see ProcessRunner} seam against the project's
  * `semgrep.yml`. Fails loudly when the binary is missing.
- *
- * @api
  */
 final readonly class SemgrepGate
 {

@@ -30,8 +30,6 @@ use const PHP_EOL;
  * `Psr\Http\Message\`).
  *
  * @phpstan-type InstalledPackage array{name?: string, autoload?: array{psr-4?: array<string, string|list<string>>}}
- *
- * @api
  */
 final readonly class InstalledPackageMap
 {

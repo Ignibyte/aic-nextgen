@@ -20,8 +20,6 @@ use const PHP_BINARY;
  * `XDG_CACHE_HOME` and `ELEPHC_NATIVE_CACHE` for the managed native packages;
  * `TMPDIR` is left as the box sets it, because it is part of the native
  * toolchain's fingerprint.
- *
- * @api
  */
 final readonly class NativeToolchain
 {

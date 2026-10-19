@@ -33,8 +33,6 @@ use const STDOUT;
  *
  * Designed for in-process testing via `SandboxFixture` and direct
  * invocation from `bin/gate-pipeline-spec-sync.php`.
- *
- * @api
  */
 final readonly class PipelineSpecSyncGate
 {

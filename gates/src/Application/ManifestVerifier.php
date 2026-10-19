@@ -30,8 +30,6 @@ use const PHP_EOL;
  *
  * Returns `'pass'`, `'fail'`, or `'defer'` (legitimate during early
  * bootstrap of a new manifest with no source files yet).
- *
- * @api
  */
 final readonly class ManifestVerifier
 {

@@ -19,8 +19,6 @@ use function uksort;
  * as files are added (a classmap needs a dump). Longer prefixes win, so
  * `Gates\Architecture\` beats `Gates\`. Paths come back resolved, so the
  * `vendor/aic/framework` symlink leads to `framework/src`.
- *
- * @api
  */
 final readonly class Psr4Map
 {

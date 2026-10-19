@@ -15,9 +15,11 @@ the ten systems, the milestones) and `plan.md` (the decisions and the port map f
 
 The workspace is up (#1): composer with the `framework/` path package, DDEV with FrankenPHP and
 Postgres 17, and `public/worker.php` serving a placeholder. The gate suite is in (#2):
-`composer run gate`, 23 gates, the native gate (gate:21, #14) among them. The first runtime class
-is `AIC\Routing\Domain\Method`. The four-phase workflow is in (#3): `CONSTITUTION.md`, the
-commands in `.claude/commands/`, the hooks in `.claude/hooks/`. Milestone M0 is done; next is #4.
+`composer run gate`, 23 gates, the native gate (gate:21, #14) among them. gate:3, gate:4 and
+gate:21 defer until `framework/src` and `app` hold code: the dead-code detector (#15) removed the
+first runtime class, `AIC\Routing\Domain\Method`, until #4's router calls it. The four-phase
+workflow is in (#3): `CONSTITUTION.md`, the commands in `.claude/commands/`, the hooks in
+`.claude/hooks/`. Next is #4.
 
 ## Five kinds
 

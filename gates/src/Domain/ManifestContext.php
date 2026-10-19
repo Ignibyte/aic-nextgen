@@ -14,8 +14,6 @@ namespace Gates\Domain;
  *     (intra-package use is exempt from cross-check).
  *   - `sourceFiles`      — every `*.php` file under the manifest's
  *     PSR-4 paths.
- *
- * @api
  */
 final readonly class ManifestContext
 {
