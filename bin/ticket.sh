@@ -22,6 +22,7 @@
 #            (description also accepted on stdin when --description absent
 #             and stdin is not a TTY)
 #   update  <n> [--status S] [--phase P] [--type TY] [--title T]
+#            (phases: plan, code, check, docs; a non-terminal status drops `closed`)
 #   close   <n> [--as done|won-t-fix|abandoned|closed] [--note TEXT]
 #   comment <n> [--body TEXT]   (body from stdin when --body absent)
 #   next    [--type T]       lowest-numbered open ticket
@@ -38,6 +39,7 @@ TICKETS_DIR="${PROJECT_ROOT}/docs/planning/tickets"
 TERMINAL_STATUSES="done won-t-fix abandoned closed"
 KNOWN_STATUSES="open in-progress in-review done won-t-fix abandoned closed"
 KNOWN_TYPES="feature bug chore spike docs"
+KNOWN_PHASES="plan code check docs"
 
 usage() {
     sed -n '/^# Subcommands/,/^# Exit/p' "$0" | sed 's/^# \{0,1\}//'
@@ -52,6 +54,19 @@ die() {
 require_env() {
     command -v jq >/dev/null 2>&1 || { echo "ticket.sh: jq is required" >&2; exit 2; }
     [ -d "$TICKETS_DIR" ] || { echo "ticket.sh: ${TICKETS_DIR} not found" >&2; exit 2; }
+}
+
+# Fail with a usage error when an option arrives without its value. Call as
+# `need_value "$@"` from an option loop, so $1 is the option and $2 its value.
+need_value() {
+    [ $# -ge 2 ] || die "$1 needs a value"
+}
+
+# Write a rewritten file back over the original in place, so the ticket keeps
+# its mode (a plain mv would carry mktemp's 0600 over).
+replace_file() {
+    cat "$1" > "$2"
+    rm -f "$1"
 }
 
 now_iso() {
@@ -96,8 +111,10 @@ fm_get() {
 fm_set_raw() {
     local file="$1" key="$2" value="$3" tmp
     tmp=$(mktemp)
-    awk -v key="$key" -v value="$value" '
-        BEGIN { in_fm = 0; done = 0 }
+    # The value goes in through the environment: awk -v would expand the
+    # backslash escapes of a JSON-encoded string.
+    FM_VALUE="$value" awk -v key="$key" '
+        BEGIN { in_fm = 0; done = 0; value = ENVIRON["FM_VALUE"] }
         NR == 1 && /^---$/ { in_fm = 1; print; next }
         in_fm && /^---$/ {
             if (!done) { print key ": " value; done = 1 }
@@ -108,7 +125,20 @@ fm_set_raw() {
         }
         { print }
     ' "$file" > "$tmp"
-    mv "$tmp" "$file"
+    replace_file "$tmp" "$file"
+}
+
+# Remove a frontmatter key, when present.
+fm_del() {
+    local file="$1" key="$2" tmp
+    tmp=$(mktemp)
+    awk -v key="$key" '
+        NR == 1 && /^---$/ { in_fm = 1; print; next }
+        in_fm && /^---$/ { in_fm = 0; print; next }
+        in_fm && index($0, key ": ") == 1 { next }
+        { print }
+    ' "$file" > "$tmp"
+    replace_file "$tmp" "$file"
 }
 
 fm_set_string() {
@@ -129,6 +159,14 @@ validate_type() {
         [ "$t" = "$1" ] && return 0
     done
     die "unknown type '$1' (expected one of: ${KNOWN_TYPES})"
+}
+
+validate_phase() {
+    local p
+    for p in $KNOWN_PHASES; do
+        [ "$p" = "$1" ] && return 0
+    done
+    die "unknown phase '$1' (expected one of: ${KNOWN_PHASES})"
 }
 
 is_terminal() {
@@ -193,15 +231,18 @@ cmd_list() {
     local status="" type="" limit=0
     while [ $# -gt 0 ]; do
         case "$1" in
-            --status) status="$2"; shift 2 ;;
-            --type)   type="$2"; shift 2 ;;
-            --limit)  limit="$2"; shift 2 ;;
+            --status) need_value "$@"; status="$2"; shift 2 ;;
+            --type)   need_value "$@"; type="$2"; shift 2 ;;
+            --limit)  need_value "$@"; limit="$2"; shift 2 ;;
             *) die "list: unknown option $1" ;;
         esac
     done
+    case "$limit" in
+        ''|*[!0-9]*) die "list: --limit needs a number, got '${limit}'" ;;
+    esac
     local rows
     rows=$(scan_all | filter_status "$status" | filter_type "$type")
-    if [ "$limit" -gt 0 ] 2>/dev/null; then
+    if [ "$limit" -gt 0 ]; then
         rows=$(printf '%s\n' "$rows" | tail -n "$limit")
     fi
     [ -n "$rows" ] || { echo "(no tickets match)"; return 0; }
@@ -240,17 +281,18 @@ cmd_create() {
     local title="" type="" tags="" phase="" description=""
     while [ $# -gt 0 ]; do
         case "$1" in
-            --title)       title="$2"; shift 2 ;;
-            --type)        type="$2"; shift 2 ;;
-            --tags)        tags="$2"; shift 2 ;;
-            --phase)       phase="$2"; shift 2 ;;
-            --description) description="$2"; shift 2 ;;
+            --title)       need_value "$@"; title="$2"; shift 2 ;;
+            --type)        need_value "$@"; type="$2"; shift 2 ;;
+            --tags)        need_value "$@"; tags="$2"; shift 2 ;;
+            --phase)       need_value "$@"; phase="$2"; shift 2 ;;
+            --description) need_value "$@"; description="$2"; shift 2 ;;
             *) die "create: unknown option $1" ;;
         esac
     done
     [ -n "$title" ] || die "create: --title is required"
     [ -n "$type" ] || die "create: --type is required"
     validate_type "$type"
+    [ -z "$phase" ] || validate_phase "$phase"
     if [ -z "$description" ] && [ ! -t 0 ]; then
         description=$(cat)
     fi
@@ -291,15 +333,26 @@ cmd_update() {
     file=$(ticket_file "$1")
     shift
     [ $# -gt 0 ] || die "update: nothing to change"
+    # Validate every option before writing any, so a bad one leaves the
+    # ticket untouched instead of half-updated.
+    local status="" phase="" type="" title="" has_title=0
     while [ $# -gt 0 ]; do
         case "$1" in
-            --status) validate_status "$2"; fm_set_raw "$file" status "$2"; shift 2 ;;
-            --phase)  fm_set_string "$file" phase "$2"; shift 2 ;;
-            --type)   validate_type "$2"; fm_set_raw "$file" type "$2"; shift 2 ;;
-            --title)  fm_set_string "$file" title "$2"; shift 2 ;;
+            --status) need_value "$@"; validate_status "$2"; status="$2"; shift 2 ;;
+            --phase)  need_value "$@"; validate_phase "$2"; phase="$2"; shift 2 ;;
+            --type)   need_value "$@"; validate_type "$2"; type="$2"; shift 2 ;;
+            --title)  need_value "$@"; title="$2"; has_title=1; shift 2 ;;
             *) die "update: unknown option $1" ;;
         esac
     done
+    if [ -n "$status" ]; then
+        fm_set_raw "$file" status "$status"
+        # A reopened ticket drops the timestamp of its last close.
+        is_terminal "$status" || fm_del "$file" closed
+    fi
+    [ -z "$phase" ] || fm_set_string "$file" phase "$phase"
+    [ -z "$type" ] || fm_set_raw "$file" type "$type"
+    [ "$has_title" -eq 0 ] || fm_set_string "$file" title "$title"
     fm_set_raw "$file" updated "$(now_iso)"
     echo "updated: ${file#"${PROJECT_ROOT}"/}"
 }
@@ -320,7 +373,7 @@ cmd_comment() {
     shift
     while [ $# -gt 0 ]; do
         case "$1" in
-            --body) body="$2"; shift 2 ;;
+            --body) need_value "$@"; body="$2"; shift 2 ;;
             *) die "comment: unknown option $1" ;;
         esac
     done
@@ -341,8 +394,8 @@ cmd_close() {
     shift
     while [ $# -gt 0 ]; do
         case "$1" in
-            --as)   final="$2"; shift 2 ;;
-            --note) note="$2"; shift 2 ;;
+            --as)   need_value "$@"; final="$2"; shift 2 ;;
+            --note) need_value "$@"; note="$2"; shift 2 ;;
             *) die "close: unknown option $1" ;;
         esac
     done
@@ -360,7 +413,7 @@ cmd_next() {
     local type=""
     while [ $# -gt 0 ]; do
         case "$1" in
-            --type) type="$2"; shift 2 ;;
+            --type) need_value "$@"; type="$2"; shift 2 ;;
             *) die "next: unknown option $1" ;;
         esac
     done
@@ -374,7 +427,7 @@ cmd_count() {
     local status=""
     while [ $# -gt 0 ]; do
         case "$1" in
-            --status) status="$2"; shift 2 ;;
+            --status) need_value "$@"; status="$2"; shift 2 ;;
             *) die "count: unknown option $1" ;;
         esac
     done
