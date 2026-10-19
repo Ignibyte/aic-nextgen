@@ -7,7 +7,11 @@ includes:
 
 parameters:
     phpat:
-        ignore_built_in_classes: true
+        # Count dependencies on built-in classes: PHPStan's bundled extension
+        # stubs make Swoole\ a built-in, and with built-ins ignored the
+        # no-Swoole rule could never fail. The vendor rule already allows PHP's
+        # standard classes explicitly (Selector::isStandardClass()).
+        ignore_built_in_classes: false
         show_rule_names: true
 
 services:

@@ -57,9 +57,6 @@ parameters:
         # is the call site and propagates exceptions explicitly.
         forbidCheckedExceptionInCallable:
             enabled: false
-    phpat:
-        ignore_built_in_classes: true
-        show_rule_names: true
     # ergebnis/phpstan-rules — `allRules: true` (default) enables all 22 rules; opt-outs below.
     # noNamedArgument fights the modern-PHP convention of named arguments; disabled. Other ergebnis rules are kept on so they enforce: final/finalInAbstractClass,
     # noEval, noErrorSuppression, noPhpstanIgnore, noIsset (forbids isset on variables — null
