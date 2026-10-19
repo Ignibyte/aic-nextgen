@@ -20,8 +20,6 @@ use function str_starts_with;
  *   3. Manifest's own PSR-4 prefix hit (intra-package use).
  *   4. Declared-prefix hit. The app's `AIC\…` uses pass here, through its
  *      `aic/framework` require.
- *
- * @api
  */
 final readonly class FqnCoverageChecker
 {

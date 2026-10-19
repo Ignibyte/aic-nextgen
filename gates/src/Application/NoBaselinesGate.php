@@ -40,8 +40,6 @@ use const STDOUT;
  *      child in `psalm.xml`.
  *
  * Pure-PHP scanner — does NOT shell out, so it does not need a `ProcessRunner`.
- *
- * @api
  */
 final class NoBaselinesGate
 {

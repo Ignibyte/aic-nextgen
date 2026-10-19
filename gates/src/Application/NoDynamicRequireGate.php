@@ -46,8 +46,6 @@ use const STDOUT;
  * method literally named `require` is not mistaken for the construct.
  *
  * Pure-PHP scanner — does NOT shell out, so it needs no `ProcessRunner`.
- *
- * @api
  */
 final readonly class NoDynamicRequireGate
 {

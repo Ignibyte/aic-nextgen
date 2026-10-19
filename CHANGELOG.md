@@ -4,6 +4,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Changed
+
+- **Dead-code detection** (#15). `shipmonk/dead-code-detector` replaces the abandoned `tomasvotruba/unused-public` in gate:8. It checks methods, constants, enum cases, and properties never read or written; dead cycles and transitively dead methods; and it does not count a call over an unknown type as usage. gate:0 reports no abandoned package. The gate classes lost their `@api` tags, which had hidden their members from both dead-code checks. The detector found the unused `RelativePathComputer` (deleted) and the caller-less `AIC\Routing\Domain\Method` cases (the class waits for #4). gate:21 defers until runtime code returns.
+
 ### Added
 
 - **The four-phase workflow** (#3). `CONSTITUTION.md`, trimmed to one package. The commands `/work`, `/work-lite`, `/pipeline:plan|implement|check|complete`, `/commit`, `/spec`, `/scope-split`, `/bug` and `/qa`. The hooks for the phase gate, write scope, docs before code, MCP config, phase evidence, pipeline completion, browser check, quality, SAST and secrets, wired in `.claude/settings.json`. The skills `elephc-carry` and `playwright-testing`. gate:22, the pipeline-doc sync. The pipeline templates live in the planning repo.

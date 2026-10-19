@@ -26,8 +26,6 @@ use function substr;
  *
  * Extracted from `PipelineSpecSyncGate` per ticket #56 to keep the gate
  * class under PHPMD method-length / class-complexity thresholds.
- *
- * @api
  */
 final readonly class PipelineSpecLinkResolver
 {

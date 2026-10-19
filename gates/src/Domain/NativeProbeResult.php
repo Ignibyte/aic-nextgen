@@ -6,8 +6,6 @@ namespace Gates\Domain;
 
 /**
  * The result of probing one runtime class natively (gate:21).
- *
- * @api
  */
 final readonly class NativeProbeResult
 {

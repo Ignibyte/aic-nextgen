@@ -22,8 +22,6 @@ use function sort;
  *
  * `classmap` and `files` autoload entries are ignored — gate:3 is
  * scoped to PSR-4 source like the rest of the AIC monorepo.
- *
- * @api
  */
 final readonly class PhpSourceCollector
 {

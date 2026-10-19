@@ -31,8 +31,6 @@ use const STDOUT;
  * The managed native packages (pcre2, oniguruma) are pinned in
  * `gates/native/elephc.toml` and `elephc.lock`, copied into the work
  * directory `.native-gate/`, where elephc finds them by ancestor walk.
- *
- * @api
  */
 final readonly class NativeCompileGate
 {

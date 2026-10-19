@@ -23,8 +23,6 @@ use const JSON_THROW_ON_ERROR;
  *   2. The project-level allowlist in `.composer-require-checker.json`'s
  *      `symbol-whitelist` field. Missing or unreadable files silently fall
  *      back to `ALWAYS_OK`.
- *
- * @api
  */
 final readonly class RequireCheckerAllowlist
 {

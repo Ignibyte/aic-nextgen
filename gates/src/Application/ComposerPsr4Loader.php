@@ -17,8 +17,6 @@ use function is_string;
  *
  * The file is PHP that returns an array, so it is loaded with `require`; the
  * gate tooling runs interpreted, outside the native corpus.
- *
- * @api
  */
 final readonly class ComposerPsr4Loader
 {

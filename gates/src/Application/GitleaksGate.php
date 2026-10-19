@@ -19,8 +19,6 @@ use const STDOUT;
  * `~/.local/bin` → `command -v` PATH lookup) and invokes it via the
  * {@see ProcessRunner} seam. Fails loudly if no binary is found rather than
  * silently passing.
- *
- * @api
  */
 final readonly class GitleaksGate
 {

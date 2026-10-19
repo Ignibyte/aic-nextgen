@@ -6,8 +6,6 @@ namespace Gates\Domain;
 
 /**
  * What one PHP source file declares and refers to, as the native gate (gate:21) reads it.
- *
- * @api
  */
 final readonly class SourceSymbols
 {

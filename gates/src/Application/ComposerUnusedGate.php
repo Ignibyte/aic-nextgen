@@ -22,8 +22,6 @@ use const STDOUT;
  * no PHP file, every require is unused by definition, so the gate defers and
  * says so instead of failing or filtering the requires away. It runs in full
  * once the demo app has code.
- *
- * @api
  */
 final readonly class ComposerUnusedGate
 {

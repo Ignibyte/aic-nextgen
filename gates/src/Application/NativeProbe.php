@@ -34,8 +34,6 @@ use const PHP_EOL;
  * forces whole-program lowering: upstream elephc prunes every declaration the
  * entry point cannot reach, and without it the probe would lower almost
  * nothing. Neither PHP nor the binary takes the branch.
- *
- * @api
  */
 final readonly class NativeProbe
 {

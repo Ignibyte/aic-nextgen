@@ -11,8 +11,6 @@ namespace Gates\Application;
  * is `aic/framework`, path-installed into the root. Normalize (gate:1), the
  * require allow-list (gate:2) and the require-checker (gate:3) all read this
  * one list, so a third manifest is added in one place.
- *
- * @api
  */
 final readonly class ProjectManifests
 {

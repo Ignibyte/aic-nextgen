@@ -24,8 +24,6 @@ use const STDOUT;
  * blocks at install-time) and Psalm taint analysis (gate:13). Composer 2.9.x's
  * `--abandoned=fail` is unreliable for transitive abandoned deps, so abandoned
  * packages are reported but never block on their own.
- *
- * @api
  */
 final readonly class ComposerAuditGate
 {

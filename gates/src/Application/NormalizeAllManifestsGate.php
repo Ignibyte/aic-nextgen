@@ -27,8 +27,6 @@ use const STDOUT;
  * Exit code is the number of manifests with drift (or 1 when invocation
  * itself fails). Per-manifest output is streamed through verbatim so
  * developers see the canonical diff that composer-normalize emits.
- *
- * @api
  */
 final readonly class NormalizeAllManifestsGate
 {

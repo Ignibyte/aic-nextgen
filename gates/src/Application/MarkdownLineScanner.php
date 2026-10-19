@@ -30,8 +30,6 @@ use const DIRECTORY_SEPARATOR;
  *
  * Split from `DocTodosGate` to keep the gate class under PHPMD's
  * ExcessiveClassLength threshold. Stateless and side-effect-free.
- *
- * @api
  */
 final readonly class MarkdownLineScanner
 {

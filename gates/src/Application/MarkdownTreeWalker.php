@@ -21,8 +21,6 @@ use function str_replace;
  *
  * Directories are skipped by name (vendor, caches) or by their path under the
  * root (the private `docs/planning`), so a gate never descends into them.
- *
- * @api
  */
 final readonly class MarkdownTreeWalker
 {

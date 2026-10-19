@@ -13,8 +13,6 @@ use function set_error_handler;
  *
  * The gates report an unreadable file as their own finding, so the warning
  * `file_get_contents()` would raise is captured and the caller decides.
- *
- * @api
  */
 final readonly class QuietFileReader
 {

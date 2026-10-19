@@ -22,8 +22,6 @@ use const PHP_EOL;
  *
  * Shared so the binary lookup (known paths first, then the PATH) and the
  * run-and-echo step live in one place.
- *
- * @api
  */
 final readonly class ExternalTool
 {
