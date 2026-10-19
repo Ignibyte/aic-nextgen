@@ -46,7 +46,7 @@ final readonly class PlaceholderPage implements RequestHandlerInterface
             : 'no';
 
         return $this->htmlResponder->respond(
-            '<p>The FrankenPHP worker is serving. The kernel arrives with #21.</p><dl>'
+            '<p>The FrankenPHP worker is serving through the AIC kernel.</p><dl>'
             . self::item('app-name', 'App name (config/app.php)', $this->appConfig->name)
             . self::item('worker-mode', 'Worker mode', $workerMode)
             . self::item('worker-booted', 'Worker booted', $this->bootedAt)
