@@ -43,6 +43,9 @@ core.*
 # pinned external binaries
 /tools/gitleaks
 
+# native gate work directory (gate:21)
+/.native-gate/
+
 # editor / OS noise
 /.idea/
 /.vscode/

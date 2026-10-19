@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+use Gates\Application\NativeCompileGate;
+use Gates\Application\NativeProbe;
+use Gates\Application\NativeToolchain;
+use Gates\Infrastructure\SystemProcessRunner;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+/*
+ * gate:21 — the native gate. The environment is read here, at the boundary:
+ * ELEPHC_BIN overrides the fork's in-place binary, and the child processes
+ * get the full environment plus a run-local runtime cache and the shared
+ * native-package cache.
+ */
+$root = dirname(__DIR__);
+$elephc = getenv('ELEPHC_BIN');
+$env = getenv();
+$env['XDG_CACHE_HOME'] = $root . '/.native-gate/.cache';
+$nativeCache = getenv('ELEPHC_NATIVE_CACHE');
+$env['ELEPHC_NATIVE_CACHE'] = is_string($nativeCache) && $nativeCache !== ''
+    ? $nativeCache
+    : '/mnt/fast/cache/elephc-native';
+
+$toolchain = new NativeToolchain(
+    new SystemProcessRunner(),
+    is_string($elephc) && $elephc !== '' ? $elephc : '/srv/stacks/elephc/target/release/elephc',
+    $env,
+);
+
+exit((new NativeCompileGate($toolchain, new NativeProbe($toolchain)))->run($root));

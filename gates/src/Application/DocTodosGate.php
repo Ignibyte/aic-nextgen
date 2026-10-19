@@ -56,6 +56,7 @@ final readonly class DocTodosGate
         '.claude',
         '.ddev',
         '.playwright-mcp',
+        '.native-gate',
         '.psalm-cache',
         '.rector-cache',
         'tools',

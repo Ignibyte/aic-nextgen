@@ -33,6 +33,7 @@ final readonly class SemgrepGate
         '.ddev',
         '.claude',
         '.playwright-mcp',
+        '.native-gate',
         '.psalm-cache',
         '.rector-cache',
         'docs',
