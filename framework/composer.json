@@ -1,0 +1,16 @@
+{
+    "name": "aic/framework",
+    "description": "Absolute Insanity, AI (AIAI): the framework, one namespace per system under AIC\\.",
+    "license": "MIT",
+    "type": "library",
+    "require": {
+        "php": "^8.5"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "AIC\\": "src/"
+        }
+    }
+}

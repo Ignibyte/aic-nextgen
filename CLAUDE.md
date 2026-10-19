@@ -13,8 +13,9 @@ the ten systems, the milestones) and `plan.md` (the decisions and the port map f
 
 ## Status
 
-Prep only: no framework code, no composer, no gates yet. Ticket #1 (the workspace skeleton) is
-next, then #2 (gates), #14 (the native gate) and #3 (the workflow commands and hooks).
+The workspace is up (#1): composer with the `framework/` path package, DDEV with FrankenPHP and
+Postgres 17, and `public/worker.php` serving a placeholder. No framework classes and no gates
+yet. Next: #2 (gates), #14 (the native gate), #3 (the workflow commands and hooks).
 
 ## Five kinds
 
@@ -31,7 +32,10 @@ class implement exactly one, and the build writes a manifest of every entry poin
 - **FrankenPHP worker mode** is the only runtime: `public/worker.php` loops
   `frankenphp_handle_request()`. One request per worker at a time; per-request state lives behind
   `RequestScopeInterface` and is reset between requests. No Swoole, no FPM, no coroutines.
-- Postgres 17 through DDEV.
+- Postgres 17 through DDEV. FrankenPHP is DDEV's web server through the `ddev/ddev-frankenphp`
+  add-on (generic webserver, PHP 8.5 ZTS). Keep the add-on's own files unedited; project settings
+  go in `.ddev/docker-compose.frankenphp_extra.yaml` (worker mode) and
+  `.ddev/config.zz-router-ports.yaml` (the box's router ports, 8880/8843).
 - PSR at every seam (PSR-3 is gone with logging; PSR-4, 7, 11, 14 if events survive, 15, 17).
 
 ## Layout (working decision, ticket #1)
