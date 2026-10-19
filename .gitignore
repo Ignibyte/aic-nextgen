@@ -1,0 +1,53 @@
+# The private planning repo (Ignibyte/aic-planning), a checkout of its own
+/docs/planning/
+
+# vendor / build artifacts
+/vendor/
+/framework/vendor/
+/composer.lock
+node_modules/
+/dist/
+
+# crash debris
+/core
+core.*
+
+# Claude Code local state
+/.claude/scheduled_tasks.lock
+/.claude/scheduled_tasks.json
+/.claude/settings.local.json
+/.claude/worktrees/
+
+# owner-managed MCP config (Playwright); never committed
+/.mcp.json
+/.mcp.json.bak
+
+# tool caches
+/.psalm-cache/
+/.rector-cache/
+/.rector.cache
+/.phpcs-cache
+/.phpmd.result-cache.php
+/.deptrac.cache
+/.php-cs-fixer.cache
+
+# storage runtime
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+!.gitkeep
+
+# pinned external binaries
+/tools/gitleaks
+
+# editor / OS noise
+/.idea/
+/.vscode/
+.DS_Store
+*.swp
+*~
+*.log
+
+# env
+/.env
+/.env.*

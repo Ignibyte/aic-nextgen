@@ -1,0 +1,107 @@
+# CLAUDE.md — AIC nextgen
+
+## What this is
+
+The fresh start of **AIC** (Absolute Insanity, AI; AIAI), Ignibyte's AI-first, CMS-slim PHP
+framework. Old AIC (`/srv/stacks/aic`, `Ignibyte/aic`) grew to 43 wards; on 2026-10-18 Chad
+decided to start over with only what earns its place and move it across by copying and
+trimming. This repo, `Ignibyte/aic-nextgen` (private), replaces `Ignibyte/aic` at cutover
+(ticket #11). Old AIC is the archive and the reference, pinned at main `e0778896`.
+
+**Read `docs/planning/plan.md` first.** It holds the decisions, the nine systems, the port map
+from old wards and the order of work.
+
+## Status
+
+Prep only: no framework code, no composer, no gates yet. Ticket #1 (the workspace skeleton) is
+next, then #2 (gates) and #3 (the workflow commands and hooks).
+
+## Stack
+
+- PHP **8.5**, strict types everywhere.
+- **FrankenPHP worker mode** is the only runtime: `public/worker.php` loops
+  `frankenphp_handle_request()`. One request per worker at a time; per-request state lives behind
+  `RequestScopeInterface` and is reset between requests. No Swoole, no FPM, no coroutines.
+- Postgres 17 through DDEV.
+- PSR at every seam (PSR-3 is gone with logging; PSR-4, 7, 11, 14 if events survive, 15, 17).
+
+## Layout (working decision, ticket #1)
+
+- One package, **`aic/framework`**, in `framework/`, namespace `AIC\` with one namespace per
+  system (`AIC\Http`, `AIC\Routing`, `AIC\Entity`, ...). It reaches the root through a composer
+  path repository and moves to its own repo when published.
+- The repo root is the demo app, `aic/app`, namespace `App\`, under `app/`.
+- One project theme at `theme/` renders into `public/`.
+- No `aic/ward-*` packages, no metapackage, no ward manifests.
+
+## Tickets and planning
+
+`docs/planning/` is the private repo **`Ignibyte/aic-planning`**, a git checkout of its own that
+this repo ignores. It holds `plan.md` and `tickets/` (one `NNNN-slug.md` per ticket, numbered from
+#1). **`bin/ticket.sh`** is the interface (`list`, `show`, `next`, `create`, `update`,
+`comment`, `close`); format in `docs/planning/tickets/README.md`.
+
+Ticket changes are committed and pushed in `docs/planning`, not here. Old AIC's tickets are
+"AIC #N".
+
+## Workflow
+
+Four phases: **Plan** (spec, design, file list, browser checks for UI work; Chad confirms),
+**Code** (no tests; browser-testable work is checked live with the Playwright MCP), **Quality
+checks** (`composer run gate` until green, the only gate run), **Documentation** (docs, plan
+updates, changelog, then delivery). AIC writes **no unit, mutation, coverage or regression
+tests**; an invariant that must hold ships as a static guard (PHPStan, phpat or semgrep rule)
+proven to bite by planting a violation.
+
+Until #3 ports the `/work` and `/pipeline:*` commands, work #1 to #3 by hand in the same four
+phases: record the Plan as a ticket comment and get Chad's OK before coding.
+
+Delivery: a branch named for the ticket (`chore/skeleton-1`), a commit and a PR here, the ticket
+update committed and pushed in `docs/planning`. Every commit is pushed with a PR; once the PR
+exists, **ask before merging** unless Chad already said to merge. Reports are terse: what was
+done, what failed or was split off, what to check by hand.
+
+## Porting from old AIC
+
+- Copy from `/srv/stacks/aic` at `e0778896` and trim. Never require an old `aic/ward-*` package.
+- Cut every edge to a removed system on the way in (the list is in `plan.md`). A class that only
+  served a removed system stays behind.
+- Keep native-compilation discipline from the first commit: build-time manifests, no
+  runtime-dynamic `require`/`include`, the build-time reflection registry, no static
+  cross-request state.
+
+## Quality gates (binding)
+
+The code-only gate suite arrives with #2 and runs on the host as `composer run gate`. **No
+baselines. No suppressions. Source fixes only.** PHPStan level 10, PHPMD all rulesets, PHPCS
+slevomat, Psalm with taint, Deptrac and phpat for the architecture.
+
+## Code conventions (binding)
+
+Every file:
+
+- `declare(strict_types=1);`
+- One class, interface, enum or trait per file.
+- A class docblock, and a docblock with `@param`/`@return`/`@throws` on every public and
+  protected method.
+- All properties typed; `readonly` unless mutation is essential.
+- All parameters and returns typed, including `void` and `never`.
+- No `mixed`. No untyped arrays: `array<TKey, TValue>` in phpdoc.
+- `final` by default; `abstract` only when designed for extension.
+- No `static` caches, no globals, no singletons: a worker serves request after request, and
+  static state leaks between them.
+- No `new` in business logic; the container wires.
+- PSR interfaces at every seam.
+
+## On this box
+
+- `.mcp.json` is owner-managed (the Playwright MCP server). Never write or overwrite it; it is
+  gitignored here.
+- Never `git stash -u`: it takes the untracked `.mcp.json` with it.
+- `grep` here is ugrep: BRE `\|` alternation silently matches nothing. Use `grep -E` or the Grep
+  tool, and never conclude "unused" from a grep alone.
+- Never grep or walk the whole filesystem or `$HOME`; scope searches to the project.
+- Edit `composer.json` with targeted edits, never a JSON dump and rewrite (it reindents and
+  escapes unicode).
+- The elephc compiler (`/srv/stacks/elephc`, carry workflow in its `FORK.md`) is paused until
+  cutover.
