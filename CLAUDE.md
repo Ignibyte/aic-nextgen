@@ -15,8 +15,9 @@ the ten systems, the milestones) and `plan.md` (the decisions and the port map f
 
 The workspace is up (#1): composer with the `framework/` path package, DDEV with FrankenPHP and
 Postgres 17, and `public/worker.php` serving a placeholder. The gate suite is in (#2):
-`composer run gate`, 22 gates, the native gate (gate:21, #14) among them. The first runtime class
-is `AIC\Routing\Domain\Method`. Next: #3 (the workflow commands and hooks), then #4.
+`composer run gate`, 23 gates, the native gate (gate:21, #14) among them. The first runtime class
+is `AIC\Routing\Domain\Method`. The four-phase workflow is in (#3): `CONSTITUTION.md`, the
+commands in `.claude/commands/`, the hooks in `.claude/hooks/`. Milestone M0 is done; next is #4.
 
 ## Five kinds
 
@@ -60,6 +61,9 @@ Ticket changes are committed and pushed in `docs/planning`, not here. Old AIC's 
 
 ## Workflow
 
+**Read `CONSTITUTION.md`**: its rules bind, §0 (gates) and §14 (code standards) above all. Start
+work with `/work <ticket>`; a trivial change takes `/work-lite`.
+
 Four phases: **Plan** (spec, design, file list, browser checks for UI work; Chad confirms),
 **Code** (no tests; browser-testable work is checked live in a browser on this box, see On this box), **Quality
 checks** (`composer run gate` until green, the only gate run), **Documentation** (docs, plan
@@ -73,8 +77,12 @@ code into a compilable form first; legal PHP that elephc rejects or miscompiles 
 carry (the `elephc-carry` workflow, a ticket in `docs/planning`). The handoff lists the friction
 to expect and the toolchain rules.
 
-Until #3 ports the `/work` and `/pipeline:*` commands, work #1, #2, #14 and #3 by hand in the same
-four phases: record the Plan as a ticket comment and get Chad's OK before coding.
+The commands are `/pipeline:plan`, `/pipeline:implement`, `/pipeline:check` and
+`/pipeline:complete`, then `/commit`. Each pipeline is a spec and notes pair in
+`docs/planning/pipeline/active/`, from `_templates/`, archived to `completed/` at delivery. The
+hooks act while a workflow command runs: the phase gate, each phase's write scope, docs before
+code, and each phase's evidence before Stop. "Auto approve" or "back to back" means run the
+phases through without stopping for confirmation.
 
 Delivery: a branch named for the ticket (`chore/skeleton-1`), a commit and a PR here, the ticket
 update committed and pushed in `docs/planning`. Every commit is pushed with a PR. **Claude merges
@@ -99,6 +107,8 @@ or was split off, what to check by hand.
 failure, so one run names every failing gate. A gate that cannot run in full yet *defers* and
 says why; the summary names each deferral, and a deferral is not coverage.
 
+The settings of each gate are in `CONSTITUTION.md` §0.
+
 | # | Gate | # | Gate |
 |---|---|---|---|
 | 0 | composer audit (installed packages) | 11 | PHPCS, PSR-12 + slevomat |
@@ -112,6 +122,7 @@ says why; the summary names each deferral, and a deferral is not coverage.
 | 8 | PHPStan level 10, bleeding edge | 19 | docs: no `(TODO)`, no dead links |
 | 9 | phpat, `gates/architecture/` | 20 | captainhook hooks installed |
 | 10 | PHPMD, every ruleset | 21 | native: elephc compile, link, run, match PHP |
+| | | 22 | pipeline docs: frontmatter, line caps, links |
 
 - The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
   `App\`; a phpat rule keeps runtime code from depending on it.
