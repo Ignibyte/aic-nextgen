@@ -31,7 +31,9 @@ write themselves through `ResponseWriter`, guarded by phpat; the app's entry poi
 filled by service providers; a custom PHPStan rule checks a tagged plugin implements its type. M1
 is done. #6, the database, runs as four slices (#28 to #31); #28: `AIC\Database` (a `Database`
 contract, `PdoDatabase` over PDO pgsql, typed config from DDEV's `PG*` environment); `/api/status`
-reports the server's version. Next is #29 (the Command kind and the console).
+reports the server's version. #29: the Command kind (`Command`, the sealed `CommandResult` written
+through `CommandWriter`), `AIC\Console` and `bin/aic` with `db:ping` and `greet`. Next is #30
+(schema and migrations).
 
 ## Five kinds
 

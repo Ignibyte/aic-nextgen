@@ -35,6 +35,7 @@
         <directory name="public"/>
         <directory name="config"/>
         <directory name="bin"/>
+        <file name="bin/aic"/>
         <file name="bin/aic-build"/>
         <directory name="gates"/>
         <ignoreFiles>

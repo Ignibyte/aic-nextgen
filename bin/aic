@@ -1,0 +1,45 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+ * bin/aic: the console entry point (`bin/aic <command> [arguments]`).
+ *
+ * It reads config/database.php, wires the app's commands (App\ConsoleCommands,
+ * the console's composition root) and runs the command line through the
+ * console. Output goes to STDOUT, a line at a time, through the CommandWriter
+ * below; the exit code is the command's. With no command, or an unknown one, it
+ * lists the commands and exits 2. The database connection opens on the first
+ * query, so a command that does not query runs without one.
+ */
+
+use AIC\Console\Application\Console;
+use AIC\Controller\Contracts\CommandWriter;
+use AIC\Database\Domain\DatabaseConfig;
+use AIC\Database\Infrastructure\PdoDatabase;
+use App\AppPlugins;
+use App\AppProvider;
+use App\ConsoleCommands;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$databaseConfig = require __DIR__ . '/../config/database.php';
+
+if (!$databaseConfig instanceof DatabaseConfig) {
+    throw new RuntimeException('config/database.php must return an ' . DatabaseConfig::class . '.');
+}
+
+$consoleCommands = new ConsoleCommands(new PdoDatabase($databaseConfig), new AppPlugins(new AppProvider()));
+$console = new Console($consoleCommands->byName());
+
+exit($console->run($argv ?? [], new class () implements CommandWriter {
+    /**
+     * @param string $text One line, without its line break.
+     */
+    #[Override]
+    public function line(string $text): void
+    {
+        fwrite(STDOUT, $text . "\n");
+    }
+}));
