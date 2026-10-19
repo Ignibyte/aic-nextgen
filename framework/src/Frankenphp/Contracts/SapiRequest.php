@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AIC\Frankenphp\Domain;
+namespace AIC\Frankenphp\Contracts;
 
 /**
  * One request as the SAPI gave it: the server params, narrowed to scalars by the

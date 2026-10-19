@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace AIC\Frankenphp\Infrastructure;
 
-use AIC\Frankenphp\Domain\SapiRequest;
+use AIC\Frankenphp\Contracts\RequestExtractor;
+use AIC\Frankenphp\Contracts\SapiRequest;
 use AIC\Http\Domain\InputParser;
 use InvalidArgumentException;
+use Override;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -30,7 +32,7 @@ use function ucwords;
  * from the `Cookie` header, and form fields from an urlencoded body. A multipart
  * body is not parsed here: uploads and their checks arrive with #8.
  */
-final readonly class SapiRequestExtractor
+final readonly class SapiRequestExtractor implements RequestExtractor
 {
     /**
      * The media type of an urlencoded form body.
@@ -60,6 +62,7 @@ final readonly class SapiRequestExtractor
      *
      * @return ServerRequestInterface The PSR-7 request.
      */
+    #[Override]
     public function extract(SapiRequest $sapiRequest): ServerRequestInterface
     {
         $server = $sapiRequest->server;

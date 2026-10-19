@@ -22,7 +22,10 @@ five vertical slices (#18 to #22). #18: config is typed (`config/app.php` return
 (`AIC\Http`), and the SAPI request and response (`AIC\Frankenphp`); the worker answers through
 them, 400 on input that does not fit the field shapes. #19: routing (`AIC\Routing`, routes in
 `config/routes.php`) and the PSR-15 stack (`AIC\Middleware`), with 404 and 405; the app's first
-handlers are in `app/Http`, so every gate runs, none deferred. Next is #21.
+handlers are in `app/Http`, so every gate runs, none deferred. #21: the kernel
+(`AIC\Kernel\Application\Kernel::serve()`, with 400 and 500 boundaries) and the composition root
+(`App\AppServices`, on the framework's `SapiServices`); the worker builds both once and emits
+each response. Next is #22, the kinds.
 
 ## Five kinds
 
@@ -160,7 +163,7 @@ Every file:
 - `final` by default; `abstract` only when designed for extension.
 - No `static` caches, no globals, no singletons: a worker serves request after request, and
   static state leaks between them.
-- No `new` in business logic; the container wires.
+- No `new` in business logic; the composition root wires (`app/AppServices.php`).
 - PSR interfaces at every seam.
 
 ## On this box

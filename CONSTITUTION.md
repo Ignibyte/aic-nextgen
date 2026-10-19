@@ -119,7 +119,7 @@ Every PHP file:
 7. No `mixed`. Genericity goes in phpdoc (`array<string, Foo>`, `list<T>`). The one exception is a method marked `#[Override]` whose PSR interface dictates `mixed` (PSR-7's `getAttribute`, `withQueryParams(array $query)`): PHPCS and semgrep both exempt such overrides, and nothing else.
 8. `final` by default; `abstract` only when an extension hierarchy is intended.
 9. Modern PHP 8.5: `match` over `switch`, enums over class constants, first-class callables, named arguments where they read better.
-10. No `new` in business logic: the container wires.
+10. No `new` in business logic: the composition root wires (`App\AppServices`, with the framework's `SapiServices`), in typed code.
 11. No `env()` outside `config/`; no `getenv()` in runtime code.
 12. No `global`, no `$GLOBALS`, no superglobals outside the SAPI entry point (`public/worker.php`).
 13. No suppression annotations (`@phpstan-ignore`, `@psalm-suppress`, `@phpcs:ignore`, `@phpmd:*`).
@@ -151,5 +151,6 @@ This Constitution is amended by editing this file through the four phases (`/pip
 
 ### Amendment log
 
+- **2026-10-19 — Wiring is code (#21).** §14 rule 10 names the composition root, not a container, as what wires: constructors and readonly properties, typed throughout and compiled natively. The rule against `new` in business logic is unchanged. The PSR-11 container arrives with plugins (#5).
 - **2026-10-19 — PSR overrides (#20, Chad's decision).** §14 rule 7 names its one exception: a `#[Override]` method whose PSR interface dictates `mixed`. PHPStan accepts only `array<mixed>` as the contravariant phpdoc of PSR-7's `array` parameters, PHPCS `DisallowMixedTypeHint` already exempted overrides, and semgrep's `aic-no-mixed-in-phpdoc-template` now does the same, bite-checked both ways.
 - **2026-10-19 — nextgen (#3).** Ported from old AIC's Constitution at `e0778896` and trimmed to one package: the ward, Swoole and Forge history stays in the archive; the gates are renumbered from gate:0 with no gaps (#2, #14, #3); §3 restated for the FrankenPHP worker and native compilation from the first class; §4 collects the workflow rules old AIC cited as §9, §11, §15 and §16; §18.3 and §18.4 (the retired inspection checkpoint and worktrees) dropped.
