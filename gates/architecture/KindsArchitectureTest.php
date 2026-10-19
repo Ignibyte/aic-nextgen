@@ -12,8 +12,8 @@ use PHPat\Test\PHPat;
  * The five kinds (gate:9): every entry point is exactly one kind, and each
  * kind's response type is sealed. Classes are named by regex: the
  * architecture layer depends on phpat alone (Deptrac), and Rector turns a
- * plain class-name string back into `::class`. Page, Api and Stream so far; Command (#6) and
- * Job (#13) join with their tickets.
+ * plain class-name string back into `::class`. Page, Api, Stream and Command so far; Job (#13)
+ * joins with its ticket.
  */
 final class KindsArchitectureTest
 {
@@ -30,6 +30,7 @@ final class KindsArchitectureTest
                 Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\Page$/', true),
                 Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\Api$/', true),
                 Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\Stream$/', true),
+                Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\Command$/', true),
             ))
             ->shouldNot()
             ->exist()
@@ -48,7 +49,7 @@ final class KindsArchitectureTest
             ->shouldNot()
             ->implement()
             ->classes(Selector::classname('/^Psr\\\\Http\\\\Server\\\\RequestHandlerInterface$/', true))
-            ->because("an app entry point is a Page, an Api or a Stream; the framework wraps it in its kind's handler.");
+            ->because("an app entry point is a Page, an Api, a Stream or a Command; the framework wraps it in its kind's handler.");
     }
 
     /**
@@ -65,6 +66,7 @@ final class KindsArchitectureTest
                     Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\PageResponse$/', true),
                     Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\ApiResponse$/', true),
                     Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\StreamResponse$/', true),
+                    Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\CommandResponse$/', true),
                 ),
                 Selector::Not(Selector::inNamespace('AIC\\Controller\\Domain')),
             ))

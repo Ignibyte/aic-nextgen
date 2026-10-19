@@ -16,6 +16,7 @@ parameters:
         - public
         - config
         - bin
+        - bin/aic
         - bin/aic-build
         - gates/src
     excludePaths:
