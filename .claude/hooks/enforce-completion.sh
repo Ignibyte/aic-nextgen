@@ -56,18 +56,18 @@ FILE_PATHS=$(extract_file_tool_paths_with_subagents "$TRANSCRIPT_PATH")
 BASH_COMMANDS=$(extract_bash_commands "$TRANSCRIPT_PATH")
 
 did_local_recall() {
-    echo "$FILE_PATHS" | grep -qE '(^|/)docs/|MEMORY|/memory/' && return 0
-    echo "$BASH_COMMANDS" | grep -qE 'bin/ticket\.sh|(^|[ /])docs/' && return 0
+    grep -qE '(^|/)docs/|MEMORY|/memory/' <<< "$FILE_PATHS" && return 0
+    grep -qE 'bin/ticket\.sh|(^|[ /])docs/' <<< "$BASH_COMMANDS" && return 0
     tool_was_called "$TOOL_CALLS" "Agent" && return 0
     return 1
 }
 
 ticket_op_ran() {
-    echo "$BASH_COMMANDS" | grep -qE "bin/ticket\.sh[\"']? +$1"
+    grep -qE "bin/ticket\.sh[\"']? +$1" <<< "$BASH_COMMANDS"
 }
 
 ran_full_gate() {
-    echo "$BASH_COMMANDS" | grep -qE 'composer run gate($|[^:])|bin/gate-runner\.sh'
+    grep -qE 'composer run gate($|[^:])|bin/gate-runner\.sh' <<< "$BASH_COMMANDS"
 }
 
 notes_has_aar() {
@@ -98,10 +98,10 @@ case "${COMMAND_NAME:-$LATEST}" in
         if ! notes_has_aar; then
             MISSING+=("notes.md AAR — write an '## AAR' section in the active notes.md: failures, decisions, outcome, lessons worth keeping. [CONSTITUTION.md §4]")
         fi
-        if ! echo "$BASH_COMMANDS" | grep -qE 'gate:19|gate-doc-todos\.php'; then
+        if ! grep -qE 'gate:19|gate-doc-todos\.php' <<< "$BASH_COMMANDS"; then
             MISSING+=("composer run gate:19 — Documentation ends with the docs gate (dead links, TODO markers).")
         fi
-        if ! echo "$BASH_COMMANDS" | grep -qE 'gate:22|gate-pipeline-spec-sync\.php'; then
+        if ! grep -qE 'gate:22|gate-pipeline-spec-sync\.php' <<< "$BASH_COMMANDS"; then
             MISSING+=("composer run gate:22 — Documentation ends with the pipeline-doc gate.")
         fi
         ;;
