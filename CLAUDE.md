@@ -15,13 +15,14 @@ the ten systems, the milestones) and `plan.md` (the decisions and the port map f
 
 The workspace is up (#1): composer with the `framework/` path package, DDEV with FrankenPHP and
 Postgres 17, and `public/worker.php` serving a placeholder. The gate suite is in (#2):
-`composer run gate`, 23 gates, the native gate (gate:21, #14) among them; gate:3's root manifest
-and gate:4 defer while `app/` is empty. The four-phase workflow is in (#3): `CONSTITUTION.md`,
+`composer run gate`, 23 gates, the native gate (gate:21, #14) among them. The four-phase workflow is in (#3): `CONSTITUTION.md`,
 the commands in `.claude/commands/`, the hooks in `.claude/hooks/`. #4, the foundation, runs as
 five vertical slices (#18 to #22). #18: config is typed (`config/app.php` returns an
 `AIC\Config\Domain\AppConfig`, read by the worker at boot). #20: PSR-7/17 with typed input
 (`AIC\Http`), and the SAPI request and response (`AIC\Frankenphp`); the worker answers through
-them, 400 on input that does not fit the field shapes. Next is #19.
+them, 400 on input that does not fit the field shapes. #19: routing (`AIC\Routing`, routes in
+`config/routes.php`) and the PSR-15 stack (`AIC\Middleware`), with 404 and 405; the app's first
+handlers are in `app/Http`, so every gate runs, none deferred. Next is #21.
 
 ## Five kinds
 

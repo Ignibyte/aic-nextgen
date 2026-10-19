@@ -10,9 +10,10 @@ declare(strict_types=1);
  * At boot it reads the app's config (config/app.php, a typed AppConfig) and
  * wires the HTTP pieces. Each request is narrowed here, the one place the
  * superglobals are read, into a SapiRequest; the extractor makes the PSR-7
- * request, and the response goes out through the emitter. Until the kernel
- * arrives (#21), every path answers with a placeholder page that shows what the
- * request carried; input that does not fit the typed field shapes answers 400.
+ * request, a PSR-15 stack answers it (the route errors around the router, which
+ * hands each route's handler the request), and the response goes out through
+ * the emitter. The routes are in config/routes.php. Input that does not fit the
+ * typed field shapes answers 400. The kernel takes this wiring over in #21.
  *
  * Outside FrankenPHP (a lint pass, a plain `php` run) the function does not
  * exist and the file returns without serving anything.
@@ -23,13 +24,20 @@ use AIC\Frankenphp\Contracts\SapiSink;
 use AIC\Frankenphp\Domain\SapiRequest;
 use AIC\Frankenphp\Infrastructure\SapiRequestExtractor;
 use AIC\Frankenphp\Infrastructure\SapiResponseEmitter;
+use AIC\Http\Application\ResponseBuilder;
 use AIC\Http\Application\ResponseFactory;
 use AIC\Http\Application\ServerRequestFactory;
 use AIC\Http\Application\StreamFactory;
 use AIC\Http\Application\UriFactory;
 use AIC\Http\Domain\InputParser;
 use AIC\Http\Domain\MalformedInputException;
-use Psr\Http\Message\ServerRequestInterface;
+use AIC\Middleware\Application\MiddlewareStep;
+use AIC\Routing\Application\RouteErrorMiddleware;
+use AIC\Routing\Application\Router;
+use AIC\Routing\Domain\RouteTable;
+use App\Http\GreetingPage;
+use App\Http\HtmlResponder;
+use App\Http\PlaceholderPage;
 
 if (!function_exists('frankenphp_handle_request')) {
     return;
@@ -43,7 +51,12 @@ if (!$appConfig instanceof AppConfig) {
     throw new RuntimeException('config/app.php must return an ' . AppConfig::class . '.');
 }
 
-$appName = htmlspecialchars($appConfig->name);
+$routes = require __DIR__ . '/../config/routes.php';
+
+if (!$routes instanceof RouteTable) {
+    throw new RuntimeException('config/routes.php must return an ' . RouteTable::class . '.');
+}
+
 $bootedAt = gmdate('Y-m-d\\TH:i:s\\Z');
 
 $uriFactory = new UriFactory();
@@ -85,62 +98,15 @@ $emitter = new SapiResponseEmitter(new class () implements SapiSink {
     }
 });
 
-/**
- * Render the query fields as list items, one per `name=value` pair as a query
- * string would carry it (`tags[0]=a`, `opt[k]=v`).
- *
- * @param ServerRequestInterface $request The request.
- *
- * @return string The `<li>` items.
- */
-$queryItems = static function (ServerRequestInterface $serverRequest): string {
-    $encoded = http_build_query($serverRequest->getQueryParams());
-
-    $items = '';
-
-    foreach ($encoded === '' ? [] : explode('&', $encoded) as $pair) {
-        $items .= '<li>' . htmlspecialchars(urldecode($pair)) . '</li>';
-    }
-
-    return $items;
-};
-
-/**
- * Render the placeholder page for a request.
- *
- * @param ServerRequestInterface $request The request.
- *
- * @return string The page.
- */
-$page = static function (ServerRequestInterface $serverRequest) use ($appName, $bootedAt, $queryItems): string {
-    $workerMode = array_key_exists('FRANKENPHP_WORKER', $serverRequest->getServerParams())
-        ? 'yes'
-        : 'no';
-    $method = htmlspecialchars($serverRequest->getMethod());
-    $path = htmlspecialchars($serverRequest->getUri()->getPath());
-
-    return <<<HTML
-        <!doctype html>
-        <html lang="en">
-        <head>
-        <meta charset="utf-8">
-        <title>{$appName}</title>
-        </head>
-        <body>
-        <h1>{$appName}</h1>
-        <p>The FrankenPHP worker is serving. The kernel arrives with #21.</p>
-        <dl>
-        <dt>App name (config/app.php)</dt><dd id="app-name">{$appName}</dd>
-        <dt>Worker mode</dt><dd id="worker-mode">{$workerMode}</dd>
-        <dt>Worker booted</dt><dd id="worker-booted">{$bootedAt}</dd>
-        <dt>Request method</dt><dd id="request-method">{$method}</dd>
-        <dt>Request path</dt><dd id="request-path">{$path}</dd>
-        </dl>
-        <ul id="query">{$queryItems($serverRequest)}</ul>
-        </body>
-        </html>
-        HTML;
-};
+$responses = new ResponseBuilder($responseFactory, $streamFactory);
+$htmlResponder = new HtmlResponder($responses, $appConfig);
+$stack = new MiddlewareStep(
+    new RouteErrorMiddleware($responses),
+    new Router($routes, [
+        GreetingPage::class => new GreetingPage($htmlResponder),
+        PlaceholderPage::class => new PlaceholderPage($htmlResponder, $appConfig, $bootedAt),
+    ]),
+);
 
 /**
  * Narrow this request's superglobals into a SapiRequest: the scalar server params
@@ -164,21 +130,19 @@ $sapiRequest = static function (): SapiRequest {
     return new SapiRequest($server, $body === false ? '' : $body);
 };
 
-$serve = static function () use ($extractor, $emitter, $responseFactory, $streamFactory, $page, $sapiRequest): void {
+$serve = static function () use ($extractor, $emitter, $responses, $stack, $sapiRequest): void {
     try {
-        $status = 200;
-        $html = $page($extractor->extract($sapiRequest()));
+        $response = $stack->handle($extractor->extract($sapiRequest()));
     } catch (MalformedInputException $malformedInputException) {
-        $status = 400;
-        $html = '<!doctype html><title>Bad Request</title><h1>Bad Request</h1><p id="error">'
-            . htmlspecialchars($malformedInputException->getMessage()) . '</p>';
+        $response = $responses->create(
+            400,
+            'text/html; charset=utf-8',
+            '<!doctype html><title>Bad Request</title><h1>Bad Request</h1><p id="error">'
+            . htmlspecialchars($malformedInputException->getMessage()) . '</p>',
+        );
     }
 
-    $emitter->emit(
-        $responseFactory->createResponse($status)
-            ->withHeader('Content-Type', 'text/html; charset=utf-8')
-            ->withBody($streamFactory->createStream($html)),
-    );
+    $emitter->emit($response);
 };
 
 while (frankenphp_handle_request($serve)) {
