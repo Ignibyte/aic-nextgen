@@ -32,8 +32,10 @@ filled by service providers; a custom PHPStan rule checks a tagged plugin implem
 is done. #6, the database, runs as four slices (#28 to #31); #28: `AIC\Database` (a `Database`
 contract, `PdoDatabase` over PDO pgsql, typed config from DDEV's `PG*` environment); `/api/status`
 reports the server's version. #29: the Command kind (`Command`, the sealed `CommandResult` written
-through `CommandWriter`), `AIC\Console` and `bin/aic` with `db:ping` and `greet`. Next is #30
-(schema and migrations).
+through `CommandWriter`), `AIC\Console` and `bin/aic` with `db:ping` and `greet`. #30:
+`AIC\Schema` (a fluent table builder, Postgres DDL, forward-only migrations with a checksummed
+ledger), `bin/aic migrate` and `migrate:status`; the demo migration creates `notes`. Next is #31
+(entities, CRUD from a controller).
 
 ## Five kinds
 
