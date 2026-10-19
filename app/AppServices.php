@@ -12,9 +12,7 @@ use AIC\Middleware\Application\MiddlewareStep;
 use AIC\Routing\Application\RouteErrorMiddleware;
 use AIC\Routing\Application\Router;
 use AIC\Routing\Domain\RouteTable;
-use App\Http\GreetingPage;
-use App\Http\HtmlResponder;
-use App\Http\PlaceholderPage;
+use App\Http\AppHandlers;
 
 /**
  * The app's composition root: its handlers by route id, the router, the
@@ -34,6 +32,7 @@ final readonly class AppServices
      * @param RequestExtractor $requestExtractor Makes the PSR-7 request from a SAPI request.
      * @param ResponseBuilder  $responseBuilder  Makes responses.
      * @param string           $bootedAt         When this worker booted, ISO 8601 in UTC.
+     * @param string           $resources        The app's resources directory.
      */
     public function __construct(
         AppConfig $appConfig,
@@ -41,12 +40,10 @@ final readonly class AppServices
         RequestExtractor $requestExtractor,
         ResponseBuilder $responseBuilder,
         string $bootedAt,
+        string $resources,
     ) {
-        $htmlResponder = new HtmlResponder($responseBuilder, $appConfig);
-        $router = new Router($routeTable, [
-            GreetingPage::class => new GreetingPage($htmlResponder),
-            PlaceholderPage::class => new PlaceholderPage($htmlResponder, $appConfig, $bootedAt),
-        ]);
+        $appHandlers = new AppHandlers($appConfig, $responseBuilder, $bootedAt, $resources);
+        $router = new Router($routeTable, $appHandlers->byId());
         $this->kernel = new Kernel(
             $requestExtractor,
             new MiddlewareStep(new RouteErrorMiddleware($responseBuilder), $router),

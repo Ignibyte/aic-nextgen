@@ -10,9 +10,15 @@ declare(strict_types=1);
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\RoutePatternCompiler;
 use App\Http\GreetingPage;
+use App\Http\GreetingPost;
 use App\Http\PlaceholderPage;
+use App\Http\ResourceDownload;
+use App\Http\StatusApi;
 
 return new RouteCollector(new RoutePatternCompiler())
     ->onGet('/', PlaceholderPage::class)
     ->onGet('/hello/{name}', GreetingPage::class)
+    ->onPost('/hello', GreetingPost::class)
+    ->onGet('/api/status', StatusApi::class)
+    ->onGet('/download/{file}', ResourceDownload::class)
     ->table();

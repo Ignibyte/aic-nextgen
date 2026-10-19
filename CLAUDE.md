@@ -25,7 +25,9 @@ them, 400 on input that does not fit the field shapes. #19: routing (`AIC\Routin
 handlers are in `app/Http`, so every gate runs, none deferred. #21: the kernel
 (`AIC\Kernel\Application\Kernel::serve()`, with 400 and 500 boundaries) and the composition root
 (`App\AppServices`, on the framework's `SapiServices`); the worker builds both once and emits
-each response. Next is #22, the kinds.
+each response. #22: the kinds (`AIC\Controller`): Page, Api and Stream with sealed responses that
+write themselves through `ResponseWriter`, guarded by phpat; the app's entry points are all kinds.
+#4 is done. Next is #5 (services and plugins, the PSR-11 container).
 
 ## Five kinds
 

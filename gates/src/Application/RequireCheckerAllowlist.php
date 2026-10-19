@@ -49,6 +49,7 @@ final readonly class RequireCheckerAllowlist
         'LogicException',
         'InvalidArgumentException',
         'JsonException',
+        'JsonSerializable',
         'OutOfBoundsException',
         'OutOfRangeException',
         'UnexpectedValueException',

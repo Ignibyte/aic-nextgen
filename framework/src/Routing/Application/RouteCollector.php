@@ -43,15 +43,22 @@ final readonly class RouteCollector
      */
     public function onGet(string $path, string $handler): self
     {
-        $route = new Route(Method::GET, $path, $handler);
+        return $this->with(new Route(Method::GET, $path, $handler));
+    }
 
-        foreach ($this->routes as $declared) {
-            if ($declared instanceof Route && $declared->method === $route->method && $declared->path === $path) {
-                throw new DuplicateRouteException($route);
-            }
-        }
-
-        return new self($this->routePatternCompiler, [...$this->routes, $route]);
+    /**
+     * Declare a POST route.
+     *
+     * @param string $path    The path pattern.
+     * @param string $handler The id of its handler.
+     *
+     * @throws DuplicateRouteException When POST is already declared for the pattern.
+     *
+     * @return self A collector with the route added.
+     */
+    public function onPost(string $path, string $handler): self
+    {
+        return $this->with(new Route(Method::POST, $path, $handler));
     }
 
     /**
@@ -72,5 +79,27 @@ final readonly class RouteCollector
         }
 
         return new RouteTable($compiled);
+    }
+
+    /**
+     * @param Route $route A route to add.
+     *
+     * @throws DuplicateRouteException When its method is already declared for its pattern.
+     *
+     * @return self A collector with the route added.
+     */
+    private function with(Route $route): self
+    {
+        foreach ($this->routes as $declared) {
+            if (
+                $declared instanceof Route
+                && $declared->method === $route->method
+                && $declared->path === $route->path
+            ) {
+                throw new DuplicateRouteException($route);
+            }
+        }
+
+        return new self($this->routePatternCompiler, [...$this->routes, $route]);
     }
 }
