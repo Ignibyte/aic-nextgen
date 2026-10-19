@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<ruleset name="AIC"
+         xmlns="http://pmd.sf.net/ruleset/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd"
+         xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd">
+    <description>AIC strict ruleset (gate:10): every PHPMD ruleset.</description>
+
+    <!--
+        The limits are old AIC's Constitution limits: method <= 30 lines,
+        class <= 300 lines, NPath <= 80, <= 15 methods, coupling <= 15. Old
+        AIC's phpmd.xml had raised most of them for ward code; nextgen starts
+        back at the Constitution (#2, decision 2). Raise a limit only when a
+        ported class needs it, with the reason in a comment beside the value.
+
+        PHPMD compares differently per rule. LongMethod, LongClass, NPath,
+        CyclomaticComplexity, LongParameterList, CouplingBetweenObjects and
+        NumberOfChildren report at value >= threshold, so each threshold is
+        the limit + 1. TooManyMethods and TooManyPublicMethods report at
+        value > threshold, so theirs is the limit itself.
+    -->
+
+    <rule ref="rulesets/cleancode.xml">
+        <exclude name="StaticAccess"/>
+        <!--
+            BooleanArgumentFlag fires on PSR-7 `RequestInterface::withUri(
+            UriInterface, bool $preserveHost)` and similar PSR-mandated
+            boolean parameters. PSR contravariance forbids removing them.
+            The rule's design-level intent (avoid hidden behavior toggles)
+            is preserved everywhere else; PSR boundary methods are exempt.
+        -->
+        <exclude name="BooleanArgumentFlag"/>
+    </rule>
+
+    <!--
+        StaticAccess, re-imported with exceptions only for classes whose public
+        API is class-static by design: phpat's rule builder and selectors
+        (gates/architecture), Closure, and Composer's InstalledVersions. Static
+        access to AIC's own code stays forbidden.
+    -->
+    <rule ref="rulesets/cleancode.xml/StaticAccess">
+        <properties>
+            <property name="exceptions" value="\PHPat\Test\PHPat,\PHPat\Selector\Selector,\Closure,\Composer\InstalledVersions"/>
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/codesize.xml">
+        <exclude name="ExcessiveMethodLength"/>
+        <exclude name="ExcessiveClassLength"/>
+        <exclude name="CyclomaticComplexity"/>
+        <exclude name="NPathComplexity"/>
+        <exclude name="ExcessiveParameterList"/>
+        <exclude name="TooManyMethods"/>
+        <exclude name="TooManyPublicMethods"/>
+    </rule>
+    <rule ref="rulesets/codesize.xml/ExcessiveMethodLength"><properties><property name="minimum" value="31"/></properties></rule>
+    <rule ref="rulesets/codesize.xml/ExcessiveClassLength"><properties><property name="minimum" value="301"/></properties></rule>
+    <rule ref="rulesets/codesize.xml/CyclomaticComplexity"><properties><property name="reportLevel" value="8"/></properties></rule>
+    <rule ref="rulesets/codesize.xml/NPathComplexity"><properties><property name="minimum" value="81"/></properties></rule>
+    <!--
+        ExcessiveParameterList stays at 12 (at most 11 parameters), old AIC's
+        value: the PSR-7 value objects take up to 11 constructor parameters
+        (ServerRequest) and PSR-17 createUploadedFile takes 5. PSR-7 messages
+        are built through PSR-17 factories, not by end-user code, and PHPMD 2.x
+        has no per-file rule exclusion, so the global limit is the supported
+        path.
+    -->
+    <rule ref="rulesets/codesize.xml/ExcessiveParameterList"><properties><property name="minimum" value="12"/></properties></rule>
+    <rule ref="rulesets/codesize.xml/TooManyMethods"><properties><property name="maxmethods" value="15"/></properties></rule>
+    <rule ref="rulesets/codesize.xml/TooManyPublicMethods"><properties><property name="maxmethods" value="15"/></properties></rule>
+
+    <rule ref="rulesets/controversial.xml"/>
+
+    <rule ref="rulesets/design.xml">
+        <exclude name="CouplingBetweenObjects"/>
+    </rule>
+    <rule ref="rulesets/design.xml/CouplingBetweenObjects"><properties><property name="maximum" value="16"/></properties></rule>
+
+    <rule ref="rulesets/naming.xml">
+        <exclude name="ShortVariable"/>
+        <exclude name="LongVariable"/>
+        <exclude name="BooleanGetMethodName"/>
+    </rule>
+    <!-- ShortVariable exceptions: classic loop indices (i, j, k, v, e) and `id`. -->
+    <rule ref="rulesets/naming.xml/ShortVariable"><properties><property name="exceptions" value="id,e,i,j,k,v"/></properties></rule>
+    <!--
+        LongVariable at 36, old AIC's value: Rector's naming rules
+        (CatchExceptionNameMatchingTypeRector, RenameVariableToMatchNewTypeRector)
+        derive variable names from class names mechanically, and a descriptive
+        exception class name runs past PHPMD's default of 20.
+    -->
+    <rule ref="rulesets/naming.xml/LongVariable"><properties><property name="maximum" value="36"/></properties></rule>
+
+    <rule ref="rulesets/unusedcode.xml"/>
+</ruleset>

@@ -1,0 +1,37 @@
+title = "AIC gitleaks config (gate:17)"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "aic-anthropic-key"
+description = "Anthropic API key"
+regex = '''sk-ant-(?:api|admin)\d{2}-[A-Za-z0-9_-]{86,}'''
+tags = ["api-key", "anthropic"]
+keywords = ["sk-ant-"]
+
+[[rules]]
+id = "aic-openai-key"
+description = "OpenAI API key"
+regex = '''sk-(?:proj-)?[A-Za-z0-9_-]{32,}'''
+tags = ["api-key", "openai"]
+keywords = ["sk-"]
+
+[[rules]]
+id = "aic-google-genai-key"
+description = "Google Generative AI key"
+regex = '''AIzaSy[A-Za-z0-9_-]{33}'''
+tags = ["api-key", "google"]
+keywords = ["AIzaSy"]
+
+[allowlist]
+description = "Allowlist for AIC project"
+paths = [
+    '''vendor/.*''',
+    '''storage/.*''',
+    '''\.psalm-cache/.*''',
+    '''\.rector-cache/.*''',
+    # DDEV-generated local-dev TLS certs/keys. .ddev/.gitignore excludes them
+    # from commits; this entry keeps a working-tree scan from flagging them.
+    '''\.ddev/traefik/certs/.*''',
+]

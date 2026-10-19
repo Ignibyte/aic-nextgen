@@ -7,6 +7,32 @@
         "php": "^8.5",
         "aic/framework": "0.1.x-dev"
     },
+    "require-dev": {
+        "captainhook/captainhook": "^5.24",
+        "captainhook/hook-installer": "^1.0",
+        "deptrac/deptrac": "^4.6",
+        "ergebnis/composer-normalize": "^2.45",
+        "ergebnis/phpstan-rules": "^2.13",
+        "icanhazstring/composer-unused": "^0.9",
+        "laravel/pint": "^1.18",
+        "phpat/phpat": "^0.12.0",
+        "phpmd/phpmd": "^2.15",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "rector/rector": "^2.0",
+        "roave/security-advisories": "dev-latest",
+        "shipmonk/phpstan-rules": "^4.0",
+        "slevomat/coding-standard": "^8.15",
+        "spaze/phpstan-disallowed-calls": "^4.11",
+        "squizlabs/php_codesniffer": "^3.10",
+        "systemsdk/phpcpd": "^9.0",
+        "tomasvotruba/cognitive-complexity": "^1.0",
+        "tomasvotruba/type-coverage": "^2.0",
+        "tomasvotruba/unused-public": "^2.2",
+        "vimeo/psalm": "^6.0"
+    },
     "repositories": [
         {
             "type": "path",
@@ -26,15 +52,71 @@
             "App\\": "app/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Gates\\": "gates/src/",
+            "Gates\\Architecture\\": "gates/architecture/"
+        }
+    },
     "config": {
+        "allow-plugins": {
+            "captainhook/hook-installer": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "ergebnis/composer-normalize": true,
+            "phpstan/extension-installer": true
+        },
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true
     },
     "scripts": {
-        "build": "@php bin/aic-build"
+        "build": "@php bin/aic-build",
+        "gate": "bash bin/gate-runner.sh",
+        "gate:0": "@php bin/gate-composer-audit.php",
+        "gate:1": "@php bin/gate-normalize-all.php",
+        "gate:10": "vendor/bin/phpmd framework/src,app,gates text phpmd.xml --strict",
+        "gate:11": "vendor/bin/phpcs --standard=phpcs.xml.dist",
+        "gate:12": "vendor/bin/deptrac analyse --no-progress --fail-on-uncovered",
+        "gate:13": "vendor/bin/psalm --no-progress --show-info=true --no-cache --no-diff",
+        "gate:14": "@php bin/gate-deduplicator.php",
+        "gate:15": "@php bin/gate-semgrep.php",
+        "gate:16": "@php bin/gate-no-dynamic-require.php",
+        "gate:17": "@php bin/gate-gitleaks.php",
+        "gate:18": "@php bin/gate-shellcheck.php",
+        "gate:19": "@php bin/gate-doc-todos.php",
+        "gate:2": "@php bin/gate-require-allowlist.php",
+        "gate:20": "@php bin/gate-captainhook.php",
+        "gate:3": "@php bin/gate-require-checker.php",
+        "gate:4": "@php bin/gate-composer-unused.php",
+        "gate:5": "@php bin/gate-no-baselines.php",
+        "gate:6": "vendor/bin/pint --test --config=pint.json",
+        "gate:7": "vendor/bin/rector process --dry-run --no-progress-bar",
+        "gate:8": "vendor/bin/phpstan analyse --no-progress --memory-limit=2G --configuration=phpstan.neon",
+        "gate:9": "vendor/bin/phpstan analyse --no-progress --memory-limit=2G --configuration=phpstan-architecture.neon"
     },
     "scripts-descriptions": {
-        "build": "Write the build-time manifests (none yet; #4 adds the first)."
+        "build": "Write the build-time manifests (none yet; #4 adds the first).",
+        "gate": "Run every quality gate and print one gate-summary line (bin/gate-runner.sh).",
+        "gate:0": "composer audit: no known security advisories in the locked dependencies.",
+        "gate:1": "composer-normalize: the root and framework manifests are in canonical order.",
+        "gate:10": "PHPMD: every ruleset, at the limits in phpmd.xml.",
+        "gate:11": "PHPCS: PSR-12 plus slevomat.",
+        "gate:12": "Deptrac: the layer ladder inside each system.",
+        "gate:13": "Psalm level 1 with taint analysis.",
+        "gate:14": "phpcpd: no copy-paste (min 4 lines, 50 tokens).",
+        "gate:15": "semgrep: the AIC ruleset in semgrep.yml.",
+        "gate:16": "No runtime-dynamic require or include in runtime code.",
+        "gate:17": "gitleaks: no secrets in the history.",
+        "gate:18": "shellcheck: every shell script, at warning level.",
+        "gate:19": "Documentation: no TODO markers, no dead relative links.",
+        "gate:2": "Runtime require allow-list: php, ext-*, psr/* and aic/framework only.",
+        "gate:20": "captainhook: the git hooks are installed.",
+        "gate:3": "Require-checker: every symbol the runtime code uses comes from a declared require.",
+        "gate:4": "composer-unused: no required package goes unused.",
+        "gate:5": "No baselines, no suppressions.",
+        "gate:6": "Pint: code style.",
+        "gate:7": "Rector: no pending PHP 8.5 refactors (dry run).",
+        "gate:8": "PHPStan level 10, bleeding edge, with the strict rule sets.",
+        "gate:9": "phpat: the architecture rules in gates/architecture."
     }
 }
