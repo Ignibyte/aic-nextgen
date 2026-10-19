@@ -162,6 +162,7 @@ final readonly class ManifestVerifier
             declaredPrefixes: $this->collectDeclaredPrefixes(array_keys($require), $prefixToPackages),
             ownPrefixes: array_keys($psr4),
             sourceFiles: $this->phpSourceCollector->collect(dirname($manifest), $psr4),
+            declaredPackages: array_keys($require),
         );
     }
 
@@ -284,6 +285,7 @@ final readonly class ManifestVerifier
             $allowlistedFqns,
             $manifestContext->ownPrefixes,
             $manifestContext->declaredPrefixes,
+            $manifestContext->declaredPackages,
         );
 
         if ($covered) {

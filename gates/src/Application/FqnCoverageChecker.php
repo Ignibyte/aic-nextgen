@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use ReflectionClass;
+
 use function array_any;
+use function class_exists;
 use function in_array;
+use function interface_exists;
+use function is_string;
+use function mb_strtolower;
 use function str_contains;
 use function str_ends_with;
 use function str_starts_with;
@@ -15,7 +21,9 @@ use function str_starts_with;
  * dependencies, the always-OK list or the manifest's own prefixes.
  *
  * Single-axis ordering applied in order:
- *   1. Unqualified FQNs (no `\`) — only allowlisted symbols pass.
+ *   1. Unqualified FQNs (no `\`) — allowlisted symbols pass, and so does a
+ *      built-in class whose PHP extension the manifest requires (`ext-pdo`
+ *      backs `PDO`).
  *   2. Allowlist hit — an exact FQN or a trailing-`\` namespace prefix entry.
  *   3. Manifest's own PSR-4 prefix hit (intra-package use).
  *   4. Declared-prefix hit. The app's `AIC\…` uses pass here, through its
@@ -30,15 +38,17 @@ final readonly class FqnCoverageChecker
      * @param list<string> $allowlistedFqns  Hardcoded ALWAYS_OK + project allowlist.
      * @param list<string> $ownPrefixes      The manifest's own PSR-4 prefixes.
      * @param list<string> $declaredPrefixes Prefixes owned by any declared require: package.
+     * @param list<string> $declaredPackages Every package name in the manifest's require: block.
      */
     public function isCovered(
         string $fqn,
         array $allowlistedFqns,
         array $ownPrefixes,
         array $declaredPrefixes,
+        array $declaredPackages,
     ): bool {
         if (!str_contains($fqn, '\\')) {
-            return in_array($fqn, $allowlistedFqns, true);
+            return in_array($fqn, $allowlistedFqns, true) || self::extensionDeclared($fqn, $declaredPackages);
         }
 
         return $this->isQualifiedCovered($fqn, $allowlistedFqns, $ownPrefixes, $declaredPrefixes);
@@ -118,5 +128,23 @@ final readonly class FqnCoverageChecker
             $allowlistedFqns,
             static fn (string $entry): bool => str_ends_with($entry, '\\') && str_starts_with($fqn, $entry),
         );
+    }
+
+    /**
+     * @param string       $fqn              An unqualified class or interface name.
+     * @param list<string> $declaredPackages Every package name in the manifest's require: block.
+     *
+     * @return bool Whether it is built in and its extension is required as `ext-<name>`.
+     */
+    private static function extensionDeclared(string $fqn, array $declaredPackages): bool
+    {
+        if (!class_exists($fqn) && !interface_exists($fqn)) {
+            return false;
+        }
+
+        $reflectionClass = new ReflectionClass($fqn);
+        $extension = $reflectionClass->getExtensionName();
+
+        return is_string($extension) && in_array('ext-' . mb_strtolower($extension), $declaredPackages, true);
     }
 }

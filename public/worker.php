@@ -19,6 +19,8 @@ declare(strict_types=1);
  */
 
 use AIC\Config\Domain\AppConfig;
+use AIC\Database\Domain\DatabaseConfig;
+use AIC\Database\Infrastructure\PdoDatabase;
 use AIC\Frankenphp\Contracts\SapiRequest;
 use AIC\Frankenphp\Contracts\SapiSink;
 use AIC\Kernel\Infrastructure\SapiServices;
@@ -41,6 +43,12 @@ $routes = require __DIR__ . '/../config/routes.php';
 
 if (!$routes instanceof RouteTable) {
     throw new RuntimeException('config/routes.php must return an ' . RouteTable::class . '.');
+}
+
+$databaseConfig = require __DIR__ . '/../config/database.php';
+
+if (!$databaseConfig instanceof DatabaseConfig) {
+    throw new RuntimeException('config/database.php must return an ' . DatabaseConfig::class . '.');
 }
 
 $bootedAt = gmdate('Y-m-d\\TH:i:s\\Z');
@@ -80,6 +88,7 @@ $appServices = new AppServices(
     $sapiServices->responseBuilder(),
     $bootedAt,
     __DIR__ . '/../resources',
+    new PdoDatabase($databaseConfig),
 );
 
 /**

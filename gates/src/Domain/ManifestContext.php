@@ -21,11 +21,13 @@ final readonly class ManifestContext
      * @param list<string> $declaredPrefixes PSR-4 prefixes owned by declared require: packages.
      * @param list<string> $ownPrefixes      The manifest's own PSR-4 prefixes.
      * @param list<string> $sourceFiles      Absolute paths of `.php` files under the manifest.
+     * @param list<string> $declaredPackages Every package name in the require: block, `ext-*` included.
      */
     public function __construct(
         public array $declaredPrefixes,
         public array $ownPrefixes,
         public array $sourceFiles,
+        public array $declaredPackages,
     ) {
     }
 }
