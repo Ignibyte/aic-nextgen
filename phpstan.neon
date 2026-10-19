@@ -105,8 +105,14 @@ parameters:
             enabled: false
         noExtends:
             classesAllowedToBeExtended:
+                # Exceptions extend the SPL roots; InvalidArgumentException is
+                # the one PSR-7 names for bad input (MalformedInputException).
                 - RuntimeException
                 - LogicException
+                - InvalidArgumentException
+                # The PSR-7 message base: ServerRequest and Response share its
+                # eleven MessageInterface methods (abstract base, final subclasses).
+                - AIC\Http\Domain\Message
         final:
             allowAbstractClasses: true
         noParameterWithContainerTypeDeclaration:

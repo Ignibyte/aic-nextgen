@@ -139,8 +139,15 @@ rules:
   # `Closure(mixed): mixed`, `iterable<mixed>`). PHPCS DisallowMixedTypeHint
   # and PHPStan checkExplicitMixed cover signatures; this covers the template
   # parameters, where mixed would otherwise slip through.
+  #
+  # A docblock followed by `#[Override]` is skipped: a PSR interface method
+  # dictates its `mixed` (PSR-7's `withQueryParams(array $query)` admits only
+  # `array<array-key, mixed>` as its contravariant phpdoc), and PHPCS
+  # DisallowMixedTypeHint exempts the same overrides (Chad, 2026-10-19, #20).
   - id: aic-no-mixed-in-phpdoc-template
-    pattern-regex: '(?:@(?:param|return|var|property|method)\s+[^*\n]*|\s)(?:array|iterable|Generator|Closure|callable|list)<[^>]*\bmixed\b[^>]*>'
+    patterns:
+      - pattern-regex: '(?:@(?:param|return|var|property|method)\s+[^*\n]*|\s)(?:array|iterable|Generator|Closure|callable|list)<[^>]*\bmixed\b[^>]*>'
+      - pattern-not-regex: '/\*\*(?:(?!\*/)[\s\S])*\*/\s*#\[Override\]'
     message: "mixed in phpdoc template parameters is forbidden (CLAUDE.md conventions): use concrete types (array<string, scalar>, iterable<int, MyType>, ...)."
     languages: [generic]
     paths:
