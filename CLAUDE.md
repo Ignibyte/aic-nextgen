@@ -14,9 +14,9 @@ the ten systems, the milestones) and `plan.md` (the decisions and the port map f
 ## Status
 
 The workspace is up (#1): composer with the `framework/` path package, DDEV with FrankenPHP and
-Postgres 17, and `public/worker.php` serving a placeholder. The code-only gate suite is in (#2):
-`composer run gate`, 21 gates. No framework classes yet. Next: #14 (the native gate), then #3
-(the workflow commands and hooks).
+Postgres 17, and `public/worker.php` serving a placeholder. The gate suite is in (#2):
+`composer run gate`, 22 gates, the native gate (gate:21, #14) among them. The first runtime class
+is `AIC\Routing\Domain\Method`. Next: #3 (the workflow commands and hooks), then #4.
 
 ## Five kinds
 
@@ -68,7 +68,7 @@ tests** for now (Chad may bring them back once the framework is done); an invari
 proven to bite by planting a violation.
 
 **Native from the first class.** A ticket that adds runtime code is done only when every runtime
-class compiles, links, runs and matches PHP under elephc (the native gate, #14). Restructure AIC
+class compiles, links, runs and matches PHP under elephc: gate:21, `composer run gate:21`. Restructure AIC
 code into a compilable form first; legal PHP that elephc rejects or miscompiles is a compiler
 carry (the `elephc-carry` workflow, a ticket in `docs/planning`). The handoff lists the friction
 to expect and the toolchain rules.
@@ -97,8 +97,7 @@ or was split off, what to check by hand.
 `gate-summary:` line. **No baselines. No suppressions. Source fixes only.** The runner
 (`bin/gate-runner.sh`) runs each `gate:N` script in `composer.json` and keeps going after a
 failure, so one run names every failing gate. A gate that cannot run in full yet *defers* and
-says why; the summary names each deferral, and a deferral is not coverage. The native gate
-joins with #14.
+says why; the summary names each deferral, and a deferral is not coverage.
 
 | # | Gate | # | Gate |
 |---|---|---|---|
@@ -112,7 +111,7 @@ joins with #14.
 | 7 | Rector (dry run) | 18 | shellcheck |
 | 8 | PHPStan level 10, bleeding edge | 19 | docs: no `(TODO)`, no dead links |
 | 9 | phpat, `gates/architecture/` | 20 | captainhook hooks installed |
-| 10 | PHPMD, every ruleset | | |
+| 10 | PHPMD, every ruleset | 21 | native: elephc compile, link, run, match PHP |
 
 - The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
   `App\`; a phpat rule keeps runtime code from depending on it.
@@ -122,6 +121,11 @@ joins with #14.
   coupling <= 15). Raise one only when code needs it, with the reason beside the value.
 - A new gate or rule is done only when it has been seen to fail on a planted violation.
 - Before a final run: `rm -f .phpcs-cache` (a stale cache passes PHPCS falsely).
+- gate:21 probes each class under `framework/src` and `app` on its own: its class-graph closure,
+  compiled with the fork's elephc in place (`/srv/stacks/elephc/target/release/elephc`;
+  `ELEPHC_BIN` overrides), run, and compared with host PHP. Work files land in `.native-gate/`
+  (gitignored); pcre2 and oniguruma are pinned in `gates/native/elephc.{toml,lock}`. Everything
+  outside those two roots runs interpreted by design.
 - `bin/install-tools.sh` installs gitleaks (pinned, into `tools/`), semgrep and shellcheck;
   `composer install` installs the git hooks (captainhook, conventional-commit subjects).
 
