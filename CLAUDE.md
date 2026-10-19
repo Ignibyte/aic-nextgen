@@ -14,8 +14,9 @@ the ten systems, the milestones) and `plan.md` (the decisions and the port map f
 ## Status
 
 The workspace is up (#1): composer with the `framework/` path package, DDEV with FrankenPHP and
-Postgres 17, and `public/worker.php` serving a placeholder. No framework classes and no gates
-yet. Next: #2 (gates), #14 (the native gate), #3 (the workflow commands and hooks).
+Postgres 17, and `public/worker.php` serving a placeholder. The code-only gate suite is in (#2):
+`composer run gate`, 21 gates. No framework classes yet. Next: #14 (the native gate), then #3
+(the workflow commands and hooks).
 
 ## Five kinds
 
@@ -92,11 +93,37 @@ or was split off, what to check by hand.
 
 ## Quality gates (binding)
 
-The code-only gate suite arrives with #2, the native gate with #14, and both run on the host as
-`composer run gate`. **No baselines. No suppressions. Source fixes only.** PHPStan level 10 with
-bleeding edge and the strict, deprecation, shipmonk, type-coverage and cognitive-complexity
-rules; PHPMD all rulesets; PHPCS slevomat; Psalm with taint; Rector; Pint; Deptrac and phpat for
-the architecture; everything else old AIC ran that applies to one package.
+`composer run gate` runs every gate on the host (no DDEV), about 15 seconds, and ends with one
+`gate-summary:` line. **No baselines. No suppressions. Source fixes only.** The runner
+(`bin/gate-runner.sh`) runs each `gate:N` script in `composer.json` and keeps going after a
+failure, so one run names every failing gate. A gate that cannot run in full yet *defers* and
+says why; the summary names each deferral, and a deferral is not coverage. The native gate
+joins with #14.
+
+| # | Gate | # | Gate |
+|---|---|---|---|
+| 0 | composer audit (installed packages) | 11 | PHPCS, PSR-12 + slevomat |
+| 1 | composer-normalize | 12 | Deptrac, the layer ladder per system |
+| 2 | runtime require allow-list | 13 | Psalm level 1, taint analysis |
+| 3 | require-checker | 14 | phpcpd (copy-paste) |
+| 4 | composer-unused | 15 | semgrep, `semgrep.yml` |
+| 5 | no baselines, no suppressions | 16 | no runtime-dynamic require |
+| 6 | Pint | 17 | gitleaks |
+| 7 | Rector (dry run) | 18 | shellcheck |
+| 8 | PHPStan level 10, bleeding edge | 19 | docs: no `(TODO)`, no dead links |
+| 9 | phpat, `gates/architecture/` | 20 | captainhook hooks installed |
+| 10 | PHPMD, every ruleset | | |
+
+- The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
+  `App\`; a phpat rule keeps runtime code from depending on it.
+- phpat runs only rule classes registered with the `phpat.test` tag in
+  `phpstan-architecture.neon`; a rule class that is not listed never runs.
+- PHPMD holds old AIC's Constitution limits (method <= 30 lines, class <= 300, <= 15 methods,
+  coupling <= 15). Raise one only when code needs it, with the reason beside the value.
+- A new gate or rule is done only when it has been seen to fail on a planted violation.
+- Before a final run: `rm -f .phpcs-cache` (a stale cache passes PHPCS falsely).
+- `bin/install-tools.sh` installs gitleaks (pinned, into `tools/`), semgrep and shellcheck;
+  `composer install` installs the git hooks (captainhook, conventional-commit subjects).
 
 ## Code conventions (binding)
 

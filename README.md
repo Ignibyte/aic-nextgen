@@ -42,5 +42,19 @@ ddev psql            # the Postgres 17 database
 ddev logs -f         # FrankenPHP's log
 ```
 
+## Quality gates
+
+```bash
+bash bin/install-tools.sh   # once: gitleaks (pinned, into tools/), semgrep, shellcheck
+composer run gate           # every gate, on the host; ends with one gate-summary line
+composer run gate:8         # one gate alone (gate:0 to gate:20)
+```
+
+The gates are static analysis only: PHPStan level 10, Psalm with taint analysis, PHPMD, PHPCS,
+Pint, Rector, Deptrac and phpat for the architecture, semgrep, gitleaks and the composer checks.
+There are no baselines and no suppressions. The gate code lives in `gates/` and never ships with
+the framework. `composer install` also installs the git hooks, which hold commit subjects to
+Conventional Commits.
+
 Maintainers keep the plan and the tickets in a private checkout at `docs/planning/`, which this
 repository ignores.
