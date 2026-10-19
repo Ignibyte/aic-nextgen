@@ -8,7 +8,8 @@
 #
 #   plan              docs/planning/* only (the ticket and the pipeline doc pair)
 #   implement, check  unrestricted (Code and Quality checks write the code)
-#   complete          docs, CHANGELOG*, CLAUDE.md, README.md, CONSTITUTION.md
+#   complete          docs, CHANGELOG*, CLAUDE.md, README.md, CONSTITUTION.md,
+#                     and the project's auto-memory (outside the repo)
 #
 # Documentation runs after Quality checks passed, and the code gates do not
 # run again, so it must not touch code. A code change found during
@@ -48,6 +49,10 @@ fi
 
 COMMAND_NAME=$(detect_active_command "$TRANSCRIPT_PATH")
 
+# Documentation's memory step writes here. Claude Code names the directory
+# after the project path with every non-alphanumeric character as a dash.
+MEMORY_DIR="$HOME/.claude/projects/${PROJECT_ROOT//[^A-Za-z0-9]/-}/memory"
+
 if [ -z "$COMMAND_NAME" ]; then
     exit 0
 fi
@@ -66,7 +71,7 @@ check_scope() {
             ;;
         complete)
             case "$path" in
-                docs/*|CHANGELOG*|CLAUDE.md|README.md|CONSTITUTION.md) return 0 ;;
+                docs/*|CHANGELOG*|CLAUDE.md|README.md|CONSTITUTION.md|"$MEMORY_DIR"/*) return 0 ;;
                 *) return 1 ;;
             esac
             ;;
@@ -89,6 +94,7 @@ if ! check_scope "$COMMAND_NAME" "$NORMALIZED"; then
                 echo "  - docs/planning/*  (the ticket and the pipeline docs)" ;;
             complete)
                 echo "  - docs/*, CHANGELOG*, CLAUDE.md, README.md, CONSTITUTION.md"
+                echo "  - $MEMORY_DIR/*  (auto-memory)"
                 echo "  A code change during Documentation goes back through /pipeline:check." ;;
         esac
         echo ""
