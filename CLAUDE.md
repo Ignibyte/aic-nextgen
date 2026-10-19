@@ -72,9 +72,10 @@ Until #3 ports the `/work` and `/pipeline:*` commands, work #1, #2, #14 and #3 b
 four phases: record the Plan as a ticket comment and get Chad's OK before coding.
 
 Delivery: a branch named for the ticket (`chore/skeleton-1`), a commit and a PR here, the ticket
-update committed and pushed in `docs/planning`. Every commit is pushed with a PR; once the PR
-exists, **ask before merging** unless Chad already said to merge. Reports are terse: what was
-done, what failed or was split off, what to check by hand.
+update committed and pushed in `docs/planning`. Every commit is pushed with a PR. **Claude merges
+its own PRs** once the work is done and its checks pass (Chad, 2026-10-19: he does not review PRs),
+then deletes the branch locally and on the remote. Reports are terse: what was done, what failed
+or was split off, what to check by hand.
 
 ## Porting from old AIC
 
