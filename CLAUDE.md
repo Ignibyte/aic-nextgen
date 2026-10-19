@@ -8,13 +8,22 @@ decided to start over with only what earns its place and move it across by copyi
 trimming. This repo, `Ignibyte/aic-nextgen` (private), replaces `Ignibyte/aic` at cutover
 (ticket #11). Old AIC is the archive and the reference, pinned at main `e0778896`.
 
-**Read `docs/planning/plan.md` first.** It holds the decisions, the nine systems, the port map
-from old wards and the order of work.
+**Read `docs/planning/handoff.md` first**, then `roadmap.md` (the standing rules, the five kinds,
+the ten systems, the milestones) and `plan.md` (the decisions and the port map from old wards).
 
 ## Status
 
 Prep only: no framework code, no composer, no gates yet. Ticket #1 (the workspace skeleton) is
-next, then #2 (gates) and #3 (the workflow commands and hooks).
+next, then #2 (gates), #14 (the native gate) and #3 (the workflow commands and hooks).
+
+## Five kinds
+
+Every entry point is one of five kinds, each one interface with one method and one sealed
+response type: **Page** (HTML document, region fragments or a redirect; form controllers are
+Pages), **Api** (JSON, XML, SOAP), **Stream** (SSE, file downloads), **Command** (CLI, exit code)
+and **Job** (queued or scheduled work: done, retry, fail). A static guard makes every entry-point
+class implement exactly one, and the build writes a manifest of every entry point with its kind.
+"Worker" means the FrankenPHP HTTP worker; background work is a job.
 
 ## Stack
 
@@ -50,11 +59,17 @@ Four phases: **Plan** (spec, design, file list, browser checks for UI work; Chad
 **Code** (no tests; browser-testable work is checked live with the Playwright MCP), **Quality
 checks** (`composer run gate` until green, the only gate run), **Documentation** (docs, plan
 updates, changelog, then delivery). AIC writes **no unit, mutation, coverage or regression
-tests**; an invariant that must hold ships as a static guard (PHPStan, phpat or semgrep rule)
+tests** for now (Chad may bring them back once the framework is done); an invariant that must hold ships as a static guard (PHPStan, phpat or semgrep rule)
 proven to bite by planting a violation.
 
-Until #3 ports the `/work` and `/pipeline:*` commands, work #1 to #3 by hand in the same four
-phases: record the Plan as a ticket comment and get Chad's OK before coding.
+**Native from the first class.** A ticket that adds runtime code is done only when every runtime
+class compiles, links, runs and matches PHP under elephc (the native gate, #14). Restructure AIC
+code into a compilable form first; legal PHP that elephc rejects or miscompiles is a compiler
+carry (the `elephc-carry` workflow, a ticket in `docs/planning`). The handoff lists the friction
+to expect and the toolchain rules.
+
+Until #3 ports the `/work` and `/pipeline:*` commands, work #1, #2, #14 and #3 by hand in the same
+four phases: record the Plan as a ticket comment and get Chad's OK before coding.
 
 Delivery: a branch named for the ticket (`chore/skeleton-1`), a commit and a PR here, the ticket
 update committed and pushed in `docs/planning`. Every commit is pushed with a PR; once the PR
@@ -72,9 +87,11 @@ done, what failed or was split off, what to check by hand.
 
 ## Quality gates (binding)
 
-The code-only gate suite arrives with #2 and runs on the host as `composer run gate`. **No
-baselines. No suppressions. Source fixes only.** PHPStan level 10, PHPMD all rulesets, PHPCS
-slevomat, Psalm with taint, Deptrac and phpat for the architecture.
+The code-only gate suite arrives with #2, the native gate with #14, and both run on the host as
+`composer run gate`. **No baselines. No suppressions. Source fixes only.** PHPStan level 10 with
+bleeding edge and the strict, deprecation, shipmonk, type-coverage and cognitive-complexity
+rules; PHPMD all rulesets; PHPCS slevomat; Psalm with taint; Rector; Pint; Deptrac and phpat for
+the architecture; everything else old AIC ran that applies to one package.
 
 ## Code conventions (binding)
 
@@ -103,5 +120,6 @@ Every file:
 - Never grep or walk the whole filesystem or `$HOME`; scope searches to the project.
 - Edit `composer.json` with targeted edits, never a JSON dump and rewrite (it reindents and
   escapes unicode).
-- The elephc compiler (`/srv/stacks/elephc`, carry workflow in its `FORK.md`) is paused until
-  cutover.
+- The elephc compiler is `/srv/stacks/elephc` (carry workflow in its `FORK.md`). Run its binary
+  in place, one cargo command at a time, never kill a running cargo, and never run `cargo fmt`
+  there: it reformats the whole repo.
