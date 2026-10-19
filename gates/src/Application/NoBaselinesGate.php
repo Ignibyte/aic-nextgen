@@ -67,6 +67,7 @@ final class NoBaselinesGate
         '.git',
         'storage',
         'tools',
+        '.native-gate',
         '.psalm-cache',
         '.rector-cache',
     ];
