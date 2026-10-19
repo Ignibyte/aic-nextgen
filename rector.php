@@ -13,6 +13,7 @@ return RectorConfig::configure()
         __DIR__ . '/framework/src',
         __DIR__ . '/app',
         __DIR__ . '/public',
+        __DIR__ . '/config',
         __DIR__ . '/bin',
         __DIR__ . '/gates',
     ])

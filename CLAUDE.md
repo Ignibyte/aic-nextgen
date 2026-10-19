@@ -15,11 +15,11 @@ the ten systems, the milestones) and `plan.md` (the decisions and the port map f
 
 The workspace is up (#1): composer with the `framework/` path package, DDEV with FrankenPHP and
 Postgres 17, and `public/worker.php` serving a placeholder. The gate suite is in (#2):
-`composer run gate`, 23 gates, the native gate (gate:21, #14) among them. gate:3, gate:4 and
-gate:21 defer until `framework/src` and `app` hold code: the dead-code detector (#15) removed the
-first runtime class, `AIC\Routing\Domain\Method`, until #4's router calls it. The four-phase
-workflow is in (#3): `CONSTITUTION.md`, the commands in `.claude/commands/`, the hooks in
-`.claude/hooks/`. Next is #4.
+`composer run gate`, 23 gates, the native gate (gate:21, #14) among them; gate:3's root manifest
+and gate:4 defer while `app/` is empty. The four-phase workflow is in (#3): `CONSTITUTION.md`,
+the commands in `.claude/commands/`, the hooks in `.claude/hooks/`. #4, the foundation, runs as
+five vertical slices (#18 to #22); #18 is in: config is typed (`config/app.php` returns an
+`AIC\Config\Domain\AppConfig`, read by the worker at boot), the first runtime class. Next is #20.
 
 ## Five kinds
 
@@ -171,6 +171,8 @@ Every file:
 - `grep` here is ugrep: BRE `\|` alternation silently matches nothing. Use `grep -E` or the Grep
   tool, and never conclude "unused" from a grep alone.
 - Never grep or walk the whole filesystem or `$HOME`; scope searches to the project.
+- A worker boots once: after a PHP change, `ddev restart` before a browser check, or the page
+  still runs the old code.
 - Edit `composer.json` with targeted edits, never a JSON dump and rewrite (it reindents and
   escapes unicode).
 - The elephc compiler is `/srv/stacks/elephc` (carry workflow in its `FORK.md`). Run its binary

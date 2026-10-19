@@ -4,6 +4,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Added
+
+- **Typed config** (#18, the first slice of #4). `config/app.php` returns an `AIC\Config\Domain\AppConfig`, a `final readonly` object whose `name` must not be blank. The worker requires the file once, at boot, and renders the name. Config files are analysed like code. `AppConfig` is the first runtime class since #15, so the native gate runs again.
+
 ### Changed
 
 - **Dead-code detection** (#15). `shipmonk/dead-code-detector` replaces the abandoned `tomasvotruba/unused-public` in gate:8. It checks methods, constants, enum cases, and properties never read or written; dead cycles and transitively dead methods; and it does not count a call over an unknown type as usage. gate:0 reports no abandoned package. The gate classes lost their `@api` tags, which had hidden their members from both dead-code checks. The detector found the unused `RelativePathComputer` (deleted) and the caller-less `AIC\Routing\Domain\Method` cases (the class waits for #4). gate:21 defers until runtime code returns.
