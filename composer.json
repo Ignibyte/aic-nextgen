@@ -5,7 +5,10 @@
     "type": "project",
     "require": {
         "php": "^8.5",
-        "aic/framework": "0.1.x-dev"
+        "aic/framework": "0.1.x-dev",
+        "psr/http-factory": "^1.1",
+        "psr/http-message": "^2.0",
+        "psr/http-server-handler": "^1.0"
     },
     "require-dev": {
         "captainhook/captainhook": "^5.24",
