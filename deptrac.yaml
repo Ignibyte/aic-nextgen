@@ -1,0 +1,98 @@
+# gate:12 — Deptrac: the layer ladder, per system, inside one package.
+#
+# Every system is a namespace under AIC\ (AIC\Http, AIC\Routing, ...) with the
+# same subnamespaces: Contracts → Domain → Application → Infrastructure, plus
+# the leaf Exception and Attribute layers. Layers are collected by class name,
+# so one rule covers every system. The gate tooling (Gates\) follows the same
+# ladder. `--fail-on-uncovered` makes every class sit in a layer: a class
+# directly under AIC\<System>\, outside the six subnamespaces, fails the gate.
+deptrac:
+  paths:
+    - ./framework/src
+    - ./app
+    - ./gates/src
+    - ./gates/architecture
+  layers:
+    - name: Contracts
+      collectors:
+        - type: classLike
+          value: '^AIC\\(Contracts|[^\\]+\\Contracts)\\'
+    - name: Domain
+      collectors:
+        - type: classLike
+          value: '^(AIC\\[^\\]+|Gates)\\Domain\\'
+    - name: Exception
+      collectors:
+        - type: classLike
+          value: '^(AIC\\[^\\]+|Gates)\\Exception\\'
+    - name: Attribute
+      collectors:
+        - type: classLike
+          value: '^(AIC\\[^\\]+|Gates)\\Attribute\\'
+    - name: Application
+      collectors:
+        - type: classLike
+          value: '^(AIC\\[^\\]+|Gates)\\Application\\'
+    - name: Infrastructure
+      collectors:
+        - type: classLike
+          value: '^(AIC\\[^\\]+|Gates)\\Infrastructure\\'
+    # The demo app: one layer until it grows features of its own (#10).
+    - name: App
+      collectors:
+        - type: classLike
+          value: '^App\\'
+    # The phpat rule classes (gate:9).
+    - name: Architecture
+      collectors:
+        - type: classLike
+          value: '^Gates\\Architecture\\'
+    # Vendor leaves.
+    - name: PsrVendor
+      collectors:
+        - type: classLike
+          value: '^Psr\\'
+    - name: PhpatVendor
+      collectors:
+        - type: classLike
+          value: '^PHPat\\'
+  ruleset:
+    Contracts:
+      - PsrVendor
+    Domain:
+      - Contracts
+      - Attribute
+      - PsrVendor
+    Exception:
+      - Contracts
+      - PsrVendor
+    Attribute:
+      - Contracts
+      - PsrVendor
+    Application:
+      - Contracts
+      - Domain
+      - Exception
+      - Attribute
+      - PsrVendor
+    Infrastructure:
+      - Contracts
+      - Domain
+      - Exception
+      - Attribute
+      - Application
+      - PsrVendor
+    # The app builds on the framework's seams, never on its Infrastructure.
+    App:
+      - Contracts
+      - Domain
+      - Exception
+      - Attribute
+      - Application
+      - PsrVendor
+    Architecture:
+      - PhpatVendor
+  formatters:
+    graphviz:
+      hidden_layers:
+        - PsrVendor

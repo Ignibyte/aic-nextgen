@@ -1,0 +1,177 @@
+# gate:15 — semgrep: the AIC ruleset.
+#
+# Ported from old AIC's semgrep.yml (#2). Kept: every generic rule. Dropped:
+# the catalog, theme, Alpine/htmx and Datastar rules (their systems are not
+# here; the Datastar rule can return with the browser runtime, #12). The dbal
+# Contracts SQL rule returns with the database (#6).
+#
+# Paths in `include`/`exclude` are anchored at the repo root. A regex rule that
+# describes an absence skips comment lines, so a docblock naming the banned
+# construct does not trip it.
+rules:
+  - id: aic-no-env-outside-config
+    pattern: env(...)
+    paths:
+      exclude:
+        - "/config/**"
+        - "/bin/**"
+    message: "env() is forbidden outside config/ (CLAUDE.md conventions): inject the resolved value."
+    languages: [php]
+    severity: ERROR
+
+  - id: aic-no-getenv
+    pattern: getenv(...)
+    paths:
+      exclude:
+        - "/config/**"
+        - "/bin/**"
+    message: "getenv() is forbidden: read the environment in config/, never in business logic."
+    languages: [php]
+    severity: ERROR
+
+  - id: aic-no-eval
+    pattern: eval(...)
+    message: "eval() is forbidden everywhere."
+    languages: [php]
+    severity: ERROR
+
+  - id: aic-no-error-suppression
+    pattern: '@$X'
+    message: "@ error suppression is forbidden: handle the error."
+    languages: [php]
+    severity: ERROR
+
+  - id: aic-no-global-keyword
+    pattern-regex: '(?m)^(?!\s*(?:\*|//|/\*|#)).*\bglobal\s+\$'
+    paths:
+      include:
+        - "*.php"
+      exclude:
+        - "/bin/**"
+    message: "The global keyword is forbidden: no globals (CLAUDE.md conventions)."
+    languages: [generic]
+    severity: ERROR
+
+  # public/worker.php is the FrankenPHP SAPI entry point: the one place that
+  # reads the superglobals to build the request. The bin/ entry scripts read
+  # HOME for the tool lookup.
+  - id: aic-no-superglobals
+    pattern-regex: '(?m)^(?!\s*(?:\*|//|/\*|#)).*\$(_SERVER|_POST|_GET|_COOKIE|_FILES|_SESSION|_REQUEST|_ENV|GLOBALS)\b'
+    paths:
+      include:
+        - "*.php"
+      exclude:
+        - "/bin/**"
+        - "/public/worker.php"
+    message: "PHP superglobal forbidden: only the SAPI entry point (public/worker.php) reads them."
+    languages: [generic]
+    severity: ERROR
+
+  - id: aic-no-suppress-annotations
+    pattern-regex: '@(phpstan-ignore|psalm-suppress|phpcs:ignore|phpcs:disable|phpmd:ignore|phpmd-ignore|noinspection)'
+    message: "Suppression annotations are forbidden: no suppressions, source fixes only."
+    languages: [generic]
+    paths:
+      include:
+        - "*.php"
+    severity: ERROR
+
+  # A FrankenPHP worker serves request after request in one process: static
+  # state set during one request is still there for the next.
+  - id: aic-no-static-mutable-property
+    pattern-regex: '^\s*(?:private|protected|public)\s+static\s+(?!readonly\b)(?!const\b)[\w\\\?\|\&]+\s+\$\w+\s*='
+    message: "Static mutable properties are forbidden: a worker serves many requests and static state leaks between them."
+    languages: [generic]
+    paths:
+      include:
+        - "*.php"
+    severity: ERROR
+
+  - id: aic-no-static-array-cache
+    pattern-regex: 'static\s+\$_?cache\b'
+    message: "static $cache patterns are forbidden: static state leaks between the requests a worker serves."
+    languages: [generic]
+    paths:
+      include:
+        - "*.php"
+    severity: ERROR
+
+  - id: aic-no-singleton-pattern
+    pattern-regex: 'private\s+static\s+\??(?:self|static)\s+\$instance\s*='
+    message: "The singleton pattern is forbidden: the container wires shared services."
+    languages: [generic]
+    paths:
+      include:
+        - "*.php"
+    severity: ERROR
+
+  # Catches static-property MUTATION, which the declaration rule above cannot
+  # see when the property is declared in a parent class.
+  - id: aic-no-static-property-mutation-in-method
+    pattern-regex: '(?:self|static|parent|[A-Z][\w\\]*)::\$\w+(?:\[[^\]]*\])?\s*(?:=|\.=|\+=|-=|\*=|/=|%=|\*\*=|\?\?=|<<=|>>=|&=|\|=|\^=|\+\+|--)|\+\+\s*(?:self|static|parent|[A-Z][\w\\]*)::\$\w+|--\s*(?:self|static|parent|[A-Z][\w\\]*)::\$\w+'
+    message: "Static property mutation is forbidden: static state leaks between the requests a worker serves."
+    languages: [generic]
+    paths:
+      include:
+        - "*.php"
+    severity: ERROR
+
+  - id: aic-no-getInstance-factory
+    pattern-regex: 'public\s+static\s+function\s+getInstance\s*\('
+    message: "getInstance() singleton factories are forbidden: use the container."
+    languages: [generic]
+    paths:
+      include:
+        - "*.php"
+    severity: ERROR
+
+  # Function-scope `static $var` keeps its value across requests too.
+  - id: aic-no-function-static-state
+    pattern-regex: '(?:^|\n)\s+static\s+\$\w+\s*[=;]'
+    message: "Function-static variables are forbidden: pass the state as a parameter."
+    languages: [generic]
+    paths:
+      include:
+        - "*.php"
+    severity: ERROR
+
+  # Catches `mixed` inside phpdoc generics (`array<string, mixed>`,
+  # `Closure(mixed): mixed`, `iterable<mixed>`). PHPCS DisallowMixedTypeHint
+  # and PHPStan checkExplicitMixed cover signatures; this covers the template
+  # parameters, where mixed would otherwise slip through.
+  - id: aic-no-mixed-in-phpdoc-template
+    pattern-regex: '(?:@(?:param|return|var|property|method)\s+[^*\n]*|\s)(?:array|iterable|Generator|Closure|callable|list)<[^>]*\bmixed\b[^>]*>'
+    message: "mixed in phpdoc template parameters is forbidden (CLAUDE.md conventions): use concrete types (array<string, scalar>, iterable<int, MyType>, ...)."
+    languages: [generic]
+    paths:
+      include:
+        - "*.php"
+      exclude:
+        # The entry scripts decode untyped JSON at the boundary.
+        - "/bin/**"
+    severity: ERROR
+
+  # Two or more string class constants are the shape of a closed enumeration.
+  - id: aic-prefer-enum-over-class-consts
+    pattern-regex: '(?ms)(?:public|protected|private)\s+const\s+\w+\s*=\s*(?:''[^'']+''|"[^"]+")\s*;.*?(?:public|protected|private)\s+const\s+\w+\s*=\s*(?:''[^'']+''|"[^"]+")\s*;'
+    message: "Multiple string class constants: use an enum for a closed enumeration (`enum X: string { case FOO = '...'; }`)."
+    languages: [generic]
+    paths:
+      include:
+        - "*.php"
+      exclude:
+        - "/bin/**"
+    severity: WARNING
+
+  # FrankenPHP worker mode is the only runtime (CLAUDE.md, Stack). Comment
+  # lines are skipped; the architecture rule that bans the dependency names it.
+  - id: aic-no-swoole-reference
+    pattern-regex: '(?m)^(?!\s*(?:\*|//|/\*|#)).*\bSwoole\\'
+    message: "Swoole reference in source: Swoole is removed; FrankenPHP worker mode is the only runtime."
+    languages: [generic]
+    paths:
+      include:
+        - "*.php"
+      exclude:
+        - "/gates/architecture/CoreArchitectureTest.php"
+    severity: ERROR

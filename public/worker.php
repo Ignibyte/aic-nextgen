@@ -19,10 +19,12 @@ if (!function_exists('frankenphp_handle_request')) {
     return;
 }
 
-$bootedAt = gmdate('Y-m-d\TH:i:s\Z');
+$bootedAt = gmdate('Y-m-d\\TH:i:s\\Z');
 
 $serve = static function () use ($bootedAt): void {
-    $workerMode = isset($_SERVER['FRANKENPHP_WORKER']) ? 'yes' : 'no';
+    $workerMode = array_key_exists('FRANKENPHP_WORKER', $_SERVER)
+        ? 'yes'
+        : 'no';
 
     http_response_code(200);
     header('Content-Type: text/html; charset=utf-8');

@@ -1,0 +1,17 @@
+# gate:9 — phpat architecture rules, on top of the gate:8 configuration.
+#
+# phpat runs only the rule classes registered here with the `phpat.test`
+# tag; a rule class that is not listed never runs.
+includes:
+    - phpstan.neon
+
+parameters:
+    phpat:
+        ignore_built_in_classes: true
+        show_rule_names: true
+
+services:
+    -
+        class: Gates\Architecture\CoreArchitectureTest
+        tags:
+            - phpat.test

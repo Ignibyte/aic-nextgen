@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="1"
+    findUnusedCode="true"
+    findUnusedVariablesAndParams="true"
+    findUnusedBaselineEntry="true"
+    findUnusedPsalmSuppress="true"
+    strictBinaryOperands="true"
+    rememberPropertyAssignmentsAfterCall="false"
+    checkForThrowsDocblock="true"
+    checkForThrowsInGlobalScope="true"
+    ensureArrayStringOffsetsExist="true"
+    ensureArrayIntOffsetsExist="true"
+    ensureOverrideAttribute="true"
+    reportMixedIssues="true"
+    sealAllProperties="true"
+    sealAllMethods="true"
+    runTaintAnalysis="true"
+    usePhpDocPropertiesWithoutMagicCall="true"
+    usePhpDocMethodsWithoutMagicCall="true"
+    memoizeMethodCallResults="true"
+    hoistConstants="true"
+    addParamDefaultToDocblockType="true"
+    disableSuppressAll="true"
+    inferPropertyTypesFromConstructor="true"
+    restrictReturnTypes="true"
+    cacheDirectory=".psalm-cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <directory name="framework/src"/>
+        <directory name="app"/>
+        <directory name="public"/>
+        <directory name="bin"/>
+        <file name="bin/aic-build"/>
+        <directory name="gates"/>
+        <ignoreFiles>
+            <directory name="vendor"/>
+            <directory name=".rector-cache"/>
+            <directory name=".psalm-cache"/>
+        </ignoreFiles>
+    </projectFiles>
+    <issueHandlers>
+        <ForbiddenCode errorLevel="error"/>
+    </issueHandlers>
+    <!--
+        forbiddenFunctions — Psalm second-opinion check; pairs with the
+        spaze/phpstan-disallowed-calls config in phpstan.neon. If PHPStan ever
+        fails to fire on one of these (e.g. a future version drops a rule),
+        Psalm catches it at gate:13.
+    -->
+    <forbiddenFunctions>
+        <function name="var_dump"/>
+        <function name="print_r"/>
+        <function name="dump"/>
+        <function name="dd"/>
+        <function name="eval"/>
+        <function name="extract"/>
+        <function name="compact"/>
+        <function name="getenv"/>
+    </forbiddenFunctions>
+</psalm>
