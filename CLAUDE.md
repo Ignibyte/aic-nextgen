@@ -56,7 +56,7 @@ Ticket changes are committed and pushed in `docs/planning`, not here. Old AIC's 
 ## Workflow
 
 Four phases: **Plan** (spec, design, file list, browser checks for UI work; Chad confirms),
-**Code** (no tests; browser-testable work is checked live with the Playwright MCP), **Quality
+**Code** (no tests; browser-testable work is checked live in a browser on this box, see On this box), **Quality
 checks** (`composer run gate` until green, the only gate run), **Documentation** (docs, plan
 updates, changelog, then delivery). AIC writes **no unit, mutation, coverage or regression
 tests** for now (Chad may bring them back once the framework is done); an invariant that must hold ships as a static guard (PHPStan, phpat or semgrep rule)
@@ -72,9 +72,10 @@ Until #3 ports the `/work` and `/pipeline:*` commands, work #1, #2, #14 and #3 b
 four phases: record the Plan as a ticket comment and get Chad's OK before coding.
 
 Delivery: a branch named for the ticket (`chore/skeleton-1`), a commit and a PR here, the ticket
-update committed and pushed in `docs/planning`. Every commit is pushed with a PR; once the PR
-exists, **ask before merging** unless Chad already said to merge. Reports are terse: what was
-done, what failed or was split off, what to check by hand.
+update committed and pushed in `docs/planning`. Every commit is pushed with a PR. **Claude merges
+its own PRs** once the work is done and its checks pass (Chad, 2026-10-19: he does not review PRs),
+then deletes the branch locally and on the remote. Reports are terse: what was done, what failed
+or was split off, what to check by hand.
 
 ## Porting from old AIC
 
@@ -112,6 +113,10 @@ Every file:
 
 ## On this box
 
+- Browser checks run on this box, never through the Mac mini's Playwright. Use Marley's Browser
+  tab (the `marley` `browser_*` tools) when Chad needs to watch, and a local Playwright MCP
+  (headless, the Chromium in `~/.cache/ms-playwright`) when he doesn't. DDEV's default
+  `aic-nextgen.ddev.site` resolves locally, so no extra hostname is needed.
 - `.mcp.json` is owner-managed (the Playwright MCP server). Never write or overwrite it; it is
   gitignored here.
 - Never `git stash -u`: it takes the untracked `.mcp.json` with it.

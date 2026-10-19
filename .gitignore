@@ -22,6 +22,9 @@ core.*
 /.mcp.json
 /.mcp.json.bak
 
+# local Playwright MCP snapshots and screenshots
+/.playwright-mcp/
+
 # tool caches
 /.psalm-cache/
 /.rector-cache/
