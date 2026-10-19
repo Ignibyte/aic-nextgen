@@ -33,4 +33,12 @@ final readonly class CommandInput
             ? $argument
             : $default;
     }
+
+    /**
+     * @return bool Whether the command line has no arguments, for a command that takes none.
+     */
+    public function isEmpty(): bool
+    {
+        return $this->arguments === [];
+    }
 }

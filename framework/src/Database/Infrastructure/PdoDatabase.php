@@ -11,6 +11,7 @@ use AIC\Database\Domain\DatabaseConfig;
 use Override;
 use PDO;
 use PDOException;
+use PDOStatement;
 
 use function array_filter;
 use function array_merge;
@@ -54,29 +55,129 @@ final class PdoDatabase implements Database
     #[Override]
     public function fetchOne(string $sql, array $params): Row
     {
+        $pdoStatement = $this->run($sql, $params);
+
         try {
-            $statement = $this->pdo()->prepare($sql);
-
-            if ($statement === false) {
-                throw new QueryException('The query could not be prepared.');
-            }
-
-            $statement->execute($params);
-            $row = $statement->fetch(PDO::FETCH_ASSOC);
+            $row = $pdoStatement->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $pdoException) {
-            throw new QueryException('The query failed: SQLSTATE ' . $pdoException->getCode() . '.', 0, $pdoException);
+            throw self::failure($pdoException);
         }
 
         if (!is_array($row)) {
             throw new QueryException('The query returned no row.');
         }
 
-        // Narrowed to scalars and nulls under string keys, into fresh arrays: the
-        // native form for data out of `mixed` (plan.md).
-        $scalars = array_filter(array_filter($row, is_scalar(...)), is_string(...), ARRAY_FILTER_USE_KEY);
-        $nulls = array_filter(array_filter($row, is_null(...)), is_string(...), ARRAY_FILTER_USE_KEY);
+        return self::row(array_filter($row, is_scalar(...)), array_filter($row, is_null(...)));
+    }
 
-        return new Row(array_merge($scalars, $nulls));
+    /**
+     * @param string                           $sql    The query, with `?` placeholders.
+     * @param list<string|int|float|bool|null> $params The values for the placeholders, in order.
+     *
+     * @throws QueryException When the query fails.
+     *
+     * @return list<Row> Every row, in order.
+     */
+    #[Override]
+    public function fetchAll(string $sql, array $params): array
+    {
+        $pdoStatement = $this->run($sql, $params);
+
+        try {
+            $fetched = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $pdoException) {
+            throw self::failure($pdoException);
+        }
+
+        $rows = [];
+
+        foreach ($fetched as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $rows[] = self::row(array_filter($row, is_scalar(...)), array_filter($row, is_null(...)));
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param string                           $sql    A statement, with `?` placeholders.
+     * @param list<string|int|float|bool|null> $params The values for the placeholders, in order.
+     *
+     * @throws QueryException When the statement fails.
+     *
+     * @return int The number of rows it affected.
+     */
+    #[Override]
+    public function execute(string $sql, array $params): int
+    {
+        return $this->run($sql, $params)->rowCount();
+    }
+
+    /**
+     * @throws QueryException When a transaction cannot begin.
+     */
+    #[Override]
+    public function beginTransaction(): void
+    {
+        try {
+            $this->pdo()->beginTransaction();
+        } catch (PDOException $pdoException) {
+            throw self::failure($pdoException);
+        }
+    }
+
+    /**
+     * @throws QueryException When the transaction cannot commit.
+     */
+    #[Override]
+    public function commit(): void
+    {
+        try {
+            $this->pdo()->commit();
+        } catch (PDOException $pdoException) {
+            throw self::failure($pdoException);
+        }
+    }
+
+    /**
+     * @throws QueryException When the transaction cannot roll back.
+     */
+    #[Override]
+    public function rollBack(): void
+    {
+        try {
+            $this->pdo()->rollBack();
+        } catch (PDOException $pdoException) {
+            throw self::failure($pdoException);
+        }
+    }
+
+    /**
+     * @param string                           $sql    A statement, with `?` placeholders.
+     * @param list<string|int|float|bool|null> $params The values for the placeholders, in order.
+     *
+     * @throws QueryException When it cannot be prepared or fails.
+     *
+     * @return PDOStatement The executed statement.
+     */
+    private function run(string $sql, array $params): PDOStatement
+    {
+        try {
+            $statement = $this->pdo()->prepare($sql);
+
+            if (!$statement instanceof PDOStatement) {
+                throw new QueryException('The query could not be prepared.');
+            }
+
+            $statement->execute($params);
+
+            return $statement;
+        } catch (PDOException $pdoException) {
+            throw self::failure($pdoException);
+        }
     }
 
     /**
@@ -102,5 +203,33 @@ final class PdoDatabase implements Database
         $this->connection = [$pdo];
 
         return $pdo;
+    }
+
+    /**
+     * A fetched row's values, split by the caller into scalars and nulls and
+     * kept here under string keys, in fresh arrays: the native form for data out
+     * of `mixed` (plan.md).
+     *
+     * @param array<array-key, scalar> $scalars The row's scalar values.
+     * @param array<array-key, null>   $nulls   The row's nulls.
+     *
+     * @return Row The row.
+     */
+    private static function row(array $scalars, array $nulls): Row
+    {
+        return new Row(array_merge(
+            array_filter($scalars, is_string(...), ARRAY_FILTER_USE_KEY),
+            array_filter($nulls, is_string(...), ARRAY_FILTER_USE_KEY),
+        ));
+    }
+
+    /**
+     * @param PDOException $pdoException What PDO threw.
+     *
+     * @return QueryException The failure, naming only its SQLSTATE.
+     */
+    private static function failure(PDOException $pdoException): QueryException
+    {
+        return new QueryException('The query failed: SQLSTATE ' . $pdoException->getCode() . '.', 0, $pdoException);
     }
 }

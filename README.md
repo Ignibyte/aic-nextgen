@@ -15,7 +15,7 @@ with ticket #4.
 | `framework/` | `aic/framework`, namespace `AIC\` under `framework/src/`, pulled in through a composer path repository |
 | `app/` | The demo app, `aic/app`, namespace `App\` |
 | `public/worker.php` | The FrankenPHP worker: booted once, then called once per request |
-| `bin/aic` | The console: `bin/aic <command> [arguments]`; with no command it lists them |
+| `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
 | `bin/aic-build` | The build step for the build-time manifests (`composer run build`); nothing to build yet |
 | `.ddev/` | DDEV: FrankenPHP as the web server (the `ddev/ddev-frankenphp` add-on) and Postgres 17 |
 
