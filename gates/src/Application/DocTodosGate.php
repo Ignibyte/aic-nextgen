@@ -4,22 +4,12 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use FilesystemIterator;
-use RecursiveCallbackFilterIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
-
 use function count;
 use function file_get_contents;
 use function fwrite;
-use function in_array;
-use function mb_strtolower;
 use function restore_error_handler;
 use function set_error_handler;
-use function sort;
 use function sprintf;
-use function str_replace;
 
 use const PHP_EOL;
 use const STDERR;
@@ -73,9 +63,11 @@ final readonly class DocTodosGate
 
     /**
      * @param MarkdownLineScanner $markdownLineScanner Per-file (TODO) + dead-link scanner.
+     * @param MarkdownTreeWalker  $markdownTreeWalker  Lists the markdown files under the tree.
      */
     public function __construct(
         private MarkdownLineScanner $markdownLineScanner = new MarkdownLineScanner(),
+        private MarkdownTreeWalker $markdownTreeWalker = new MarkdownTreeWalker(),
     ) {
     }
 
@@ -115,47 +107,7 @@ final readonly class DocTodosGate
      */
     private function collectMarkdownFiles(string $root): array
     {
-        $hits = [];
-
-        foreach ($this->iterateTree($root) as $entry) {
-            if (!$this->isMarkdownFile($entry)) {
-                continue;
-            }
-
-            $hits[] = $entry->getPathname();
-        }
-
-        sort($hits);
-
-        return $hits;
-    }
-
-    /**
-     * Recursively iterate over every node under `$root`, skipping vendor/cache directories.
-     *
-     * @param string $root Repo-root absolute path.
-     *
-     * @return iterable<SplFileInfo>
-     */
-    private function iterateTree(string $root): iterable
-    {
-        return new RecursiveIteratorIterator(
-            new RecursiveCallbackFilterIterator(
-                new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS),
-                static fn (SplFileInfo $current): bool => !$current->isDir()
-                    || !self::isSkippedDir($current, $root),
-            ),
-        );
-    }
-
-    /**
-     * Decide whether `$entry` is a regular `.md` file (case-insensitive).
-     *
-     * @param SplFileInfo $entry Iterator entry to inspect.
-     */
-    private function isMarkdownFile(SplFileInfo $entry): bool
-    {
-        return $entry->isFile() && mb_strtolower($entry->getExtension()) === 'md';
+        return $this->markdownTreeWalker->markdownFiles($root, self::SKIP_DIRS, self::SKIP_PATHS);
     }
 
     /**
@@ -249,17 +201,5 @@ final readonly class DocTodosGate
         }
 
         fwrite($stderr, PHP_EOL);
-    }
-
-    /**
-     * Decide whether a directory is skipped, by name or by its path under `$root`.
-     *
-     * @param SplFileInfo $dir  Directory entry to inspect.
-     * @param string      $root Repo-root absolute path.
-     */
-    private static function isSkippedDir(SplFileInfo $dir, string $root): bool
-    {
-        return in_array($dir->getFilename(), self::SKIP_DIRS, true)
-            || in_array(str_replace($root . '/', '', $dir->getPathname()), self::SKIP_PATHS, true);
     }
 }

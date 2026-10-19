@@ -1,0 +1,33 @@
+{
+  "_comment": "The four-phase workflow hooks (CONSTITUTION.md §4, ticket #3). Pipeline-only hooks act only while a workflow command runs (/pipeline:*, /work, /work-lite, /commit, /spec, /scope-split, /bug, /qa); enforce-quality.sh and enforce-secrets.sh run on every Stop with changed files. Each script fails open without jq or a transcript. Without docs/planning (the private planning repo) the pipeline cannot run: the phase gate then blocks code writes in a pipeline phase, and the doc-reading hooks have nothing to check.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-mcp-config.sh", "timeout": 30 }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-phase-gate.sh", "timeout": 30 },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-agent-scope.sh", "timeout": 30 },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-docs-before-code.sh", "timeout": 30 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-pipeline-completion.sh", "timeout": 30 },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-completion.sh", "timeout": 60 },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-browser-checked.sh", "timeout": 30 },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-quality.sh", "timeout": 180 },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-sast.sh", "timeout": 240 },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-secrets.sh", "timeout": 90 }
+        ]
+      }
+    ]
+  }
+}

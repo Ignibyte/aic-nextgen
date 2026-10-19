@@ -60,5 +60,12 @@ There are no baselines and no suppressions. The gate code lives in `gates/` and 
 the framework. `composer install` also installs the git hooks, which hold commit subjects to
 Conventional Commits.
 
+## Working on AIC
+
+`CONSTITUTION.md` holds the binding rules. Work goes through four phases (Plan, Code, Quality
+checks, Documentation) with the Claude Code commands in `.claude/commands/` (`/work`,
+`/pipeline:*`, `/commit`) and the hooks in `.claude/hooks/`. `CHANGELOG.md` records what each
+ticket delivered.
+
 Maintainers keep the plan and the tickets in a private checkout at `docs/planning/`, which this
 repository ignores.
