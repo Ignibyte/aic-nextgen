@@ -17,6 +17,7 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Memory in Documentation** (#3, found by #15). `/pipeline:complete`'s write scope now includes the project's auto-memory directory. Its memory step writes there, and the scope hook blocked it.
 - **Hook project root** (#3, found live). The hooks take the root from `$CLAUDE_PROJECT_DIR`, falling back to the git root. Starting from the session's working directory found the nested planning repo whenever the shell sat in `docs/planning`, and the MCP-config hook then blocked every write.
 - **Hook command detection** (#3). Old AIC's hooks recognized only Skill-tool invocations of the workflow commands. A command the user typed is recorded as `<command-name>/…</command-name>`, so it never made a session a pipeline session.
 - **Two hook checks that never ran** (#3). The SAST hook's semgrep check looked for `.semgrep.yml` and the quality hook's PHPCS check for `phpcs.xml`; the real files are `semgrep.yml` and `phpcs.xml.dist`.
