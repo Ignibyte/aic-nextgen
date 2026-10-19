@@ -56,7 +56,7 @@ Ticket changes are committed and pushed in `docs/planning`, not here. Old AIC's 
 ## Workflow
 
 Four phases: **Plan** (spec, design, file list, browser checks for UI work; Chad confirms),
-**Code** (no tests; browser-testable work is checked live with the Playwright MCP), **Quality
+**Code** (no tests; browser-testable work is checked live in a browser on this box, see On this box), **Quality
 checks** (`composer run gate` until green, the only gate run), **Documentation** (docs, plan
 updates, changelog, then delivery). AIC writes **no unit, mutation, coverage or regression
 tests** for now (Chad may bring them back once the framework is done); an invariant that must hold ships as a static guard (PHPStan, phpat or semgrep rule)
@@ -112,6 +112,10 @@ Every file:
 
 ## On this box
 
+- Browser checks run on this box, never through the Mac mini's Playwright. Use Marley's Browser
+  tab (the `marley` `browser_*` tools) when Chad needs to watch, and a local Playwright MCP
+  (headless, the Chromium in `~/.cache/ms-playwright`) when he doesn't. DDEV's default
+  `aic-nextgen.ddev.site` resolves locally, so no extra hostname is needed.
 - `.mcp.json` is owner-managed (the Playwright MCP server). Never write or overwrite it; it is
   gitignored here.
 - Never `git stash -u`: it takes the untracked `.mcp.json` with it.
