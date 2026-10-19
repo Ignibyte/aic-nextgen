@@ -169,8 +169,8 @@ check_phase_pass() {
     local doc="$1"
     local phase_num="$2"
     local status_line
-    status_line=$(grep -oP '^status:\s*\K.*' "$doc" 2>/dev/null | head -1 || true)
-    if [ -n "$status_line" ] && echo "$status_line" | grep -qE "Phase\s+${phase_num}\s+[—-].*PASS"; then
+    status_line=$(grep -m 1 -oP '^status:\s*\K.*' "$doc" 2>/dev/null || true)
+    if [ -n "$status_line" ] && grep -qE "Phase\s+${phase_num}\s+[—-].*PASS" <<< "$status_line"; then
         return 0
     fi
     return 1
@@ -188,16 +188,16 @@ check_spec_complete() {
     if ! grep -qP '^goal:\s*(?!<).{10,}' "$doc" 2>/dev/null; then
         missing="${missing}goal not populated. "
     fi
-    if ! sed -n '/^## Acceptance Criteria/,/^## /p' "$doc" 2>/dev/null | grep -qP '^\|\s*\d+\s*\|\s*(?!<)\S'; then
+    if ! grep -qP '^\|\s*\d+\s*\|\s*(?!<)\S' < <(sed -n '/^## Acceptance Criteria/,/^## /p' "$doc" 2>/dev/null); then
         missing="${missing}Acceptance Criteria has no criterion row. "
     fi
     # A row whose first cell is path-like (contains "/" or "."), so the table
     # header (`| File | …`) and separator rows never count.
-    if ! sed -n '/^### File Manifest/,/^##/p' "$doc" 2>/dev/null | grep -qP '^\|\s*`?(?!<)[A-Za-z0-9_-]+[./][A-Za-z0-9_./*-]*`?\s*\|'; then
+    if ! grep -qP '^\|\s*`?(?!<)[A-Za-z0-9_-]+[./][A-Za-z0-9_./*-]*`?\s*\|' < <(sed -n '/^### File Manifest/,/^##/p' "$doc" 2>/dev/null); then
         missing="${missing}Design → File Manifest has no file row. "
     fi
     if grep -qiP '^browser_testable:\s*yes' "$doc" 2>/dev/null; then
-        if ! sed -n '/^## Browser Check/,/^## /p' "$doc" 2>/dev/null | grep -qP '^- \[[ xX]\] (?!<).{5,}'; then
+        if ! grep -qP '^- \[[ xX]\] (?!<).{5,}' < <(sed -n '/^## Browser Check/,/^## /p' "$doc" 2>/dev/null); then
             missing="${missing}browser_testable is Yes but the Browser Check list is empty. "
         fi
     fi

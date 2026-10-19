@@ -58,9 +58,9 @@ FILE_PATHS=$(extract_file_tool_paths_with_subagents "$TRANSCRIPT_PATH")
 BASH_COMMANDS=$(extract_bash_commands "$TRANSCRIPT_PATH")
 
 DOCS_LOOKED_UP=false
-if echo "$FILE_PATHS" | grep -qE '(^|/)docs/'; then
+if grep -qE '(^|/)docs/' <<< "$FILE_PATHS"; then
     DOCS_LOOKED_UP=true
-elif echo "$BASH_COMMANDS" | grep -qE '(^|[ /])docs/|bin/ticket\.sh'; then
+elif grep -qE '(^|[ /])docs/|bin/ticket\.sh' <<< "$BASH_COMMANDS"; then
     DOCS_LOOKED_UP=true
 elif tool_was_called "$TOOL_CALLS" "Agent"; then
     DOCS_LOOKED_UP=true

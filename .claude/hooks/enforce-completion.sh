@@ -118,6 +118,10 @@ if [ ${#MISSING[@]} -gt 0 ]; then
             echo ""
         done
         echo "Complete every missing item before stopping."
+        echo ""
+        echo "If the transcript already holds this evidence, the hook is at fault, not the work:"
+        echo "  jq -nc --arg t \"\$TRANSCRIPT\" '{transcript_path: \$t}' | bash .claude/hooks/enforce-completion.sh"
+        echo "and fix the hook. There is no ceiling on repeated blocks (#16)."
     } >&2
     exit 2
 fi

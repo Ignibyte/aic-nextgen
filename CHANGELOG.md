@@ -17,6 +17,7 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Hook checks on long transcripts** (#16). Every early-exit reader fed by a pipe in `.claude/hooks/` and `bin/` (`grep -q`, `grep -m`, `head`; 15 sites in 8 scripts) now reads a here-string or a process substitution, or `awk 'NR == 1'` takes the first line. Under `pipefail` such a pipe fails once its input outgrows the pipe buffer, as PR #11 found in `enforce-completion.sh`. The semgrep rule `aic-no-early-exit-pipe` (gate:15, which now scans the hooks) keeps the pattern out. The completion hook's block message says how to test a block against the transcript; there is no ceiling on repeated blocks.
 - **Completion evidence on a long session** (#3, found live). `enforce-completion.sh` piped the session's command list into `grep -q` under `pipefail`. Past the pipe buffer, `grep -q` exits on its first match, `echo` takes SIGPIPE, and the pipeline fails (141), so a gate run that happened read as missing and Stop blocked in a loop. The checks read a here-string now.
 - **Memory in Documentation** (#3, found by #15). `/pipeline:complete`'s write scope now includes the project's auto-memory directory. Its memory step writes there, and the scope hook blocked it.
 - **Hook project root** (#3, found live). The hooks take the root from `$CLAUDE_PROJECT_DIR`, falling back to the git root. Starting from the session's working directory found the nested planning repo whenever the shell sat in `docs/planning`, and the MCP-config hook then blocked every write.
