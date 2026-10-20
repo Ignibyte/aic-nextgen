@@ -44,7 +44,8 @@ token and the honeypot on every unsafe request; the `Form` atom takes a `FormTok
 redirects on the site. #44: multipart posts become PSR-7 uploads; `UploadCheck` accepts a file by
 its content. #8 is done. #9: `AIC\Auth` (pgcrypto bcrypt, `Authenticator`, protected prefixes);
 M4 is done. #13 runs as #46 to #48; #46: the Job kind and a Postgres queue (`bin/aic
-queue:work`). Next is #47 (the scheduler). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+queue:work`). #47: schedules in code, `bin/aic schedule:run` (once per minute, by a ledger). Next
+is #48 (notifications). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 

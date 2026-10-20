@@ -11,6 +11,8 @@ use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\FormTokens;
 use AIC\Queue\Application\PostgresQueue;
+use AIC\Schedule\Application\Scheduler;
+use AIC\Schedule\Domain\Schedule;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -19,20 +21,24 @@ use function htmlspecialchars;
 use function implode;
 
 /**
- * GET /jobs: queues the demo job (one that succeeds, one that keeps failing)
- * and shows the queue and the failed record (#46). `bin/aic queue:work` runs
+ * GET /jobs: the schedules and their last runs (#47), the queue and the
+ * failed record, and buttons that queue the demo job (#46). `bin/aic queue:work` runs
  * the jobs.
  */
 final readonly class JobsPage implements Page
 {
     /**
-     * @param HtmlLayout    $htmlLayout    Makes the page.
-     * @param PostgresQueue $postgresQueue The queue.
-     * @param FormTokens    $formTokens    Issues the visitor's CSRF token.
+     * @param HtmlLayout     $htmlLayout    Makes the page.
+     * @param PostgresQueue  $postgresQueue The queue.
+     * @param Scheduler      $scheduler     Knows when each schedule last fired.
+     * @param list<Schedule> $schedules     The app's schedules.
+     * @param FormTokens     $formTokens    Issues the visitor's CSRF token.
      */
     public function __construct(
         private HtmlLayout $htmlLayout,
         private PostgresQueue $postgresQueue,
+        private Scheduler $scheduler,
+        private array $schedules,
         private FormTokens $formTokens = new FormTokens(),
     ) {
     }
@@ -52,12 +58,28 @@ final readonly class JobsPage implements Page
         $fail = (new Button('Queue a failing job', 'submit', 'queue-fail'))->render();
 
         return $this->htmlLayout->content(
-            '<h2>Waiting</h2>' . self::items('waiting', $this->postgresQueue->waiting())
+            '<h2>Schedules</h2>' . self::items('schedules', array_map($this->scheduleLine(...), $this->schedules))
+            . '<h2>Waiting</h2>' . self::items('waiting', $this->postgresQueue->waiting())
             . '<h2>Failed</h2>' . self::items('failed', $this->postgresQueue->failed())
             . (new Form('', '/jobs?mode=succeed', $html, $formToken))->render()->markup()
             . (new Form('', '/jobs?mode=fail', $fail, $formToken))->render()->markup(),
             200,
         );
+    }
+
+    /**
+     * @param Schedule $schedule A schedule.
+     *
+     * @throws QueryException When the ledger cannot be read.
+     *
+     * @return string Its name, cadence, job and last run.
+     */
+    private function scheduleLine(Schedule $schedule): string
+    {
+        $last = $this->scheduler->lastRun($schedule->name);
+
+        return $schedule->name . ' (' . $schedule->cadence->expression . ') queues ' . $schedule->job
+            . '; last run ' . ($last === '' ? 'never' : $last . ' UTC');
     }
 
     /**

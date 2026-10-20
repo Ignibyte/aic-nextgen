@@ -23,6 +23,7 @@ use AIC\Routing\Domain\RouteTable;
 use App\AppJobs;
 use App\AppPlugins;
 use App\AppProvider;
+use App\AppSchedules;
 use App\ConsoleCommands;
 use Gates\Application\SurfaceManifest;
 use Gates\Application\TemplateBuild;
@@ -47,7 +48,7 @@ $templateBuild = new TemplateBuild(new TemplateParser(), new TemplateCompiler(),
 
 try {
     $outputs = [
-        $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleCommands->byName(), (new AppJobs())->byName()),
+        $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleCommands->byName(), (new AppJobs())->byName(), (new AppSchedules())->all()),
         $root . '/public/assets/aic.css' => (new ThemeBuild($root . '/theme'))->stylesheet(),
     ] + $templateBuild->classes();
 } catch (InvalidArgumentException $invalidArgumentException) {
