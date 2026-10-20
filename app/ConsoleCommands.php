@@ -10,6 +10,7 @@ use AIC\Schema\Application\MigrateCommand;
 use AIC\Schema\Application\MigrationStatusCommand;
 use AIC\Schema\Application\Migrator;
 use AIC\Schema\Application\PostgresDdl;
+use AIC\Session\Domain\CreateSessionsTable;
 use App\Console\DatabasePing;
 use App\Console\Greet;
 use App\Migration\CreateNotesTable;
@@ -36,7 +37,7 @@ final readonly class ConsoleCommands
      */
     public function byName(): array
     {
-        $migrator = new Migrator($this->database, new PostgresDdl(), [new CreateNotesTable()]);
+        $migrator = new Migrator($this->database, new PostgresDdl(), [new CreateNotesTable(), new CreateSessionsTable()]);
 
         return [
             'db:ping' => new DatabasePing($this->database),

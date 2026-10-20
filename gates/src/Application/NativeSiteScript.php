@@ -51,6 +51,9 @@ final readonly class NativeSiteScript
     private function notes(): array
     {
         return [
+            new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, true, false),
+            new NativeSiteStep('visits, unknown session', 'GET', '/visits', '', 'Cookie: __Host-aic_session=unknown', 200, true, false),
+            new NativeSiteStep('visits forget', 'POST', '/visits/forget', '', 'Cookie: __Host-aic_session=unknown', 303, true, false),
             new NativeSiteStep('notes', 'GET', '/notes', '', '', 200, true, false),
             new NativeSiteStep('note blank', 'POST', '/notes', 'title=', '', 422, true, false),
             new NativeSiteStep('note create', 'POST', '/notes', 'title=Gate&body=x', '', 303, true, true),

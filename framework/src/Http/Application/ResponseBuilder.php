@@ -95,6 +95,20 @@ final readonly class ResponseBuilder
     }
 
     /**
+     * @param ResponseInterface $response A response.
+     * @param string            $name     A header name, such as `Set-Cookie`, that may carry several values.
+     * @param string            $value    One more value.
+     *
+     * @throws InvalidArgumentException When the name or value is not valid.
+     *
+     * @return ResponseInterface The response with the value added to the header's.
+     */
+    public function withAddedHeader(ResponseInterface $response, string $name, string $value): ResponseInterface
+    {
+        return self::response($response->withAddedHeader($name, $value));
+    }
+
+    /**
      * @param MessageInterface $message A response's copy.
      *
      * @throws InvalidArgumentException When it is not a response.
