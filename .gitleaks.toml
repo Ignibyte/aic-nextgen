@@ -34,4 +34,9 @@ paths = [
     # DDEV-generated local-dev TLS certs/keys. .ddev/.gitignore excludes them
     # from commits; this entry keeps a working-tree scan from flagging them.
     '''\.ddev/traefik/certs/.*''',
+    # The local-dev AIC_APP_SECRET (#43) lives in DDEV's config.local.yaml, which DDEV copies
+    # into its generated compose files; .ddev/.gitignore excludes all three from commits, and
+    # gate:17 still scans the history.
+    '''\.ddev/config\.local\.ya?ml''',
+    '''\.ddev/\.ddev-docker-compose-[a-z]+\.yaml''',
 ]

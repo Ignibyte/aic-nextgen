@@ -69,11 +69,13 @@ final readonly class AppHandlers
         $contentHandlers = new ContentHandlers($htmlLayout, $pageHandlers, $this->database);
 
         return array_merge(
-            array_merge($noteHandlers->byId(), $contentHandlers->byId()),
-            array_merge(
-                array_merge($visitHandlers->byId(), $greetingHandlers->byId()),
-                array_merge(array_merge($authHandlers->byId(), $jobHandlers->byId()), $siteHandlers->byId()),
-            ),
+            $noteHandlers->byId(),
+            $contentHandlers->byId(),
+            $visitHandlers->byId(),
+            $greetingHandlers->byId(),
+            $authHandlers->byId(),
+            $jobHandlers->byId(),
+            $siteHandlers->byId(),
         );
     }
 }
