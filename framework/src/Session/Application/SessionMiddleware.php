@@ -104,8 +104,8 @@ final readonly class SessionMiddleware implements MiddlewareInterface
             : $this->sessionStore->read($incoming);
 
         return $payload === null
-            ? new StoredSession($this->randomTokens->fresh(), [])
-            : new StoredSession($incoming, $this->stringMapJson->decode($payload));
+            ? new StoredSession($this->randomTokens->fresh(), [], $this->randomTokens)
+            : new StoredSession($incoming, $this->stringMapJson->decode($payload), $this->randomTokens);
     }
 
     /**

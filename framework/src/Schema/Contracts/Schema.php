@@ -15,4 +15,9 @@ interface Schema
      * @return TableBuilder Its columns, added in order.
      */
     public function create(string $table): TableBuilder;
+
+    /**
+     * @param string $name A Postgres extension the migration needs, such as `pgcrypto`.
+     */
+    public function extension(string $name): void;
 }

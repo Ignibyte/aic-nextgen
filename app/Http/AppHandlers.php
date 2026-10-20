@@ -19,7 +19,7 @@ use function array_merge;
 /**
  * The app's controllers, each wrapped in its kind's handler, by the handler id
  * config/routes.php names, gathered from NoteHandlers, StreamHandlers,
- * VisitHandlers and GreetingHandlers, with the status API.
+ * VisitHandlers, GreetingHandlers and AuthHandlers, with the status API.
  */
 final readonly class AppHandlers
 {
@@ -57,11 +57,15 @@ final readonly class AppHandlers
         $streamHandlers = new StreamHandlers($psr7ResponseWriter, $this->root);
         $visitHandlers = new VisitHandlers($htmlLayout, $pageHandlers);
         $greetingHandlers = new GreetingHandlers($htmlLayout, $pageHandlers, $this->appConfig, $this->bootedAt, $this->greeters);
+        $authHandlers = new AuthHandlers($htmlLayout, $pageHandlers, $this->database);
         $apiHandler = new ApiHandler(new StatusApi($this->appConfig, $this->bootedAt, $this->database), $psr7ResponseWriter);
 
         return array_merge(
             array_merge($noteHandlers->byId(), $streamHandlers->byId()),
-            array_merge(array_merge($visitHandlers->byId(), $greetingHandlers->byId()), [StatusApi::class => $apiHandler]),
+            array_merge(
+                array_merge($visitHandlers->byId(), $greetingHandlers->byId()),
+                array_merge($authHandlers->byId(), [StatusApi::class => $apiHandler]),
+            ),
         );
     }
 }

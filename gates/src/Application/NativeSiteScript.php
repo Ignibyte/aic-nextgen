@@ -21,7 +21,7 @@ final readonly class NativeSiteScript
      */
     public function steps(): array
     {
-        return [...$this->pages(), ...$this->forms(), ...$this->visits(), ...$this->notes()];
+        return [...$this->pages(), ...$this->forms(), ...$this->visits(), ...$this->notes(), ...$this->signIn()];
     }
 
     /**
@@ -97,6 +97,24 @@ final readonly class NativeSiteScript
             new NativeSiteStep('note show again', 'GET', '{note}', '', '', 200, true, false),
             new NativeSiteStep('note delete', 'POST', '{note}/delete', 'aic_csrf={csrf}&aic_envelope={envelope}', '', 303, true, false),
             new NativeSiteStep('note gone', 'GET', '{note}', '', '', 404, true, false),
+        ];
+    }
+
+    /**
+     * @return list<NativeSiteStep> Signing in and out as the gate user, and the protected page (#9).
+     */
+    private function signIn(): array
+    {
+        $login = 'login=gate&next=%2Faccount&aic_csrf={csrf}&password=';
+
+        return [
+            new NativeSiteStep('account, anonymous', 'GET', '/account', '', '', 303, true, false),
+            new NativeSiteStep('login page', 'GET', '/login?next=%2Faccount', '', '', 200, true, false),
+            new NativeSiteStep('login, wrong', 'POST', '/login', $login . 'wrong', '', 422, true, false),
+            new NativeSiteStep('login', 'POST', '/login', $login . '{password}', '', 303, true, false),
+            new NativeSiteStep('account', 'GET', '/account', '', '', 200, true, false),
+            new NativeSiteStep('logout', 'POST', '/logout', 'aic_csrf={csrf}', '', 303, true, false),
+            new NativeSiteStep('account, signed out', 'GET', '/account', '', '', 303, true, false),
         ];
     }
 }

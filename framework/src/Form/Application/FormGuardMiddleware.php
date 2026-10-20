@@ -16,8 +16,6 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 use function hash_equals;
 use function in_array;
-use function is_array;
-use function is_string;
 
 /**
  * Guards every unsafe request before routing (#42): the CSRF token, sent as
@@ -35,10 +33,12 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
     /**
      * @param RequestSession  $requestSession  Reads the session off the request.
      * @param ResponseBuilder $responseBuilder Makes the refusals.
+     * @param PostedFields    $postedFields    Reads the token and the honeypot.
      */
     public function __construct(
         private RequestSession $requestSession,
         private ResponseBuilder $responseBuilder,
+        private PostedFields $postedFields = new PostedFields(),
     ) {
     }
 
@@ -60,14 +60,14 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
         $expected = $this->requestSession->read($request)->get(FormToken::SESSION_KEY) ?? '';
         $sent = $request->getHeaderLine(FormToken::HEADER);
         $sent = $sent === ''
-            ? self::field($request, FormToken::FIELD)
+            ? $this->postedFields->value($request, FormToken::FIELD)
             : $sent;
 
         if ($expected === '' || !hash_equals($expected, $sent)) {
             return $this->refusal(403, 'The form has expired or did not come from this site. Reload the page and send it again.');
         }
 
-        if (self::field($request, FormToken::HONEYPOT) !== '') {
+        if ($this->postedFields->value($request, FormToken::HONEYPOT) !== '') {
             return $this->refusal(400, 'The form could not be accepted.');
         }
 
@@ -83,23 +83,5 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
     private function refusal(int $status, string $message): ResponseInterface
     {
         return $this->responseBuilder->create($status, 'text/plain; charset=utf-8', $message . "\n");
-    }
-
-    /**
-     * @param ServerRequestInterface $serverRequest A request.
-     * @param string                 $name          A form field.
-     *
-     * @return string Its value; empty when absent or not a string.
-     */
-    private static function field(ServerRequestInterface $serverRequest, string $name): string
-    {
-        $body = $serverRequest->getParsedBody();
-        $value = is_array($body)
-            ? $body[$name] ?? ''
-            : '';
-
-        return is_string($value)
-            ? $value
-            : '';
     }
 }

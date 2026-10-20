@@ -18,8 +18,9 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * The app's middleware stack around its router, outermost first: the
- * routing errors (404, 405), the session, then the form guard (CSRF and the
- * honeypot on every unsafe request).
+ * routing errors (404, 405), the session, the sign-in check on protected
+ * paths (#9), then the form guard (CSRF and the honeypot on every unsafe
+ * request).
  */
 final readonly class AppMiddleware
 {
@@ -54,7 +55,8 @@ final readonly class AppMiddleware
         );
 
         $guardStep = new MiddlewareStep(new FormGuardMiddleware(new RequestSession(), $this->responseBuilder), $requestHandler);
-        $middlewareStep = new MiddlewareStep($sessionMiddleware, $guardStep);
+        $authStep = new MiddlewareStep((new AppAccess($this->database, $this->responseBuilder))->middleware(), $guardStep);
+        $middlewareStep = new MiddlewareStep($sessionMiddleware, $authStep);
 
         return new MiddlewareStep(new RouteErrorMiddleware($this->responseBuilder), $middlewareStep);
     }
