@@ -55,6 +55,18 @@
             "path": "/visits/forget"
         },
         {
+            "handler": "App\\Http\\UploadsPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/uploads"
+        },
+        {
+            "handler": "App\\Http\\UploadsPost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/uploads"
+        },
+        {
             "handler": "App\\Http\\NoteListPage",
             "kind": "Page",
             "method": "GET",
