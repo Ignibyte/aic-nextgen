@@ -30,8 +30,9 @@ M0, M1 and M2 are done (2026-10-19).
 #26: `build/surface.json` lists every route and command with its kind, written by `composer run
 build`; gate:24 keeps it fresh. #25: byte ranges (206/416) on downloads and Server-Sent Events
 (`EventStream` pulling from an `EventSource`, streamed natively). #7 (M3) runs as #35 to #39;
-#35: `AIC\Component` (`Component::render(): Html`, the catalog atoms with a caller). Next is #36
-(compiled templates). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+#35: `AIC\Component` (`Component::render(): Html`, the catalog atoms with a caller). #36: a
+component's `X.tpl` compiles to `XTemplate.php` beside it (`composer run build`, kept fresh by
+gate:24); the generated class passes every gate unexcluded. Next is #37 (layouts and regions). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 

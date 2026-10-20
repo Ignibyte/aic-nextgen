@@ -12,8 +12,6 @@ use App\Note\NoteRepository;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
-use function htmlspecialchars;
-
 /**
  * GET /notes/{id}: the note, the form that edits it and the button that
  * deletes it; 404 when there is no such note.
@@ -51,9 +49,7 @@ final readonly class NoteShowPage implements Page
         $path = '/notes/' . $note->id;
 
         return $this->noteViews->page(
-            '<article id="note"><h2 id="note-title">' . htmlspecialchars($note->title) . '</h2>'
-            . '<p id="note-body">' . htmlspecialchars($note->body) . '</p>'
-            . '<p>Written <time>' . htmlspecialchars($note->createdAt) . '</time></p></article>'
+            (new NoteCard($note))->render()->markup()
             . '<h2>Edit</h2>' . $this->noteViews->form($path, $note->title, $note->body, '')
             . $this->noteViews->deleteForm($path),
             200,
