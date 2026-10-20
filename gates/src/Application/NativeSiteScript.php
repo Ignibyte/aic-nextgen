@@ -21,7 +21,7 @@ final readonly class NativeSiteScript
      */
     public function steps(): array
     {
-        return [...$this->pages(), ...$this->sessions()];
+        return [...$this->pages(), ...$this->forms(), ...$this->visits(), ...$this->notes()];
     }
 
     /**
@@ -44,10 +44,9 @@ final readonly class NativeSiteScript
     }
 
     /**
-     * @return list<NativeSiteStep> The steps with a session, which needs Postgres: the greeting form and its
-     *                              guard, the visits, a note's whole life.
+     * @return list<NativeSiteStep> The greeting form and its guard (#42), which need a session and so Postgres.
      */
-    private function sessions(): array
+    private function forms(): array
     {
         return [
             new NativeSiteStep('home', 'GET', '/', '', '', 200, true, false),
@@ -57,15 +56,39 @@ final readonly class NativeSiteScript
             new NativeSiteStep('greet, wrong token', 'POST', '/hello', 'name=Ada&aic_csrf=forged', '', 403, true, false),
             new NativeSiteStep('greet, honeypot', 'POST', '/hello', 'name=Ada&aic_csrf={csrf}&aic_website=spam', '', 400, true, false),
             new NativeSiteStep('unsafe method, forged header', 'DELETE', '/', '', 'X-AIC-CSRF: forged', 403, true, false),
+        ];
+    }
+
+    /**
+     * @return list<NativeSiteStep> A session's visits, and where forgetting goes (#41, #43).
+     */
+    private function visits(): array
+    {
+        return [
             new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, true, false),
             new NativeSiteStep('visits, unknown', 'GET', '/visits', '', 'Cookie: __Host-aic_session=unknown', 200, true, false),
-            new NativeSiteStep('visits forget', 'POST', '/visits/forget', 'aic_csrf={csrf}', '', 303, true, false),
+            new NativeSiteStep('forget, off-site', 'POST', '/visits/forget', 'next=%2F%2Fevil.test&aic_csrf={csrf}', '', 303, true, false),
+            new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, true, false),
+            new NativeSiteStep('forget, next', 'POST', '/visits/forget', 'next=%2Fnotes&aic_csrf={csrf}', '', 303, true, false),
+        ];
+    }
+
+    /**
+     * @return list<NativeSiteStep> A note's whole life, its envelope altered once (#43).
+     */
+    private function notes(): array
+    {
+        $update = 'title=Gate+edited&body=y&aic_csrf={csrf}&aic_envelope={envelope}';
+
+        return [
             new NativeSiteStep('notes', 'GET', '/notes', '', '', 200, true, false),
             new NativeSiteStep('note blank', 'POST', '/notes', 'title=&aic_csrf={csrf}', '', 422, true, false),
             new NativeSiteStep('note create', 'POST', '/notes', 'title=Gate&body=x&aic_csrf={csrf}', '', 303, true, true),
             new NativeSiteStep('note show', 'GET', '{note}', '', '', 200, true, false),
-            new NativeSiteStep('note update', 'POST', '{note}', 'title=Gate+edited&body=y&aic_csrf={csrf}', '', 303, true, false),
-            new NativeSiteStep('note delete', 'POST', '{note}/delete', 'aic_csrf={csrf}', '', 303, true, false),
+            new NativeSiteStep('note update, altered', 'POST', '{note}', $update . 'x', '', 400, true, false),
+            new NativeSiteStep('note update', 'POST', '{note}', $update, '', 303, true, false),
+            new NativeSiteStep('note show again', 'GET', '{note}', '', '', 200, true, false),
+            new NativeSiteStep('note delete', 'POST', '{note}/delete', 'aic_csrf={csrf}&aic_envelope={envelope}', '', 303, true, false),
             new NativeSiteStep('note gone', 'GET', '{note}', '', '', 404, true, false),
         ];
     }

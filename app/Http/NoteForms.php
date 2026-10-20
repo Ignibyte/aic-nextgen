@@ -13,20 +13,23 @@ use AIC\Component\Domain\FormField;
 use AIC\Component\Domain\Input;
 use AIC\Component\Domain\Textarea;
 use AIC\Form\Application\FormTokens;
+use JsonException;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * The note forms, built from the atoms: the one that creates or edits a
  * note, and the one whose button deletes it. Each carries the visitor's CSRF
- * token (#42).
+ * token (#42) and an envelope naming its note (#43).
  */
 final readonly class NoteForms
 {
     /**
-     * @param FormTokens $formTokens Issues the visitor's CSRF token.
+     * @param NoteEnvelope $noteEnvelope Binds each form to its note.
+     * @param FormTokens   $formTokens   Issues the visitor's CSRF token.
      */
     public function __construct(
-        private FormTokens $formTokens,
+        private NoteEnvelope $noteEnvelope,
+        private FormTokens $formTokens = new FormTokens(),
     ) {
     }
 
@@ -54,7 +57,23 @@ final readonly class NoteForms
             ->append((new FormField('Body', 'body', new Textarea('body', 'body', $body)))->render())
             ->append((new Button('Save', 'submit', ''))->render());
 
-        return (new Form('note-form', $action, $html, $this->formTokens->issue($serverRequest)))->render();
+        $sealed = $this->noteEnvelope->field($action)->append($html);
+
+        return (new Form('note-form', $action, $sealed, $this->formTokens->issue($serverRequest)))->render();
+    }
+
+    /**
+     * @param ServerRequestInterface $serverRequest The posted form, with its session.
+     * @param string                 $action        Where it posts.
+     * @param PostedNote             $postedNote    What was posted, with its error.
+     *
+     * @throws JsonException When the envelope cannot be encoded.
+     *
+     * @return Html The form again, holding what was posted and showing the error.
+     */
+    public function again(ServerRequestInterface $serverRequest, string $action, PostedNote $postedNote): Html
+    {
+        return $this->form($serverRequest, $action, $postedNote->title, $postedNote->body, $postedNote->error);
     }
 
     /**
@@ -67,6 +86,8 @@ final readonly class NoteForms
     {
         $html = (new Button('Delete', 'submit', 'delete'))->render();
 
-        return (new Form('', $path . '/delete', $html, $this->formTokens->issue($serverRequest)))->render();
+        $sealed = $this->noteEnvelope->field($path)->append($html);
+
+        return (new Form('', $path . '/delete', $sealed, $this->formTokens->issue($serverRequest)))->render();
     }
 }

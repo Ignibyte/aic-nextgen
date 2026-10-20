@@ -7,8 +7,8 @@ namespace AIC\Session\Application;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Session\Contracts\SessionStore;
 use AIC\Session\Domain\RandomTokens;
-use AIC\Session\Domain\SessionCodec;
 use AIC\Session\Domain\StoredSession;
+use AIC\Session\Domain\StringMapJson;
 use JsonException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
@@ -36,14 +36,14 @@ final readonly class SessionMiddleware implements MiddlewareInterface
     /**
      * @param SessionStore    $sessionStore    Where sessions live.
      * @param RandomTokens    $randomTokens    Makes fresh ids.
-     * @param SessionCodec    $sessionCodec    Encodes and decodes payloads.
+     * @param StringMapJson   $stringMapJson   Encodes and decodes payloads.
      * @param ResponseBuilder $responseBuilder Adds the cookie to the response.
      * @param int             $ttl             Seconds a session lives after its last request.
      */
     public function __construct(
         private SessionStore $sessionStore,
         private RandomTokens $randomTokens,
-        private SessionCodec $sessionCodec,
+        private StringMapJson $stringMapJson,
         private ResponseBuilder $responseBuilder,
         private int $ttl,
     ) {
@@ -72,7 +72,7 @@ final readonly class SessionMiddleware implements MiddlewareInterface
             $this->sessionStore->destroy($incoming);
         }
 
-        $this->sessionStore->write($storedSession->sessionId(), $this->sessionCodec->encode($storedSession->all()), $this->ttl);
+        $this->sessionStore->write($storedSession->sessionId(), $this->stringMapJson->encode($storedSession->all()), $this->ttl);
 
         return $this->responseBuilder->withAddedHeader($response, 'Set-Cookie', $this->setCookie($storedSession->sessionId(), $this->ttl));
     }
@@ -105,7 +105,7 @@ final readonly class SessionMiddleware implements MiddlewareInterface
 
         return $payload === null
             ? new StoredSession($this->randomTokens->fresh(), [])
-            : new StoredSession($incoming, $this->sessionCodec->decode($payload));
+            : new StoredSession($incoming, $this->stringMapJson->decode($payload));
     }
 
     /**

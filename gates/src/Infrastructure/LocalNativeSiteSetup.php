@@ -8,10 +8,12 @@ use Gates\Domain\NativeSiteSetup;
 use Gates\Domain\ProcessRunner;
 
 use function array_key_exists;
+use function bin2hex;
 use function fclose;
 use function is_resource;
 use function is_string;
 use function preg_match;
+use function random_bytes;
 use function restore_error_handler;
 use function set_error_handler;
 use function stream_socket_client;
@@ -45,6 +47,10 @@ final readonly class LocalNativeSiteSetup
         if (!array_key_exists('PGPORT', $env)) {
             $env['PGHOST'] = '127.0.0.1';
             $env['PGPORT'] = (string) $this->ddevPort($root);
+        }
+
+        if (!array_key_exists('AIC_APP_SECRET', $env)) {
+            $env['AIC_APP_SECRET'] = bin2hex(random_bytes(32));
         }
 
         $host = $env['PGHOST'] ?? '127.0.0.1';

@@ -13,7 +13,7 @@ use AIC\Session\Application\PostgresSessionStore;
 use AIC\Session\Application\RequestSession;
 use AIC\Session\Application\SessionMiddleware;
 use AIC\Session\Domain\RandomTokens;
-use AIC\Session\Domain\SessionCodec;
+use AIC\Session\Domain\StringMapJson;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -48,7 +48,7 @@ final readonly class AppMiddleware
         $sessionMiddleware = new SessionMiddleware(
             new PostgresSessionStore($this->database),
             new RandomTokens(),
-            new SessionCodec(),
+            new StringMapJson(),
             $this->responseBuilder,
             self::SESSION_TTL,
         );

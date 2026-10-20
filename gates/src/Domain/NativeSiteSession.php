@@ -10,8 +10,8 @@ use function str_replace;
 
 /**
  * What one site's run of gate:23 remembers between steps (#42): the session
- * cookie it last set, the CSRF token its last page carried, and the note the
- * capturing step created. Each site gets its own.
+ * cookie it last set, the CSRF token and the signed envelope its last page
+ * carried, and the note the capturing step created. Each site gets its own.
  */
 final class NativeSiteSession
 {
@@ -24,6 +24,11 @@ final class NativeSiteSession
      * The CSRF token the last form carried.
      */
     private string $token = '';
+
+    /**
+     * The signed envelope the last form carried.
+     */
+    private string $envelope = '';
 
     /**
      * The captured note's path.
@@ -43,11 +48,11 @@ final class NativeSiteSession
     /**
      * @param NativeSiteStep $nativeSiteStep A step.
      *
-     * @return string Its form, `{csrf}` replaced by the token.
+     * @return string Its form, `{csrf}` and `{envelope}` replaced by the token and the envelope.
      */
     public function form(NativeSiteStep $nativeSiteStep): string
     {
-        return str_replace('{csrf}', $this->token, $nativeSiteStep->form);
+        return str_replace('{envelope}', $this->envelope, str_replace('{csrf}', $this->token, $nativeSiteStep->form));
     }
 
     /**
@@ -80,14 +85,27 @@ final class NativeSiteSession
                 : $httpExchange->cookie;
         }
 
-        if (preg_match('/name="aic_csrf" value="([0-9a-f]{64})"/', $httpExchange->body, $match) === 1) {
-            $this->token = $match[1];
-        }
+        $this->token = self::captured('/name="aic_csrf" value="([0-9a-f]{64})"/', $httpExchange->body, $this->token);
+        $this->envelope = self::captured('/name="aic_envelope" value="([\\w.-]+)"/', $httpExchange->body, $this->envelope);
 
         if (!$nativeSiteStep->captures) {
             return;
         }
 
         $this->note = $location;
+    }
+
+    /**
+     * @param string $pattern A pattern with one group.
+     * @param string $body    A page.
+     * @param string $current The value kept so far.
+     *
+     * @return string The group's match in the page; the kept value when it has none.
+     */
+    private static function captured(string $pattern, string $body, string $current): string
+    {
+        return preg_match($pattern, $body, $match) === 1
+            ? $match[1]
+            : $current;
     }
 }

@@ -43,6 +43,16 @@ final readonly class NoteViews
     }
 
     /**
+     * @throws InvalidArgumentException Never: 400 is a document status.
+     *
+     * @return PageDocument The 400 page for a note form whose envelope was altered or names another note.
+     */
+    public function altered(): PageDocument
+    {
+        return $this->page([new Html('<p id="altered">This form was changed after it was sent. Reload the note and try again.</p>')], 400);
+    }
+
+    /**
      * @return PageDocument The 404 page for a note that does not exist.
      */
     public function notFound(): PageDocument

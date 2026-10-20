@@ -14,17 +14,18 @@ use function json_encode;
 use const JSON_THROW_ON_ERROR;
 
 /**
- * A session's values to and from its stored payload, a JSON object of
- * strings. A payload that is not one decodes to no values.
+ * A map of strings to and from a JSON object of strings: a session's stored
+ * payload, and a signed envelope's (#43). JSON that is not one decodes to
+ * no values.
  */
-final readonly class SessionCodec
+final readonly class StringMapJson
 {
     /**
-     * @param array<string, string> $values A session's values.
+     * @param array<string, string> $values Strings by key.
      *
      * @throws JsonException When they cannot be encoded.
      *
-     * @return string The payload.
+     * @return string The JSON object.
      */
     public function encode(array $values): string
     {
@@ -32,7 +33,7 @@ final readonly class SessionCodec
     }
 
     /**
-     * @param string $payload A stored payload.
+     * @param string $payload JSON.
      *
      * @return array<string, string> Its string values by string key; nothing for anything else.
      */

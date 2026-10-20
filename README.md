@@ -28,8 +28,13 @@ You need PHP 8.5, Composer 2, DDEV 1.24.10 or later, and a user in the `docker` 
 
 ```bash
 composer install
+printf 'web_environment:\n  - AIC_APP_SECRET=%s\n' "$(openssl rand -hex 32)" > .ddev/config.local.yaml
 ddev start
 ```
+
+The app secret signs envelopes and comes only from the environment (`AIC_APP_SECRET`, 32 bytes or
+more); the app does not boot without it. DDEV keeps `.ddev/config.local.yaml` out of git, and
+gate:23 makes a fresh secret for each run.
 
 `ddev start` prints the URL of the interpreted reference. On the Z690 dev box it is
 `https://aic-nextgen.ddev.site:8843` (the router's ports there are 8880 and 8843).
