@@ -49,7 +49,7 @@ final readonly class PlaceholderPage implements Page
             . self::item('request-method', 'Request method', $serverRequest->getMethod())
             . self::item('request-path', 'Request path', $serverRequest->getUri()->getPath())
             . '</dl><ul id="query">' . self::queryItems($serverRequest->getUri()->getQuery()) . '</ul>'
-            . $this->greetingForm->render('', ''),
+            . $this->greetingForm->render($serverRequest, '', ''),
             200,
         );
     }

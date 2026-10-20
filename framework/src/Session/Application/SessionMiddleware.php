@@ -6,8 +6,8 @@ namespace AIC\Session\Application;
 
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Session\Contracts\SessionStore;
+use AIC\Session\Domain\RandomTokens;
 use AIC\Session\Domain\SessionCodec;
-use AIC\Session\Domain\SessionIds;
 use AIC\Session\Domain\StoredSession;
 use JsonException;
 use Override;
@@ -35,14 +35,14 @@ final readonly class SessionMiddleware implements MiddlewareInterface
 
     /**
      * @param SessionStore    $sessionStore    Where sessions live.
-     * @param SessionIds      $sessionIds      Makes fresh ids.
+     * @param RandomTokens    $randomTokens    Makes fresh ids.
      * @param SessionCodec    $sessionCodec    Encodes and decodes payloads.
      * @param ResponseBuilder $responseBuilder Adds the cookie to the response.
      * @param int             $ttl             Seconds a session lives after its last request.
      */
     public function __construct(
         private SessionStore $sessionStore,
-        private SessionIds $sessionIds,
+        private RandomTokens $randomTokens,
         private SessionCodec $sessionCodec,
         private ResponseBuilder $responseBuilder,
         private int $ttl,
@@ -104,7 +104,7 @@ final readonly class SessionMiddleware implements MiddlewareInterface
             : $this->sessionStore->read($incoming);
 
         return $payload === null
-            ? new StoredSession($this->sessionIds->fresh(), [])
+            ? new StoredSession($this->randomTokens->fresh(), [])
             : new StoredSession($incoming, $this->sessionCodec->decode($payload));
     }
 

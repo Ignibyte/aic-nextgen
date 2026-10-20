@@ -46,7 +46,7 @@ final readonly class GreetingPost implements Page
         $name = trim(is_string($field) ? $field : '');
 
         if ($name === '') {
-            return $this->htmlLayout->content($this->greetingForm->render('', 'A name is required.'), 422);
+            return $this->htmlLayout->content($this->greetingForm->render($serverRequest, '', 'A name is required.'), 422);
         }
 
         return new PageRedirect('/hello/' . rawurlencode($name));

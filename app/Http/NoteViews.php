@@ -8,20 +8,13 @@ use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Html;
 use AIC\Component\Contracts\Region;
 use AIC\Component\Contracts\Regions;
-use AIC\Component\Domain\Alert;
-use AIC\Component\Domain\AlertSeverity;
-use AIC\Component\Domain\Button;
-use AIC\Component\Domain\Form;
-use AIC\Component\Domain\FormField;
-use AIC\Component\Domain\Input;
 use AIC\Component\Domain\Link;
-use AIC\Component\Domain\Textarea;
 use AIC\Controller\Domain\PageDocument;
 use InvalidArgumentException;
 
 /**
- * The note pages' markup: the note form, and the documents around their
- * bodies, the 404 among them.
+ * The note pages' documents: their content and the All notes link on
+ * AppLayout, the 404 among them. The forms are NoteForms'.
  */
 final readonly class NoteViews
 {
@@ -31,37 +24,6 @@ final readonly class NoteViews
     public function __construct(
         private HtmlLayout $htmlLayout,
     ) {
-    }
-
-    /**
-     * @param string $action Where it posts.
-     * @param string $title  The title to show in the field.
-     * @param string $body   The body to show in the field.
-     * @param string $error  The error to show; empty for none.
-     *
-     * @return Html The form.
-     */
-    public function form(string $action, string $title, string $body, string $error): Html
-    {
-        $alert = $error === ''
-            ? new Html('')
-            : (new Alert(AlertSeverity::Error, $error, 'form-error'))->render();
-        $html = $alert
-            ->append((new FormField('Title', 'title', new Input('title', 'title', $title)))->render())
-            ->append((new FormField('Body', 'body', new Textarea('body', 'body', $body)))->render())
-            ->append((new Button('Save', 'submit', ''))->render());
-
-        return (new Form('note-form', $action, $html))->render();
-    }
-
-    /**
-     * @param string $path The note's path.
-     *
-     * @return Html The form whose button deletes the note.
-     */
-    public function deleteForm(string $path): Html
-    {
-        return (new Form('', $path . '/delete', (new Button('Delete', 'submit', 'delete'))->render()))->render();
     }
 
     /**

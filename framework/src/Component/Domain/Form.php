@@ -6,6 +6,7 @@ namespace AIC\Component\Domain;
 
 use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Html;
+use AIC\Form\Contracts\FormToken;
 use Override;
 
 /**
@@ -16,14 +17,16 @@ final readonly class Form implements Component
     use RendersMarkup;
 
     /**
-     * @param string $id     The element id; empty for none.
-     * @param string $action Where it posts.
-     * @param Html   $html   The fields, alerts and buttons, in order.
+     * @param string    $id        The element id; empty for none.
+     * @param string    $action    Where it posts.
+     * @param Html      $html      The fields, alerts and buttons, in order.
+     * @param FormToken $formToken The visitor's CSRF token, rendered first with the honeypot (#42).
      */
     public function __construct(
         private string $id,
         private string $action,
         private Html $html,
+        private FormToken $formToken,
     ) {
     }
 
@@ -37,6 +40,7 @@ final readonly class Form implements Component
             . self::attribute('action', $this->action) . ' class="aic-form">';
 
         return (new Html($open))
+            ->append($this->formToken->fields())
             ->append($this->html)
             ->append(new Html('</form>'));
     }

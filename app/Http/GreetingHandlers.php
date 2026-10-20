@@ -6,6 +6,7 @@ namespace App\Http;
 
 use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Application\PageHandlers;
+use AIC\Form\Application\FormTokens;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -35,7 +36,7 @@ final readonly class GreetingHandlers
      */
     public function byId(): array
     {
-        $greetingForm = new GreetingForm();
+        $greetingForm = new GreetingForm(new FormTokens());
 
         return [
             GreetingPage::class => $this->pageHandlers->handler(new GreetingPage($this->htmlLayout, $this->greeters)),

@@ -22,12 +22,14 @@ final readonly class NoteShowPage implements Page
     /**
      * @param NoteRepository $noteRepository The notes.
      * @param NoteRequest    $noteRequest    Reads the note's id.
-     * @param NoteViews      $noteViews      The note pages' markup.
+     * @param NoteViews      $noteViews      The note pages' documents.
+     * @param NoteForms      $noteForms      The note forms.
      */
     public function __construct(
         private NoteRepository $noteRepository,
         private NoteRequest $noteRequest,
         private NoteViews $noteViews,
+        private NoteForms $noteForms,
     ) {
     }
 
@@ -53,8 +55,8 @@ final readonly class NoteShowPage implements Page
             [
                 new NoteCard($note),
                 new Html('<h2>Edit</h2>'),
-                $this->noteViews->form($path, $note->title, $note->body, ''),
-                $this->noteViews->deleteForm($path),
+                $this->noteForms->form($serverRequest, $path, $note->title, $note->body, ''),
+                $this->noteForms->deleteForm($serverRequest, $path),
             ],
             200,
         );

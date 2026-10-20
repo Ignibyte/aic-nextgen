@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace App;
 
 use AIC\Database\Contracts\Database;
+use AIC\Form\Application\FormGuardMiddleware;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Middleware\Application\MiddlewareStep;
 use AIC\Routing\Application\RouteErrorMiddleware;
 use AIC\Session\Application\PostgresSessionStore;
+use AIC\Session\Application\RequestSession;
 use AIC\Session\Application\SessionMiddleware;
+use AIC\Session\Domain\RandomTokens;
 use AIC\Session\Domain\SessionCodec;
-use AIC\Session\Domain\SessionIds;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * The app's middleware stack around its router, outermost first: the
- * routing errors (404, 405), then the session.
+ * routing errors (404, 405), the session, then the form guard (CSRF and the
+ * honeypot on every unsafe request).
  */
 final readonly class AppMiddleware
 {
@@ -44,13 +47,14 @@ final readonly class AppMiddleware
     {
         $sessionMiddleware = new SessionMiddleware(
             new PostgresSessionStore($this->database),
-            new SessionIds(),
+            new RandomTokens(),
             new SessionCodec(),
             $this->responseBuilder,
             self::SESSION_TTL,
         );
 
-        $middlewareStep = new MiddlewareStep($sessionMiddleware, $requestHandler);
+        $guardStep = new MiddlewareStep(new FormGuardMiddleware(new RequestSession(), $this->responseBuilder), $requestHandler);
+        $middlewareStep = new MiddlewareStep($sessionMiddleware, $guardStep);
 
         return new MiddlewareStep(new RouteErrorMiddleware($this->responseBuilder), $middlewareStep);
     }

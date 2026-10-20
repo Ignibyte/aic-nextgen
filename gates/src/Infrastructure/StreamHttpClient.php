@@ -85,7 +85,9 @@ final readonly class StreamHttpClient implements HttpClient
             $fields = self::withField($fields, $header);
         }
 
-        return new HttpExchange($status, $fields['content-type'] ?? '', $fields['location'] ?? '', $body);
+        $cookie = explode(';', $fields['set-cookie'] ?? '', 2)[0];
+
+        return new HttpExchange($status, $fields['content-type'] ?? '', $fields['location'] ?? '', $body, $cookie);
     }
 
     /**

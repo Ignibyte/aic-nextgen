@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http;
 
 use AIC\Controller\Application\PageHandlers;
+use AIC\Form\Application\FormTokens;
 use AIC\Session\Application\RequestSession;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -30,10 +31,11 @@ final readonly class VisitHandlers
     public function byId(): array
     {
         $requestSession = new RequestSession();
+        $formTokens = new FormTokens($requestSession);
 
         return [
             VisitsForget::class => $this->pageHandlers->handler(new VisitsForget($requestSession)),
-            VisitsPage::class => $this->pageHandlers->handler(new VisitsPage($this->htmlLayout, $requestSession)),
+            VisitsPage::class => $this->pageHandlers->handler(new VisitsPage($this->htmlLayout, $requestSession, $formTokens)),
         ];
     }
 }

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Gates\Domain;
 
 /**
- * What a site answered to one request: the parts gate:23 compares.
+ * What a site answered to one request: the parts gate:23 compares, and the
+ * cookie it set, which the next requests send back.
  */
 final readonly class HttpExchange
 {
@@ -14,12 +15,14 @@ final readonly class HttpExchange
      * @param string $contentType The `Content-Type`, as sent; empty for none.
      * @param string $location    The `Location`, as sent; empty for none.
      * @param string $body        The body.
+     * @param string $cookie      The cookie it set, `name=value`; empty for none.
      */
     public function __construct(
         public int $status,
         public string $contentType,
         public string $location,
         public string $body,
+        public string $cookie = '',
     ) {
     }
 }
