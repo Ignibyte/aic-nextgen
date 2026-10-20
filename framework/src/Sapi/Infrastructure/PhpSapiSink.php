@@ -7,8 +7,11 @@ namespace AIC\Sapi\Infrastructure;
 use AIC\Sapi\Contracts\SapiSink;
 use Override;
 
+use function flush;
 use function header;
 use function http_response_code;
+use function ob_flush;
+use function ob_get_level;
 
 /**
  * The SAPI sink over PHP's own response functions: `http_response_code()`,
@@ -43,5 +46,21 @@ final readonly class PhpSapiSink implements SapiSink
     public function write(string $bytes): void
     {
         echo $bytes;
+    }
+
+    /**
+     * Pushes the output so far to the client: an active output buffer (php.ini's
+     * `output_buffering`) first, then PHP's system write buffer (php-fpm,
+     * `php -S`). The compiled site's writes are unbuffered, so there both are
+     * no-ops.
+     */
+    #[Override]
+    public function flush(): void
+    {
+        if (ob_get_level() > 0) {
+            ob_flush();
+        }
+
+        flush();
     }
 }

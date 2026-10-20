@@ -15,6 +15,7 @@ final readonly class NativeSiteStep
      * @param string $method   The HTTP method.
      * @param string $path     The path; `{note}` stands for the Location the capturing step kept.
      * @param string $form     A form-encoded body; empty for none.
+     * @param string $header   One extra request header line (`Range: bytes=0-4`); empty for none.
      * @param int    $status   The status both sites must answer.
      * @param bool   $database Whether the step needs Postgres.
      * @param bool   $captures Whether its Location is kept as `{note}` for the later steps.
@@ -24,6 +25,7 @@ final readonly class NativeSiteStep
         public string $method,
         public string $path,
         public string $form,
+        public string $header,
         public int $status,
         public bool $database,
         public bool $captures,

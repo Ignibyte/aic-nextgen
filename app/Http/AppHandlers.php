@@ -8,7 +8,6 @@ use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Application\ApiHandler;
 use AIC\Controller\Application\PageHandler;
 use AIC\Controller\Application\Psr7ResponseWriter;
-use AIC\Controller\Application\StreamHandler;
 use AIC\Database\Contracts\Database;
 use AIC\Http\Application\ResponseBuilder;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -17,7 +16,8 @@ use function array_merge;
 
 /**
  * The app's controllers, each wrapped in its kind's handler, by the handler id
- * config/routes.php names; the note pages come from NoteHandlers.
+ * config/routes.php names; the note pages come from NoteHandlers and the
+ * Stream controllers from StreamHandlers.
  */
 final readonly class AppHandlers
 {
@@ -49,15 +49,15 @@ final readonly class AppHandlers
         $psr7ResponseWriter = new Psr7ResponseWriter($this->responseBuilder);
 
         $noteHandlers = new NoteHandlers($htmlLayout, $psr7ResponseWriter, $this->database);
+        $streamHandlers = new StreamHandlers($psr7ResponseWriter, $this->resources);
 
-        return array_merge($noteHandlers->byId(), [
+        return array_merge(array_merge($noteHandlers->byId(), $streamHandlers->byId()), [
             GreetingPage::class => new PageHandler(new GreetingPage($htmlLayout, $this->greeters), $psr7ResponseWriter),
             GreetingPost::class => new PageHandler(new GreetingPost($htmlLayout, $greetingForm), $psr7ResponseWriter),
             PlaceholderPage::class => new PageHandler(
                 new PlaceholderPage($htmlLayout, $greetingForm, $this->appConfig, $this->bootedAt),
                 $psr7ResponseWriter,
             ),
-            ResourceDownload::class => new StreamHandler(new ResourceDownload($this->resources), $psr7ResponseWriter),
             StatusApi::class => new ApiHandler(new StatusApi($this->appConfig, $this->bootedAt, $this->database), $psr7ResponseWriter),
         ]);
     }

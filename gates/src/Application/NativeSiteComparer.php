@@ -54,7 +54,8 @@ final readonly class NativeSiteComparer
         $exchanges = [];
 
         foreach ($steps as $step) {
-            $exchange = $this->httpClient->send($origin, $step->method, str_replace('{note}', $note, $step->path), $step->form);
+            $path = str_replace('{note}', $note, $step->path);
+            $exchange = $this->httpClient->send($origin, $step->method, $path, $step->form, $step->header);
 
             if ($step->captures) {
                 $note = self::path($exchange->location);

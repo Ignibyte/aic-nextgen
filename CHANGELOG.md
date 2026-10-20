@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Byte ranges and Server-Sent Events** (#25).
+  - Downloads honour one `Range`: 206 with `Content-Range`, 416 with `bytes */size`, and 200 with `Accept-Ranges: bytes` otherwise.
+  - `EventStream` sends each `ServerEvent` from an `EventSource` as it comes (`text/event-stream`, not cached, not proxy-buffered).
+  - The emitter writes bodies in chunks and flushes after each.
+  - The demo `/events?count=N` streams ticks, natively and under php-fpm.
+  - gate:23 gains the range and event steps (20 steps).
+  - elephc's fork gains `flush()`.
 - **The surface manifest** (#26). `composer run build` writes the committed `build/surface.json`: every route (method, path, handler, kind) and every console command (name, class, kind), the kinds read from the class's interfaces. gate:24 fails when it is stale. `RouteTable::routes()` exposes the declared routes.
 - **The compiled site is the runtime** (#33). FrankenPHP is set aside (Chad).
   - `bootstrap/serve.php` serves one request with fresh state, and `public/index.php` runs it under PHP. DDEV serves that interpreted reference through nginx-fpm; the FrankenPHP add-on, `public/worker.php` and the worker-mode field are gone.

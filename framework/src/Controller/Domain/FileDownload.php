@@ -19,11 +19,13 @@ final readonly class FileDownload implements StreamResponse
      * @param string $path         The file to send.
      * @param string $mediaType    Its `Content-Type`.
      * @param string $downloadName The name the browser saves it as.
+     * @param string $range        The request's `Range` header, honoured as one byte range; empty for none.
      */
     public function __construct(
         private string $path,
         private string $mediaType,
         private string $downloadName,
+        private string $range = '',
     ) {
     }
 
@@ -35,6 +37,6 @@ final readonly class FileDownload implements StreamResponse
     #[Override]
     public function writeTo(ResponseWriter $responseWriter): ResponseInterface
     {
-        return $responseWriter->download($this->path, $this->mediaType, $this->downloadName);
+        return $responseWriter->download($this->path, $this->mediaType, $this->downloadName, $this->range);
     }
 }

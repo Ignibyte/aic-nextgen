@@ -29,7 +29,7 @@ final readonly class ResourceDownload implements Stream
     }
 
     /**
-     * @param ServerRequestInterface $serverRequest The request, with the `file` attribute.
+     * @param ServerRequestInterface $serverRequest The request, with the `file` attribute and an optional `Range` header.
      *
      * @return StreamResponse The file.
      */
@@ -39,6 +39,6 @@ final readonly class ResourceDownload implements Stream
         $file = $serverRequest->getAttribute('file');
         $name = basename(is_string($file) ? $file : '');
 
-        return new FileDownload($this->resources . '/' . $name, 'text/plain; charset=utf-8', $name);
+        return new FileDownload($this->resources . '/' . $name, 'text/plain; charset=utf-8', $name, $serverRequest->getHeaderLine('Range'));
     }
 }

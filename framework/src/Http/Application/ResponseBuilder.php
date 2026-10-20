@@ -9,6 +9,7 @@ use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
 /**
@@ -61,6 +62,22 @@ final readonly class ResponseBuilder
         $response = $this->withHeader($this->responseFactory->createResponse($status), 'Content-Type', $contentType);
 
         return self::response($response->withBody($this->streamFactory->createStreamFromFile($path, 'rb')));
+    }
+
+    /**
+     * @param int             $status      The status, 100 to 599.
+     * @param string          $contentType The `Content-Type`.
+     * @param StreamInterface $stream      The body stream, read as the response is sent.
+     *
+     * @throws InvalidArgumentException When the status is out of range.
+     *
+     * @return ResponseInterface The response.
+     */
+    public function createFromStream(int $status, string $contentType, StreamInterface $stream): ResponseInterface
+    {
+        $response = $this->withHeader($this->responseFactory->createResponse($status), 'Content-Type', $contentType);
+
+        return self::response($response->withBody($stream));
     }
 
     /**
