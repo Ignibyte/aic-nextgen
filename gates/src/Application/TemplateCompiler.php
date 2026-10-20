@@ -4,26 +4,18 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Component\Contracts\Html;
-use AIC\Component\Domain\RendersMarkup;
 use Gates\Domain\TemplateMethods;
 use Gates\Domain\TemplateNode;
 use Gates\Domain\TemplateNodeKind;
 use InvalidArgumentException;
 
 use function addcslashes;
-use function array_diff;
-use function array_filter;
 use function array_map;
 use function array_merge;
 use function array_reverse;
-use function array_unique;
-use function array_values;
-use function implode;
 use function lcfirst;
 use function mb_str_split;
 use function preg_split;
-use function sort;
 use function str_contains;
 use function str_ends_with;
 use function str_starts_with;
@@ -32,15 +24,15 @@ use function substr;
 use function substr_count;
 
 use const PREG_SPLIT_NO_EMPTY;
-use const SORT_FLAG_CASE;
-use const SORT_STRING;
 
 /**
  * Compiles a component template's nodes (#36) into a final readonly class
  * whose `render()` gives the component's Html. The output passes every gate
  * as it is written: each run of output is a part method of at most twelve
  * lines, chained to the next; a condition is a ternary between two parts; a
- * loop maps its typed items through a part. A template that needs more part
+ * loop maps its typed items through a part. Each component sits between key
+ * markers, and each condition and loop between morph markers (#37), so the
+ * browser runtime morphs them as units. A template that needs more part
  * methods or lines than one class may hold is refused.
  */
 final readonly class TemplateCompiler
@@ -61,17 +53,26 @@ final readonly class TemplateCompiler
     private const int CLASS_LINES = 300;
 
     /**
-     * The imports a part method's call needs, by the call.
+     * The literals that close a component's key markers, a condition's and a loop's morph markers.
      */
-    private const array NEEDS = [
-        'array_map(' => ['function array_map', 'function implode'],
-        'self::text(' => [RendersMarkup::class],
-    ];
+    private const string COMPONENT_END = "'<!--/aic:c-->'";
+
+    private const string IF_END = "'<!--/aic:if-->'";
+
+    private const string EACH_END = "'<!--/aic:each-->'";
 
     /**
      * The characters of text one literal holds.
      */
     private const int TEXT = 80;
+
+    /**
+     * @param TemplateImports $templateImports Writes the generated file's opening and imports.
+     */
+    public function __construct(
+        private TemplateImports $templateImports = new TemplateImports(),
+    ) {
+    }
 
     /**
      * @param list<TemplateNode> $nodes     The template's nodes.
@@ -89,7 +90,8 @@ final readonly class TemplateCompiler
         $first = $this->sequence($nodes, [$component . ' $' . $variable], $templateMethods);
         $parts = $templateMethods->source();
         $parameter = $component . ' $' . $variable;
-        $class = $this->head($nodes, $namespace, $parts) . "/**\n * " . $component . "'s markup, compiled from " . $component
+        $class = $this->templateImports->head($nodes, $namespace, $parts)
+            . "/**\n * " . $component . "'s markup, compiled from " . $component
             . ".tpl by bin/aic-build (#36):\n * edit the template and run composer run build, never this file.\n */\n"
             . 'final readonly class ' . $component . "Template\n{\n"
             . (str_contains($parts, 'self::text(') ? "    use RendersMarkup;\n\n" : '')
@@ -103,67 +105,6 @@ final readonly class TemplateCompiler
         }
 
         return $class;
-    }
-
-    /**
-     * @param list<TemplateNode> $nodes     The template's nodes.
-     * @param string             $namespace The class's namespace.
-     * @param string             $parts     The part methods' source.
-     *
-     * @return string The file's opening, through its imports.
-     */
-    private function head(array $nodes, string $namespace, string $parts): string
-    {
-        $imports = [Html::class, ...$this->imported($nodes)];
-
-        foreach (self::NEEDS as $call => $names) {
-            $imports = str_contains($parts, $call)
-                ? [...$imports, ...$names]
-                : $imports;
-        }
-
-        $functions = array_filter($imports, static fn (string $import): bool => str_starts_with($import, 'function '));
-        $classes = array_diff($imports, $functions);
-
-        return "<?php\n\ndeclare(strict_types=1);\n\nnamespace " . $namespace . ";\n\n" . $this->uses($classes) . $this->uses($functions);
-    }
-
-    /**
-     * @param list<TemplateNode> $nodes The template's nodes.
-     *
-     * @return list<string> The names its `@use` lines import.
-     */
-    private function imported(array $nodes): array
-    {
-        $imports = [];
-
-        foreach ($nodes as $node) {
-            if ($node->kind !== TemplateNodeKind::Import) {
-                continue;
-            }
-
-            $imports[] = $node->code;
-        }
-
-        return $imports;
-    }
-
-    /**
-     * @param array<int, string> $names Imported names.
-     *
-     * @return string Their `use` lines, sorted and unique, and a blank line; nothing for none.
-     */
-    private function uses(array $names): string
-    {
-        $unique = array_values(array_unique($names));
-
-        if ($unique === []) {
-            return '';
-        }
-
-        sort($unique, SORT_STRING | SORT_FLAG_CASE);
-
-        return implode('', array_map(static fn (string $name): string => 'use ' . $name . ";\n", $unique)) . "\n";
     }
 
     /**
@@ -215,11 +156,27 @@ final readonly class TemplateCompiler
             TemplateNodeKind::Text => $this->texts($templateNode->code),
             TemplateNodeKind::Escaped => ['self::text(' . $templateNode->code . ')'],
             TemplateNodeKind::Raw => [$this->wrapped($templateNode->code) . '->markup()'],
-            TemplateNodeKind::Component => [$this->wrapped($templateNode->code) . '->render()->markup()'],
-            TemplateNodeKind::Condition => [$this->condition($templateNode, $scope, $templateMethods)],
-            TemplateNodeKind::Loop => [$this->loop($templateNode, $scope, $templateMethods)],
+            TemplateNodeKind::Component => $this->component($templateNode),
+            TemplateNodeKind::Condition => ["'<!--aic:if-->'", $this->condition($templateNode, $scope, $templateMethods), self::IF_END],
+            TemplateNodeKind::Loop => ["'<!--aic:each-->'", $this->loop($templateNode, $scope, $templateMethods), self::EACH_END],
             TemplateNodeKind::Import => [],
         };
+    }
+
+    /**
+     * @param TemplateNode $templateNode A `@component` node.
+     *
+     * @return list<string> Its markup between key markers: its compile-time key, and in a loop its own key escaped.
+     */
+    private function component(TemplateNode $templateNode): array
+    {
+        $markup = $this->wrapped($templateNode->code) . '->render()->markup()';
+
+        $open = $templateNode->binding === ''
+            ? ["'<!--aic:c " . $templateNode->key . "-->'"]
+            : ["'<!--aic:c " . $templateNode->key . "/'", 'self::text(' . $templateNode->binding . ')', "'-->'"];
+
+        return [...$open, $markup, self::COMPONENT_END];
     }
 
     /**

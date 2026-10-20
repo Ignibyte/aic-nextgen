@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use AIC\Component\Contracts\Html;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
@@ -49,9 +50,12 @@ final readonly class NoteShowPage implements Page
         $path = '/notes/' . $note->id;
 
         return $this->noteViews->page(
-            (new NoteCard($note))->render()->markup()
-            . '<h2>Edit</h2>' . $this->noteViews->form($path, $note->title, $note->body, '')
-            . $this->noteViews->deleteForm($path),
+            [
+                new NoteCard($note),
+                new Html('<h2>Edit</h2>'),
+                $this->noteViews->form($path, $note->title, $note->body, ''),
+                $this->noteViews->deleteForm($path),
+            ],
             200,
         );
     }

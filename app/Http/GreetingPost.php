@@ -6,7 +6,6 @@ namespace App\Http;
 
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
-use AIC\Controller\Domain\PageDocument;
 use AIC\Controller\Domain\PageRedirect;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -47,10 +46,7 @@ final readonly class GreetingPost implements Page
         $name = trim(is_string($field) ? $field : '');
 
         if ($name === '') {
-            return new PageDocument(
-                $this->htmlLayout->document($this->greetingForm->render('', 'A name is required.')),
-                422,
-            );
+            return $this->htmlLayout->content($this->greetingForm->render('', 'A name is required.'), 422);
         }
 
         return new PageRedirect('/hello/' . rawurlencode($name));

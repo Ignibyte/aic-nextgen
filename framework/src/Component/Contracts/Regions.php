@@ -1,0 +1,66 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AIC\Component\Contracts;
+
+use InvalidArgumentException;
+
+use function array_map;
+use function implode;
+use function in_array;
+
+/**
+ * The regions a page fills, each name once (#37). One region renders alone,
+ * the unit a fragment answer will carry (#12). The regions are read through
+ * typed closures: elephc reads a list element as mixed and resolves a method
+ * on it by name across every class.
+ */
+final readonly class Regions
+{
+    /**
+     * @param list<Region> $regions The filled regions.
+     *
+     * @throws InvalidArgumentException When a name repeats.
+     */
+    public function __construct(
+        private array $regions,
+    ) {
+        $names = [];
+
+        foreach ($this->names() as $name) {
+            if (in_array($name, $names, true)) {
+                throw new InvalidArgumentException('The region "' . $name . '" is filled twice.');
+            }
+
+            $names[] = $name;
+        }
+    }
+
+    /**
+     * @return list<string> The filled regions' names, in order.
+     */
+    public function names(): array
+    {
+        return array_map(static fn (Region $region): string => $region->name(), $this->regions);
+    }
+
+    /**
+     * @param string $name A region's name.
+     *
+     * @throws InvalidArgumentException When the name breaks the grammar.
+     *
+     * @return Html The region alone; its empty element when the page left it unfilled.
+     */
+    public function html(string $name): Html
+    {
+        $markup = implode('', array_map(
+            static fn (Region $region): string => $region->name() === $name ? $region->render()->markup() : '',
+            $this->regions,
+        ));
+
+        return $markup === ''
+            ? (new Region($name, []))->render()
+            : new Html($markup);
+    }
+}

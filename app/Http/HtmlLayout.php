@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use AIC\Component\Contracts\Html;
+use AIC\Component\Contracts\Region;
+use AIC\Component\Contracts\Regions;
 use AIC\Config\Domain\AppConfig;
-
-use function htmlspecialchars;
+use AIC\Controller\Domain\PageDocument;
+use InvalidArgumentException;
 
 /**
- * The app's HTML document around a page's body, titled with the app's name.
+ * Makes the app's pages on AppLayout, titled with the app's name.
  */
 final readonly class HtmlLayout
 {
@@ -22,15 +25,28 @@ final readonly class HtmlLayout
     }
 
     /**
-     * @param string $body The page's body markup, already escaped.
+     * @param Regions $regions The regions the page fills.
+     * @param int     $status  200, 404 or 422.
      *
-     * @return string The whole document.
+     * @throws InvalidArgumentException When the status is none of these, or a region is one AppLayout does not place.
+     *
+     * @return PageDocument The page.
      */
-    public function document(string $body): string
+    public function page(Regions $regions, int $status): PageDocument
     {
-        $name = htmlspecialchars($this->appConfig->name);
+        return new PageDocument(new AppLayout($this->appConfig->name, $regions), $status);
+    }
 
-        return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' . $name . '</title></head>'
-            . '<body><h1>' . $name . '</h1>' . $body . '</body></html>';
+    /**
+     * @param string $markup The `content` region's markup, already escaped.
+     * @param int    $status 200, 404 or 422.
+     *
+     * @throws InvalidArgumentException When the status is none of these.
+     *
+     * @return PageDocument The page, with only its content region filled.
+     */
+    public function content(string $markup, int $status): PageDocument
+    {
+        return $this->page(new Regions([new Region('content', [new Html($markup)])]), $status);
     }
 }

@@ -36,9 +36,9 @@ final readonly class TemplateParser
     private const array ENDS = ['@else', '@endif', '@endforeach'];
 
     /**
-     * A PHP string literal, a parenthesis, or a run of anything else.
+     * A PHP string literal, a parenthesis, a comma, or a run of anything else.
      */
-    private const string TOKEN = '/\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*"|[()]|[^\'"()]+/';
+    private const string TOKEN = '/\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*"|[(),]|[^\'"(),]+/';
 
     /**
      * @param string $source The template.
@@ -112,7 +112,7 @@ final readonly class TemplateParser
             throw new InvalidArgumentException($templateLines->where() . ': unknown directive ' . $directive . '.');
         }
 
-        return $this->inline($line, $templateLines->where());
+        return $this->inline($line, $templateLines);
     }
 
     /**
@@ -150,7 +150,9 @@ final readonly class TemplateParser
      */
     private function loop(string $items, string $binding, TemplateLines $templateLines): TemplateNode
     {
+        $templateLines->enter();
         [$children, $end] = $this->block($templateLines);
+        $templateLines->leave();
 
         if ($end !== '@endforeach') {
             throw new InvalidArgumentException($templateLines->where() . ': @foreach without @endforeach.');
@@ -160,14 +162,14 @@ final readonly class TemplateParser
     }
 
     /**
-     * @param string $line  A line of text with outputs in it.
-     * @param string $where Where it is, for messages.
+     * @param string        $line          A line of text with outputs in it.
+     * @param TemplateLines $templateLines The lines, read up to this one.
      *
-     * @throws InvalidArgumentException When an output is unclosed.
+     * @throws InvalidArgumentException When an output is unclosed, or a component in a loop has no key.
      *
      * @return list<TemplateNode> Its text and outputs, in order.
      */
-    private function inline(string $line, string $where): array
+    private function inline(string $line, TemplateLines $templateLines): array
     {
         $nodes = [];
         $rest = $line;
@@ -175,7 +177,7 @@ final readonly class TemplateParser
         while (preg_match('/\\{\\{|\\{!!|@component\\(/', $rest, $matches, PREG_OFFSET_CAPTURE) === 1) {
             [$open, $offset] = $matches[0];
             $nodes[] = new TemplateNode(TemplateNodeKind::Text, substr($rest, 0, $offset));
-            [$node, $rest] = $this->output($open, substr($rest, $offset + strlen($open)), $where);
+            [$node, $rest] = $this->output($open, substr($rest, $offset + strlen($open)), $templateLines);
             $nodes[] = $node;
         }
 
@@ -185,30 +187,87 @@ final readonly class TemplateParser
     }
 
     /**
-     * @param string $open  `{{`, `{!!` or `@component(`.
-     * @param string $after The line after it.
-     * @param string $where Where it is, for messages.
+     * @param string        $open          `{{`, `{!!` or `@component(`.
+     * @param string        $after         The line after it.
+     * @param TemplateLines $templateLines The lines, read up to this one.
      *
-     * @throws InvalidArgumentException When it is unclosed.
+     * @throws InvalidArgumentException When it is unclosed, or a component in a loop has no key.
      *
      * @return array{TemplateNode, string} The output, and the line after it.
      */
-    private function output(string $open, string $after, string $where): array
+    private function output(string $open, string $after, TemplateLines $templateLines): array
     {
-        [$kind, $close] = match ($open) {
-            '{{' => [TemplateNodeKind::Escaped, '}}'],
-            '{!!' => [TemplateNodeKind::Raw, '!!}'],
-            default => [TemplateNodeKind::Component, ')'],
-        };
-        $end = $kind === TemplateNodeKind::Component
-            ? $this->closing($after)
-            : strpos($after, $close);
-
-        if ($end === false) {
-            throw new InvalidArgumentException($where . ': ' . $open . ' without ' . $close . '.');
+        if ($open === '@component(') {
+            return $this->component($after, $templateLines);
         }
 
+        $close = $open === '{{'
+            ? '}}'
+            : '!!}';
+        $end = strpos($after, $close);
+
+        if ($end === false) {
+            throw new InvalidArgumentException($templateLines->where() . ': ' . $open . ' without ' . $close . '.');
+        }
+
+        $kind = $open === '{{'
+            ? TemplateNodeKind::Escaped
+            : TemplateNodeKind::Raw;
+
         return [new TemplateNode($kind, trim(substr($after, 0, $end))), substr($after, $end + strlen($close))];
+    }
+
+    /**
+     * @param string        $after         The line after `@component(`.
+     * @param TemplateLines $templateLines The lines, read up to this one.
+     *
+     * @throws InvalidArgumentException When it is unclosed, or it sits in a loop with no key.
+     *
+     * @return array{TemplateNode, string} The component, keyed by its occurrence, and the line after it.
+     */
+    private function component(string $after, TemplateLines $templateLines): array
+    {
+        $end = $this->closing($after);
+
+        if ($end === false) {
+            throw new InvalidArgumentException($templateLines->where() . ': @component( without ).');
+        }
+
+        [$code, $key] = $this->split(substr($after, 0, $end));
+
+        if ($key === '' && $templateLines->inLoop()) {
+            throw new InvalidArgumentException($templateLines->where() . ': a @component in a loop needs a key: @component(expr, key).');
+        }
+
+        return [new TemplateNode(TemplateNodeKind::Component, $code, [], [], $key, $templateLines->key()), substr($after, $end + 1)];
+    }
+
+    /**
+     * @param string $arguments What `@component(` holds.
+     *
+     * @return array{string, string} The component's expression, and its key's; empty for none.
+     */
+    private function split(string $arguments): array
+    {
+        preg_match_all(self::TOKEN, $arguments, $matches);
+        $depth = 0;
+        $offset = 0;
+
+        foreach ($matches[0] as $token) {
+            $depth += match ($token) {
+                '(' => 1,
+                ')' => -1,
+                default => 0,
+            };
+
+            if ($depth === 0 && $token === ',') {
+                return [trim(substr($arguments, 0, $offset)), trim(substr($arguments, $offset + 1))];
+            }
+
+            $offset += strlen($token);
+        }
+
+        return [trim($arguments), ''];
     }
 
     /**
