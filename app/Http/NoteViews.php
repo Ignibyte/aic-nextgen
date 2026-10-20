@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Html;
+use AIC\Component\Contracts\Region;
+use AIC\Component\Contracts\Regions;
 use AIC\Component\Domain\Alert;
 use AIC\Component\Domain\AlertSeverity;
 use AIC\Component\Domain\Button;
@@ -14,6 +17,7 @@ use AIC\Component\Domain\Input;
 use AIC\Component\Domain\Link;
 use AIC\Component\Domain\Textarea;
 use AIC\Controller\Domain\PageDocument;
+use InvalidArgumentException;
 
 /**
  * The note pages' markup: the note form, and the documents around their
@@ -35,9 +39,9 @@ final readonly class NoteViews
      * @param string $body   The body to show in the field.
      * @param string $error  The error to show; empty for none.
      *
-     * @return string The form markup.
+     * @return Html The form.
      */
-    public function form(string $action, string $title, string $body, string $error): string
+    public function form(string $action, string $title, string $body, string $error): Html
     {
         $alert = $error === ''
             ? new Html('')
@@ -47,30 +51,33 @@ final readonly class NoteViews
             ->append((new FormField('Body', 'body', new Textarea('body', 'body', $body)))->render())
             ->append((new Button('Save', 'submit', ''))->render());
 
-        return (new Form('note-form', $action, $html))->render()->markup();
+        return (new Form('note-form', $action, $html))->render();
     }
 
     /**
      * @param string $path The note's path.
      *
-     * @return string The form whose button deletes the note.
+     * @return Html The form whose button deletes the note.
      */
-    public function deleteForm(string $path): string
+    public function deleteForm(string $path): Html
     {
-        return (new Form('', $path . '/delete', (new Button('Delete', 'submit', 'delete'))->render()))->render()->markup();
+        return (new Form('', $path . '/delete', (new Button('Delete', 'submit', 'delete'))->render()))->render();
     }
 
     /**
-     * @param string $body   The page's body markup, already escaped.
-     * @param int    $status 200, or 422 for a form shown again with its error.
+     * @param list<Component> $content The `content` region's components.
+     * @param int             $status  200, 404, or 422 for a form shown again with its error.
      *
-     * @return PageDocument The page.
+     * @throws InvalidArgumentException When the status is none of these.
+     *
+     * @return PageDocument The page: its content, and the All notes link in `nav`.
      */
-    public function page(string $body, int $status): PageDocument
+    public function page(array $content, int $status): PageDocument
     {
-        $allNotes = (new Link('All notes', '/notes'))->render()->markup();
-
-        return new PageDocument($this->htmlLayout->document($body . '<p>' . $allNotes . '</p>'), $status);
+        return $this->htmlLayout->page(
+            new Regions([new Region('content', $content), new Region('nav', [new Link('All notes', '/notes')])]),
+            $status,
+        );
     }
 
     /**
@@ -78,6 +85,6 @@ final readonly class NoteViews
      */
     public function notFound(): PageDocument
     {
-        return $this->page('<p id="not-found">Note not found.</p>', 404);
+        return $this->page([new Html('<p id="not-found">Note not found.</p>')], 404);
     }
 }

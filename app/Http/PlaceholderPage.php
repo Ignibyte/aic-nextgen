@@ -7,7 +7,6 @@ namespace App\Http;
 use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
-use AIC\Controller\Domain\PageDocument;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -43,7 +42,7 @@ final readonly class PlaceholderPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        return new PageDocument($this->htmlLayout->document(
+        return $this->htmlLayout->content(
             '<p>The AIC kernel is serving this request.</p><dl>'
             . self::item('app-name', 'App name (config/app.php)', $this->appConfig->name)
             . self::item('app-booted', 'App booted', $this->bootedAt)
@@ -51,7 +50,8 @@ final readonly class PlaceholderPage implements Page
             . self::item('request-path', 'Request path', $serverRequest->getUri()->getPath())
             . '</dl><ul id="query">' . self::queryItems($serverRequest->getUri()->getQuery()) . '</ul>'
             . $this->greetingForm->render('', ''),
-        ));
+            200,
+        );
     }
 
     /**

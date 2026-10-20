@@ -32,7 +32,9 @@ build`; gate:24 keeps it fresh. #25: byte ranges (206/416) on downloads and Serv
 (`EventStream` pulling from an `EventSource`, streamed natively). #7 (M3) runs as #35 to #39;
 #35: `AIC\Component` (`Component::render(): Html`, the catalog atoms with a caller). #36: a
 component's `X.tpl` compiles to `XTemplate.php` beside it (`composer run build`, kept fresh by
-gate:24); the generated class passes every gate unexcluded. Next is #37 (layouts and regions). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+gate:24); the generated class passes every gate unexcluded. #37: a Page returns
+`PageDocument(Layout)`; regions render as `data-region` elements, components and blocks between
+`<!--aic:...-->` markers. Next is #38 (blocks). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 

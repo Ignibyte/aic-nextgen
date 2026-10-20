@@ -7,7 +7,7 @@
 @else
 <ul id="notes">
 @foreach ($noteList->notes as Note $note)
-<li>@component(new Link($note->title, '/notes/' . $note->id))</li>
+<li>@component(new Link($note->title, '/notes/' . $note->id), (string) $note->id)</li>
 @endforeach
 </ul>
 @endif

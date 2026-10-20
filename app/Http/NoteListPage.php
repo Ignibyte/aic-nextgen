@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use AIC\Component\Contracts\Html;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
@@ -37,10 +38,12 @@ final readonly class NoteListPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $noteList = new NoteList($this->noteRepository->all());
-
         return $this->noteViews->page(
-            $noteList->render()->markup() . '<h2>New note</h2>' . $this->noteViews->form($serverRequest->getUri()->getPath(), '', '', ''),
+            [
+                new NoteList($this->noteRepository->all()),
+                new Html('<h2>New note</h2>'),
+                $this->noteViews->form($serverRequest->getUri()->getPath(), '', '', ''),
+            ],
             200,
         );
     }

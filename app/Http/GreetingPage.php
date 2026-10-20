@@ -6,7 +6,6 @@ namespace App\Http;
 
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
-use AIC\Controller\Domain\PageDocument;
 use App\Greeting\Greeter;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -52,6 +51,6 @@ final readonly class GreetingPage implements Page
             $items .= '<li>' . htmlspecialchars($greeter->greet($name)) . '</li>';
         }
 
-        return new PageDocument($this->htmlLayout->document('<ul id="greetings">' . $items . '</ul>'));
+        return $this->htmlLayout->content('<ul id="greetings">' . $items . '</ul>', 200);
     }
 }

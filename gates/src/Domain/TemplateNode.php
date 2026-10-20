@@ -15,7 +15,8 @@ final readonly class TemplateNode
      * @param string             $code      The text, the PHP expression, or the imported name.
      * @param list<TemplateNode> $children  A block's nodes; for a condition, the nodes shown when it holds.
      * @param list<TemplateNode> $otherwise A condition's nodes shown when it does not hold.
-     * @param string             $binding   A loop's item, `Type $var`.
+     * @param string             $binding   A loop's item, `Type $var`; a component's key expression, empty for none.
+     * @param string             $key       A component's compile-time key, `Name#n`.
      */
     public function __construct(
         public TemplateNodeKind $kind,
@@ -23,6 +24,7 @@ final readonly class TemplateNode
         public array $children = [],
         public array $otherwise = [],
         public string $binding = '',
+        public string $key = '',
     ) {
     }
 }

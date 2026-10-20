@@ -7,9 +7,14 @@ namespace Gates\Application;
 use Gates\Domain\Psr4Map;
 use RuntimeException;
 
+use function array_intersect;
 use function array_key_exists;
 use function array_keys;
 use function array_shift;
+use function array_values;
+use function class_implements;
+use function class_parents;
+use function class_uses;
 use function file_get_contents;
 use function in_array;
 use function str_contains;
@@ -22,6 +27,9 @@ use function str_contains;
  * comes before its dependents. A cycle (two classes naming each other in type
  * hints) is broken where the walk meets it; PHP and elephc load type hints
  * lazily, so the order only matters for `extends`, `implements` and traits.
+ * A class whose supertype is still being placed waits for a later visit, so
+ * a cycle through a supertype (`Html implements Component`, whose method
+ * returns `Html`) still loads the supertype first.
  *
  * PHP built-ins that composer may back with a `symfony/polyfill` stub stay
  * out: elephc provides them itself, and the stubs read host-only constants.
@@ -156,11 +164,33 @@ final readonly class ClosureBundler
             return $ordered;
         }
 
+        if (array_intersect($this->supertypes($fqcn), $path) !== []) {
+            return $ordered;
+        }
+
         foreach ($deps[$fqcn] as $dependency) {
             $ordered = $this->visit($dependency, $deps, $ordered, [...$path, $fqcn]);
         }
 
         return [...$ordered, $fqcn];
+    }
+
+    /**
+     * @param string $fqcn A class in the closure.
+     *
+     * @return list<string> Its parents, interfaces and traits, which PHP must declare before it.
+     */
+    private function supertypes(string $fqcn): array
+    {
+        $parents = class_parents($fqcn);
+        $interfaces = class_implements($fqcn);
+        $traits = class_uses($fqcn);
+
+        return [
+            ...array_values($parents === false ? [] : $parents),
+            ...array_values($interfaces === false ? [] : $interfaces),
+            ...array_values($traits === false ? [] : $traits),
+        ];
     }
 
     /**
