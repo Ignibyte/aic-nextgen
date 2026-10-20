@@ -14,6 +14,7 @@ parameters:
         - framework/src
         - app
         - public
+        - bootstrap
         - config
         - bin
         - bin/aic

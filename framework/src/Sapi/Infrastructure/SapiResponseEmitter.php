@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AIC\Frankenphp\Infrastructure;
+namespace AIC\Sapi\Infrastructure;
 
-use AIC\Frankenphp\Contracts\SapiSink;
+use AIC\Sapi\Contracts\SapiSink;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 

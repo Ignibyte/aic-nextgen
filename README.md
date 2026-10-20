@@ -1,12 +1,13 @@
 # AIC nextgen
 
-The fresh start of AIC (Absolute Insanity, AI): a slim, opinionated PHP 8.5 framework on the
-FrankenPHP worker runtime, one `aic/framework` package with a namespace per system. It is being
+The fresh start of AIC (Absolute Insanity, AI): a slim, opinionated PHP 8.5 framework that
+compiles natively with elephc and runs as the compiled `elephc --web` server, one `aic/framework`
+package with a namespace per system. It is being
 built by porting what earns its place from old AIC (`Ignibyte/aic`) and will replace it at
 cutover.
 
-So far the workspace serves a placeholder page from the FrankenPHP worker. The kernel arrives
-with ticket #4.
+So far the demo app has a placeholder page, a greeting form, `/api/status`, a download and
+notes with CRUD on Postgres, served by the compiled binary and, as the reference, by PHP.
 
 ## Layout
 
@@ -14,10 +15,11 @@ with ticket #4.
 |---|---|
 | `framework/` | `aic/framework`, namespace `AIC\` under `framework/src/`, pulled in through a composer path repository |
 | `app/` | The demo app, `aic/app`, namespace `App\` |
-| `public/worker.php` | The FrankenPHP worker: booted once, then called once per request |
+| `bootstrap/serve.php` | Serves one request: the wiring, the request in, the response out; compiled into the site or run under PHP |
+| `public/index.php` | The interpreted entry (php-fpm in DDEV, `php -S`): the autoloader, then `serve.php` |
 | `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
 | `bin/aic-build` | The build step for the build-time manifests (`composer run build`); nothing to build yet |
-| `.ddev/` | DDEV: FrankenPHP as the web server (the `ddev/ddev-frankenphp` add-on) and Postgres 17 |
+| `.ddev/` | DDEV: nginx-fpm serving the interpreted reference, and Postgres 17 |
 
 ## Bring it up
 
@@ -28,19 +30,16 @@ composer install
 ddev start
 ```
 
-`ddev start` prints the URL. On the Z690 dev box it is `https://aic-nextgen.ddev.site:8843`: the
-host's nginx owns 80 and 443, so the DDEV router listens on 8880 and 8843, and
-`.ddev/config.zz-router-ports.yaml` puts the site on those ports. On another machine, change
-the two ports in that file to your router's (`router_http_port` and `router_https_port` in
-`~/.ddev/global_config.yaml`).
+`ddev start` prints the URL of the interpreted reference. On the Z690 dev box it is
+`https://aic-nextgen.ddev.site:8843` (the router's ports there are 8880 and 8843).
 
-The page reports `Worker mode: yes` and when the worker booted. Reload it: the boot time stays
-the same, because one long-lived worker serves request after request.
+The compiled site needs the elephc fork (`/srv/stacks/elephc`, or `ELEPHC_BIN`):
 
 ```bash
-composer run build   # write the build-time manifests (none yet)
-ddev psql            # the Postgres 17 database
-ddev logs -f         # FrankenPHP's log
+composer run native:serve        # build the compiled site and serve it on http://127.0.0.1:8090
+composer run native:serve 9000   # on another port
+ddev exec bin/aic migrate        # the console, inside DDEV
+ddev psql                        # the Postgres 17 database
 ```
 
 ## Quality gates

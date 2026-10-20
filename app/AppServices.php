@@ -6,13 +6,13 @@ namespace App;
 
 use AIC\Config\Domain\AppConfig;
 use AIC\Database\Contracts\Database;
-use AIC\Frankenphp\Contracts\RequestExtractor;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Kernel\Application\Kernel;
 use AIC\Middleware\Application\MiddlewareStep;
 use AIC\Routing\Application\RouteErrorMiddleware;
 use AIC\Routing\Application\Router;
 use AIC\Routing\Domain\RouteTable;
+use AIC\Sapi\Contracts\RequestExtractor;
 use App\Http\AppHandlers;
 
 /**
@@ -33,7 +33,7 @@ final readonly class AppServices
      * @param RouteTable       $routeTable       The routes, from config/routes.php.
      * @param RequestExtractor $requestExtractor Makes the PSR-7 request from a SAPI request.
      * @param ResponseBuilder  $responseBuilder  Makes responses.
-     * @param string           $bootedAt         When this worker booted, ISO 8601 in UTC.
+     * @param string           $bootedAt         When the app booted to serve this request, ISO 8601 in UTC.
      * @param string           $resources        The app's resources directory.
      * @param Database         $database         The database.
      */

@@ -11,13 +11,12 @@ use AIC\Controller\Domain\PageDocument;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
-use function array_key_exists;
 use function explode;
 use function htmlspecialchars;
 use function urldecode;
 
 /**
- * The placeholder page at `/`: what the worker and the request carried, and the
+ * The placeholder page at `/`: what the app and the request carried, and the
  * greeting form, until the app has pages of its own.
  */
 final readonly class PlaceholderPage implements Page
@@ -26,7 +25,7 @@ final readonly class PlaceholderPage implements Page
      * @param HtmlLayout   $htmlLayout   The document around the page.
      * @param GreetingForm $greetingForm The form posting a name to /hello.
      * @param AppConfig    $appConfig    The app's settings.
-     * @param string       $bootedAt     When this worker booted, ISO 8601 in UTC.
+     * @param string       $bootedAt     When the app booted to serve this request, ISO 8601 in UTC.
      */
     public function __construct(
         private HtmlLayout $htmlLayout,
@@ -44,15 +43,10 @@ final readonly class PlaceholderPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $workerMode = array_key_exists('FRANKENPHP_WORKER', $serverRequest->getServerParams())
-            ? 'yes'
-            : 'no';
-
         return new PageDocument($this->htmlLayout->document(
-            '<p>The FrankenPHP worker is serving through the AIC kernel.</p><dl>'
+            '<p>The AIC kernel is serving this request.</p><dl>'
             . self::item('app-name', 'App name (config/app.php)', $this->appConfig->name)
-            . self::item('worker-mode', 'Worker mode', $workerMode)
-            . self::item('worker-booted', 'Worker booted', $this->bootedAt)
+            . self::item('app-booted', 'App booted', $this->bootedAt)
             . self::item('request-method', 'Request method', $serverRequest->getMethod())
             . self::item('request-path', 'Request path', $serverRequest->getUri()->getPath())
             . '</dl><ul id="query">' . self::queryItems($serverRequest->getUri()->getQuery()) . '</ul>'

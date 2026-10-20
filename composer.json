@@ -96,13 +96,18 @@
         "gate:20": "@php bin/gate-captainhook.php",
         "gate:21": "@php bin/gate-native.php",
         "gate:22": "@php bin/gate-pipeline-spec-sync.php",
+        "gate:23": "@php bin/gate-native-site.php",
         "gate:3": "@php bin/gate-require-checker.php",
         "gate:4": "@php bin/gate-composer-unused.php",
         "gate:5": "@php bin/gate-no-baselines.php",
         "gate:6": "vendor/bin/pint --test --config=pint.json",
         "gate:7": "vendor/bin/rector process --dry-run --no-progress-bar",
         "gate:8": "vendor/bin/phpstan analyse --no-progress --memory-limit=2G --configuration=phpstan.neon",
-        "gate:9": "vendor/bin/phpstan analyse --no-progress --memory-limit=2G --configuration=phpstan-architecture.neon"
+        "gate:9": "vendor/bin/phpstan analyse --no-progress --memory-limit=2G --configuration=phpstan-architecture.neon",
+        "native:serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php bin/gate-native-site.php serve"
+        ]
     },
     "scripts-descriptions": {
         "build": "Write the build-time manifests (none yet; #4 adds the first).",
@@ -123,12 +128,14 @@
         "gate:20": "captainhook: the git hooks are installed.",
         "gate:21": "Native: every runtime class compiles, links, runs and matches PHP under elephc.",
         "gate:22": "Pipeline docs: frontmatter, line caps and internal links of the pipeline docs and phase commands.",
+        "gate:23": "Native site: the app compiled with elephc --web answers every step as the interpreted app does.",
         "gate:3": "Require-checker: every symbol the runtime code uses comes from a declared require.",
         "gate:4": "composer-unused: no required package goes unused.",
         "gate:5": "No baselines, no suppressions.",
         "gate:6": "Pint: code style.",
         "gate:7": "Rector: no pending PHP 8.5 refactors (dry run).",
         "gate:8": "PHPStan level 10, bleeding edge, with the strict rule sets.",
-        "gate:9": "phpat: the architecture rules in gates/architecture."
+        "gate:9": "phpat: the architecture rules in gates/architecture.",
+        "native:serve": "Build the compiled site and serve it on 127.0.0.1:8090 (or the given port) until interrupted."
     }
 }

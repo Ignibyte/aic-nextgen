@@ -63,6 +63,14 @@ final readonly class NativeToolchain
     }
 
     /**
+     * @return string The host PHP binary, the oracle.
+     */
+    public function phpPath(): string
+    {
+        return $this->php;
+    }
+
+    /**
      * Materialize the managed native packages pinned in `$workDir/elephc.lock`.
      *
      * @param string $workDir Directory holding `elephc.toml` and `elephc.lock`.
@@ -84,6 +92,20 @@ final readonly class NativeToolchain
     public function compile(string $dir): ProcessResult
     {
         return $this->processRunner->run([$this->elephc, 'main.php'], $dir, $this->env);
+    }
+
+    /**
+     * Compile `$dir/main.php` as a web server, `$dir/main` (gate:23): elephc's
+     * prefork server with persistent handler processes (`--web-isolation=pool`),
+     * the model its PDO drivers run under.
+     *
+     * @param string $dir The site's work directory.
+     *
+     * @return ProcessResult The compiler's result.
+     */
+    public function compileWeb(string $dir): ProcessResult
+    {
+        return $this->processRunner->run([$this->elephc, '--web', '--web-isolation=pool', 'main.php'], $dir, $this->env);
     }
 
     /**

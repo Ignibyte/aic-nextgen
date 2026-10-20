@@ -13,31 +13,21 @@ the ten systems, the milestones) and `plan.md` (the decisions and the port map f
 
 ## Status
 
-The workspace is up (#1): composer with the `framework/` path package, DDEV with FrankenPHP and
-Postgres 17, and `public/worker.php` serving a placeholder. The gate suite is in (#2):
-`composer run gate`, 23 gates, the native gate (gate:21, #14) among them. The four-phase workflow is in (#3): `CONSTITUTION.md`,
-the commands in `.claude/commands/`, the hooks in `.claude/hooks/`. #4, the foundation, runs as
-five vertical slices (#18 to #22). #18: config is typed (`config/app.php` returns an
-`AIC\Config\Domain\AppConfig`, read by the worker at boot). #20: PSR-7/17 with typed input
-(`AIC\Http`), and the SAPI request and response (`AIC\Frankenphp`); the worker answers through
-them, 400 on input that does not fit the field shapes. #19: routing (`AIC\Routing`, routes in
-`config/routes.php`) and the PSR-15 stack (`AIC\Middleware`), with 404 and 405; the app's first
-handlers are in `app/Http`, so every gate runs, none deferred. #21: the kernel
-(`AIC\Kernel\Application\Kernel::serve()`, with 400 and 500 boundaries) and the composition root
-(`App\AppServices`, on the framework's `SapiServices`); the worker builds both once and emits
-each response. #22: the kinds (`AIC\Controller`): Page, Api and Stream with sealed responses that
-write themselves through `ResponseWriter`, guarded by phpat; the app's entry points are all kinds.
-#4 is done. #5: plugins: the PSR-11 container (`AIC\Container`) with `tag()` and `tagged()`,
-filled by service providers; a custom PHPStan rule checks a tagged plugin implements its type. M1
-is done. #6, the database, runs as four slices (#28 to #31); #28: `AIC\Database` (a `Database`
-contract, `PdoDatabase` over PDO pgsql, typed config from DDEV's `PG*` environment); `/api/status`
-reports the server's version. #29: the Command kind (`Command`, the sealed `CommandResult` written
-through `CommandWriter`), `AIC\Console` and `bin/aic` with `db:ping` and `greet`. #30:
-`AIC\Schema` (a fluent table builder, Postgres DDL, forward-only migrations with a checksummed
-ledger), `bin/aic migrate` and `migrate:status`; the demo migration creates `notes`. #31:
-`AIC\Entity` (entity types over a closed field set, a query builder, insert/update/delete by
-key) and the demo app's note pages doing CRUD on `notes`. #6 and M2 are done. Next is #7 (M3,
-pages); #32 (WebSockets) is filed and open.
+M0, M1 and M2 are done (2026-10-19).
+- **M0:** the workspace (#1), the gate suite (#2), the four-phase workflow (#3) and the native gate (#14).
+- **M1:** typed config, PSR-7/17 with typed input, routing and the PSR-15 stack, the kernel and the composition root, the kinds, and plugins (#4 as #18 to #22, then #5).
+- **M2:** the database, as #28 to #31 under epic #6:
+  - `AIC\Database` over PDO pgsql;
+  - the Command kind, `AIC\Console` and `bin/aic`;
+  - `AIC\Schema`, migrations with a checksummed ledger;
+  - `AIC\Entity`, CRUD on `notes` from the demo app's pages.
+
+**#33 made the compiled site the runtime.** FrankenPHP is set aside (Chad, 2026-10-19).
+- `bootstrap/serve.php` serves one request: under php-fpm (DDEV's reference, `public/index.php`), under `php -S`, and compiled with `elephc --web`.
+- gate:23 builds the whole app natively, serves it beside PHP, and compares 16 steps.
+- `composer run native:serve` serves the compiled site on 127.0.0.1:8090.
+
+Next is #7 (M3, pages). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 
@@ -46,18 +36,19 @@ response type: **Page** (HTML document, region fragments or a redirect; form con
 Pages), **Api** (JSON, XML, SOAP), **Stream** (SSE, file downloads), **Command** (CLI, exit code)
 and **Job** (queued or scheduled work: done, retry, fail). A static guard makes every entry-point
 class implement exactly one, and the build writes a manifest of every entry point with its kind.
-"Worker" means the FrankenPHP HTTP worker; background work is a job.
+Background work is a job; the HTTP server's processes are its workers.
 
 ## Stack
 
 - PHP **8.5**, strict types everywhere.
-- **FrankenPHP worker mode** is the only runtime: `public/worker.php` loops
-  `frankenphp_handle_request()`. One request per worker at a time; per-request state lives behind
-  `RequestScopeInterface` and is reset between requests. No Swoole, no FPM, no coroutines.
-- Postgres 17 through DDEV. FrankenPHP is DDEV's web server through the `ddev/ddev-frankenphp`
-  add-on (generic webserver, PHP 8.5 ZTS). Keep the add-on's own files unedited; project settings
-  go in `.ddev/docker-compose.frankenphp_extra.yaml` (worker mode) and
-  `.ddev/config.zz-router-ports.yaml` (the box's router ports, 8880/8843).
+- **The compiled site is the runtime** (Chad, 2026-10-19, #33). `elephc --web --web-isolation=pool` compiles the class bundle and `bootstrap/serve.php` into one binary, a prefork HTTP server.
+  - It keeps N long-lived workers, each with persistent PHP handler processes; there is no process per request.
+  - Each request runs the entry with fresh PHP state, as under PHP-FPM, so nothing carries over between requests and no request scope is needed.
+  - Pool isolation is the model elephc's PDO drivers run under: worker isolation panics in PDO pgsql (a compiler carry).
+  - Front it with Caddy or nginx for TLS and static files.
+  - No FrankenPHP, no Swoole, no coroutines.
+- **The interpreted reference** is the same entry under PHP: DDEV serves `public/index.php` through nginx-fpm at `https://aic-nextgen.ddev.site:8843`, and gate:23 runs it with `php -S`.
+- Postgres 17 through DDEV.
 - PSR at every seam (PSR-3 is gone with logging; PSR-4, 7, 11, 14 if events survive, 15, 17).
 
 ## Layout (working decision, ticket #1)
@@ -143,6 +134,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | 9 | phpat, `gates/architecture/` | 20 | captainhook hooks installed |
 | 10 | PHPMD, every ruleset | 21 | native: elephc compile, link, run, match PHP |
 | | | 22 | pipeline docs: frontmatter, line caps, links |
+| | | 23 | native site: the compiled app answers as PHP does |
 
 - The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
   `App\`; a phpat rule keeps runtime code from depending on it.
@@ -174,8 +166,8 @@ Every file:
 - No `mixed`, except on a `#[Override]` method whose PSR interface dictates it. No untyped arrays:
   `array<TKey, TValue>` in phpdoc.
 - `final` by default; `abstract` only when designed for extension.
-- No `static` caches, no globals, no singletons: a worker serves request after request, and
-  static state leaks between them.
+- No `static` caches, no globals, no singletons: state lives in the objects the composition root
+  wires.
 - No `new` in business logic; the composition root wires (`app/AppServices.php`).
 - PSR interfaces at every seam.
 
@@ -191,8 +183,11 @@ Every file:
 - `grep` here is ugrep: BRE `\|` alternation silently matches nothing. Use `grep -E` or the Grep
   tool, and never conclude "unused" from a grep alone.
 - Never grep or walk the whole filesystem or `$HOME`; scope searches to the project.
-- A worker boots once: after a PHP change, `ddev restart` before a browser check, or the page
-  still runs the old code.
+- The compiled site is a build: after a PHP change, rerun `composer run native:serve` (or
+  gate:23) before a browser check on it, or it still runs the old binary. The php-fpm reference in
+  DDEV picks changes up per request.
+- gate:23 and `native:serve` find Postgres through `PG*` or `ddev describe` (its published port
+  moves on every restart); with DDEV down, gate:23 defers its database steps.
 - Edit `composer.json` with targeted edits, never a JSON dump and rewrite (it reindents and
   escapes unicode).
 - The elephc compiler is `/srv/stacks/elephc` (carry workflow in its `FORK.md`). Run its binary

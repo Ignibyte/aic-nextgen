@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AIC\Frankenphp\Infrastructure;
+namespace AIC\Sapi\Infrastructure;
 
-use AIC\Frankenphp\Contracts\RequestExtractor;
-use AIC\Frankenphp\Contracts\SapiRequest;
 use AIC\Http\Domain\InputParser;
+use AIC\Sapi\Contracts\RequestExtractor;
+use AIC\Sapi\Contracts\SapiRequest;
 use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\MessageInterface;

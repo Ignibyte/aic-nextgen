@@ -14,6 +14,7 @@
     <file>framework/src</file>
     <file>app</file>
     <file>public</file>
+    <file>bootstrap</file>
     <file>config</file>
     <file>bin</file>
     <file>gates/src</file>
@@ -154,11 +155,11 @@
     <!--
         No superglobals (CLAUDE.md conventions); semgrep's aic-no-superglobals
         is the gate:15 side. The SAPI boundary is the one place that reads
-        them: public/worker.php snapshots the request, and the bin/gate-*.php
+        them: bootstrap/serve.php snapshots the request, and the bin/gate-*.php
         entry scripts read HOME for the tool lookup.
     -->
     <rule ref="SlevomatCodingStandard.Variables.DisallowSuperGlobalVariable">
-        <exclude-pattern>public/worker.php</exclude-pattern>
+        <exclude-pattern>bootstrap/serve.php</exclude-pattern>
         <exclude-pattern>bin/gate-*.php</exclude-pattern>
     </rule>
 

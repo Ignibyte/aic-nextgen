@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AIC\Frankenphp\Contracts;
+namespace AIC\Sapi\Contracts;
 
 /**
  * Where a response goes out: the SAPI's status, header and output calls.

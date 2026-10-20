@@ -52,9 +52,9 @@ rules:
     languages: [generic]
     severity: ERROR
 
-  # public/worker.php is the FrankenPHP SAPI entry point: the one place that
-  # reads the superglobals to build the request. The bin/ entry scripts read
-  # HOME for the tool lookup.
+  # bootstrap/serve.php is the SAPI entry point (interpreted and compiled): the
+  # one place that reads the superglobals to build the request. The bin/ entry
+  # scripts read HOME for the tool lookup.
   - id: aic-no-superglobals
     pattern-regex: '(?m)^(?!\s*(?:\*|//|/\*|#)).*\$(_SERVER|_POST|_GET|_COOKIE|_FILES|_SESSION|_REQUEST|_ENV|GLOBALS)\b'
     paths:
@@ -62,8 +62,8 @@ rules:
         - "*.php"
       exclude:
         - "/bin/**"
-        - "/public/worker.php"
-    message: "PHP superglobal forbidden: only the SAPI entry point (public/worker.php) reads them."
+        - "/bootstrap/serve.php"
+    message: "PHP superglobal forbidden: only the SAPI entry point (bootstrap/serve.php) reads them."
     languages: [generic]
     severity: ERROR
 
@@ -76,11 +76,12 @@ rules:
         - "*.php"
     severity: ERROR
 
-  # A FrankenPHP worker serves request after request in one process: static
-  # state set during one request is still there for the next.
+  # No static state (CLAUDE.md conventions): state lives in the objects the
+  # composition root wires, so a request's code never depends on what an
+  # earlier request left in a class.
   - id: aic-no-static-mutable-property
     pattern-regex: '^\s*(?:private|protected|public)\s+static\s+(?!readonly\b)(?!const\b)[\w\\\?\|\&]+\s+\$\w+\s*='
-    message: "Static mutable properties are forbidden: a worker serves many requests and static state leaks between them."
+    message: "Static mutable properties are forbidden: state lives in the objects the composition root wires."
     languages: [generic]
     paths:
       include:
@@ -89,7 +90,7 @@ rules:
 
   - id: aic-no-static-array-cache
     pattern-regex: 'static\s+\$_?cache\b'
-    message: "static $cache patterns are forbidden: static state leaks between the requests a worker serves."
+    message: "static $cache patterns are forbidden: state lives in the objects the composition root wires."
     languages: [generic]
     paths:
       include:
@@ -170,11 +171,11 @@ rules:
         - "/bin/**"
     severity: WARNING
 
-  # FrankenPHP worker mode is the only runtime (CLAUDE.md, Stack). Comment
+  # The compiled elephc --web server is the runtime (CLAUDE.md, Stack). Comment
   # lines are skipped; the architecture rule that bans the dependency names it.
   - id: aic-no-swoole-reference
     pattern-regex: '(?m)^(?!\s*(?:\*|//|/\*|#)).*\bSwoole\\'
-    message: "Swoole reference in source: Swoole is removed; FrankenPHP worker mode is the only runtime."
+    message: "Swoole reference in source: Swoole is removed; the compiled elephc --web server is the runtime."
     languages: [generic]
     paths:
       include:

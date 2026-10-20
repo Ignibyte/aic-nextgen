@@ -14,9 +14,9 @@ use function sort;
  *
  * The runtime is every class, interface, trait and enum under `framework/src`
  * (`AIC\`) and `app` (`App\`). The gate tooling (`gates/`, `Gates\`), the
- * entry scripts in `bin/` and the SAPI shell `public/worker.php` run
- * interpreted by design and stay out; keeping them outside the two runtime
- * roots means no scope list is needed. A runtime class that must be left out
+ * entry scripts in `bin/` and the SAPI shell (`public/index.php`,
+ * `bootstrap/serve.php`, which gate:23 compiles with the whole app) stay out;
+ * keeping them outside the two runtime roots means no scope list is needed. A runtime class that must be left out
  * goes in here, with its reason.
  */
 final readonly class RuntimeClassFinder

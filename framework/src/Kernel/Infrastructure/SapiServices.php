@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace AIC\Kernel\Infrastructure;
 
-use AIC\Frankenphp\Contracts\RequestExtractor;
-use AIC\Frankenphp\Contracts\SapiSink;
-use AIC\Frankenphp\Infrastructure\SapiRequestExtractor;
-use AIC\Frankenphp\Infrastructure\SapiResponseEmitter;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Http\Application\ResponseFactory;
 use AIC\Http\Application\ServerRequestFactory;
 use AIC\Http\Application\StreamFactory;
 use AIC\Http\Application\UriFactory;
 use AIC\Http\Domain\InputParser;
+use AIC\Sapi\Contracts\RequestExtractor;
+use AIC\Sapi\Contracts\SapiSink;
+use AIC\Sapi\Infrastructure\SapiRequestExtractor;
+use AIC\Sapi\Infrastructure\SapiResponseEmitter;
 
 /**
  * The framework's SAPI and HTTP wiring, built once per worker from its sink: the

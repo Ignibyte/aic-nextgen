@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AIC\Frankenphp\Contracts;
+namespace AIC\Sapi\Contracts;
 
 use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;

@@ -40,6 +40,7 @@ The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every fai
 | 20 | captainhook | the enabled git hooks are installed |
 | 21 | native | every runtime class compiles, links, runs and matches PHP under elephc |
 | 22 | pipeline docs | the pipeline docs and phase commands: frontmatter, line caps, internal links |
+| 23 | native site | the app compiled with `elephc --web` answers the step script as the interpreted app does: status, content type, location, normalised body; database steps defer when Postgres does not answer |
 
 A new gate or rule is done only when it has been seen to fail on a planted violation.
 
@@ -57,13 +58,12 @@ AIC is one package, `aic/framework`, in `framework/` with a namespace per system
 
 ---
 
-## §3  The worker and native compilation
+## §3  The runtime and native compilation
 
-AIC runs only as a FrankenPHP worker: one process serves request after request.
+AIC runs as the compiled site: the app built with `elephc --web` into one prefork server, each request served with fresh PHP state (#33). The same entry, `bootstrap/serve.php`, runs interpreted under php-fpm as the reference.
 
-- **No static mutable state**, no static caches, no globals, no singletons: state set during one request is still there for the next.
-- **Per-request state lives behind `RequestScopeInterface`**, reset between requests; never on the properties of long-lived services.
-- The container, the kernel and the route table are immutable after boot.
+- **No static mutable state**, no static caches, no globals, no singletons: state lives in the objects the composition root wires.
+- The container, the kernel and the route table are immutable once wired.
 
 Every runtime class (everything under `framework/src` and `app`) compiles natively with elephc, from the first class (gate:21):
 
@@ -121,7 +121,7 @@ Every PHP file:
 9. Modern PHP 8.5: `match` over `switch`, enums over class constants, first-class callables, named arguments where they read better.
 10. No `new` in business logic: the composition root wires (`App\AppServices`, with the framework's `SapiServices`), in typed code.
 11. No `env()` outside `config/`; no `getenv()` in runtime code.
-12. No `global`, no `$GLOBALS`, no superglobals outside the SAPI entry point (`public/worker.php`).
+12. No `global`, no `$GLOBALS`, no superglobals outside the SAPI entry point (`bootstrap/serve.php`).
 13. No suppression annotations (`@phpstan-ignore`, `@psalm-suppress`, `@phpcs:ignore`, `@phpmd:*`).
 14. Every entry point is one of the five kinds: Page, Api, Stream, Command or Job.
 
@@ -153,4 +153,4 @@ This Constitution is amended by editing this file through the four phases (`/pip
 
 - **2026-10-19 — Wiring is code (#21).** §14 rule 10 names the composition root, not a container, as what wires: constructors and readonly properties, typed throughout and compiled natively. The rule against `new` in business logic is unchanged. The PSR-11 container arrives with plugins (#5).
 - **2026-10-19 — PSR overrides (#20, Chad's decision).** §14 rule 7 names its one exception: a `#[Override]` method whose PSR interface dictates `mixed`. PHPStan accepts only `array<mixed>` as the contravariant phpdoc of PSR-7's `array` parameters, PHPCS `DisallowMixedTypeHint` already exempted overrides, and semgrep's `aic-no-mixed-in-phpdoc-template` now does the same, bite-checked both ways.
-- **2026-10-19 — nextgen (#3).** Ported from old AIC's Constitution at `e0778896` and trimmed to one package: the ward, Swoole and Forge history stays in the archive; the gates are renumbered from gate:0 with no gaps (#2, #14, #3); §3 restated for the FrankenPHP worker and native compilation from the first class; §4 collects the workflow rules old AIC cited as §9, §11, §15 and §16; §18.3 and §18.4 (the retired inspection checkpoint and worktrees) dropped.
+- **2026-10-19 — nextgen (#3).** Ported from old AIC's Constitution at `e0778896` and trimmed to one package: the ward, Swoole and Forge history stays in the archive; the gates are renumbered from gate:0 with no gaps (#2, #14, #3); §3 restated for the FrankenPHP worker and native compilation from the first class (and in #33 for the compiled site); §4 collects the workflow rules old AIC cited as §9, §11, §15 and §16; §18.3 and §18.4 (the retired inspection checkpoint and worktrees) dropped.
