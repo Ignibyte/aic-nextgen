@@ -121,6 +121,36 @@
             "path": "/notifications"
         },
         {
+            "handler": "App\\Content\\ContentListPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/pages"
+        },
+        {
+            "handler": "App\\Content\\ContentShowPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/pages/{slug}"
+        },
+        {
+            "handler": "App\\Content\\ContentNewPost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/account/pages"
+        },
+        {
+            "handler": "App\\Content\\ContentEditPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/account/pages/{slug}"
+        },
+        {
+            "handler": "App\\Content\\ContentSavePost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/account/pages/{slug}"
+        },
+        {
             "handler": "App\\Note\\NoteListPage",
             "kind": "Page",
             "method": "GET",

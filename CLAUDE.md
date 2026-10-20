@@ -47,7 +47,8 @@ M4 is done. #13 runs as #46 to #48; #46: the Job kind and a Postgres queue (`bin
 queue:work`). #47: schedules in code, `bin/aic schedule:run` (once per minute, by a ledger). #48:
 notifications (our SMTP client to Mailpit, and the database), each delivery a job; #13 is done.
 #10 runs as #49 and #50; #49: the app in feature folders, a home page that links every demo,
-`/health`. Next is #50 (content pages). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+`/health`. #50: content pages by slug (`App\Content`). #10 is done. Next is #11 (cutover), whose
+repo renames wait for Chad. #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 

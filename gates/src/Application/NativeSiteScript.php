@@ -91,6 +91,8 @@ final readonly class NativeSiteScript
         $update = 'title=Gate+edited&body=y&aic_csrf={csrf}&aic_envelope={envelope}';
 
         return [
+            new NativeSiteStep('content pages', 'GET', '/pages', '', '', 200, true, false),
+            new NativeSiteStep('content page, none', 'GET', '/pages/no-such-page', '', '', 404, true, false),
             new NativeSiteStep('notes', 'GET', '/notes', '', '', 200, true, false),
             new NativeSiteStep('note blank', 'POST', '/notes', 'title=&aic_csrf={csrf}', '', 422, true, false),
             new NativeSiteStep('note create', 'POST', '/notes', 'title=Gate&body=x&aic_csrf={csrf}', '', 303, true, true),

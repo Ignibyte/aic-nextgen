@@ -34,6 +34,7 @@ final readonly class HomePage implements Page
         '/jobs' => 'Jobs, the queue and the scheduler',
         '/notes' => 'Notes (entity CRUD, templates, signed forms)',
         '/notifications' => 'Notifications (mail and database)',
+        '/pages' => 'Content pages (by slug, written when signed in)',
         '/uploads' => 'Uploads (checked by content)',
         '/visits' => 'Visits (sessions)',
     ];
