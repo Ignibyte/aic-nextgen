@@ -7,6 +7,8 @@ namespace App\Console;
 use AIC\Auth\Application\PgcryptoPasswordHasher;
 use AIC\Controller\Contracts\Command;
 use AIC\Database\Contracts\Database;
+use AIC\Notification\Contracts\MailTransport;
+use AIC\Notification\Domain\MailConfig;
 use AIC\Queue\Application\PostgresQueue;
 use AIC\Queue\Application\QueueWorkCommand;
 use AIC\Queue\Application\QueueWorker;
@@ -23,10 +25,14 @@ use App\User\UserRepository;
 final readonly class DataCommands
 {
     /**
-     * @param Database $database The database.
+     * @param Database      $database      The database.
+     * @param MailTransport $mailTransport Sends the notification job's mail.
+     * @param MailConfig    $mailConfig    The sender's address.
      */
     public function __construct(
         private Database $database,
+        private MailTransport $mailTransport,
+        private MailConfig $mailConfig,
     ) {
     }
 
@@ -36,7 +42,7 @@ final readonly class DataCommands
     public function byName(): array
     {
         $postgresQueue = new PostgresQueue($this->database);
-        $queueWorker = new QueueWorker($postgresQueue, (new AppJobs())->byName());
+        $queueWorker = new QueueWorker($postgresQueue, (new AppJobs($this->database, $this->mailTransport, $this->mailConfig))->byName());
         $scheduler = new Scheduler($this->database, $postgresQueue, (new AppSchedules())->all());
 
         return [

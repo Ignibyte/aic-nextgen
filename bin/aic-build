@@ -19,6 +19,8 @@ declare(strict_types=1);
 
 use AIC\Database\Domain\DatabaseConfig;
 use AIC\Database\Infrastructure\PdoDatabase;
+use AIC\Notification\Domain\MailConfig;
+use AIC\Notification\Infrastructure\SmtpTransport;
 use AIC\Routing\Domain\RouteTable;
 use App\AppJobs;
 use App\AppPlugins;
@@ -35,20 +37,24 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $routes = require __DIR__ . '/../config/routes.php';
 $databaseConfig = require __DIR__ . '/../config/database.php';
+$mailConfig = require __DIR__ . '/../config/mail.php';
 
-if (!$routes instanceof RouteTable || !$databaseConfig instanceof DatabaseConfig) {
-    fwrite(\STDERR, "aic-build: config/routes.php or config/database.php returned the wrong type.\n");
+if (!$routes instanceof RouteTable || !$databaseConfig instanceof DatabaseConfig || !$mailConfig instanceof MailConfig) {
+    fwrite(\STDERR, "aic-build: config/routes.php, config/database.php or config/mail.php returned the wrong type.\n");
 
     exit(1);
 }
 
-$consoleCommands = new ConsoleCommands(new PdoDatabase($databaseConfig), new AppPlugins(new AppProvider()));
+$database = new PdoDatabase($databaseConfig);
+$smtpTransport = new SmtpTransport($mailConfig);
+$consoleCommands = new ConsoleCommands($database, new AppPlugins(new AppProvider()), $smtpTransport, $mailConfig);
+$jobs = (new AppJobs($database, $smtpTransport, $mailConfig))->byName();
 $root = dirname(__DIR__);
 $templateBuild = new TemplateBuild(new TemplateParser(), new TemplateCompiler(), [$root . '/app' => 'App\\', $root . '/framework/src' => 'AIC\\']);
 
 try {
     $outputs = [
-        $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleCommands->byName(), (new AppJobs())->byName(), (new AppSchedules())->all()),
+        $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleCommands->byName(), $jobs, (new AppSchedules())->all()),
         $root . '/public/assets/aic.css' => (new ThemeBuild($root . '/theme'))->stylesheet(),
     ] + $templateBuild->classes();
 } catch (InvalidArgumentException $invalidArgumentException) {
