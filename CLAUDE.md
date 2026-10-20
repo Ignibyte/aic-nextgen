@@ -49,8 +49,9 @@ queue:work`). #47: schedules in code, `bin/aic schedule:run` (once per minute, b
 notifications (our SMTP client to Mailpit, and the database), each delivery a job; #13 is done.
 #10 runs as #49 and #50; #49: the app in feature folders, a home page that links every demo,
 `/health`. #50: content pages by slug (`App\Content`). #10 is done. There is no cutover (#11
-closed). Next are the compiler carries (#17, #23, #24, #34's open items, #45, #51), approved for the
-fork; #12 (the browser runtime) and #32 (WebSockets) are filed and open.
+closed). The order from here (Chad, 2026-10-20): the compiler carries (done: #17, #24, #45, #51 and
+part of #23), compiler polish with workaround removal (#53 done; #23 and #34 open), Tessera (#12,
+`Ignibyte/tessera`), then a real site. WebSockets are a research ticket (#52) that #32 waits on.
 
 ## Five kinds
 

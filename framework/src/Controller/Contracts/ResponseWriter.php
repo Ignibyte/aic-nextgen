@@ -12,8 +12,7 @@ use Psr\Http\Message\ResponseInterface;
  *
  * A shape writes itself through this contract (double dispatch), so no handler
  * casts a response down to its shape, and a new shape needs a method here: the
- * seal is in the types. elephc does not narrow an object-typed value with
- * `instanceof`, which is the other reason for the design (plan.md).
+ * seal is in the types.
  */
 interface ResponseWriter
 {

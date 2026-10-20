@@ -55,6 +55,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **The native workarounds whose compiler fixes landed are gone** (#53). Fork PRs #10 to #12 made several shapes compile, so AIC code no longer works around them:
+  - `UploadedFile::moveTo` renames the upload, now that `rename()` crosses filesystems (#45).
+  - `PageHandler` and `ContentShowPage` call the narrowed value directly, since `instanceof` narrows an interface-typed value (#40).
+  - The notes citing those gaps are gone.
+  - plan.md's native-style rules list only what still fails, and record what compiles now.
 - **Dead-code detection** (#15). `shipmonk/dead-code-detector` replaces the abandoned `tomasvotruba/unused-public` in gate:8. It checks methods, constants, enum cases, and properties never read or written; dead cycles and transitively dead methods; and it does not count a call over an unknown type as usage. gate:0 reports no abandoned package. The gate classes lost their `@api` tags, which had hidden their members from both dead-code checks. The detector found the unused `RelativePathComputer` (deleted) and the caller-less `AIC\Routing\Domain\Method` cases (the class waits for #4). gate:21 defers until runtime code returns.
 
 ### Added

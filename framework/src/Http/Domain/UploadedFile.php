@@ -9,14 +9,12 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
 
-use function copy;
-use function unlink;
+use function rename;
 
 /**
  * One uploaded file (#44), over the temporary file the SAPI made. `moveTo`
- * copies it and removes the original: elephc has no `move_uploaded_file`,
- * and its `rename` does not cross filesystems (#45). The path is the SAPI's
- * own, never the client's, so the copy needs no upload check.
+ * renames it, which also moves it across filesystems. The path is the SAPI's
+ * own, never the client's, so the move needs no upload check.
  */
 final class UploadedFile implements UploadedFileInterface
 {
@@ -61,7 +59,7 @@ final class UploadedFile implements UploadedFileInterface
     /**
      * @param string $targetPath Where to put it.
      *
-     * @throws RuntimeException When it was moved already, did not upload, or cannot be copied.
+     * @throws RuntimeException When it was moved already, did not upload, or cannot be moved.
      */
     #[Override]
     public function moveTo(string $targetPath): void
@@ -70,7 +68,7 @@ final class UploadedFile implements UploadedFileInterface
             throw new RuntimeException('The uploaded file cannot be moved: it was moved already or did not upload.');
         }
 
-        if (!copy($this->path, $targetPath) || !unlink($this->path)) {
+        if (!rename($this->path, $targetPath)) {
             throw new RuntimeException('The uploaded file could not be moved to ' . $targetPath . '.');
         }
 

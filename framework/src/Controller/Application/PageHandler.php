@@ -43,20 +43,10 @@ final readonly class PageHandler implements RequestHandlerInterface
         $pageResponse = $this->page->page($request);
 
         if ($pageResponse instanceof PageDocument) {
-            return $this->placed($pageResponse, $request->getUri()->getPath());
+            return $pageResponse->withBlocks($this->blocks, $request->getUri()->getPath())
+                ->writeTo($this->responseWriter);
         }
 
         return $pageResponse->writeTo($this->responseWriter);
-    }
-
-    /**
-     * @param PageDocument $pageDocument The page's document.
-     * @param string       $path         The request's path.
-     *
-     * @return ResponseInterface The document with the matching blocks in its regions, written.
-     */
-    private function placed(PageDocument $pageDocument, string $path): ResponseInterface
-    {
-        return $pageDocument->withBlocks($this->blocks, $path)->writeTo($this->responseWriter);
     }
 }

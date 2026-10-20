@@ -48,16 +48,6 @@ final readonly class ContentShowPage implements Page
             return $this->htmlLayout->content('<p id="not-found">There is no page here.</p>', 404);
         }
 
-        return $this->shown($contentPage);
-    }
-
-    /**
-     * @param ContentPage $contentPage The page (typed here: elephc does not narrow on instanceof, #40).
-     *
-     * @return PageResponse It, as an article.
-     */
-    private function shown(ContentPage $contentPage): PageResponse
-    {
         return $this->htmlLayout->content((new ContentArticle($contentPage))->render()->markup(), 200);
     }
 }
