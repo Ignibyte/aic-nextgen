@@ -20,4 +20,7 @@ enum LogicalType
 
     /** A point in time with its time zone. */
     case TimestampTz;
+
+    /** A whole number, 32 bits. */
+    case Integer;
 }

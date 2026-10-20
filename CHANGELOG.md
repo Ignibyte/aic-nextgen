@@ -6,6 +6,7 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Jobs and the queue** (#46, the first slice of #13). The fifth kind, Job: `run(JobInput): JobResponse` with the sealed results `JobDone`, `JobRetry` and `JobFailed`, each recording itself. `AIC\Queue`: a Postgres queue (`FOR UPDATE SKIP LOCKED`, stale reservations reclaimed), three attempts with exponential backoff, and a failed-job record; `bin/aic queue:work [max]` drains due jobs. `TableBuilder::integer()`. The demo's `/jobs` queues a job that retries once and one that keeps failing; `surface.json` lists the jobs. gate:23 reads `/jobs` (44 steps).
 - **Authentication** (#9, closing M4). `AIC\Auth`:
   - `PasswordHasher`, with `PgcryptoPasswordHasher` (bcrypt at cost 12 in Postgres; elephc has no `password_hash`, and PHP's `password_verify` reads the hashes);
   - `UserProvider` and `UserCredentials`;

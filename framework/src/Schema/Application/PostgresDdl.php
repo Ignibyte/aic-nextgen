@@ -62,6 +62,7 @@ final readonly class PostgresDdl
             LogicalType::String => 'varchar(' . $column->length . ')',
             LogicalType::Text => 'text',
             LogicalType::TimestampTz => 'timestamptz',
+            LogicalType::Integer => 'integer',
         };
 
         return $column->name->value . ' ' . $type . ($column->nullable ? '' : ' NOT NULL');

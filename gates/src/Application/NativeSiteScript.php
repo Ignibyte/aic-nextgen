@@ -72,6 +72,7 @@ final readonly class NativeSiteScript
             new NativeSiteStep('forget, off-site', 'POST', '/visits/forget', 'next=%2F%2Fevil.test&aic_csrf={csrf}', '', 303, true, false),
             new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, true, false),
             new NativeSiteStep('forget, next', 'POST', '/visits/forget', 'next=%2Fnotes&aic_csrf={csrf}', '', 303, true, false),
+            new NativeSiteStep('jobs', 'GET', '/jobs', '', '', 200, true, false),
             new NativeSiteStep('uploads', 'GET', '/uploads', '', '', 200, true, false),
             new NativeSiteStep('upload a PNG', 'POST', '/uploads', $upload . 'upload.png', '', 303, true, false),
             new NativeSiteStep('uploads, accepted', 'GET', '/uploads', '', '', 200, true, false),

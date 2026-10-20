@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\Command;
+use AIC\Controller\Contracts\Job;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\Stream;
 use AIC\Routing\Domain\Route;
@@ -22,7 +23,8 @@ use const JSON_UNESCAPED_UNICODE;
 /**
  * The app's surface as one JSON document (`build/surface.json`, #26): every
  * route with its method, path, handler and kind, and every console command
- * with its name, class and kind, in declaration order. A kind is read from the
+ * with its name, class and kind, and every queue job with its name, class and
+ * kind, in declaration order. A kind is read from the
  * class's interfaces, so it is never declared twice.
  */
 final readonly class SurfaceManifest
@@ -33,6 +35,7 @@ final readonly class SurfaceManifest
     private const array KINDS = [
         Api::class => 'Api',
         Command::class => 'Command',
+        Job::class => 'Job',
         Page::class => 'Page',
         Stream::class => 'Stream',
     ];
@@ -40,14 +43,15 @@ final readonly class SurfaceManifest
     /**
      * @param list<Route>            $routes   The routes, as declared.
      * @param array<string, Command> $commands The console commands by name.
+     * @param array<string, Job>     $jobs     The queue's jobs by name (#46).
      *
      * @throws JsonException When the manifest cannot be encoded.
      *
      * @return string The manifest, pretty-printed, with a final newline.
      */
-    public function json(array $routes, array $commands): string
+    public function json(array $routes, array $commands, array $jobs): string
     {
-        $manifest = ['routes' => [], 'commands' => []];
+        $manifest = ['routes' => [], 'commands' => [], 'jobs' => []];
 
         foreach ($routes as $route) {
             $manifest['routes'][] = [
@@ -60,6 +64,10 @@ final readonly class SurfaceManifest
 
         foreach ($commands as $name => $command) {
             $manifest['commands'][] = ['class' => $command::class, 'kind' => self::kind($command::class), 'name' => $name];
+        }
+
+        foreach ($jobs as $name => $job) {
+            $manifest['jobs'][] = ['class' => $job::class, 'kind' => self::kind($job::class), 'name' => $name];
         }
 
         return json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n";

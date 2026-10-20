@@ -6,7 +6,6 @@ namespace App\Http;
 
 use AIC\Block\Contracts\Blocks;
 use AIC\Config\Domain\AppConfig;
-use AIC\Controller\Application\ApiHandler;
 use AIC\Controller\Application\PageHandlers;
 use AIC\Controller\Application\Psr7ResponseWriter;
 use AIC\Database\Contracts\Database;
@@ -19,7 +18,7 @@ use function array_merge;
 /**
  * The app's controllers, each wrapped in its kind's handler, by the handler id
  * config/routes.php names, gathered from NoteHandlers, StreamHandlers,
- * VisitHandlers, GreetingHandlers and AuthHandlers, with the status API.
+ * VisitHandlers, GreetingHandlers, AuthHandlers, JobHandlers and ApiHandlers.
  */
 final readonly class AppHandlers
 {
@@ -58,13 +57,14 @@ final readonly class AppHandlers
         $visitHandlers = new VisitHandlers($htmlLayout, $pageHandlers);
         $greetingHandlers = new GreetingHandlers($htmlLayout, $pageHandlers, $this->appConfig, $this->bootedAt, $this->greeters);
         $authHandlers = new AuthHandlers($htmlLayout, $pageHandlers, $this->database);
-        $apiHandler = new ApiHandler(new StatusApi($this->appConfig, $this->bootedAt, $this->database), $psr7ResponseWriter);
+        $jobHandlers = new JobHandlers($htmlLayout, $pageHandlers, $this->database);
+        $apiHandlers = new ApiHandlers($psr7ResponseWriter, $this->appConfig, $this->bootedAt, $this->database);
 
         return array_merge(
             array_merge($noteHandlers->byId(), $streamHandlers->byId()),
             array_merge(
                 array_merge($visitHandlers->byId(), $greetingHandlers->byId()),
-                array_merge($authHandlers->byId(), [StatusApi::class => $apiHandler]),
+                array_merge(array_merge($authHandlers->byId(), $jobHandlers->byId()), $apiHandlers->byId()),
             ),
         );
     }

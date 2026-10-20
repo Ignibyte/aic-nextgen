@@ -20,6 +20,7 @@ declare(strict_types=1);
 use AIC\Database\Domain\DatabaseConfig;
 use AIC\Database\Infrastructure\PdoDatabase;
 use AIC\Routing\Domain\RouteTable;
+use App\AppJobs;
 use App\AppPlugins;
 use App\AppProvider;
 use App\ConsoleCommands;
@@ -46,7 +47,7 @@ $templateBuild = new TemplateBuild(new TemplateParser(), new TemplateCompiler(),
 
 try {
     $outputs = [
-        $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleCommands->byName()),
+        $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleCommands->byName(), (new AppJobs())->byName()),
         $root . '/public/assets/aic.css' => (new ThemeBuild($root . '/theme'))->stylesheet(),
     ] + $templateBuild->classes();
 } catch (InvalidArgumentException $invalidArgumentException) {
