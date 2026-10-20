@@ -160,6 +160,11 @@
             "name": "queue:work"
         },
         {
+            "class": "AIC\\Schedule\\Application\\ScheduleRunCommand",
+            "kind": "Command",
+            "name": "schedule:run"
+        },
+        {
             "class": "App\\Console\\UserAdd",
             "kind": "Command",
             "name": "user:add"
@@ -170,6 +175,13 @@
             "class": "App\\Job\\DemoJob",
             "kind": "Job",
             "name": "demo"
+        }
+    ],
+    "schedules": [
+        {
+            "cadence": "* * * * *",
+            "job": "demo",
+            "name": "demo-every-minute"
         }
     ]
 }

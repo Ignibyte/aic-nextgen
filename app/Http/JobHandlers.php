@@ -7,6 +7,8 @@ namespace App\Http;
 use AIC\Controller\Application\PageHandlers;
 use AIC\Database\Contracts\Database;
 use AIC\Queue\Application\PostgresQueue;
+use AIC\Schedule\Application\Scheduler;
+use App\AppSchedules;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -33,9 +35,11 @@ final readonly class JobHandlers
     public function byId(): array
     {
         $postgresQueue = new PostgresQueue($this->database);
+        $schedules = (new AppSchedules())->all();
+        $scheduler = new Scheduler($this->database, $postgresQueue, $schedules);
 
         return [
-            JobsPage::class => $this->pageHandlers->handler(new JobsPage($this->htmlLayout, $postgresQueue)),
+            JobsPage::class => $this->pageHandlers->handler(new JobsPage($this->htmlLayout, $postgresQueue, $scheduler, $schedules)),
             JobsPost::class => $this->pageHandlers->handler(new JobsPost($postgresQueue)),
         ];
     }

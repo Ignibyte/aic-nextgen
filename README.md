@@ -46,7 +46,13 @@ composer run native:serve        # build the compiled site and serve it on http:
 composer run native:serve 9000   # on another port
 ddev exec bin/aic migrate        # the console, inside DDEV
 ddev psql                        # the Postgres 17 database
+ddev exec bin/aic queue:work     # run the due jobs, then exit
+ddev exec bin/aic schedule:run   # queue the schedules due this minute
 ```
+
+In production a systemd timer (or cron) runs `bin/aic schedule:run` every minute, and a
+service that restarts runs `bin/aic queue:work`. A second `schedule:run` in the same minute
+queues nothing more.
 
 The theme lives in `theme/`; `composer run build` writes it to `public/assets/aic.css`, and the
 build output is committed. DDEV's nginx serves `public/` as static files. The compiled server
