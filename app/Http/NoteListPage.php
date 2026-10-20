@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http;
 
-use AIC\Component\Domain\Badge;
-use AIC\Component\Domain\Link;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
@@ -39,21 +37,10 @@ final readonly class NoteListPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $items = '';
-        $count = 0;
-
-        foreach ($this->noteRepository->all() as $note) {
-            $items .= '<li>' . (new Link($note->title, '/notes/' . $note->id))->render()->markup() . '</li>';
-            $count += 1;
-        }
-
-        $list = $items === ''
-            ? '<p id="no-notes">No notes yet.</p>'
-            : '<ul id="notes">' . $items . '</ul>';
-        $heading = '<h2>Notes ' . (new Badge((string) $count, 'note-count'))->render()->markup() . '</h2>';
+        $noteList = new NoteList($this->noteRepository->all());
 
         return $this->noteViews->page(
-            $heading . $list . '<h2>New note</h2>' . $this->noteViews->form($serverRequest->getUri()->getPath(), '', '', ''),
+            $noteList->render()->markup() . '<h2>New note</h2>' . $this->noteViews->form($serverRequest->getUri()->getPath(), '', '', ''),
             200,
         );
     }

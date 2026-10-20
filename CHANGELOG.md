@@ -6,6 +6,7 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Compiled templates** (#36, the second slice of #7). A component's `X.tpl` compiles at build time to `XTemplate.php` beside it: `{{ }}` escaped by default, `{!! !!}` for `Html` only, `@component()`, `@if`/`@else`/`@endif`, `@foreach (… as Type $var)` and `@use`. The generated class passes every gate as written (small chained part methods, typed loop mappers), and a template too big for one class is refused. `composer run build` writes them and gate:24 fails on a stale one. The note page and the note list render through `NoteCard` and `NoteList` templates, natively too.
 - **Components and the catalog atoms** (#35, the first slice of #7). `AIC\Component\Contracts\Component::render(): Html`, with `Html` as escape-safe markup. The atoms with a caller (Alert, Badge, Button, Form, FormField, Input, Link, Textarea) render plain markup with `aic-*` class names and one escaping path. The greeting form, the note forms and the note list are built from them. All 142 runtime classes compile natively.
 - **Byte ranges and Server-Sent Events** (#25).
   - Downloads honour one `Range`: 206 with `Content-Range`, 416 with `bytes */size`, and 200 with `Accept-Ranges: bytes` otherwise.
