@@ -84,9 +84,7 @@ final readonly class Authenticator
     }
 
     /**
-     * Signs the user in when the password is theirs. Takes the credentials as
-     * a typed parameter: elephc does not narrow a nullable value's properties
-     * on instanceof (#40), nor across `&&`.
+     * Signs the user in when the password is theirs.
      *
      * @param ServerRequestInterface $serverRequest   The login post, with its session.
      * @param UserCredentials        $userCredentials The user's credentials.

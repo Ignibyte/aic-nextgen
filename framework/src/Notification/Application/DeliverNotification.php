@@ -50,7 +50,7 @@ final readonly class DeliverNotification implements Job
     }
 
     /**
-     * @param Channel  $channel  The channel (typed here: elephc does not narrow on instanceof, #40).
+     * @param Channel  $channel  The channel.
      * @param JobInput $jobInput The notification.
      *
      * @throws RuntimeException When the channel cannot deliver now.
