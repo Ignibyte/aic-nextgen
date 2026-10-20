@@ -40,7 +40,7 @@ final readonly class EntityType
      */
     public function columns(): array
     {
-        return array_merge(array_merge([$this->key], $this->named(FieldType::Text)), $this->named(FieldType::CreatedAt));
+        return array_merge([$this->key], $this->named(FieldType::Text), $this->named(FieldType::CreatedAt));
     }
 
     /**
