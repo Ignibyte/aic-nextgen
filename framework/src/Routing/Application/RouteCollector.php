@@ -14,10 +14,6 @@ use LogicException;
 /**
  * Declares the app's routes, in `config/routes.php`, and compiles them to a
  * RouteTable. Immutable: each declaration returns a new collector.
- *
- * The GET declaration is `onGet()`, not `get()`: elephc resolves its WeakMap
- * prelude's `WeakReference::get()` call against a user method of that name that
- * returns an object (carry #24).
  */
 final readonly class RouteCollector
 {
@@ -41,7 +37,7 @@ final readonly class RouteCollector
      *
      * @return self A collector with the route added.
      */
-    public function onGet(string $path, string $handler): self
+    public function get(string $path, string $handler): self
     {
         return $this->with(new Route(Method::GET, $path, $handler));
     }
@@ -56,7 +52,7 @@ final readonly class RouteCollector
      *
      * @return self A collector with the route added.
      */
-    public function onPost(string $path, string $handler): self
+    public function post(string $path, string $handler): self
     {
         return $this->with(new Route(Method::POST, $path, $handler));
     }
