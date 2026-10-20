@@ -6,13 +6,15 @@ namespace App\Http;
 
 use AIC\Controller\Application\PageHandlers;
 use AIC\Database\Contracts\Database;
+use AIC\Notification\Application\DatabaseChannel;
+use AIC\Notification\Application\Notifier;
 use AIC\Queue\Application\PostgresQueue;
 use AIC\Schedule\Application\Scheduler;
 use App\AppSchedules;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * The jobs pages (#46), each wrapped in the Page handler, by the handler id
+ * The jobs and notifications pages (#46, #48), each wrapped in the Page handler, by the handler id
  * config/routes.php names.
  */
 final readonly class JobHandlers
@@ -41,6 +43,10 @@ final readonly class JobHandlers
         return [
             JobsPage::class => $this->pageHandlers->handler(new JobsPage($this->htmlLayout, $postgresQueue, $scheduler, $schedules)),
             JobsPost::class => $this->pageHandlers->handler(new JobsPost($postgresQueue)),
+            NotificationsPage::class => $this->pageHandlers->handler(
+                new NotificationsPage($this->htmlLayout, new DatabaseChannel($this->database)),
+            ),
+            NotificationsPost::class => $this->pageHandlers->handler(new NotificationsPost(new Notifier($postgresQueue))),
         ];
     }
 }

@@ -23,6 +23,8 @@ use App\Http\NoteDeletePost;
 use App\Http\NoteListPage;
 use App\Http\NoteShowPage;
 use App\Http\NoteUpdatePost;
+use App\Http\NotificationsPage;
+use App\Http\NotificationsPost;
 use App\Http\PlaceholderPage;
 use App\Http\ResourceDownload;
 use App\Http\StatusApi;
@@ -50,6 +52,8 @@ return new RouteCollector(new RoutePatternCompiler())
     ->onGet('/account', AccountPage::class)
     ->onGet('/jobs', JobsPage::class)
     ->onPost('/jobs', JobsPost::class)
+    ->onGet('/notifications', NotificationsPage::class)
+    ->onPost('/notifications', NotificationsPost::class)
     ->onGet('/notes', NoteListPage::class)
     ->onPost('/notes', NoteCreatePost::class)
     ->onGet('/notes/{id:int}', NoteShowPage::class)

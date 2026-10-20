@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use AIC\Auth\Domain\EnablePgcrypto;
+use AIC\Notification\Domain\CreateNotificationsTable;
 use AIC\Queue\Domain\CreateJobTables;
 use AIC\Schedule\Domain\CreateScheduleRuns;
 use AIC\Schema\Contracts\Migration;
@@ -25,6 +26,7 @@ final readonly class AppMigrations
         return [
             new CreateNotesTable(), new CreateSessionsTable(), new EnablePgcrypto(), new CreateUsersTable(), new CreateJobTables(),
             new CreateScheduleRuns(),
+            new CreateNotificationsTable(),
         ];
     }
 }

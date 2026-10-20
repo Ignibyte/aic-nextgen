@@ -52,7 +52,8 @@ ddev exec bin/aic schedule:run   # queue the schedules due this minute
 
 In production a systemd timer (or cron) runs `bin/aic schedule:run` every minute, and a
 service that restarts runs `bin/aic queue:work`. A second `schedule:run` in the same minute
-queues nothing more.
+queues nothing more. Notifications go out through the queue: DDEV's Mailpit catches the mail
+(`ddev mailpit`), and `AIC_MAIL_HOST`, `AIC_MAIL_PORT` and `AIC_MAIL_FROM` point it elsewhere.
 
 The theme lives in `theme/`; `composer run build` writes it to `public/assets/aic.css`, and the
 build output is committed. DDEV's nginx serves `public/` as static files. The compiled server

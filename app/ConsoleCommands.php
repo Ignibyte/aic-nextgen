@@ -6,6 +6,8 @@ namespace App;
 
 use AIC\Controller\Contracts\Command;
 use AIC\Database\Contracts\Database;
+use AIC\Notification\Contracts\MailTransport;
+use AIC\Notification\Domain\MailConfig;
 use AIC\Schema\Application\MigrateCommand;
 use AIC\Schema\Application\MigrationStatusCommand;
 use AIC\Schema\Application\Migrator;
@@ -24,12 +26,16 @@ use function array_merge;
 final readonly class ConsoleCommands
 {
     /**
-     * @param Database   $database   The database.
-     * @param AppPlugins $appPlugins The app's plugins.
+     * @param Database      $database      The database.
+     * @param AppPlugins    $appPlugins    The app's plugins.
+     * @param MailTransport $mailTransport Sends mail.
+     * @param MailConfig    $mailConfig    The sender's address.
      */
     public function __construct(
         private Database $database,
         private AppPlugins $appPlugins,
+        private MailTransport $mailTransport,
+        private MailConfig $mailConfig,
     ) {
     }
 
@@ -45,6 +51,6 @@ final readonly class ConsoleCommands
             'greet' => new Greet($this->appPlugins->greeters()),
             'migrate' => new MigrateCommand($migrator),
             'migrate:status' => new MigrationStatusCommand($migrator),
-        ], (new DataCommands($this->database))->byName());
+        ], (new DataCommands($this->database, $this->mailTransport, $this->mailConfig))->byName());
     }
 }

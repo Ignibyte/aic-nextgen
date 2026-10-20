@@ -103,6 +103,18 @@
             "path": "/jobs"
         },
         {
+            "handler": "App\\Http\\NotificationsPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/notifications"
+        },
+        {
+            "handler": "App\\Http\\NotificationsPost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/notifications"
+        },
+        {
             "handler": "App\\Http\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -175,6 +187,11 @@
             "class": "App\\Job\\DemoJob",
             "kind": "Job",
             "name": "demo"
+        },
+        {
+            "class": "AIC\\Notification\\Application\\DeliverNotification",
+            "kind": "Job",
+            "name": "notify"
         }
     ],
     "schedules": [
