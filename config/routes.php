@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\RoutePatternCompiler;
+use App\Http\AssetFile;
 use App\Http\GreetingPage;
 use App\Http\GreetingPost;
 use App\Http\NoteCreatePost;
@@ -27,6 +28,7 @@ return new RouteCollector(new RoutePatternCompiler())
     ->onPost('/hello', GreetingPost::class)
     ->onGet('/api/status', StatusApi::class)
     ->onGet('/download/{file}', ResourceDownload::class)
+    ->onGet('/assets/{file}', AssetFile::class)
     ->onGet('/events', TickEvents::class)
     ->onGet('/notes', NoteListPage::class)
     ->onPost('/notes', NoteCreatePost::class)

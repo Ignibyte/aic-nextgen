@@ -35,7 +35,9 @@ component's `X.tpl` compiles to `XTemplate.php` beside it (`composer run build`,
 gate:24); the generated class passes every gate unexcluded. #37: a Page returns
 `PageDocument(Layout)`; regions render as `data-region` elements, components and blocks between
 `<!--aic:...-->` markers. #38: blocks (`AIC\Block`) place themselves in a region by weight and
-route prefix, as tagged plugins. Next is #39 (the theme). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+route prefix, as tagged plugins. #39: `theme/` builds into `public/assets/aic.css` (gate:24);
+nginx serves it in DDEV, a proxy in production, `/assets/{file}` on the compiled site. #7 and M3
+are done. Next is #8 (forms). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 

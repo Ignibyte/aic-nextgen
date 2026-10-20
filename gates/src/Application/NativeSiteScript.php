@@ -8,10 +8,9 @@ use Gates\Domain\NativeSiteStep;
 
 /**
  * The requests gate:23 sends to both sites, in order: the pages, the forms,
- * the API, the download and its ranges, an event stream, the error answers
- * and a note's whole life. Each site
- * runs the script on its own and deletes the note it made, so both see the
- * same database.
+ * the API, the download and its ranges, a theme asset, an event stream, the
+ * error answers and a note's whole life. Each site runs the script on its
+ * own and deletes the note it made, so both see the same database.
  */
 final readonly class NativeSiteScript
 {
@@ -24,7 +23,7 @@ final readonly class NativeSiteScript
     }
 
     /**
-     * @return list<NativeSiteStep> The steps that need no database: pages, forms, API, download, events, errors.
+     * @return list<NativeSiteStep> The steps that need no database: pages, forms, API, download, asset, events, errors.
      */
     private function pages(): array
     {
@@ -36,6 +35,7 @@ final readonly class NativeSiteScript
             new NativeSiteStep('status', 'GET', '/api/status', '', '', 200, false, false),
             new NativeSiteStep('download', 'GET', '/download/hello.txt', '', '', 200, false, false),
             new NativeSiteStep('missing file', 'GET', '/download/nope.txt', '', '', 404, false, false),
+            new NativeSiteStep('asset', 'GET', '/assets/aic.css', '', '', 200, false, false),
             new NativeSiteStep('range part', 'GET', '/download/hello.txt', '', 'Range: bytes=0-4', 206, false, false),
             new NativeSiteStep('range suffix', 'GET', '/download/hello.txt', '', 'Range: bytes=-6', 206, false, false),
             new NativeSiteStep('range unsatisfiable', 'GET', '/download/hello.txt', '', 'Range: bytes=9999-', 416, false, false),

@@ -10,15 +10,16 @@ use Override;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * A stream answered with a file, sent whole as an attachment. Byte ranges
- * arrive with #25.
+ * A stream answered with a file: whole, or one byte range (#25); as an
+ * attachment under its download name, or inline when the name is empty
+ * (an asset, #39).
  */
 final readonly class FileDownload implements StreamResponse
 {
     /**
      * @param string $path         The file to send.
      * @param string $mediaType    Its `Content-Type`.
-     * @param string $downloadName The name the browser saves it as.
+     * @param string $downloadName The name the browser saves it as; empty to send it inline.
      * @param string $range        The request's `Range` header, honoured as one byte range; empty for none.
      */
     public function __construct(
