@@ -6,6 +6,7 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The surface manifest** (#26). `composer run build` writes the committed `build/surface.json`: every route (method, path, handler, kind) and every console command (name, class, kind), the kinds read from the class's interfaces. gate:24 fails when it is stale. `RouteTable::routes()` exposes the declared routes.
 - **The compiled site is the runtime** (#33). FrankenPHP is set aside (Chad).
   - `bootstrap/serve.php` serves one request with fresh state, and `public/index.php` runs it under PHP. DDEV serves that interpreted reference through nginx-fpm; the FrankenPHP add-on, `public/worker.php` and the worker-mode field are gone.
   - **gate:23, the native site:** every runtime class is bundled with `serve.php`, compiled with `elephc --web --web-isolation=pool` and served beside `php -S`. 16 steps are compared (pages, forms, API, download, 404, 405, and a note's create, show, update and delete). The database steps defer when Postgres does not answer.

@@ -66,15 +66,30 @@ final readonly class RouteTable
     {
         $handlers = [];
 
+        foreach ($this->routes() as $route) {
+            $handlers[] = $route->handler;
+        }
+
+        return $handlers;
+    }
+
+    /**
+     * @return list<Route> Every route as declared, in declaration order (the build's surface
+     *                     manifest reads them).
+     */
+    public function routes(): array
+    {
+        $routes = [];
+
         foreach ($this->routes as $route) {
             if (!($route instanceof CompiledRoute)) {
                 continue;
             }
 
-            $handlers[] = $route->route->handler;
+            $routes[] = $route->route;
         }
 
-        return $handlers;
+        return $routes;
     }
 
     /**

@@ -1,0 +1,86 @@
+{
+    "routes": [
+        {
+            "handler": "App\\Http\\PlaceholderPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/"
+        },
+        {
+            "handler": "App\\Http\\GreetingPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/hello/{name}"
+        },
+        {
+            "handler": "App\\Http\\GreetingPost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/hello"
+        },
+        {
+            "handler": "App\\Http\\StatusApi",
+            "kind": "Api",
+            "method": "GET",
+            "path": "/api/status"
+        },
+        {
+            "handler": "App\\Http\\ResourceDownload",
+            "kind": "Stream",
+            "method": "GET",
+            "path": "/download/{file}"
+        },
+        {
+            "handler": "App\\Http\\NoteListPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/notes"
+        },
+        {
+            "handler": "App\\Http\\NoteCreatePost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/notes"
+        },
+        {
+            "handler": "App\\Http\\NoteShowPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/notes/{id:int}"
+        },
+        {
+            "handler": "App\\Http\\NoteUpdatePost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/notes/{id:int}"
+        },
+        {
+            "handler": "App\\Http\\NoteDeletePost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/notes/{id:int}/delete"
+        }
+    ],
+    "commands": [
+        {
+            "class": "App\\Console\\DatabasePing",
+            "kind": "Command",
+            "name": "db:ping"
+        },
+        {
+            "class": "App\\Console\\Greet",
+            "kind": "Command",
+            "name": "greet"
+        },
+        {
+            "class": "AIC\\Schema\\Application\\MigrateCommand",
+            "kind": "Command",
+            "name": "migrate"
+        },
+        {
+            "class": "AIC\\Schema\\Application\\MigrationStatusCommand",
+            "kind": "Command",
+            "name": "migrate:status"
+        }
+    ]
+}

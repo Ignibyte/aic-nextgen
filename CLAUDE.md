@@ -27,7 +27,8 @@ M0, M1 and M2 are done (2026-10-19).
 - gate:23 builds the whole app natively, serves it beside PHP, and compares 16 steps.
 - `composer run native:serve` serves the compiled site on 127.0.0.1:8090.
 
-Next is #7 (M3, pages). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+#26: `build/surface.json` lists every route and command with its kind, written by `composer run
+build`; gate:24 keeps it fresh. Next is #7 (M3, pages). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 
@@ -135,6 +136,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | 10 | PHPMD, every ruleset | 21 | native: elephc compile, link, run, match PHP |
 | | | 22 | pipeline docs: frontmatter, line caps, links |
 | | | 23 | native site: the compiled app answers as PHP does |
+| | | 24 | build manifests: `build/surface.json` is fresh |
 
 - The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
   `App\`; a phpat rule keeps runtime code from depending on it.
