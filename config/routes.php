@@ -21,6 +21,8 @@ use App\Http\PlaceholderPage;
 use App\Http\ResourceDownload;
 use App\Http\StatusApi;
 use App\Http\TickEvents;
+use App\Http\VisitsForget;
+use App\Http\VisitsPage;
 
 return new RouteCollector(new RoutePatternCompiler())
     ->onGet('/', PlaceholderPage::class)
@@ -30,6 +32,8 @@ return new RouteCollector(new RoutePatternCompiler())
     ->onGet('/download/{file}', ResourceDownload::class)
     ->onGet('/assets/{file}', AssetFile::class)
     ->onGet('/events', TickEvents::class)
+    ->onGet('/visits', VisitsPage::class)
+    ->onPost('/visits/forget', VisitsForget::class)
     ->onGet('/notes', NoteListPage::class)
     ->onPost('/notes', NoteCreatePost::class)
     ->onGet('/notes/{id:int}', NoteShowPage::class)

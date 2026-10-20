@@ -43,6 +43,18 @@
             "path": "/events"
         },
         {
+            "handler": "App\\Http\\VisitsPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/visits"
+        },
+        {
+            "handler": "App\\Http\\VisitsForget",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/visits/forget"
+        },
+        {
             "handler": "App\\Http\\NoteListPage",
             "kind": "Page",
             "method": "GET",

@@ -17,8 +17,8 @@ use function array_merge;
 
 /**
  * The app's controllers, each wrapped in its kind's handler, by the handler id
- * config/routes.php names; the note pages come from NoteHandlers and the
- * Stream controllers from StreamHandlers.
+ * config/routes.php names, gathered from NoteHandlers, StreamHandlers,
+ * VisitHandlers and GreetingHandlers, with the status API.
  */
 final readonly class AppHandlers
 {
@@ -48,20 +48,17 @@ final readonly class AppHandlers
     public function byId(): array
     {
         $htmlLayout = new HtmlLayout($this->appConfig);
-        $greetingForm = new GreetingForm();
         $psr7ResponseWriter = new Psr7ResponseWriter($this->responseBuilder);
-
         $pageHandlers = new PageHandlers($psr7ResponseWriter, $this->blocks);
         $noteHandlers = new NoteHandlers($htmlLayout, $pageHandlers, $this->database);
         $streamHandlers = new StreamHandlers($psr7ResponseWriter, $this->root);
+        $visitHandlers = new VisitHandlers($htmlLayout, $pageHandlers);
+        $greetingHandlers = new GreetingHandlers($htmlLayout, $pageHandlers, $this->appConfig, $this->bootedAt, $this->greeters);
+        $apiHandler = new ApiHandler(new StatusApi($this->appConfig, $this->bootedAt, $this->database), $psr7ResponseWriter);
 
-        return array_merge(array_merge($noteHandlers->byId(), $streamHandlers->byId()), [
-            GreetingPage::class => $pageHandlers->handler(new GreetingPage($htmlLayout, $this->greeters)),
-            GreetingPost::class => $pageHandlers->handler(new GreetingPost($htmlLayout, $greetingForm)),
-            PlaceholderPage::class => $pageHandlers->handler(
-                new PlaceholderPage($htmlLayout, $greetingForm, $this->appConfig, $this->bootedAt),
-            ),
-            StatusApi::class => new ApiHandler(new StatusApi($this->appConfig, $this->bootedAt, $this->database), $psr7ResponseWriter),
-        ]);
+        return array_merge(
+            array_merge($noteHandlers->byId(), $streamHandlers->byId()),
+            array_merge(array_merge($visitHandlers->byId(), $greetingHandlers->byId()), [StatusApi::class => $apiHandler]),
+        );
     }
 }

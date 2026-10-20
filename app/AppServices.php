@@ -8,8 +8,6 @@ use AIC\Config\Domain\AppConfig;
 use AIC\Database\Contracts\Database;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Kernel\Application\Kernel;
-use AIC\Middleware\Application\MiddlewareStep;
-use AIC\Routing\Application\RouteErrorMiddleware;
 use AIC\Routing\Application\Router;
 use AIC\Routing\Domain\RouteTable;
 use AIC\Sapi\Contracts\RequestExtractor;
@@ -59,7 +57,7 @@ final readonly class AppServices
         $router = new Router($routeTable, $appHandlers->byId());
         $this->kernel = new Kernel(
             $requestExtractor,
-            new MiddlewareStep(new RouteErrorMiddleware($responseBuilder), $router),
+            (new AppMiddleware($responseBuilder, $database))->around($router),
             $responseBuilder,
         );
     }
