@@ -5,8 +5,9 @@
 The fresh start of **AIC** (Absolute Insanity, AI; AIAI), Ignibyte's AI-first, CMS-slim PHP
 framework. Old AIC (`/srv/stacks/aic`, `Ignibyte/aic`) grew to 43 wards; on 2026-10-18 Chad
 decided to start over with only what earns its place and move it across by copying and
-trimming. This repo, `Ignibyte/aic-nextgen` (private), replaces `Ignibyte/aic` at cutover
-(ticket #11). Old AIC is the archive and the reference, pinned at main `e0778896`.
+trimming. This repo, `Ignibyte/aic-nextgen` (private), is where AIC lives: there is no
+cutover (Chad, 2026-10-20; #11 closed). Old AIC (`Ignibyte/aic`) is the archive and the reference,
+pinned at main `e0778896`.
 
 **Read `docs/planning/handoff.md` first**, then `roadmap.md` (the standing rules, the five kinds,
 the ten systems, the milestones) and `plan.md` (the decisions and the port map from old wards).
@@ -47,8 +48,9 @@ M4 is done. #13 runs as #46 to #48; #46: the Job kind and a Postgres queue (`bin
 queue:work`). #47: schedules in code, `bin/aic schedule:run` (once per minute, by a ledger). #48:
 notifications (our SMTP client to Mailpit, and the database), each delivery a job; #13 is done.
 #10 runs as #49 and #50; #49: the app in feature folders, a home page that links every demo,
-`/health`. #50: content pages by slug (`App\Content`). #10 is done. Next is #11 (cutover), whose
-repo renames wait for Chad. #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+`/health`. #50: content pages by slug (`App\Content`). #10 is done. There is no cutover (#11
+closed). Next are the compiler carries (#17, #23, #24, #34's open items, #45, #51), approved for the
+fork; #12 (the browser runtime) and #32 (WebSockets) are filed and open.
 
 ## Five kinds
 
