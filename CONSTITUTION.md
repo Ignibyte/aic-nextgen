@@ -41,6 +41,7 @@ The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every fai
 | 21 | native | every runtime class compiles, links, runs and matches PHP under elephc |
 | 22 | pipeline docs | the pipeline docs and phase commands: frontmatter, line caps, internal links |
 | 23 | native site | the app compiled with `elephc --web` answers the step script as the interpreted app does: status, content type, location, normalised body; database steps defer when Postgres does not answer |
+| 24 | build manifests | `build/surface.json` (every route and command with its kind, #26) matches what `composer run build` writes |
 
 A new gate or rule is done only when it has been seen to fail on a planted violation.
 

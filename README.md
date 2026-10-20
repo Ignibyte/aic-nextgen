@@ -18,7 +18,8 @@ notes with CRUD on Postgres, served by the compiled binary and, as the reference
 | `bootstrap/serve.php` | Serves one request: the wiring, the request in, the response out; compiled into the site or run under PHP |
 | `public/index.php` | The interpreted entry (php-fpm in DDEV, `php -S`): the autoloader, then `serve.php` |
 | `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
-| `bin/aic-build` | The build step for the build-time manifests (`composer run build`); nothing to build yet |
+| `bin/aic-build` | The build step (`composer run build`): writes `build/surface.json`; `--check` is gate:24 |
+| `build/surface.json` | The app's surface: every route (method, path, handler, kind) and console command (name, class, kind) |
 | `.ddev/` | DDEV: nginx-fpm serving the interpreted reference, and Postgres 17 |
 
 ## Bring it up

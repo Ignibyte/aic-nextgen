@@ -4,13 +4,60 @@
 declare(strict_types=1);
 
 /*
- * bin/aic-build: write the build-time manifests (`composer run build`).
+ * bin/aic-build: write the build-time manifests (`composer run build`); with
+ * `--check`, compare them with the committed files instead (gate:24).
  *
- * AIC compiles its wiring at build time, never at boot: the container wiring,
- * the route table and the manifest of every entry point with its kind. This is
- * where that step runs. Nothing is built yet; #4 adds the first manifest.
+ * AIC compiles its wiring at build time, never at boot. The one manifest so
+ * far is build/surface.json (#26): every route with its method, path, handler
+ * and kind, and every console command with its kind, so an agent can read the
+ * app's whole surface in one file. The routes come from config/routes.php and
+ * the commands from App\ConsoleCommands; the database is never opened, because
+ * PdoDatabase connects on its first query.
  */
 
-fwrite(STDOUT, "aic-build: nothing to build yet.\n");
+use AIC\Database\Domain\DatabaseConfig;
+use AIC\Database\Infrastructure\PdoDatabase;
+use AIC\Routing\Domain\RouteTable;
+use App\AppPlugins;
+use App\AppProvider;
+use App\ConsoleCommands;
+use Gates\Application\SurfaceManifest;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$routes = require __DIR__ . '/../config/routes.php';
+$databaseConfig = require __DIR__ . '/../config/database.php';
+
+if (!$routes instanceof RouteTable || !$databaseConfig instanceof DatabaseConfig) {
+    fwrite(STDERR, "aic-build: config/routes.php or config/database.php returned the wrong type.\n");
+
+    exit(1);
+}
+
+$consoleCommands = new ConsoleCommands(new PdoDatabase($databaseConfig), new AppPlugins(new AppProvider()));
+$json = (new SurfaceManifest())->json($routes->routes(), $consoleCommands->byName());
+$file = __DIR__ . '/../build/surface.json';
+$arguments = $argv ?? [];
+
+if (($arguments[1] ?? '') === '--check') {
+    if (file_get_contents($file) !== $json) {
+        fwrite(STDERR, "gate:24 — build/surface.json is stale: run composer run build and commit it.\n");
+
+        exit(1);
+    }
+
+    fwrite(STDOUT, 'gate:24 — build/surface.json is fresh: ' . count($routes->routes()) . ' routes, ' . count($consoleCommands->byName()) . " commands.\n");
+
+    exit(0);
+}
+
+if (!is_dir(dirname($file)) && !mkdir(dirname($file), 0o755, true)) {
+    fwrite(STDERR, "aic-build: cannot create build/.\n");
+
+    exit(1);
+}
+
+file_put_contents($file, $json);
+fwrite(STDOUT, "aic-build: wrote build/surface.json.\n");
 
 exit(0);
