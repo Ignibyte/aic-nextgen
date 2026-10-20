@@ -10,7 +10,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Database\Contracts\QueryException;
-use App\User\UserRepository;
+use App\Auth\UserRepository;
 use Override;
 
 /**

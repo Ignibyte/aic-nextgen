@@ -1,145 +1,151 @@
 {
     "routes": [
         {
-            "handler": "App\\Http\\PlaceholderPage",
+            "handler": "App\\Site\\HomePage",
             "kind": "Page",
             "method": "GET",
             "path": "/"
         },
         {
-            "handler": "App\\Http\\GreetingPage",
+            "handler": "App\\Greeting\\GreetingPage",
             "kind": "Page",
             "method": "GET",
             "path": "/hello/{name}"
         },
         {
-            "handler": "App\\Http\\GreetingPost",
+            "handler": "App\\Greeting\\GreetingPost",
             "kind": "Page",
             "method": "POST",
             "path": "/hello"
         },
         {
-            "handler": "App\\Http\\StatusApi",
+            "handler": "App\\Site\\StatusApi",
             "kind": "Api",
             "method": "GET",
             "path": "/api/status"
         },
         {
-            "handler": "App\\Http\\ResourceDownload",
+            "handler": "App\\Site\\HealthApi",
+            "kind": "Api",
+            "method": "GET",
+            "path": "/health"
+        },
+        {
+            "handler": "App\\Site\\ResourceDownload",
             "kind": "Stream",
             "method": "GET",
             "path": "/download/{file}"
         },
         {
-            "handler": "App\\Http\\AssetFile",
+            "handler": "App\\Site\\AssetFile",
             "kind": "Stream",
             "method": "GET",
             "path": "/assets/{file}"
         },
         {
-            "handler": "App\\Http\\TickEvents",
+            "handler": "App\\Site\\TickEvents",
             "kind": "Stream",
             "method": "GET",
             "path": "/events"
         },
         {
-            "handler": "App\\Http\\VisitsPage",
+            "handler": "App\\Session\\VisitsPage",
             "kind": "Page",
             "method": "GET",
             "path": "/visits"
         },
         {
-            "handler": "App\\Http\\VisitsForget",
+            "handler": "App\\Session\\VisitsForget",
             "kind": "Page",
             "method": "POST",
             "path": "/visits/forget"
         },
         {
-            "handler": "App\\Http\\UploadsPage",
+            "handler": "App\\Session\\UploadsPage",
             "kind": "Page",
             "method": "GET",
             "path": "/uploads"
         },
         {
-            "handler": "App\\Http\\UploadsPost",
+            "handler": "App\\Session\\UploadsPost",
             "kind": "Page",
             "method": "POST",
             "path": "/uploads"
         },
         {
-            "handler": "App\\Http\\LoginPage",
+            "handler": "App\\Auth\\LoginPage",
             "kind": "Page",
             "method": "GET",
             "path": "/login"
         },
         {
-            "handler": "App\\Http\\LoginPost",
+            "handler": "App\\Auth\\LoginPost",
             "kind": "Page",
             "method": "POST",
             "path": "/login"
         },
         {
-            "handler": "App\\Http\\LogoutPost",
+            "handler": "App\\Auth\\LogoutPost",
             "kind": "Page",
             "method": "POST",
             "path": "/logout"
         },
         {
-            "handler": "App\\Http\\AccountPage",
+            "handler": "App\\Auth\\AccountPage",
             "kind": "Page",
             "method": "GET",
             "path": "/account"
         },
         {
-            "handler": "App\\Http\\JobsPage",
+            "handler": "App\\Job\\JobsPage",
             "kind": "Page",
             "method": "GET",
             "path": "/jobs"
         },
         {
-            "handler": "App\\Http\\JobsPost",
+            "handler": "App\\Job\\JobsPost",
             "kind": "Page",
             "method": "POST",
             "path": "/jobs"
         },
         {
-            "handler": "App\\Http\\NotificationsPage",
+            "handler": "App\\Job\\NotificationsPage",
             "kind": "Page",
             "method": "GET",
             "path": "/notifications"
         },
         {
-            "handler": "App\\Http\\NotificationsPost",
+            "handler": "App\\Job\\NotificationsPost",
             "kind": "Page",
             "method": "POST",
             "path": "/notifications"
         },
         {
-            "handler": "App\\Http\\NoteListPage",
+            "handler": "App\\Note\\NoteListPage",
             "kind": "Page",
             "method": "GET",
             "path": "/notes"
         },
         {
-            "handler": "App\\Http\\NoteCreatePost",
+            "handler": "App\\Note\\NoteCreatePost",
             "kind": "Page",
             "method": "POST",
             "path": "/notes"
         },
         {
-            "handler": "App\\Http\\NoteShowPage",
+            "handler": "App\\Note\\NoteShowPage",
             "kind": "Page",
             "method": "GET",
             "path": "/notes/{id:int}"
         },
         {
-            "handler": "App\\Http\\NoteUpdatePost",
+            "handler": "App\\Note\\NoteUpdatePost",
             "kind": "Page",
             "method": "POST",
             "path": "/notes/{id:int}"
         },
         {
-            "handler": "App\\Http\\NoteDeletePost",
+            "handler": "App\\Note\\NoteDeletePost",
             "kind": "Page",
             "method": "POST",
             "path": "/notes/{id:int}/delete"

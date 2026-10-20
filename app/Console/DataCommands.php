@@ -16,7 +16,7 @@ use AIC\Schedule\Application\Scheduler;
 use AIC\Schedule\Application\ScheduleRunCommand;
 use App\AppJobs;
 use App\AppSchedules;
-use App\User\UserRepository;
+use App\Auth\UserRepository;
 
 /**
  * The commands that work on the app's data: `user:add` (#9), `queue:work`

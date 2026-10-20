@@ -32,6 +32,7 @@ final readonly class NativeSiteScript
         return [
             new NativeSiteStep('greeting', 'GET', '/hello/Ada', '', '', 200, false, false),
             new NativeSiteStep('status', 'GET', '/api/status', '', '', 200, false, false),
+            new NativeSiteStep('health', 'GET', '/health', '', '', 200, true, false),
             new NativeSiteStep('download', 'GET', '/download/hello.txt', '', '', 200, false, false),
             new NativeSiteStep('missing file', 'GET', '/download/nope.txt', '', '', 404, false, false),
             new NativeSiteStep('asset', 'GET', '/assets/aic.css', '', '', 200, false, false),

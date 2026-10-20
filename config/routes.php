@@ -9,36 +9,38 @@ declare(strict_types=1);
 
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\RoutePatternCompiler;
-use App\Http\AccountPage;
-use App\Http\AssetFile;
-use App\Http\GreetingPage;
-use App\Http\GreetingPost;
-use App\Http\JobsPage;
-use App\Http\JobsPost;
-use App\Http\LoginPage;
-use App\Http\LoginPost;
-use App\Http\LogoutPost;
-use App\Http\NoteCreatePost;
-use App\Http\NoteDeletePost;
-use App\Http\NoteListPage;
-use App\Http\NoteShowPage;
-use App\Http\NoteUpdatePost;
-use App\Http\NotificationsPage;
-use App\Http\NotificationsPost;
-use App\Http\PlaceholderPage;
-use App\Http\ResourceDownload;
-use App\Http\StatusApi;
-use App\Http\TickEvents;
-use App\Http\UploadsPage;
-use App\Http\UploadsPost;
-use App\Http\VisitsForget;
-use App\Http\VisitsPage;
+use App\Auth\AccountPage;
+use App\Auth\LoginPage;
+use App\Auth\LoginPost;
+use App\Auth\LogoutPost;
+use App\Greeting\GreetingPage;
+use App\Greeting\GreetingPost;
+use App\Job\JobsPage;
+use App\Job\JobsPost;
+use App\Job\NotificationsPage;
+use App\Job\NotificationsPost;
+use App\Note\NoteCreatePost;
+use App\Note\NoteDeletePost;
+use App\Note\NoteListPage;
+use App\Note\NoteShowPage;
+use App\Note\NoteUpdatePost;
+use App\Session\UploadsPage;
+use App\Session\UploadsPost;
+use App\Session\VisitsForget;
+use App\Session\VisitsPage;
+use App\Site\AssetFile;
+use App\Site\HealthApi;
+use App\Site\HomePage;
+use App\Site\ResourceDownload;
+use App\Site\StatusApi;
+use App\Site\TickEvents;
 
 return new RouteCollector(new RoutePatternCompiler())
-    ->onGet('/', PlaceholderPage::class)
+    ->onGet('/', HomePage::class)
     ->onGet('/hello/{name}', GreetingPage::class)
     ->onPost('/hello', GreetingPost::class)
     ->onGet('/api/status', StatusApi::class)
+    ->onGet('/health', HealthApi::class)
     ->onGet('/download/{file}', ResourceDownload::class)
     ->onGet('/assets/{file}', AssetFile::class)
     ->onGet('/events', TickEvents::class)

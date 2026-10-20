@@ -15,7 +15,6 @@ use AIC\Sapi\Contracts\RequestExtractor;
 use AIC\Secret\Application\HmacSigner;
 use AIC\Secret\Domain\AppSecret;
 use AIC\Session\Domain\StringMapJson;
-use App\Http\AppHandlers;
 
 /**
  * The app's composition root: its plugins (AppPlugins over AppProvider), its
