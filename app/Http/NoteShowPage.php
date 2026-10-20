@@ -55,7 +55,7 @@ final readonly class NoteShowPage implements Page
             . '<p id="note-body">' . htmlspecialchars($note->body) . '</p>'
             . '<p>Written <time>' . htmlspecialchars($note->createdAt) . '</time></p></article>'
             . '<h2>Edit</h2>' . $this->noteViews->form($path, $note->title, $note->body, '')
-            . '<form method="post" action="' . $path . '/delete"><button id="delete" type="submit">Delete</button></form>',
+            . $this->noteViews->deleteForm($path),
             200,
         );
     }

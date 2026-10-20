@@ -6,6 +6,7 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Components and the catalog atoms** (#35, the first slice of #7). `AIC\Component\Contracts\Component::render(): Html`, with `Html` as escape-safe markup. The atoms with a caller (Alert, Badge, Button, Form, FormField, Input, Link, Textarea) render plain markup with `aic-*` class names and one escaping path. The greeting form, the note forms and the note list are built from them. All 142 runtime classes compile natively.
 - **Byte ranges and Server-Sent Events** (#25).
   - Downloads honour one `Range`: 206 with `Content-Range`, 416 with `bytes */size`, and 200 with `Accept-Ranges: bytes` otherwise.
   - `EventStream` sends each `ServerEvent` from an `EventSource` as it comes (`text/event-stream`, not cached, not proxy-buffered).
