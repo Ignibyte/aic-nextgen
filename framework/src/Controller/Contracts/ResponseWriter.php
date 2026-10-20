@@ -45,8 +45,16 @@ interface ResponseWriter
      * @param string $path         The file to send.
      * @param string $mediaType    Its `Content-Type`.
      * @param string $downloadName The name the browser saves it as.
+     * @param string $range        The request's `Range` header; empty for none.
      *
-     * @return ResponseInterface The response.
+     * @return ResponseInterface The response: 200, 206 for a range, or 416 for one the file cannot satisfy.
      */
-    public function download(string $path, string $mediaType, string $downloadName): ResponseInterface;
+    public function download(string $path, string $mediaType, string $downloadName, string $range): ResponseInterface;
+
+    /**
+     * @param EventSource $eventSource Gives the events.
+     *
+     * @return ResponseInterface The `text/event-stream` response, its body pulling the events as it is read.
+     */
+    public function events(EventSource $eventSource): ResponseInterface;
 }

@@ -33,17 +33,19 @@ final readonly class StreamHttpClient implements HttpClient
      * @param string $method The method.
      * @param string $path   The path.
      * @param string $form   A form-encoded body; empty for none.
+     * @param string $header One extra request header line; empty for none.
      *
      * @return HttpExchange The answer; status 0 when there was none.
      */
     #[Override]
-    public function send(string $origin, string $method, string $path, string $form): HttpExchange
+    public function send(string $origin, string $method, string $path, string $form, string $header): HttpExchange
     {
-        $header = 'Connection: close' . ($form === '' ? '' : "\r\nContent-Type: application/x-www-form-urlencoded");
+        $lines = 'Connection: close' . ($form === '' ? '' : "\r\nContent-Type: application/x-www-form-urlencoded")
+            . ($header === '' ? '' : "\r\n" . $header);
         $context = stream_context_create(['http' => [
             'content' => $form,
             'follow_location' => 0,
-            'header' => $header,
+            'header' => $lines,
             'ignore_errors' => true,
             'method' => $method,
             'timeout' => 10,

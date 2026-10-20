@@ -6,6 +6,7 @@ namespace AIC\Sapi\Infrastructure;
 
 use AIC\Sapi\Contracts\SapiSink;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
 use function array_keys;
@@ -22,6 +23,11 @@ use function strtolower;
  */
 final readonly class SapiResponseEmitter
 {
+    /**
+     * The bytes read from a body at a time.
+     */
+    private const int CHUNK = 8_192;
+
     /**
      * @param SapiSink $sapiSink Where the response goes out.
      */
@@ -54,7 +60,7 @@ final readonly class SapiResponseEmitter
             $stream->rewind();
         }
 
-        $this->sapiSink->write($stream->getContents());
+        $this->writeBody($stream);
     }
 
     /**
@@ -71,6 +77,26 @@ final readonly class SapiResponseEmitter
 
         foreach ($response->getHeader($name) as $value) {
             $this->sapiSink->header($name . ': ' . $value, false);
+        }
+    }
+
+    /**
+     * Writes the body chunk by chunk, flushing after each, so a body that is
+     * produced as it is read (an event stream) reaches the client as it comes.
+     *
+     * @param StreamInterface $stream The body.
+     */
+    private function writeBody(StreamInterface $stream): void
+    {
+        while (!$stream->eof()) {
+            $chunk = $stream->read(self::CHUNK);
+
+            if ($chunk === '') {
+                return;
+            }
+
+            $this->sapiSink->write($chunk);
+            $this->sapiSink->flush();
         }
     }
 }

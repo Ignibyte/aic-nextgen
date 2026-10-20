@@ -27,4 +27,10 @@ interface SapiSink
      * @param string $bytes Body bytes to send.
      */
     public function write(string $bytes): void;
+
+    /**
+     * Pushes what has been written so far to the client, so a streamed body
+     * (an event stream) arrives as it is written.
+     */
+    public function flush(): void;
 }

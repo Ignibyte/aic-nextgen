@@ -28,7 +28,8 @@ M0, M1 and M2 are done (2026-10-19).
 - `composer run native:serve` serves the compiled site on 127.0.0.1:8090.
 
 #26: `build/surface.json` lists every route and command with its kind, written by `composer run
-build`; gate:24 keeps it fresh. Next is #7 (M3, pages). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+build`; gate:24 keeps it fresh. #25: byte ranges (206/416) on downloads and Server-Sent Events
+(`EventStream` pulling from an `EventSource`, streamed natively). Next is #7 (M3, pages). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 

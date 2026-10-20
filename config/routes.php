@@ -19,6 +19,7 @@ use App\Http\NoteUpdatePost;
 use App\Http\PlaceholderPage;
 use App\Http\ResourceDownload;
 use App\Http\StatusApi;
+use App\Http\TickEvents;
 
 return new RouteCollector(new RoutePatternCompiler())
     ->onGet('/', PlaceholderPage::class)
@@ -26,6 +27,7 @@ return new RouteCollector(new RoutePatternCompiler())
     ->onPost('/hello', GreetingPost::class)
     ->onGet('/api/status', StatusApi::class)
     ->onGet('/download/{file}', ResourceDownload::class)
+    ->onGet('/events', TickEvents::class)
     ->onGet('/notes', NoteListPage::class)
     ->onPost('/notes', NoteCreatePost::class)
     ->onGet('/notes/{id:int}', NoteShowPage::class)
