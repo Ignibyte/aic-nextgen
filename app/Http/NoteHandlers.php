@@ -7,6 +7,7 @@ namespace App\Http;
 use AIC\Controller\Application\PageHandlers;
 use AIC\Database\Contracts\Database;
 use AIC\Entity\Application\EntityStore;
+use AIC\Form\Application\FormTokens;
 use App\Note\NoteRepository;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -36,13 +37,20 @@ final readonly class NoteHandlers
         $noteRepository = new NoteRepository(new EntityStore($this->database));
         $noteRequest = new NoteRequest();
         $noteViews = new NoteViews($this->htmlLayout);
+        $noteForms = new NoteForms(new FormTokens());
 
         return [
-            NoteCreatePost::class => $this->pageHandlers->handler(new NoteCreatePost($noteRepository, $noteRequest, $noteViews)),
+            NoteCreatePost::class => $this->pageHandlers->handler(
+                new NoteCreatePost($noteRepository, $noteRequest, $noteViews, $noteForms),
+            ),
             NoteDeletePost::class => $this->pageHandlers->handler(new NoteDeletePost($noteRepository, $noteRequest, $noteViews)),
-            NoteListPage::class => $this->pageHandlers->handler(new NoteListPage($noteRepository, $noteViews)),
-            NoteShowPage::class => $this->pageHandlers->handler(new NoteShowPage($noteRepository, $noteRequest, $noteViews)),
-            NoteUpdatePost::class => $this->pageHandlers->handler(new NoteUpdatePost($noteRepository, $noteRequest, $noteViews)),
+            NoteListPage::class => $this->pageHandlers->handler(new NoteListPage($noteRepository, $noteViews, $noteForms)),
+            NoteShowPage::class => $this->pageHandlers->handler(
+                new NoteShowPage($noteRepository, $noteRequest, $noteViews, $noteForms),
+            ),
+            NoteUpdatePost::class => $this->pageHandlers->handler(
+                new NoteUpdatePost($noteRepository, $noteRequest, $noteViews, $noteForms),
+            ),
         ];
     }
 }

@@ -24,12 +24,14 @@ final readonly class NoteUpdatePost implements Page
     /**
      * @param NoteRepository $noteRepository The notes.
      * @param NoteRequest    $noteRequest    Reads the note's id and the posted note.
-     * @param NoteViews      $noteViews      The note pages' markup.
+     * @param NoteViews      $noteViews      The note pages' documents.
+     * @param NoteForms      $noteForms      The note forms.
      */
     public function __construct(
         private NoteRepository $noteRepository,
         private NoteRequest $noteRequest,
         private NoteViews $noteViews,
+        private NoteForms $noteForms,
     ) {
     }
 
@@ -49,7 +51,10 @@ final readonly class NoteUpdatePost implements Page
 
         if ($postedNote->error !== '') {
             return $this->noteViews->page(
-                [new Html('<h2>Edit</h2>'), $this->noteViews->form($path, $postedNote->title, $postedNote->body, $postedNote->error)],
+                [
+                    new Html('<h2>Edit</h2>'),
+                    $this->noteForms->form($serverRequest, $path, $postedNote->title, $postedNote->body, $postedNote->error),
+                ],
                 422,
             );
         }

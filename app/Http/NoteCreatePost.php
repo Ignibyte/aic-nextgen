@@ -22,12 +22,14 @@ final readonly class NoteCreatePost implements Page
     /**
      * @param NoteRepository $noteRepository The notes.
      * @param NoteRequest    $noteRequest    Reads the posted note.
-     * @param NoteViews      $noteViews      The note pages' markup.
+     * @param NoteViews      $noteViews      The note pages' documents.
+     * @param NoteForms      $noteForms      The note forms.
      */
     public function __construct(
         private NoteRepository $noteRepository,
         private NoteRequest $noteRequest,
         private NoteViews $noteViews,
+        private NoteForms $noteForms,
     ) {
     }
 
@@ -47,7 +49,7 @@ final readonly class NoteCreatePost implements Page
             return $this->noteViews->page(
                 [
                     new Html('<h2>New note</h2>'),
-                    $this->noteViews->form('/notes', $postedNote->title, $postedNote->body, $postedNote->error),
+                    $this->noteForms->form($serverRequest, '/notes', $postedNote->title, $postedNote->body, $postedNote->error),
                 ],
                 422,
             );

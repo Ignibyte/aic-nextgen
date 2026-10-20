@@ -8,6 +8,7 @@ use AIC\Component\Domain\Button;
 use AIC\Component\Domain\Form;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
+use AIC\Form\Application\FormTokens;
 use AIC\Session\Application\RequestSession;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -21,10 +22,12 @@ final readonly class VisitsPage implements Page
     /**
      * @param HtmlLayout     $htmlLayout     Makes the page.
      * @param RequestSession $requestSession Reads the session off the request.
+     * @param FormTokens     $formTokens     Issues the visitor's CSRF token.
      */
     public function __construct(
         private HtmlLayout $htmlLayout,
         private RequestSession $requestSession,
+        private FormTokens $formTokens,
     ) {
     }
 
@@ -39,7 +42,8 @@ final readonly class VisitsPage implements Page
         $session = $this->requestSession->read($serverRequest);
         $visits = (int) ($session->get('visits') ?? '0') + 1;
         $session->set('visits', (string) $visits);
-        $html = (new Form('forget', '/visits/forget', (new Button('Forget me', 'submit', ''))->render()))->render();
+        $button = (new Button('Forget me', 'submit', ''))->render();
+        $html = (new Form('forget', '/visits/forget', $button, $this->formTokens->issue($serverRequest)))->render();
 
         return $this->htmlLayout->content(
             '<p id="visits">This session has seen this page ' . $visits . ($visits === 1 ? ' time.' : ' times.') . '</p>'

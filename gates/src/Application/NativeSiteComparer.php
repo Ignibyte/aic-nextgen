@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use Gates\Domain\HttpClient;
 use Gates\Domain\HttpExchange;
+use Gates\Domain\NativeSiteSession;
 use Gates\Domain\NativeSiteStep;
 
 use function is_string;
@@ -14,7 +15,6 @@ use function mb_trim;
 use function parse_url;
 use function preg_replace;
 use function sprintf;
-use function str_replace;
 
 use const PHP_URL_PATH;
 
@@ -30,6 +30,7 @@ final readonly class NativeSiteComparer
      */
     private const array VOLATILE = [
         '#/notes/\\d+#' => '/notes/<id>',
+        '/name="aic_csrf" value="[0-9a-f]{64}"/' => 'name="aic_csrf" value="<token>"',
         '/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z/' => '<time>',
         '/\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(\\.\\d+)?[+-]\\d{2}(:\\d{2})?/' => '<time>',
     ];
@@ -50,17 +51,18 @@ final readonly class NativeSiteComparer
      */
     public function run(string $origin, array $steps): array
     {
-        $note = '/notes/0';
+        $nativeSiteSession = new NativeSiteSession();
         $exchanges = [];
 
         foreach ($steps as $step) {
-            $path = str_replace('{note}', $note, $step->path);
-            $exchange = $this->httpClient->send($origin, $step->method, $path, $step->form, $step->header);
-
-            if ($step->captures) {
-                $note = self::path($exchange->location);
-            }
-
+            $exchange = $this->httpClient->send(
+                $origin,
+                $step->method,
+                $nativeSiteSession->path($step),
+                $nativeSiteSession->form($step),
+                $nativeSiteSession->header($step),
+            );
+            $nativeSiteSession->absorb($step, $exchange, self::path($exchange->location));
             $exchanges[] = self::normalised($exchange);
         }
 

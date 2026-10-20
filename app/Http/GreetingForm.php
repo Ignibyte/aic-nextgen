@@ -11,6 +11,8 @@ use AIC\Component\Domain\Button;
 use AIC\Component\Domain\Form;
 use AIC\Component\Domain\FormField;
 use AIC\Component\Domain\Input;
+use AIC\Form\Application\FormTokens;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * The form that posts a name to /hello, shown on the placeholder page and again,
@@ -19,12 +21,21 @@ use AIC\Component\Domain\Input;
 final readonly class GreetingForm
 {
     /**
-     * @param string $value The name to show in the field.
-     * @param string $error The error to show; empty for none.
+     * @param FormTokens $formTokens Issues the visitor's CSRF token.
+     */
+    public function __construct(
+        private FormTokens $formTokens,
+    ) {
+    }
+
+    /**
+     * @param ServerRequestInterface $serverRequest The request, with its session.
+     * @param string                 $value         The name to show in the field.
+     * @param string                 $error         The error to show; empty for none.
      *
      * @return string The form markup.
      */
-    public function render(string $value, string $error): string
+    public function render(ServerRequestInterface $serverRequest, string $value, string $error): string
     {
         $alert = $error === ''
             ? new Html('')
@@ -33,6 +44,6 @@ final readonly class GreetingForm
             ->append((new FormField('Name', 'name', new Input('name', 'name', $value)))->render())
             ->append((new Button('Greet', 'submit', ''))->render());
 
-        return (new Form('greeting-form', '/hello', $html))->render()->markup();
+        return (new Form('greeting-form', '/hello', $html, $this->formTokens->issue($serverRequest)))->render()->markup();
     }
 }

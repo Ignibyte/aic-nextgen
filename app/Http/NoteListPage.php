@@ -20,11 +20,13 @@ final readonly class NoteListPage implements Page
 {
     /**
      * @param NoteRepository $noteRepository The notes.
-     * @param NoteViews      $noteViews      The note pages' markup.
+     * @param NoteViews      $noteViews      The note pages' documents.
+     * @param NoteForms      $noteForms      The note forms.
      */
     public function __construct(
         private NoteRepository $noteRepository,
         private NoteViews $noteViews,
+        private NoteForms $noteForms,
     ) {
     }
 
@@ -42,7 +44,7 @@ final readonly class NoteListPage implements Page
             [
                 new NoteList($this->noteRepository->all()),
                 new Html('<h2>New note</h2>'),
-                $this->noteViews->form($serverRequest->getUri()->getPath(), '', '', ''),
+                $this->noteForms->form($serverRequest, $serverRequest->getUri()->getPath(), '', '', ''),
             ],
             200,
         );
