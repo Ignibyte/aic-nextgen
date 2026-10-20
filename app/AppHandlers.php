@@ -12,13 +12,13 @@ use AIC\Database\Contracts\Database;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Http\Application\ResponseBuilder;
 use App\Auth\AuthHandlers;
+use App\Content\ContentHandlers;
 use App\Greeting\GreetingHandlers;
 use App\Job\JobHandlers;
 use App\Note\NoteHandlers;
 use App\Session\VisitHandlers;
-use App\Site\ApiHandlers;
 use App\Site\HtmlLayout;
-use App\Site\StreamHandlers;
+use App\Site\SiteHandlers;
 use Psr\Http\Server\RequestHandlerInterface;
 
 use function array_merge;
@@ -61,18 +61,18 @@ final readonly class AppHandlers
         $psr7ResponseWriter = new Psr7ResponseWriter($this->responseBuilder);
         $pageHandlers = new PageHandlers($psr7ResponseWriter, $this->blocks);
         $noteHandlers = new NoteHandlers($htmlLayout, $pageHandlers, $this->database, $this->envelopeCodec);
-        $streamHandlers = new StreamHandlers($psr7ResponseWriter, $this->root);
         $visitHandlers = new VisitHandlers($htmlLayout, $pageHandlers);
         $greetingHandlers = new GreetingHandlers($htmlLayout, $pageHandlers, $this->appConfig, $this->bootedAt, $this->greeters);
         $authHandlers = new AuthHandlers($htmlLayout, $pageHandlers, $this->database);
         $jobHandlers = new JobHandlers($htmlLayout, $pageHandlers, $this->database);
-        $apiHandlers = new ApiHandlers($psr7ResponseWriter, $this->appConfig, $this->bootedAt, $this->database);
+        $siteHandlers = new SiteHandlers($psr7ResponseWriter, $this->appConfig, $this->bootedAt, $this->root, $this->database);
+        $contentHandlers = new ContentHandlers($htmlLayout, $pageHandlers, $this->database);
 
         return array_merge(
-            array_merge($noteHandlers->byId(), $streamHandlers->byId()),
+            array_merge($noteHandlers->byId(), $contentHandlers->byId()),
             array_merge(
                 array_merge($visitHandlers->byId(), $greetingHandlers->byId()),
-                array_merge(array_merge($authHandlers->byId(), $jobHandlers->byId()), $apiHandlers->byId()),
+                array_merge(array_merge($authHandlers->byId(), $jobHandlers->byId()), $siteHandlers->byId()),
             ),
         );
     }

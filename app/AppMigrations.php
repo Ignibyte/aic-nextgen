@@ -10,6 +10,7 @@ use AIC\Queue\Domain\CreateJobTables;
 use AIC\Schedule\Domain\CreateScheduleRuns;
 use AIC\Schema\Contracts\Migration;
 use AIC\Session\Domain\CreateSessionsTable;
+use App\Migration\CreateContentPagesTable;
 use App\Migration\CreateNotesTable;
 use App\Migration\CreateUsersTable;
 
@@ -27,6 +28,7 @@ final readonly class AppMigrations
             new CreateNotesTable(), new CreateSessionsTable(), new EnablePgcrypto(), new CreateUsersTable(), new CreateJobTables(),
             new CreateScheduleRuns(),
             new CreateNotificationsTable(),
+            new CreateContentPagesTable(),
         ];
     }
 }

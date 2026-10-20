@@ -13,6 +13,11 @@ use App\Auth\AccountPage;
 use App\Auth\LoginPage;
 use App\Auth\LoginPost;
 use App\Auth\LogoutPost;
+use App\Content\ContentEditPage;
+use App\Content\ContentListPage;
+use App\Content\ContentNewPost;
+use App\Content\ContentSavePost;
+use App\Content\ContentShowPage;
 use App\Greeting\GreetingPage;
 use App\Greeting\GreetingPost;
 use App\Job\JobsPage;
@@ -56,6 +61,11 @@ return new RouteCollector(new RoutePatternCompiler())
     ->onPost('/jobs', JobsPost::class)
     ->onGet('/notifications', NotificationsPage::class)
     ->onPost('/notifications', NotificationsPost::class)
+    ->onGet('/pages', ContentListPage::class)
+    ->onGet('/pages/{slug}', ContentShowPage::class)
+    ->onPost('/account/pages', ContentNewPost::class)
+    ->onGet('/account/pages/{slug}', ContentEditPage::class)
+    ->onPost('/account/pages/{slug}', ContentSavePost::class)
     ->onGet('/notes', NoteListPage::class)
     ->onPost('/notes', NoteCreatePost::class)
     ->onGet('/notes/{id:int}', NoteShowPage::class)
