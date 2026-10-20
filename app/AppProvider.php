@@ -10,8 +10,8 @@ use AIC\Container\Contracts\ServiceRegistry;
 use App\Greeting\EnglishGreeter;
 use App\Greeting\Greeter;
 use App\Greeting\SpanishGreeter;
-use App\Http\NoteTipsBlock;
-use App\Http\PoweredByBlock;
+use App\Note\NoteTipsBlock;
+use App\Site\PoweredByBlock;
 use Override;
 
 /**

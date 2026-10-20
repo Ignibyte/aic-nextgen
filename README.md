@@ -6,8 +6,10 @@ package with a namespace per system. It is being
 built by porting what earns its place from old AIC (`Ignibyte/aic`) and will replace it at
 cutover.
 
-So far the demo app has a placeholder page, a greeting form, `/api/status`, a download and
-notes with CRUD on Postgres, served by the compiled binary and, as the reference, by PHP.
+The demo app shows every system at work, one feature folder each under `app/`: a home page that
+links every demo, notes with CRUD, templates and signed forms, sessions, uploads, sign-in, jobs,
+schedules and notifications, Server-Sent Events, downloads, `/api/status` and `/health`. The
+compiled binary serves it, and PHP serves the same app as the reference.
 
 ## Layout
 

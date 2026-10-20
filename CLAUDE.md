@@ -46,7 +46,8 @@ its content. #8 is done. #9: `AIC\Auth` (pgcrypto bcrypt, `Authenticator`, prote
 M4 is done. #13 runs as #46 to #48; #46: the Job kind and a Postgres queue (`bin/aic
 queue:work`). #47: schedules in code, `bin/aic schedule:run` (once per minute, by a ledger). #48:
 notifications (our SMTP client to Mailpit, and the database), each delivery a job; #13 is done.
-Next is #10 (the demo app). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+#10 runs as #49 and #50; #49: the app in feature folders, a home page that links every demo,
+`/health`. Next is #50 (content pages). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 
@@ -75,7 +76,10 @@ Background work is a job; the HTTP server's processes are its workers.
 - One package, **`aic/framework`**, in `framework/`, namespace `AIC\` with one namespace per
   system (`AIC\Http`, `AIC\Routing`, `AIC\Entity`, ...). It reaches the root through a composer
   path repository and moves to its own repo when published.
-- The repo root is the demo app, `aic/app`, namespace `App\`, under `app/`.
+- The repo root is the demo app, `aic/app`, namespace `App\`, under `app/`: composition classes
+  (`AppServices`, `AppHandlers`, ...) at the top, then one folder per feature (`Site`, `Greeting`,
+  `Note`, `Auth`, `Session`, `Job`, plus `Console` and `Migration`), each holding its pages, forms,
+  templates, handlers and domain together (#49).
 - One project theme at `theme/` renders into `public/`.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 

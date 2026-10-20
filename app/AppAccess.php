@@ -10,7 +10,7 @@ use AIC\Auth\Application\RequireAuthenticationMiddleware;
 use AIC\Auth\Domain\RouteAuthConfig;
 use AIC\Database\Contracts\Database;
 use AIC\Http\Application\ResponseBuilder;
-use App\User\UserRepository;
+use App\Auth\UserRepository;
 
 /**
  * Who may reach what (#9): /account and the paths below it need a signed-in
