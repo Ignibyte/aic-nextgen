@@ -47,7 +47,15 @@ final readonly class AppServices
         Database $database,
     ) {
         $appPlugins = new AppPlugins(new AppProvider());
-        $appHandlers = new AppHandlers($appConfig, $responseBuilder, $bootedAt, $resources, $appPlugins->greeters(), $database);
+        $appHandlers = new AppHandlers(
+            $appConfig,
+            $responseBuilder,
+            $bootedAt,
+            $resources,
+            $appPlugins->greeters(),
+            $database,
+            $appPlugins->blocks(),
+        );
         $router = new Router($routeTable, $appHandlers->byId());
         $this->kernel = new Kernel(
             $requestExtractor,

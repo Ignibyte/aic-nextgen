@@ -51,4 +51,15 @@ final readonly class AppLayout implements Layout
     {
         return $this->pageRegions;
     }
+
+    /**
+     * @param Regions $regions Regions for the page.
+     *
+     * @return self The layout holding them.
+     */
+    #[Override]
+    public function withRegions(Regions $regions): self
+    {
+        return new self($this->name, $regions);
+    }
 }

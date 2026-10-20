@@ -34,7 +34,8 @@ build`; gate:24 keeps it fresh. #25: byte ranges (206/416) on downloads and Serv
 component's `X.tpl` compiles to `XTemplate.php` beside it (`composer run build`, kept fresh by
 gate:24); the generated class passes every gate unexcluded. #37: a Page returns
 `PageDocument(Layout)`; regions render as `data-region` elements, components and blocks between
-`<!--aic:...-->` markers. Next is #38 (blocks). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+`<!--aic:...-->` markers. #38: blocks (`AIC\Block`) place themselves in a region by weight and
+route prefix, as tagged plugins. Next is #39 (the theme). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 

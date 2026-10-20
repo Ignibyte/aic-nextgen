@@ -19,4 +19,11 @@ interface Layout extends Component
      * @return Regions The regions the page filled.
      */
     public function regions(): Regions;
+
+    /**
+     * @param Regions $regions Regions for the page, such as these with blocks placed.
+     *
+     * @return self The same layout holding them.
+     */
+    public function withRegions(Regions $regions): self;
 }

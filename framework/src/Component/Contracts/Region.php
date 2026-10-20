@@ -7,6 +7,7 @@ namespace AIC\Component\Contracts;
 use InvalidArgumentException;
 use Override;
 
+use function array_merge;
 use function preg_match;
 
 /**
@@ -37,6 +38,16 @@ final readonly class Region implements Component
     public function name(): string
     {
         return $this->name;
+    }
+
+    /**
+     * @param list<Component> $components Components to follow its own.
+     *
+     * @return self The region holding both, in order.
+     */
+    public function append(array $components): self
+    {
+        return new self($this->name, array_merge($this->components, $components));
     }
 
     /**

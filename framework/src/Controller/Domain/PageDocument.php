@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Controller\Domain;
 
+use AIC\Block\Contracts\Blocks;
 use AIC\Component\Contracts\Layout;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Contracts\ResponseWriter;
@@ -55,5 +56,18 @@ final readonly class PageDocument implements PageResponse
     public function writeTo(ResponseWriter $responseWriter): ResponseInterface
     {
         return $responseWriter->document($this->status, $this->layout->render()->markup());
+    }
+
+    /**
+     * @param Blocks $blocks The app's blocks.
+     * @param string $path   The request's path.
+     *
+     * @return self The same document, its layout holding the matching blocks.
+     */
+    public function withBlocks(Blocks $blocks, string $path): self
+    {
+        $regions = $blocks->place($this->layout->regions(), $this->layout->names(), $path);
+
+        return new self($this->layout->withRegions($regions), $this->status);
     }
 }
