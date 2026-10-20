@@ -7,6 +7,7 @@ namespace AIC\Component\Contracts;
 use InvalidArgumentException;
 
 use function array_map;
+use function array_merge;
 use function implode;
 use function in_array;
 
@@ -43,6 +44,26 @@ final readonly class Regions
     public function names(): array
     {
         return array_map(static fn (Region $region): string => $region->name(), $this->regions);
+    }
+
+    /**
+     * @param string          $name       A region's name.
+     * @param list<Component> $components Components to follow the region's own.
+     *
+     * @throws InvalidArgumentException When the name breaks the grammar.
+     *
+     * @return self The regions with that one extended, or added when the page left it unfilled.
+     */
+    public function append(string $name, array $components): self
+    {
+        if (!in_array($name, $this->names(), true)) {
+            return new self(array_merge($this->regions, [new Region($name, $components)]));
+        }
+
+        return new self(array_map(
+            static fn (Region $region): Region => $region->name() === $name ? $region->append($components) : $region,
+            $this->regions,
+        ));
     }
 
     /**

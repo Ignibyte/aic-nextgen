@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use AIC\Block\Contracts\Blocks;
 use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Application\ApiHandler;
-use AIC\Controller\Application\PageHandler;
+use AIC\Controller\Application\PageHandlers;
 use AIC\Controller\Application\Psr7ResponseWriter;
 use AIC\Database\Contracts\Database;
 use AIC\Http\Application\ResponseBuilder;
@@ -28,6 +29,7 @@ final readonly class AppHandlers
      * @param string          $resources       The app's resources directory.
      * @param list<object>    $greeters        The Greeter plugins.
      * @param Database        $database        The database.
+     * @param Blocks          $blocks          The app's blocks, placed in each page.
      */
     public function __construct(
         private AppConfig $appConfig,
@@ -36,6 +38,7 @@ final readonly class AppHandlers
         private string $resources,
         private array $greeters,
         private Database $database,
+        private Blocks $blocks,
     ) {
     }
 
@@ -48,15 +51,15 @@ final readonly class AppHandlers
         $greetingForm = new GreetingForm();
         $psr7ResponseWriter = new Psr7ResponseWriter($this->responseBuilder);
 
-        $noteHandlers = new NoteHandlers($htmlLayout, $psr7ResponseWriter, $this->database);
+        $pageHandlers = new PageHandlers($psr7ResponseWriter, $this->blocks);
+        $noteHandlers = new NoteHandlers($htmlLayout, $pageHandlers, $this->database);
         $streamHandlers = new StreamHandlers($psr7ResponseWriter, $this->resources);
 
         return array_merge(array_merge($noteHandlers->byId(), $streamHandlers->byId()), [
-            GreetingPage::class => new PageHandler(new GreetingPage($htmlLayout, $this->greeters), $psr7ResponseWriter),
-            GreetingPost::class => new PageHandler(new GreetingPost($htmlLayout, $greetingForm), $psr7ResponseWriter),
-            PlaceholderPage::class => new PageHandler(
+            GreetingPage::class => $pageHandlers->handler(new GreetingPage($htmlLayout, $this->greeters)),
+            GreetingPost::class => $pageHandlers->handler(new GreetingPost($htmlLayout, $greetingForm)),
+            PlaceholderPage::class => $pageHandlers->handler(
                 new PlaceholderPage($htmlLayout, $greetingForm, $this->appConfig, $this->bootedAt),
-                $psr7ResponseWriter,
             ),
             StatusApi::class => new ApiHandler(new StatusApi($this->appConfig, $this->bootedAt, $this->database), $psr7ResponseWriter),
         ]);
