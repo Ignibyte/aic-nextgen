@@ -8,31 +8,31 @@ use JsonSerializable;
 use Override;
 
 /**
- * The body of GET /api/status: the app's name, when this worker booted, whether
- * the request was served in worker mode, and the database server's version.
+ * The body of GET /api/status: the app's name, when it booted to serve the
+ * request, the request's HTTP version, and the database server's version.
  */
 final readonly class StatusBody implements JsonSerializable
 {
     /**
-     * @param string $app        The app's name.
-     * @param string $bootedAt   When this worker booted, ISO 8601 in UTC.
-     * @param bool   $workerMode Whether the request was served in worker mode.
-     * @param string $database   The database server's version, or `unavailable`.
+     * @param string $app      The app's name.
+     * @param string $bootedAt When the app booted to serve the request, ISO 8601 in UTC.
+     * @param string $http     The request's HTTP version.
+     * @param string $database The database server's version, or `unavailable`.
      */
     public function __construct(
         private string $app,
         private string $bootedAt,
-        private bool $workerMode,
+        private string $http,
         private string $database,
     ) {
     }
 
     /**
-     * @return array<string, string|bool> The JSON object.
+     * @return array<string, string> The JSON object.
      */
     #[Override]
     public function jsonSerialize(): array
     {
-        return ['app' => $this->app, 'bootedAt' => $this->bootedAt, 'workerMode' => $this->workerMode, 'database' => $this->database];
+        return ['app' => $this->app, 'bootedAt' => $this->bootedAt, 'http' => $this->http, 'database' => $this->database];
     }
 }

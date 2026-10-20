@@ -2,9 +2,9 @@ name: aic-nextgen
 type: php
 docroot: public
 php_version: "8.5"
-# FrankenPHP is the web server: the ddev/ddev-frankenphp add-on sets
-# webserver_type: generic in config.frankenphp.yaml and serves public/ through
-# Caddy. docker-compose.frankenphp_extra.yaml turns on worker mode.
+# nginx-fpm (DDEV's default web server) serves public/index.php interpreted:
+# the reference the compiled site is compared with (gate:23). The runtime is
+# the compiled elephc --web server (composer run native:serve).
 database:
     type: postgres
     version: "17"

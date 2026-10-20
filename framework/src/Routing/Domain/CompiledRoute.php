@@ -57,7 +57,7 @@ final readonly class CompiledRoute
         $parameters = [];
 
         foreach ($this->parameters as $index => $name) {
-            $parameters[$name] = preg_replace($this->regex, '${' . ($index + 1) . '}', $path) ?? '';
+            $parameters[$name] = preg_replace($this->regex, '$' . ($index + 1), $path) ?? '';
         }
 
         return $parameters;

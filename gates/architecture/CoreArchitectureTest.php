@@ -101,7 +101,7 @@ final class CoreArchitectureTest
     }
 
     /**
-     * Nothing uses Swoole: FrankenPHP worker mode is the only runtime.
+     * Nothing uses Swoole: the compiled elephc --web server is the runtime.
      *
      * @return Rule The rule.
      */
@@ -116,6 +116,6 @@ final class CoreArchitectureTest
             ->shouldNot()
             ->dependOn()
             ->classes(Selector::inNamespace('Swoole'))
-            ->because('FrankenPHP worker mode is the only runtime; Swoole is removed (CLAUDE.md, Stack).');
+            ->because('the compiled elephc --web server is the runtime; Swoole is removed (CLAUDE.md, Stack).');
     }
 }

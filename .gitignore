@@ -57,3 +57,6 @@ core.*
 # env
 /.env
 /.env.*
+
+# native site work directory (gate:23, native:serve)
+/.native-site/

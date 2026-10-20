@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace AIC\Kernel\Application;
 
-use AIC\Frankenphp\Contracts\RequestExtractor;
-use AIC\Frankenphp\Contracts\SapiRequest;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Http\Domain\MalformedInputException;
+use AIC\Sapi\Contracts\RequestExtractor;
+use AIC\Sapi\Contracts\SapiRequest;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;

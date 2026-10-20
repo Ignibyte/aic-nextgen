@@ -33,6 +33,7 @@
         <directory name="framework/src"/>
         <directory name="app"/>
         <directory name="public"/>
+        <directory name="bootstrap"/>
         <directory name="config"/>
         <directory name="bin"/>
         <file name="bin/aic"/>

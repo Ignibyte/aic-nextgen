@@ -24,7 +24,7 @@ final readonly class AppHandlers
     /**
      * @param AppConfig       $appConfig       The app's settings.
      * @param ResponseBuilder $responseBuilder Makes the PSR-7 responses.
-     * @param string          $bootedAt        When this worker booted, ISO 8601 in UTC.
+     * @param string          $bootedAt        When the app booted to serve this request, ISO 8601 in UTC.
      * @param string          $resources       The app's resources directory.
      * @param list<object>    $greeters        The Greeter plugins.
      * @param Database        $database        The database.
