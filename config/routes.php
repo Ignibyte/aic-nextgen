@@ -13,6 +13,8 @@ use App\Http\AccountPage;
 use App\Http\AssetFile;
 use App\Http\GreetingPage;
 use App\Http\GreetingPost;
+use App\Http\JobsPage;
+use App\Http\JobsPost;
 use App\Http\LoginPage;
 use App\Http\LoginPost;
 use App\Http\LogoutPost;
@@ -46,6 +48,8 @@ return new RouteCollector(new RoutePatternCompiler())
     ->onPost('/login', LoginPost::class)
     ->onPost('/logout', LogoutPost::class)
     ->onGet('/account', AccountPage::class)
+    ->onGet('/jobs', JobsPage::class)
+    ->onPost('/jobs', JobsPost::class)
     ->onGet('/notes', NoteListPage::class)
     ->onPost('/notes', NoteCreatePost::class)
     ->onGet('/notes/{id:int}', NoteShowPage::class)

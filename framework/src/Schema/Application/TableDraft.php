@@ -84,6 +84,17 @@ final class TableDraft implements TableBuilder
     }
 
     /**
+     * @param string $name The column, a whole number.
+     *
+     * @return self The builder.
+     */
+    #[Override]
+    public function integer(string $name): self
+    {
+        return $this->add(new Column(new Identifier($name), LogicalType::Integer, 0, false));
+    }
+
+    /**
      * @param string $name The column, a point in time with its time zone.
      *
      * @return self The builder.

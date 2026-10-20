@@ -91,6 +91,18 @@
             "path": "/account"
         },
         {
+            "handler": "App\\Http\\JobsPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/jobs"
+        },
+        {
+            "handler": "App\\Http\\JobsPost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/jobs"
+        },
+        {
             "handler": "App\\Http\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -143,9 +155,21 @@
             "name": "migrate:status"
         },
         {
+            "class": "AIC\\Queue\\Application\\QueueWorkCommand",
+            "kind": "Command",
+            "name": "queue:work"
+        },
+        {
             "class": "App\\Console\\UserAdd",
             "kind": "Command",
             "name": "user:add"
+        }
+    ],
+    "jobs": [
+        {
+            "class": "App\\Job\\DemoJob",
+            "kind": "Job",
+            "name": "demo"
         }
     ]
 }

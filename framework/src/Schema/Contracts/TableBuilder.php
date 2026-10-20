@@ -34,6 +34,13 @@ interface TableBuilder
     public function text(string $name): self;
 
     /**
+     * @param string $name The column, a whole number.
+     *
+     * @return self The builder.
+     */
+    public function integer(string $name): self;
+
+    /**
      * @param string $name The column, a point in time with its time zone.
      *
      * @return self The builder.

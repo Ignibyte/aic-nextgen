@@ -43,7 +43,8 @@ token and the honeypot on every unsafe request; the `Form` atom takes a `FormTok
 (DDEV's ignored `config.local.yaml` here); `EnvelopeCodec` signs form values, `SameOriginPath` keeps
 redirects on the site. #44: multipart posts become PSR-7 uploads; `UploadCheck` accepts a file by
 its content. #8 is done. #9: `AIC\Auth` (pgcrypto bcrypt, `Authenticator`, protected prefixes);
-M4 is done. Next is #13 (jobs). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+M4 is done. #13 runs as #46 to #48; #46: the Job kind and a Postgres queue (`bin/aic
+queue:work`). Next is #47 (the scheduler). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 
