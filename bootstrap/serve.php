@@ -50,7 +50,7 @@ $appServices = new AppServices(
     $sapiServices->requestExtractor(),
     $sapiServices->responseBuilder(),
     gmdate('Y-m-d\\TH:i:s\\Z'),
-    __DIR__ . '/../resources',
+    __DIR__ . '/..',
     new PdoDatabase($databaseConfig),
 );
 

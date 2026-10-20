@@ -34,7 +34,7 @@ final readonly class AppServices
      * @param RequestExtractor $requestExtractor Makes the PSR-7 request from a SAPI request.
      * @param ResponseBuilder  $responseBuilder  Makes responses.
      * @param string           $bootedAt         When the app booted to serve this request, ISO 8601 in UTC.
-     * @param string           $resources        The app's resources directory.
+     * @param string           $root             The app's root directory.
      * @param Database         $database         The database.
      */
     public function __construct(
@@ -43,7 +43,7 @@ final readonly class AppServices
         RequestExtractor $requestExtractor,
         ResponseBuilder $responseBuilder,
         string $bootedAt,
-        string $resources,
+        string $root,
         Database $database,
     ) {
         $appPlugins = new AppPlugins(new AppProvider());
@@ -51,7 +51,7 @@ final readonly class AppServices
             $appConfig,
             $responseBuilder,
             $bootedAt,
-            $resources,
+            $root,
             $appPlugins->greeters(),
             $database,
             $appPlugins->blocks(),

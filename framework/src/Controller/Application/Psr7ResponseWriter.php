@@ -161,18 +161,20 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
 
     /**
      * @param ResponseInterface $response     A file's response.
-     * @param string            $downloadName The name the browser saves it as.
+     * @param string            $downloadName The name the browser saves it as; empty to show it inline.
      *
-     * @return ResponseInterface The response with `Content-Disposition` and `Accept-Ranges`.
+     * @return ResponseInterface The response with `Accept-Ranges`, and `Content-Disposition` for a named download.
      */
     private function attachment(ResponseInterface $response, string $downloadName): ResponseInterface
     {
+        $ranged = $this->responseBuilder->withHeader($response, 'Accept-Ranges', 'bytes');
+
+        if ($downloadName === '') {
+            return $ranged;
+        }
+
         $name = str_replace('\\', '', str_replace('"', '', $downloadName));
 
-        return $this->responseBuilder->withHeader(
-            $this->responseBuilder->withHeader($response, 'Content-Disposition', 'attachment; filename="' . $name . '"'),
-            'Accept-Ranges',
-            'bytes',
-        );
+        return $this->responseBuilder->withHeader($ranged, 'Content-Disposition', 'attachment; filename="' . $name . '"');
     }
 }

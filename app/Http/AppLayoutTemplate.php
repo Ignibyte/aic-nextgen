@@ -22,7 +22,16 @@ final readonly class AppLayoutTemplate
      */
     public function render(AppLayout $appLayout): Html
     {
-        return new Html($this->part0($appLayout));
+        return new Html($this->part1($appLayout));
+    }
+
+    /**
+     * @return string Markup from AppLayout.tpl.
+     */
+    private function part0(): string
+    {
+        return "\n"
+            . "</body></html>\n";
     }
 
     /**
@@ -30,18 +39,19 @@ final readonly class AppLayoutTemplate
      *
      * @return string Markup from AppLayout.tpl.
      */
-    private function part0(AppLayout $appLayout): string
+    private function part1(AppLayout $appLayout): string
     {
-        return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>'
+        return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport"'
+            . " content=\"width=device-width, initial-scale=1\">\n"
+            . '<title>'
             . self::text($appLayout->name)
-            . "</title></head>\n"
+            . "</title><link rel=\"stylesheet\" href=\"/assets/aic.css\"></head>\n"
             . '<body><h1>'
             . self::text($appLayout->name)
             . "</h1>\n"
             . $appLayout->regions()->html('content')->markup()
             . "\n"
             . $appLayout->regions()->html('nav')->markup()
-            . "\n"
-            . "</body></html>\n";
+            . $this->part0();
     }
 }

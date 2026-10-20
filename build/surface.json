@@ -31,6 +31,12 @@
             "path": "/download/{file}"
         },
         {
+            "handler": "App\\Http\\AssetFile",
+            "kind": "Stream",
+            "method": "GET",
+            "path": "/assets/{file}"
+        },
+        {
             "handler": "App\\Http\\TickEvents",
             "kind": "Stream",
             "method": "GET",

@@ -13,7 +13,8 @@ declare(strict_types=1);
  * in one file. The routes come from config/routes.php and the commands from
  * App\ConsoleCommands; the database is never opened, because PdoDatabase
  * connects on its first query. Each component template, `X.tpl` under app/ or
- * framework/src/, compiles to `XTemplate.php` beside it (#36).
+ * framework/src/, compiles to `XTemplate.php` beside it (#36), and theme/*.css
+ * builds into public/assets/aic.css (#39).
  */
 
 use AIC\Database\Domain\DatabaseConfig;
@@ -26,6 +27,7 @@ use Gates\Application\SurfaceManifest;
 use Gates\Application\TemplateBuild;
 use Gates\Application\TemplateCompiler;
 use Gates\Application\TemplateParser;
+use Gates\Application\ThemeBuild;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -43,7 +45,10 @@ $root = dirname(__DIR__);
 $templateBuild = new TemplateBuild(new TemplateParser(), new TemplateCompiler(), [$root . '/app' => 'App\\', $root . '/framework/src' => 'AIC\\']);
 
 try {
-    $outputs = [$root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleCommands->byName())] + $templateBuild->classes();
+    $outputs = [
+        $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleCommands->byName()),
+        $root . '/public/assets/aic.css' => (new ThemeBuild($root . '/theme'))->stylesheet(),
+    ] + $templateBuild->classes();
 } catch (InvalidArgumentException $invalidArgumentException) {
     fwrite(\STDERR, 'aic-build: ' . $invalidArgumentException->getMessage() . "\n");
 
@@ -61,21 +66,21 @@ if (($arguments[1] ?? '') === '--check') {
         exit(1);
     }
 
-    fwrite(\STDOUT, 'gate:24 — build outputs are fresh: ' . count($routes->routes()) . ' routes, ' . count($consoleCommands->byName()) . ' commands, ' . (count($outputs) - 1) . " templates.\n");
+    fwrite(\STDOUT, 'gate:24 — build outputs are fresh: ' . count($routes->routes()) . ' routes, ' . count($consoleCommands->byName()) . ' commands, the theme, ' . (count($outputs) - 2) . " templates.\n");
 
     exit(0);
 }
 
-if (!is_dir($root . '/build') && !mkdir($root . '/build', 0o755, true)) {
-    fwrite(\STDERR, "aic-build: cannot create build/.\n");
-
-    exit(1);
-}
-
 foreach ($outputs as $file => $output) {
+    if (!is_dir(dirname($file)) && !mkdir(dirname($file), 0o755, true)) {
+        fwrite(\STDERR, 'aic-build: cannot create ' . dirname($file) . ".\n");
+
+        exit(1);
+    }
+
     file_put_contents($file, $output);
 }
 
-fwrite(\STDOUT, 'aic-build: wrote build/surface.json and ' . (count($outputs) - 1) . " templates.\n");
+fwrite(\STDOUT, 'aic-build: wrote build/surface.json, public/assets/aic.css and ' . (count($outputs) - 2) . " templates.\n");
 
 exit(0);

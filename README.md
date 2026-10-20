@@ -43,6 +43,11 @@ ddev exec bin/aic migrate        # the console, inside DDEV
 ddev psql                        # the Postgres 17 database
 ```
 
+The theme lives in `theme/`; `composer run build` writes it to `public/assets/aic.css`, and the
+build output is committed. DDEV's nginx serves `public/` as static files. The compiled server
+serves no static files, so in production a reverse proxy (nginx, Caddy) serves `public/` and
+forwards the rest. Without a proxy, the app's `/assets/{file}` route answers the built assets.
+
 ## Quality gates
 
 ```bash
