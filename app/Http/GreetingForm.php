@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http;
 
-use function htmlspecialchars;
+use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\Alert;
+use AIC\Component\Domain\AlertSeverity;
+use AIC\Component\Domain\Button;
+use AIC\Component\Domain\Form;
+use AIC\Component\Domain\FormField;
+use AIC\Component\Domain\Input;
 
 /**
  * The form that posts a name to /hello, shown on the placeholder page and again,
- * with its error, when a post is refused.
+ * with its error, when a post is refused; built from the catalog atoms.
  */
 final readonly class GreetingForm
 {
@@ -20,12 +26,13 @@ final readonly class GreetingForm
      */
     public function render(string $value, string $error): string
     {
-        $message = $error === ''
-            ? ''
-            : '<p id="form-error">' . htmlspecialchars($error) . '</p>';
+        $alert = $error === ''
+            ? new Html('')
+            : (new Alert(AlertSeverity::Error, $error, 'form-error'))->render();
+        $html = $alert
+            ->append((new FormField('Name', 'name', new Input('name', 'name', $value)))->render())
+            ->append((new Button('Greet', 'submit', ''))->render());
 
-        return '<form id="greeting-form" method="post" action="/hello">' . $message
-            . '<label for="name">Name</label> <input id="name" name="name" value="' . htmlspecialchars($value) . '">'
-            . ' <button type="submit">Greet</button></form>';
+        return (new Form('greeting-form', '/hello', $html))->render()->markup();
     }
 }

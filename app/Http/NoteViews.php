@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\Alert;
+use AIC\Component\Domain\AlertSeverity;
+use AIC\Component\Domain\Button;
+use AIC\Component\Domain\Form;
+use AIC\Component\Domain\FormField;
+use AIC\Component\Domain\Input;
+use AIC\Component\Domain\Link;
+use AIC\Component\Domain\Textarea;
 use AIC\Controller\Domain\PageDocument;
-
-use function htmlspecialchars;
 
 /**
  * The note pages' markup: the note form, and the documents around their
@@ -32,14 +39,25 @@ final readonly class NoteViews
      */
     public function form(string $action, string $title, string $body, string $error): string
     {
-        $message = $error === ''
-            ? ''
-            : '<p id="form-error">' . htmlspecialchars($error) . '</p>';
+        $alert = $error === ''
+            ? new Html('')
+            : (new Alert(AlertSeverity::Error, $error, 'form-error'))->render();
+        $html = $alert
+            ->append((new FormField('Title', 'title', new Input('title', 'title', $title)))->render())
+            ->append((new FormField('Body', 'body', new Textarea('body', 'body', $body)))->render())
+            ->append((new Button('Save', 'submit', ''))->render());
 
-        return '<form id="note-form" method="post" action="' . htmlspecialchars($action) . '">' . $message
-            . '<p><label for="title">Title</label> <input id="title" name="title" value="' . htmlspecialchars($title) . '"></p>'
-            . '<p><label for="body">Body</label> <textarea id="body" name="body">' . htmlspecialchars($body) . '</textarea></p>'
-            . '<button type="submit">Save</button></form>';
+        return (new Form('note-form', $action, $html))->render()->markup();
+    }
+
+    /**
+     * @param string $path The note's path.
+     *
+     * @return string The form whose button deletes the note.
+     */
+    public function deleteForm(string $path): string
+    {
+        return (new Form('', $path . '/delete', (new Button('Delete', 'submit', 'delete'))->render()))->render()->markup();
     }
 
     /**
@@ -50,7 +68,9 @@ final readonly class NoteViews
      */
     public function page(string $body, int $status): PageDocument
     {
-        return new PageDocument($this->htmlLayout->document($body . '<p><a href="/notes">All notes</a></p>'), $status);
+        $allNotes = (new Link('All notes', '/notes'))->render()->markup();
+
+        return new PageDocument($this->htmlLayout->document($body . '<p>' . $allNotes . '</p>'), $status);
     }
 
     /**

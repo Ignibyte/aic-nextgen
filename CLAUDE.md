@@ -29,7 +29,9 @@ M0, M1 and M2 are done (2026-10-19).
 
 #26: `build/surface.json` lists every route and command with its kind, written by `composer run
 build`; gate:24 keeps it fresh. #25: byte ranges (206/416) on downloads and Server-Sent Events
-(`EventStream` pulling from an `EventSource`, streamed natively). Next is #7 (M3, pages). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+(`EventStream` pulling from an `EventSource`, streamed natively). #7 (M3) runs as #35 to #39;
+#35: `AIC\Component` (`Component::render(): Html`, the catalog atoms with a caller). Next is #36
+(compiled templates). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 
