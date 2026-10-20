@@ -36,6 +36,14 @@ final class NativeSiteSession
     private string $note = '/notes/0';
 
     /**
+     * @param string $password The gate user's password, for `{password}` (#9).
+     */
+    public function __construct(
+        private readonly string $password,
+    ) {
+    }
+
+    /**
      * @param NativeSiteStep $nativeSiteStep A step.
      *
      * @return string Its path, `{note}` replaced.
@@ -48,11 +56,13 @@ final class NativeSiteSession
     /**
      * @param NativeSiteStep $nativeSiteStep A step.
      *
-     * @return string Its form, `{csrf}` and `{envelope}` replaced by the token and the envelope.
+     * @return string Its form, `{csrf}`, `{envelope}` and `{password}` replaced.
      */
     public function form(NativeSiteStep $nativeSiteStep): string
     {
-        return str_replace('{envelope}', $this->envelope, str_replace('{csrf}', $this->token, $nativeSiteStep->form));
+        $form = str_replace('{csrf}', $this->token, $nativeSiteStep->form);
+
+        return str_replace('{password}', $this->password, str_replace('{envelope}', $this->envelope, $form));
     }
 
     /**

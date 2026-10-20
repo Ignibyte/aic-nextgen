@@ -45,14 +45,15 @@ final readonly class NativeSiteComparer
     }
 
     /**
-     * @param string               $origin `http://host:port` of the site.
-     * @param list<NativeSiteStep> $steps  The steps to send, in order.
+     * @param string               $origin   `http://host:port` of the site.
+     * @param list<NativeSiteStep> $steps    The steps to send, in order.
+     * @param string               $password The gate user's password, for `{password}`; empty when there is none.
      *
      * @return list<HttpExchange> One answer per step, normalised.
      */
-    public function run(string $origin, array $steps): array
+    public function run(string $origin, array $steps, string $password): array
     {
-        $nativeSiteSession = new NativeSiteSession();
+        $nativeSiteSession = new NativeSiteSession($password);
         $exchanges = [];
 
         foreach ($steps as $step) {

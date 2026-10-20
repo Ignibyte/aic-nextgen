@@ -7,8 +7,7 @@ namespace AIC\Session\Contracts;
 /**
  * One visitor's session (#41): string values by key, kept between requests
  * behind a cookie. A session left empty at the end of a request is not kept.
- * Its id stays with SessionMiddleware; `remove` and `regenerateId` join with
- * their callers (#42, #9).
+ * Its id stays with SessionMiddleware, which notices a regenerated one.
  */
 interface Session
 {
@@ -29,4 +28,10 @@ interface Session
      * Unsets every value, so the session ends with the request.
      */
     public function clear(): void;
+
+    /**
+     * Gives the session a fresh id, keeping its values: done whenever the
+     * visitor's privileges change, such as at login (#9).
+     */
+    public function regenerateId(): void;
 }

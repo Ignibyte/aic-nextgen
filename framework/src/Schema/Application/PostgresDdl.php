@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Schema\Application;
 
 use AIC\Schema\Domain\Column;
+use AIC\Schema\Domain\Identifier;
 use AIC\Schema\Domain\LogicalType;
 use AIC\Schema\Domain\Table;
 
@@ -16,9 +17,19 @@ use function implode;
 final readonly class PostgresDdl
 {
     /**
-     * @param Table $table The table.
+     * @param Identifier $identifier An extension's name.
      *
-     * @return string Its `CREATE TABLE` statement.
+     * @return string Its `CREATE EXTENSION IF NOT EXISTS`.
+     */
+    public function createExtension(Identifier $identifier): string
+    {
+        return 'CREATE EXTENSION IF NOT EXISTS ' . $identifier->value;
+    }
+
+    /**
+     * @param Table $table A table.
+     *
+     * @return string Its `CREATE TABLE`.
      */
     public function createTable(Table $table): string
     {

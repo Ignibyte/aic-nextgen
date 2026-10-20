@@ -16,12 +16,14 @@ use function array_key_exists;
 final class StoredSession implements Session
 {
     /**
-     * @param string                $id     Its id.
-     * @param array<string, string> $values Its values by key.
+     * @param string                $id           Its id.
+     * @param array<string, string> $values       Its values by key.
+     * @param RandomTokens          $randomTokens Makes a fresh id when it regenerates.
      */
     public function __construct(
-        private readonly string $id,
+        private string $id,
         private array $values,
+        private readonly RandomTokens $randomTokens,
     ) {
     }
 
@@ -71,5 +73,14 @@ final class StoredSession implements Session
     public function clear(): void
     {
         $this->values = [];
+    }
+
+    /**
+     * Gives it a fresh id.
+     */
+    #[Override]
+    public function regenerateId(): void
+    {
+        $this->id = $this->randomTokens->fresh();
     }
 }

@@ -67,6 +67,30 @@
             "path": "/uploads"
         },
         {
+            "handler": "App\\Http\\LoginPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/login"
+        },
+        {
+            "handler": "App\\Http\\LoginPost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/login"
+        },
+        {
+            "handler": "App\\Http\\LogoutPost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/logout"
+        },
+        {
+            "handler": "App\\Http\\AccountPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/account"
+        },
+        {
             "handler": "App\\Http\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -117,6 +141,11 @@
             "class": "AIC\\Schema\\Application\\MigrationStatusCommand",
             "kind": "Command",
             "name": "migrate:status"
+        },
+        {
+            "class": "App\\Console\\UserAdd",
+            "kind": "Command",
+            "name": "user:add"
         }
     ]
 }

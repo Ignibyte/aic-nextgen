@@ -35,6 +35,7 @@ final readonly class NativeSiteGate
      * @param NativeSiteBuilder  $nativeSiteBuilder  Builds the compiled site.
      * @param ServerLauncher     $serverLauncher     Runs the two sites.
      * @param NativeSiteComparer $nativeSiteComparer Sends the steps and compares the answers.
+     * @param GateUser           $gateUser           Gives the signed-in steps their user.
      * @param NativeSiteScript   $nativeSiteScript   The steps.
      */
     public function __construct(
@@ -42,6 +43,7 @@ final readonly class NativeSiteGate
         private NativeSiteBuilder $nativeSiteBuilder,
         private ServerLauncher $serverLauncher,
         private NativeSiteComparer $nativeSiteComparer,
+        private GateUser $gateUser,
         private NativeSiteScript $nativeSiteScript = new NativeSiteScript(),
     ) {
     }
@@ -109,8 +111,11 @@ final readonly class NativeSiteGate
             return 1;
         }
 
-        $php = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->phpPort, $steps);
-        $native = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->nativePort, $steps);
+        $password = $nativeSiteSetup->reachable
+            ? $this->gateUser->create($root, $nativeSiteSetup->env)
+            : '';
+        $php = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->phpPort, $steps, $password);
+        $native = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->nativePort, $steps, $password);
         $this->serverLauncher->stopAll();
 
         $differences = $this->nativeSiteComparer->differences($steps, $php, $native);

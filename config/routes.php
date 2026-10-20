@@ -9,9 +9,13 @@ declare(strict_types=1);
 
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\RoutePatternCompiler;
+use App\Http\AccountPage;
 use App\Http\AssetFile;
 use App\Http\GreetingPage;
 use App\Http\GreetingPost;
+use App\Http\LoginPage;
+use App\Http\LoginPost;
+use App\Http\LogoutPost;
 use App\Http\NoteCreatePost;
 use App\Http\NoteDeletePost;
 use App\Http\NoteListPage;
@@ -38,6 +42,10 @@ return new RouteCollector(new RoutePatternCompiler())
     ->onPost('/visits/forget', VisitsForget::class)
     ->onGet('/uploads', UploadsPage::class)
     ->onPost('/uploads', UploadsPost::class)
+    ->onGet('/login', LoginPage::class)
+    ->onPost('/login', LoginPost::class)
+    ->onPost('/logout', LogoutPost::class)
+    ->onGet('/account', AccountPage::class)
     ->onGet('/notes', NoteListPage::class)
     ->onPost('/notes', NoteCreatePost::class)
     ->onGet('/notes/{id:int}', NoteShowPage::class)

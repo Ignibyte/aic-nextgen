@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Gates\Application\GateUser;
 use Gates\Application\NativeSiteBuilder;
 use Gates\Application\NativeSiteComparer;
 use Gates\Application\NativeSiteGate;
@@ -45,7 +46,13 @@ $builder = new NativeSiteBuilder($toolchain);
 $arguments = $argv ?? [];
 
 if (($arguments[1] ?? '') !== 'serve') {
-    $gate = new NativeSiteGate($toolchain, $builder, new ProcServerLauncher(), new NativeSiteComparer(new StreamHttpClient()));
+    $gate = new NativeSiteGate(
+        $toolchain,
+        $builder,
+        new ProcServerLauncher(),
+        new NativeSiteComparer(new StreamHttpClient()),
+        new GateUser($processRunner, $toolchain->phpPath()),
+    );
 
     exit($gate->run($root, $setup));
 }
