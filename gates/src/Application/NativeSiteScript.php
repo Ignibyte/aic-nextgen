@@ -60,16 +60,23 @@ final readonly class NativeSiteScript
     }
 
     /**
-     * @return list<NativeSiteStep> A session's visits, and where forgetting goes (#41, #43).
+     * @return list<NativeSiteStep> A session's visits, where forgetting goes, and uploads (#41, #43, #44).
      */
     private function visits(): array
     {
+        $upload = 'multipart:aic_csrf={csrf}&file=@resources/';
+
         return [
             new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, true, false),
             new NativeSiteStep('visits, unknown', 'GET', '/visits', '', 'Cookie: __Host-aic_session=unknown', 200, true, false),
             new NativeSiteStep('forget, off-site', 'POST', '/visits/forget', 'next=%2F%2Fevil.test&aic_csrf={csrf}', '', 303, true, false),
             new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, true, false),
             new NativeSiteStep('forget, next', 'POST', '/visits/forget', 'next=%2Fnotes&aic_csrf={csrf}', '', 303, true, false),
+            new NativeSiteStep('uploads', 'GET', '/uploads', '', '', 200, true, false),
+            new NativeSiteStep('upload a PNG', 'POST', '/uploads', $upload . 'upload.png', '', 303, true, false),
+            new NativeSiteStep('uploads, accepted', 'GET', '/uploads', '', '', 200, true, false),
+            new NativeSiteStep('upload, disguised', 'POST', '/uploads', $upload . 'disguised.png', '', 422, true, false),
+            new NativeSiteStep('upload, none', 'POST', '/uploads', 'multipart:aic_csrf={csrf}', '', 422, true, false),
         ];
     }
 

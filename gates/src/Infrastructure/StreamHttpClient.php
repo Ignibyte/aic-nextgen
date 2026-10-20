@@ -8,6 +8,7 @@ use Gates\Domain\HttpClient;
 use Gates\Domain\HttpExchange;
 use Override;
 
+use function basename;
 use function explode;
 use function file_get_contents;
 use function http_clear_last_response_headers;
@@ -19,7 +20,11 @@ use function preg_match;
 use function restore_error_handler;
 use function set_error_handler;
 use function str_contains;
+use function str_starts_with;
 use function stream_context_create;
+use function strlen;
+use function substr;
+use function urldecode;
 
 /**
  * An HTTP client over PHP's `http://` stream wrapper: no redirect followed,
@@ -28,6 +33,16 @@ use function stream_context_create;
  */
 final readonly class StreamHttpClient implements HttpClient
 {
+    /**
+     * The prefix that makes a step's form a multipart body (#44).
+     */
+    private const string MULTIPART = 'multipart:';
+
+    /**
+     * The multipart boundary.
+     */
+    private const string BOUNDARY = 'aic-gate-boundary';
+
     /**
      * @param string $origin `http://host:port`.
      * @param string $method The method.
@@ -40,10 +55,11 @@ final readonly class StreamHttpClient implements HttpClient
     #[Override]
     public function send(string $origin, string $method, string $path, string $form, string $header): HttpExchange
     {
-        $lines = 'Connection: close' . ($form === '' ? '' : "\r\nContent-Type: application/x-www-form-urlencoded")
+        [$contentType, $content] = self::body($form);
+        $lines = 'Connection: close' . ($form === '' ? '' : "\r\nContent-Type: " . $contentType)
             . ($header === '' ? '' : "\r\n" . $header);
         $context = stream_context_create(['http' => [
-            'content' => $form,
+            'content' => $content,
             'follow_location' => 0,
             'header' => $lines,
             'ignore_errors' => true,
@@ -106,5 +122,52 @@ final readonly class StreamHttpClient implements HttpClient
         $fields[mb_strtolower(mb_trim($name))] = mb_trim($value);
 
         return $fields;
+    }
+
+    /**
+     * @param string $fields `name=value` pairs joined by `&`, urlencoded; a value `@path` uploads that file.
+     *
+     * @return string The multipart body.
+     */
+    private static function multipart(string $fields): string
+    {
+        $body = '';
+
+        foreach (explode('&', $fields) as $pair) {
+            [$name, $value] = explode('=', $pair, 2) + ['', ''];
+            $body .= self::part(urldecode($name), urldecode($value));
+        }
+
+        return $body . '--' . self::BOUNDARY . "--\r\n";
+    }
+
+    /**
+     * @param string $name  A field name.
+     * @param string $value Its value; `@path` uploads that file.
+     *
+     * @return string Its multipart part.
+     */
+    private static function part(string $name, string $value): string
+    {
+        $file = str_starts_with($value, '@')
+            ? substr($value, 1)
+            : '';
+        $disposition = 'Content-Disposition: form-data; name="' . $name . '"'
+            . ($file === '' ? '' : '; filename="' . basename($file) . "\"\r\nContent-Type: application/octet-stream");
+
+        return '--' . self::BOUNDARY . "\r\n" . $disposition . "\r\n\r\n"
+            . ($file === '' ? $value : (string) file_get_contents($file)) . "\r\n";
+    }
+
+    /**
+     * @param string $form A step's form: urlencoded, or `multipart:` and urlencoded pairs.
+     *
+     * @return array{string, string} The content type and the body.
+     */
+    private static function body(string $form): array
+    {
+        return str_starts_with($form, self::MULTIPART)
+            ? ['multipart/form-data; boundary=' . self::BOUNDARY, self::multipart(substr($form, strlen(self::MULTIPART)))]
+            : ['application/x-www-form-urlencoded', $form];
     }
 }

@@ -5,17 +5,21 @@ declare(strict_types=1);
 namespace AIC\Sapi\Infrastructure;
 
 use AIC\Http\Domain\InputParser;
+use AIC\Http\Domain\UploadedFile;
 use AIC\Sapi\Contracts\RequestExtractor;
 use AIC\Sapi\Contracts\SapiRequest;
+use AIC\Sapi\Contracts\SapiUpload;
 use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 
+use function array_map;
 use function explode;
 use function is_string;
 use function str_replace;
@@ -30,7 +34,8 @@ use function ucwords;
  * Headers come from the `HTTP_*` server params (and the prefix-less
  * `CONTENT_TYPE` and `CONTENT_LENGTH`), the query from `QUERY_STRING`, cookies
  * from the `Cookie` header, and form fields from an urlencoded body. A multipart
- * body is not parsed here: uploads and their checks arrive with #8.
+ * post's fields and uploads come parsed by the SAPI (#44), and become the
+ * parsed body and the uploaded files.
  */
 final readonly class SapiRequestExtractor implements RequestExtractor
 {
@@ -38,6 +43,11 @@ final readonly class SapiRequestExtractor implements RequestExtractor
      * The media type of an urlencoded form body.
      */
     private const string FORM_TYPE = 'application/x-www-form-urlencoded';
+
+    /**
+     * The media type of a multipart form body, whose fields and uploads the SAPI parsed.
+     */
+    private const string MULTIPART_TYPE = 'multipart/form-data';
 
     /**
      * @param ServerRequestFactoryInterface $serverRequestFactory Makes the request.
@@ -81,9 +91,54 @@ final readonly class SapiRequestExtractor implements RequestExtractor
             ->withQueryParams($this->inputParser->fields(self::serverString($server, 'QUERY_STRING', '')))
             ->withCookieParams($this->inputParser->cookies($headers['Cookie'] ?? ''));
 
-        return str_starts_with(strtolower($headers['Content-Type'] ?? ''), self::FORM_TYPE)
+        $contentType = strtolower($headers['Content-Type'] ?? '');
+
+        if (str_starts_with($contentType, self::MULTIPART_TYPE)) {
+            return $request->withParsedBody($sapiRequest->fields)->withUploadedFiles($this->uploadedFiles($sapiRequest->uploads));
+        }
+
+        return str_starts_with($contentType, self::FORM_TYPE)
             ? $request->withParsedBody($this->inputParser->fields($sapiRequest->body))
             : $request;
+    }
+
+    /**
+     * @param list<SapiUpload> $sapiUploads The uploads the SAPI gave.
+     *
+     * @return array<string, UploadedFileInterface> One uploaded file per field.
+     */
+    private function uploadedFiles(array $sapiUploads): array
+    {
+        $fields = array_map(static fn (SapiUpload $sapiUpload): string => $sapiUpload->field, $sapiUploads);
+        $files = array_map($this->uploadedFile(...), $sapiUploads);
+        $byField = [];
+
+        foreach ($fields as $index => $field) {
+            $byField[$field] = $files[$index];
+        }
+
+        return $byField;
+    }
+
+    /**
+     * @param SapiUpload $sapiUpload An upload the SAPI gave.
+     *
+     * @return UploadedFileInterface It, with a stream over its temporary file; an empty one when it failed.
+     */
+    private function uploadedFile(SapiUpload $sapiUpload): UploadedFileInterface
+    {
+        $stream = $sapiUpload->error === 0 && $sapiUpload->path !== ''
+            ? $this->streamFactory->createStreamFromFile($sapiUpload->path)
+            : $this->streamFactory->createStream('');
+
+        return new UploadedFile(
+            $sapiUpload->path,
+            $stream,
+            $sapiUpload->size,
+            $sapiUpload->error,
+            $sapiUpload->clientName,
+            $sapiUpload->clientType,
+        );
     }
 
     /**

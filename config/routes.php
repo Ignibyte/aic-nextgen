@@ -21,6 +21,8 @@ use App\Http\PlaceholderPage;
 use App\Http\ResourceDownload;
 use App\Http\StatusApi;
 use App\Http\TickEvents;
+use App\Http\UploadsPage;
+use App\Http\UploadsPost;
 use App\Http\VisitsForget;
 use App\Http\VisitsPage;
 
@@ -34,6 +36,8 @@ return new RouteCollector(new RoutePatternCompiler())
     ->onGet('/events', TickEvents::class)
     ->onGet('/visits', VisitsPage::class)
     ->onPost('/visits/forget', VisitsForget::class)
+    ->onGet('/uploads', UploadsPage::class)
+    ->onPost('/uploads', UploadsPost::class)
     ->onGet('/notes', NoteListPage::class)
     ->onPost('/notes', NoteCreatePost::class)
     ->onGet('/notes/{id:int}', NoteShowPage::class)

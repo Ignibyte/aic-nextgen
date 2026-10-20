@@ -17,16 +17,18 @@ final readonly class Form implements Component
     use RendersMarkup;
 
     /**
-     * @param string    $id        The element id; empty for none.
-     * @param string    $action    Where it posts.
-     * @param Html      $html      The fields, alerts and buttons, in order.
-     * @param FormToken $formToken The visitor's CSRF token, rendered first with the honeypot (#42).
+     * @param string       $id           The element id; empty for none.
+     * @param string       $action       Where it posts.
+     * @param Html         $html         The fields, alerts and buttons, in order.
+     * @param FormToken    $formToken    The visitor's CSRF token, rendered first with the honeypot (#42).
+     * @param FormEncoding $formEncoding How it posts; multipart for a form with a file (#44).
      */
     public function __construct(
         private string $id,
         private string $action,
         private Html $html,
         private FormToken $formToken,
+        private FormEncoding $formEncoding = FormEncoding::Urlencoded,
     ) {
     }
 
@@ -36,8 +38,11 @@ final readonly class Form implements Component
     #[Override]
     public function render(): Html
     {
+        $encoding = $this->formEncoding === FormEncoding::Multipart
+            ? $this->formEncoding->value
+            : '';
         $open = '<form' . self::attribute('id', $this->id) . ' method="post"'
-            . self::attribute('action', $this->action) . ' class="aic-form">';
+            . self::attribute('action', $this->action) . self::attribute('enctype', $encoding) . ' class="aic-form">';
 
         return (new Html($open))
             ->append($this->formToken->fields())

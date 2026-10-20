@@ -22,6 +22,7 @@ use AIC\Database\Infrastructure\PdoDatabase;
 use AIC\Kernel\Infrastructure\SapiServices;
 use AIC\Routing\Domain\RouteTable;
 use AIC\Sapi\Contracts\SapiRequest;
+use AIC\Sapi\Contracts\SapiUpload;
 use AIC\Sapi\Infrastructure\PhpSapiSink;
 use AIC\Secret\Domain\AppSecret;
 use App\AppServices;
@@ -74,6 +75,45 @@ foreach ($_SERVER as $key => $value) {
 
 $body = file_get_contents('php://input');
 
+// A multipart post's fields and files, which PHP-FPM does not leave in the body (#44):
+// string fields only, and one file per field.
+$fields = [];
+
+foreach ($_POST as $name => $value) {
+    if (!is_string($name) || !is_string($value)) {
+        continue;
+    }
+
+    $fields[$name] = $value;
+}
+
+$uploads = [];
+
+foreach ($_FILES as $field => $file) {
+    if (!is_string($field) || !is_array($file)) {
+        continue;
+    }
+
+    $clientName = $file['name'] ?? '';
+    $clientType = $file['type'] ?? '';
+    $path = $file['tmp_name'] ?? '';
+    $error = $file['error'] ?? 4;
+    $size = $file['size'] ?? 0;
+    $uploads[] = new SapiUpload(
+        $field,
+        is_string($clientName) ? $clientName : '',
+        is_string($clientType) ? $clientType : '',
+        is_string($path) ? $path : '',
+        is_int($error) ? $error : 4,
+        is_int($size) ? $size : 0,
+    );
+}
+
 $sapiServices->sapiResponseEmitter()->emit(
-    $appServices->kernel()->serve(new SapiRequest($server, $body === false ? '' : $body)),
+    $appServices->kernel()->serve(new SapiRequest(
+        $server,
+        $body === false ? '' : $body,
+        $fields,
+        $uploads,
+    )),
 );
