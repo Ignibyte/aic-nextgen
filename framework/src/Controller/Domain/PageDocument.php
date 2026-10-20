@@ -16,19 +16,20 @@ use function in_array;
 
 /**
  * A page answered as a whole HTML document, its layout rendered with the
- * regions the page filled (#37): 200; 404 when what it shows does not exist;
- * or 422 when a form posted to it is rendered again in place with its errors.
+ * regions the page filled (#37): 200; 400 when a posted form's signed
+ * envelope was altered (#43); 404 when what it shows does not exist; or 422
+ * when a form posted to it is rendered again in place with its errors.
  */
 final readonly class PageDocument implements PageResponse
 {
     /**
      * The statuses a document may carry.
      */
-    private const array STATUSES = [200, 404, 422];
+    private const array STATUSES = [200, 400, 404, 422];
 
     /**
      * @param Layout $layout The document, with its regions filled.
-     * @param int    $status 200, 404 for a missing thing, or 422 for a form shown again with its errors.
+     * @param int    $status 200, 400 for an altered form, 404 for a missing thing, or 422 for a form shown again with its errors.
      *
      * @throws InvalidArgumentException When the status is none of these, or a filled region is one the layout does not place.
      */
@@ -37,7 +38,7 @@ final readonly class PageDocument implements PageResponse
         private int $status = 200,
     ) {
         if (!in_array($status, self::STATUSES, true)) {
-            throw new InvalidArgumentException('A page document answers 200, 404 or 422; got ' . $status . '.');
+            throw new InvalidArgumentException('A page document answers 200, 400, 404 or 422; got ' . $status . '.');
         }
 
         foreach ($layout->regions()->names() as $name) {

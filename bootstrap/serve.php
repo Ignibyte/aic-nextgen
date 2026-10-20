@@ -8,8 +8,8 @@ declare(strict_types=1);
  * The same file runs interpreted (public/index.php under php-fpm or `php -S`)
  * and compiled (the class bundle and this file built with `elephc --web`, see
  * gate:23). Either way it runs once per request with fresh state, as PHP-FPM
- * does: it reads the app's config (config/app.php, config/routes.php and
- * config/database.php, typed), wires the framework's SAPI services and the
+ * does: it reads the app's config (config/app.php, config/routes.php,
+ * config/database.php and config/secret.php, typed), wires the framework's SAPI services and the
  * app's composition root (App\AppServices), narrows the superglobals into a
  * SapiRequest, answers it through the kernel and emits the response through
  * PhpSapiSink (header(), http_response_code() and echo). This is the one place
@@ -23,6 +23,7 @@ use AIC\Kernel\Infrastructure\SapiServices;
 use AIC\Routing\Domain\RouteTable;
 use AIC\Sapi\Contracts\SapiRequest;
 use AIC\Sapi\Infrastructure\PhpSapiSink;
+use AIC\Secret\Domain\AppSecret;
 use App\AppServices;
 
 $appConfig = require __DIR__ . '/../config/app.php';
@@ -43,6 +44,12 @@ if (!$databaseConfig instanceof DatabaseConfig) {
     throw new RuntimeException('config/database.php must return an ' . DatabaseConfig::class . '.');
 }
 
+$appSecret = require __DIR__ . '/../config/secret.php';
+
+if (!$appSecret instanceof AppSecret) {
+    throw new RuntimeException('config/secret.php must return an ' . AppSecret::class . '.');
+}
+
 $sapiServices = new SapiServices(new PhpSapiSink());
 $appServices = new AppServices(
     $appConfig,
@@ -52,6 +59,7 @@ $appServices = new AppServices(
     gmdate('Y-m-d\\TH:i:s\\Z'),
     __DIR__ . '/..',
     new PdoDatabase($databaseConfig),
+    $appSecret,
 );
 
 $server = [];

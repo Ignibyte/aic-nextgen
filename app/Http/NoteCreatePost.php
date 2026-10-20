@@ -46,13 +46,9 @@ final readonly class NoteCreatePost implements Page
         $postedNote = $this->noteRequest->posted($serverRequest);
 
         if ($postedNote->error !== '') {
-            return $this->noteViews->page(
-                [
-                    new Html('<h2>New note</h2>'),
-                    $this->noteForms->form($serverRequest, '/notes', $postedNote->title, $postedNote->body, $postedNote->error),
-                ],
-                422,
-            );
+            $form = $this->noteForms->again($serverRequest, '/notes', $postedNote);
+
+            return $this->noteViews->page([new Html('<h2>New note</h2>'), $form], 422);
         }
 
         return new PageRedirect('/notes/' . $this->noteRepository->create($postedNote->title, $postedNote->body));

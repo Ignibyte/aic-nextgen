@@ -22,12 +22,14 @@ final readonly class NoteDeletePost implements Page
     /**
      * @param NoteRepository $noteRepository The notes.
      * @param NoteRequest    $noteRequest    Reads the note's id.
-     * @param NoteViews      $noteViews      The note pages' markup.
+     * @param NoteViews      $noteViews      The note pages' documents.
+     * @param NoteEnvelope   $noteEnvelope   Checks the form was issued for this note.
      */
     public function __construct(
         private NoteRepository $noteRepository,
         private NoteRequest $noteRequest,
         private NoteViews $noteViews,
+        private NoteEnvelope $noteEnvelope,
     ) {
     }
 
@@ -36,13 +38,19 @@ final readonly class NoteDeletePost implements Page
      *
      * @throws QueryException When the note cannot be deleted.
      *
-     * @return PageResponse The redirect, or the 404 page.
+     * @return PageResponse The redirect, the 404 page, or 400 for an altered form.
      */
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
+        $noteId = $this->noteRequest->noteId($serverRequest);
+
+        if (!$this->noteEnvelope->matches($serverRequest, '/notes/' . $noteId)) {
+            return $this->noteViews->altered();
+        }
+
         try {
-            $this->noteRepository->delete($this->noteRequest->noteId($serverRequest));
+            $this->noteRepository->delete($noteId);
         } catch (EntityNotFoundException) {
             return $this->noteViews->notFound();
         }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\Button;
 use AIC\Component\Domain\Form;
 use AIC\Controller\Contracts\Page;
@@ -42,7 +43,8 @@ final readonly class VisitsPage implements Page
         $session = $this->requestSession->read($serverRequest);
         $visits = (int) ($session->get('visits') ?? '0') + 1;
         $session->set('visits', (string) $visits);
-        $button = (new Button('Forget me', 'submit', ''))->render();
+        $next = new Html('<input type="hidden" name="next" value="/visits">');
+        $button = $next->append((new Button('Forget me', 'submit', ''))->render());
         $html = (new Form('forget', '/visits/forget', $button, $this->formTokens->issue($serverRequest)))->render();
 
         return $this->htmlLayout->content(

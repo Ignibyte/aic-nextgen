@@ -39,7 +39,9 @@ route prefix, as tagged plugins. #39: `theme/` builds into `public/assets/aic.cs
 nginx serves it in DDEV, a proxy in production, `/assets/{file}` on the compiled site. #7 and M3
 are done. #8 runs as #41 to #44; #41: `AIC\Session` (a Postgres session behind
 `__Host-aic_session`, on the request as `aic.session`). #42: `FormGuardMiddleware` checks the CSRF
-token and the honeypot on every unsafe request; the `Form` atom takes a `FormToken`. Next is #43. #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
+token and the honeypot on every unsafe request; the `Form` atom takes a `FormToken`. #43: the app secret comes only from `AIC_APP_SECRET`
+(DDEV's ignored `config.local.yaml` here); `EnvelopeCodec` signs form values, `SameOriginPath` keeps
+redirects on the site. Next is #44 (uploads). #32 (WebSockets) is filed and open. The compiler carries (#17, #23, #24, and the gaps #33 found) are approved for the fork.
 
 ## Five kinds
 
