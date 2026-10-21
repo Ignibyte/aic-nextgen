@@ -53,13 +53,14 @@ final readonly class TemplateCompiler
     private const int CLASS_LINES = 300;
 
     /**
-     * The literals that close a component's key markers, a condition's and a loop's morph markers.
+     * The literal that closes a component's markers (Tessera's protocol 2.2, #70).
      */
-    private const string COMPONENT_END = "'<!--/aic:c-->'";
+    private const string COMPONENT_END = "'<!--/t:c-->'";
 
-    private const string IF_END = "'<!--/aic:if-->'";
-
-    private const string EACH_END = "'<!--/aic:each-->'";
+    /**
+     * The literal that closes a condition's or a loop's block markers, rendered even when empty (protocol 2.3).
+     */
+    private const string BLOCK_END = "'<!--/t:b-->'";
 
     /**
      * The characters of text one literal holds.
@@ -157,8 +158,8 @@ final readonly class TemplateCompiler
             TemplateNodeKind::Escaped => ['self::text(' . $templateNode->code . ')'],
             TemplateNodeKind::Raw => [$this->wrapped($templateNode->code) . '->markup()'],
             TemplateNodeKind::Component => $this->component($templateNode),
-            TemplateNodeKind::Condition => ["'<!--aic:if-->'", $this->condition($templateNode, $scope, $templateMethods), self::IF_END],
-            TemplateNodeKind::Loop => ["'<!--aic:each-->'", $this->loop($templateNode, $scope, $templateMethods), self::EACH_END],
+            TemplateNodeKind::Condition => ["'<!--t:b-->'", $this->condition($templateNode, $scope, $templateMethods), self::BLOCK_END],
+            TemplateNodeKind::Loop => ["'<!--t:b-->'", $this->loop($templateNode, $scope, $templateMethods), self::BLOCK_END],
             TemplateNodeKind::Import => [],
         };
     }
@@ -173,8 +174,8 @@ final readonly class TemplateCompiler
         $markup = $this->wrapped($templateNode->code) . '->render()->markup()';
 
         $open = $templateNode->binding === ''
-            ? ["'<!--aic:c " . $templateNode->key . "-->'"]
-            : ["'<!--aic:c " . $templateNode->key . "/'", 'self::text(' . $templateNode->binding . ')', "'-->'"];
+            ? ["'<!--t:c " . $templateNode->key . "-->'"]
+            : ["'<!--t:c " . $templateNode->key . ":'", 'self::text(' . $templateNode->binding . ')', "'-->'"];
 
         return [...$open, $markup, self::COMPONENT_END];
     }

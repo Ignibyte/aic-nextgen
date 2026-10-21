@@ -26,11 +26,22 @@ final readonly class AppLayoutTemplate
     }
 
     /**
+     * @param AppLayout $appLayout The component.
+     *
      * @return string Markup from AppLayout.tpl.
      */
-    private function part0(): string
+    private function part0(AppLayout $appLayout): string
     {
-        return "\n"
+        return "\">\n"
+            . $appLayout->trackedAssets()->markup()
+            . "</head>\n"
+            . '<body data-enhance="off"><h1>'
+            . self::text($appLayout->name)
+            . "</h1>\n"
+            . $appLayout->regions()->html('content')->markup()
+            . "\n"
+            . $appLayout->regions()->html('nav')->markup()
+            . "\n"
             . "</body></html>\n";
     }
 
@@ -44,14 +55,14 @@ final readonly class AppLayoutTemplate
         return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport"'
             . " content=\"width=device-width, initial-scale=1\">\n"
             . '<title>'
-            . self::text($appLayout->name)
-            . "</title><link rel=\"stylesheet\" href=\"/assets/aic.css\"></head>\n"
-            . '<body><h1>'
-            . self::text($appLayout->name)
-            . "</h1>\n"
-            . $appLayout->regions()->html('content')->markup()
-            . "\n"
-            . $appLayout->regions()->html('nav')->markup()
-            . $this->part0();
+            . self::text($appLayout->title())
+            . '</title><meta name="tessera-layout" content="'
+            . self::text($appLayout->tesseraLayout())
+            . "\">\n"
+            . '<meta name="tessera-csrf-token" content="'
+            . self::text($appLayout->csrfToken)
+            . '"><meta name="tessera-csrf-header" content="'
+            . self::text($appLayout->csrfHeader())
+            . $this->part0($appLayout);
     }
 }

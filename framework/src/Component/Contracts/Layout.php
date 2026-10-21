@@ -26,4 +26,26 @@ interface Layout extends Component
      * @return self The same layout holding them.
      */
     public function withRegions(Regions $regions): self;
+
+    /**
+     * @return string Its name for Tessera, the `tessera-layout` meta (protocol 3, #70).
+     */
+    public function tesseraLayout(): string;
+
+    /**
+     * @return string The document's title.
+     */
+    public function title(): string;
+
+    /**
+     * @return Html The `<link>` and `<script>` it tracks (`data-track`), as its head renders them (protocol 9).
+     */
+    public function trackedAssets(): Html;
+
+    /**
+     * @param string $csrfToken The visitor's CSRF token, for the `tessera-csrf-token` meta.
+     *
+     * @return self The same layout carrying it.
+     */
+    public function withCsrfToken(string $csrfToken): self;
 }

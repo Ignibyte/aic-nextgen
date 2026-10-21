@@ -50,12 +50,12 @@ final readonly class ContentArticleTemplate
         return '<article id="content-page"><h2 id="content-title">'
             . self::text($contentArticle->contentPage->title)
             . "</h2>\n"
-            . '<!--aic:each-->'
+            . '<!--t:b-->'
             . implode('', array_map(
                 $this->part0(...),
                 $contentArticle->contentPage->paragraphs(),
             ))
-            . '<!--/aic:each-->'
+            . '<!--/t:b-->'
             . "</article>\n";
     }
 }

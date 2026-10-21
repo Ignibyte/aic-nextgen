@@ -25,6 +25,14 @@ interface ResponseWriter
     public function document(int $status, string $html): ResponseInterface;
 
     /**
+     * @param int    $status The page's status.
+     * @param string $body   Tessera fragments: the title, the tracked assets and one template per target (#70).
+     *
+     * @return ResponseInterface The response, `text/vnd.tessera+html` with `Tessera-Protocol: 0`.
+     */
+    public function fragments(int $status, string $body): ResponseInterface;
+
+    /**
      * @param int    $status   A redirect status.
      * @param string $location Where to go.
      *

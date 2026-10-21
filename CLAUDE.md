@@ -52,6 +52,9 @@ notifications (our SMTP client to Mailpit, and the database), each delivery a jo
 closed). The order from here (Chad, 2026-10-20): the compiler carries (done: #17, #24, #45, #51 and
 part of #23), compiler polish with workaround removal (#53 done; #23 and #34 open), Tessera (#12,
 `Ignibyte/tessera`), then a real site. WebSockets are a research ticket (#52) that #32 waits on.
+#12's server half runs as #70 to #74; #70: Tessera 0.1.0 pinned in `config/app.php` and built into
+`public/assets/tessera-0.1.0/`, `<!--t:c-->`/`<!--t:b-->` markers, fragment answers (`AIC\Tessera`),
+`Vary`; the demo keeps `data-enhance="off"` until #71 (forms and redirects).
 
 ## Five kinds
 

@@ -46,11 +46,11 @@ final readonly class NoteListTemplate
     private function part1(Note $note): string
     {
         return '<li>'
-            . '<!--aic:c NoteList#2/'
+            . '<!--t:c NoteList.2:'
             . self::text((string) $note->id)
             . '-->'
             . (new Link($note->title, '/notes/' . $note->id))->render()->markup()
-            . '<!--/aic:c-->'
+            . '<!--/t:c-->'
             . "</li>\n";
     }
 
@@ -62,12 +62,12 @@ final readonly class NoteListTemplate
     private function part2(NoteList $noteList): string
     {
         return "<ul id=\"notes\">\n"
-            . '<!--aic:each-->'
+            . '<!--t:b-->'
             . implode('', array_map(
                 $this->part1(...),
                 $noteList->notes,
             ))
-            . '<!--/aic:each-->'
+            . '<!--/t:b-->'
             . "</ul>\n";
     }
 
@@ -79,14 +79,14 @@ final readonly class NoteListTemplate
     private function part3(NoteList $noteList): string
     {
         return '<h2>Notes '
-            . '<!--aic:c NoteList#1-->'
+            . '<!--t:c NoteList.1-->'
             . (new Badge($noteList->size(), 'note-count'))->render()->markup()
-            . '<!--/aic:c-->'
+            . '<!--/t:c-->'
             . "</h2>\n"
-            . '<!--aic:if-->'
+            . '<!--t:b-->'
             . ($noteList->isEmpty()
                 ? $this->part0()
                 : $this->part2($noteList))
-            . '<!--/aic:if-->';
+            . '<!--/t:b-->';
     }
 }

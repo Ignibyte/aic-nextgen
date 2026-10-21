@@ -16,7 +16,8 @@ use function str_starts_with;
 
 /**
  * The demo's navigation (#58), in `nav` on every page, first: a link to each
- * main demo, the current one marked from the page's request.
+ * main demo, the current one marked from the page's request. Tessera enhances
+ * it (#70): a click updates `content` and `nav` from fragments.
  */
 final readonly class SiteNavBlock implements Block
 {
@@ -51,10 +52,10 @@ final readonly class SiteNavBlock implements Block
         $links = '';
 
         foreach (self::ENTRIES as $href => $label) {
-            $links .= (new Link($label, $href, self::isCurrent($href, $path)))->render()->markup();
+            $links .= (new Link($label, $href, self::isCurrent($href, $path), 'content nav'))->render()->markup();
         }
 
-        return new Html('<nav id="site-nav" aria-label="Demos">' . $links . '</nav>');
+        return new Html('<nav id="site-nav" aria-label="Demos" data-enhance="on">' . $links . '</nav>');
     }
 
     /**

@@ -33,6 +33,7 @@ final readonly class NativeSiteComparer
         '#<(ul|p) id="(waiting|failed|notifications|content-pages|stock)">.*?</\\1>#s' => '<$2-list>',
         '/name="aic_csrf" value="[0-9a-f]{64}"/' => 'name="aic_csrf" value="<token>"',
         '/name="aic_envelope" value="[\\w.-]+"/' => 'name="aic_envelope" value="<envelope>"',
+        '/name="tessera-csrf-token" content="[0-9a-f]{64}"/' => 'name="tessera-csrf-token" content="<token>"',
         '/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z/' => '<time>',
         '/\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(\\.\\d+)?[+-]\\d{2}(:\\d{2})?/' => '<time>',
     ];

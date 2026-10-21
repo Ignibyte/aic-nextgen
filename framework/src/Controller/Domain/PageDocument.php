@@ -8,6 +8,7 @@ use AIC\Block\Contracts\Blocks;
 use AIC\Component\Contracts\Layout;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Contracts\ResponseWriter;
+use AIC\Tessera\Domain\TesseraRequest;
 use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
@@ -71,5 +72,29 @@ final readonly class PageDocument implements PageResponse
         $regions = $blocks->place($this->layout->regions(), $this->layout->names(), $serverRequest);
 
         return new self($this->layout->withRegions($regions), $this->status);
+    }
+
+    /**
+     * @param string $csrfToken The visitor's CSRF token.
+     *
+     * @return self The same document, its layout carrying the token for Tessera (#70).
+     */
+    public function withCsrfToken(string $csrfToken): self
+    {
+        return new self($this->layout->withCsrfToken($csrfToken), $this->status);
+    }
+
+    /**
+     * @param TesseraRequest $tesseraRequest What the request asks of Tessera's server side.
+     *
+     * @return PageResponse Fragments for a Tessera visit or refresh whose targets all exist under this layout, else this document (#70).
+     */
+    public function answer(TesseraRequest $tesseraRequest): PageResponse
+    {
+        $fragments = $tesseraRequest->fragments($this->layout);
+
+        return $fragments === ''
+            ? $this
+            : new PageFragments($this->status, $fragments);
     }
 }
