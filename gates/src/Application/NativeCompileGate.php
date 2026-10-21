@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\NativeProbeResult;
+use Gates\Domain\NativeProbeStatus;
 use RuntimeException;
 
 use function array_filter;
+use function array_map;
 use function copy;
 use function count;
 use function fwrite;
@@ -24,6 +26,10 @@ use const STDOUT;
  *
  * Each runtime class (`RuntimeClassFinder`) is probed on its own with its
  * class-graph closure (`ClosureBundler`), so one failure names one class.
+ * A class whose closure and toolchain hash as at its last green probe
+ * (`ClosureFingerprint`, `NativeProbeCache`) is reported `CACHED` and not
+ * probed again, so a change reprobes only the classes whose closure holds a
+ * changed file; the rest are probed in parallel (`NativeProbe`).
  * `elephc --check` is not enough: it runs only the type checker and passes
  * code that cannot be built. Compile, link and run against the PHP oracle is
  * the truth.
@@ -45,6 +51,8 @@ final readonly class NativeCompileGate
      * @param RuntimeClassFinder $runtimeClassFinder Lists the runtime corpus.
      * @param ClosureBundler     $closureBundler     Collects a class's closure.
      * @param ComposerPsr4Loader $composerPsr4Loader Loads composer's PSR-4 map.
+     * @param ClosureFingerprint $closureFingerprint Keys a closure for the cache.
+     * @param NativeProbeCache   $nativeProbeCache   The keys of the last run's green probes.
      */
     public function __construct(
         private NativeToolchain $nativeToolchain,
@@ -52,6 +60,8 @@ final readonly class NativeCompileGate
         private RuntimeClassFinder $runtimeClassFinder = new RuntimeClassFinder(),
         private ClosureBundler $closureBundler = new ClosureBundler(),
         private ComposerPsr4Loader $composerPsr4Loader = new ComposerPsr4Loader(),
+        private ClosureFingerprint $closureFingerprint = new ClosureFingerprint(),
+        private NativeProbeCache $nativeProbeCache = new NativeProbeCache(),
     ) {
     }
 
@@ -62,7 +72,7 @@ final readonly class NativeCompileGate
      * @param resource $stdout Stream the per-class results and the summary are written to.
      * @param resource $stderr Stream failures are written to.
      *
-     * @throws RuntimeException When the work directory or a probe cannot be written.
+     * @throws RuntimeException When the work directory, a probe or the cache cannot be written.
      *
      * @return int The exit code.
      */
@@ -93,26 +103,90 @@ final readonly class NativeCompileGate
     }
 
     /**
-     * Probe each runtime class with its closure.
+     * Probe each runtime class whose key is not in the cache, and record the keys of every class that passed.
      *
      * @param list<string> $classes Runtime FQCNs.
      * @param string       $root    Repo-root absolute path.
      * @param string       $workDir The gate's work directory.
      *
-     * @throws RuntimeException When a closure or a probe cannot be read or written.
+     * @throws RuntimeException When a closure, a probe or the cache cannot be read or written.
      *
-     * @return list<NativeProbeResult> One result per class.
+     * @return list<NativeProbeResult> One result per class, in class order.
      */
     private function probeAll(array $classes, string $root, string $workDir): array
     {
-        $psr4Map = $this->composerPsr4Loader->load($root);
+        $keys = $this->keys($classes, $root);
+        $cached = $this->nativeProbeCache->load($workDir);
         $results = [];
+        $closures = [];
 
-        foreach ($classes as $class) {
-            $results[] = $this->nativeProbe->probe($class, $this->closureBundler->closure($class, $psr4Map), $workDir);
+        foreach ($keys as $class => $key) {
+            if (($cached[$class] ?? '') === $key['key']) {
+                $results[$class] = new NativeProbeResult($class, NativeProbeStatus::Cached);
+
+                continue;
+            }
+
+            $closures[$class] = $key['files'];
         }
 
-        return $results;
+        foreach ($this->nativeProbe->probeAll($closures, $workDir) as $nativeProbeResult) {
+            $results[$nativeProbeResult->root] = $nativeProbeResult;
+        }
+
+        $ordered = array_map(static fn (string $class): NativeProbeResult => $results[$class], $classes);
+        $this->record($ordered, $keys, $workDir);
+
+        return $ordered;
+    }
+
+    /**
+     * Rewrite the cache with the key of every class that passed.
+     *
+     * @param list<NativeProbeResult>                                $results This run's results.
+     * @param array<string, array{files: list<string>, key: string}> $keys    Closure and key by FQCN.
+     * @param string                                                 $workDir The gate's work directory.
+     *
+     * @throws RuntimeException When the cache cannot be written.
+     */
+    private function record(array $results, array $keys, string $workDir): void
+    {
+        $green = [];
+
+        foreach ($results as $result) {
+            if (!$result->passed()) {
+                continue;
+            }
+
+            $green[$result->root] = $keys[$result->root]['key'];
+        }
+
+        $this->nativeProbeCache->save($workDir, $green);
+    }
+
+    /**
+     * Each class's closure and its cache key.
+     *
+     * @param list<string> $classes Runtime FQCNs.
+     * @param string       $root    Repo-root absolute path.
+     *
+     * @throws RuntimeException When a file in a closure cannot be read.
+     *
+     * @return array<string, array{files: list<string>, key: string}> Closure and key by FQCN.
+     */
+    private function keys(array $classes, string $root): array
+    {
+        $psr4Map = $this->composerPsr4Loader->load($root);
+        $packageFiles = array_map(static fn (string $file): string => $root . '/gates/native/' . $file, self::PACKAGE_FILES);
+        $toolchain = $this->closureFingerprint->toolchain($this->nativeToolchain->identity(), $packageFiles, NativeProbe::MAIN);
+        $keys = [];
+
+        foreach ($classes as $class) {
+            $files = $this->closureBundler->closure($class, $psr4Map);
+            $keys[$class] = ['files' => $files, 'key' => $this->closureFingerprint->closure($toolchain, $files)];
+        }
+
+        return $keys;
     }
 
     /**
@@ -179,7 +253,11 @@ final readonly class NativeCompileGate
         }
 
         $failed = count(array_filter($results, static fn (NativeProbeResult $nativeProbeResult): bool => !$nativeProbeResult->passed()));
-        $summary = $this->summary(count($results), $failed);
+        $cached = count(array_filter(
+            $results,
+            static fn (NativeProbeResult $nativeProbeResult): bool => $nativeProbeResult->status === NativeProbeStatus::Cached,
+        ));
+        $summary = $this->summary(count($results), $failed, $cached);
 
         if ($failed === 0) {
             fwrite($stdout, $summary);
@@ -195,17 +273,20 @@ final readonly class NativeCompileGate
     /**
      * The summary line.
      *
-     * @param int $total  Classes probed.
+     * @param int $total  Runtime classes.
      * @param int $failed Classes that failed.
+     * @param int $cached Classes the cache vouched for.
      *
      * @return string The line, newline included.
      */
-    private function summary(int $total, int $failed): string
+    private function summary(int $total, int $failed, int $cached): string
     {
         return sprintf(
-            'gate:21 — native: %d of %d runtime class(es) compile, link, run and match PHP.%s',
+            'gate:21 — native: %d of %d runtime class(es) compile, link, run and match PHP (%d cached, %d probed).%s',
             $total - $failed,
             $total,
+            $cached,
+            $total - $cached,
             PHP_EOL,
         );
     }

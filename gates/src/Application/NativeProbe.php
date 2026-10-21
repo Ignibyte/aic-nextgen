@@ -6,9 +6,18 @@ namespace Gates\Application;
 
 use Gates\Domain\NativeProbeResult;
 use Gates\Domain\NativeProbeStatus;
+use Gates\Domain\ProcessPool;
+use Gates\Domain\ProcessResult;
 use RuntimeException;
 
+use function array_combine;
+use function array_filter;
 use function array_find;
+use function array_intersect_key;
+use function array_keys;
+use function array_map;
+use function array_replace;
+use function array_values;
 use function explode;
 use function file_put_contents;
 use function filesize;
@@ -27,9 +36,11 @@ use function var_export;
 use const PHP_EOL;
 
 /**
- * Probes one runtime class natively (gate:21): compile, link, run, compare with PHP.
+ * Probes runtime classes natively (gate:21): compile, link, run, compare with PHP.
  *
- * Each root gets a directory with `_bundle.php` (its closure, dependencies
+ * A batch goes through the process pool in two rounds: every program is
+ * compiled, then every binary that was built runs beside PHP. Each root gets
+ * a directory with `_bundle.php` (its closure, dependencies
  * first) and a `main.php` that loads it and echoes `ok`. The guarded `eval`
  * forces whole-program lowering: upstream elephc prunes every declaration the
  * entry point cannot reach, and without it the probe would lower almost
@@ -38,14 +49,10 @@ use const PHP_EOL;
 final readonly class NativeProbe
 {
     /**
-     * A compiler output line that names the error.
-     */
-    private const string ERROR_LINE = '/^error\\[|error:|undefined reference|EIR backend error/';
-
-    /**
      * The program every probe runs: load the closure, force lowering, echo ok.
+     * Public for gate:21's cache key, which changes when the program does.
      */
-    private const string MAIN = <<<'PHP'
+    public const string MAIN = <<<'PHP'
         <?php
 
         declare(strict_types=1);
@@ -61,45 +68,107 @@ final readonly class NativeProbe
         PHP;
 
     /**
+     * A compiler output line that names the error.
+     */
+    private const string ERROR_LINE = '/^error\\[|error:|undefined reference|EIR backend error/';
+
+    /**
      * @param NativeToolchain $nativeToolchain The compiler, its environment and the PHP oracle.
+     * @param ProcessPool     $processPool     Runs the compiles and the runs side by side.
      */
     public function __construct(
         private NativeToolchain $nativeToolchain,
+        private ProcessPool $processPool,
     ) {
     }
 
     /**
-     * Probe one runtime class.
+     * Probe a batch of runtime classes.
      *
-     * @param string       $root    FQCN of the runtime class.
-     * @param list<string> $files   Its closure, dependencies first.
-     * @param string       $workDir The gate's work directory.
+     * @param array<string, list<string>> $closures Each class's closure, dependencies first, by FQCN.
+     * @param string                      $workDir  The gate's work directory.
      *
-     * @throws RuntimeException When the probe directory cannot be written.
+     * @throws RuntimeException When a probe directory cannot be written or a process cannot be opened.
      *
-     * @return NativeProbeResult How far the probe got.
+     * @return list<NativeProbeResult> One result per class, in the order given.
      */
-    public function probe(string $root, array $files, string $workDir): NativeProbeResult
+    public function probeAll(array $closures, string $workDir): array
     {
-        $dir = $this->writeProgram($root, $files, $workDir);
+        $dirs = [];
 
-        return $this->buildFailure($root, $dir)
-            ?? $this->runFailure($root, $dir)
-            ?? new NativeProbeResult($root, NativeProbeStatus::Ok);
+        foreach ($closures as $root => $files) {
+            $dirs[$root] = $this->writeProgram($root, $files, $workDir);
+        }
+
+        $results = $this->build($dirs);
+        $built = array_filter($results, static fn (?NativeProbeResult $nativeProbeResult): bool => $nativeProbeResult === null);
+        $results = array_replace($results, $this->runAll(array_intersect_key($dirs, $built)));
+
+        return array_values(array_filter($results));
     }
 
     /**
-     * Compile and link; return the failure, or null when a binary was built.
+     * Compile and link every program; a class that built maps to null.
      *
-     * @param string $root FQCN of the runtime class.
-     * @param string $dir  Probe directory.
+     * @param array<string, string> $dirs Probe directory by FQCN.
+     *
+     * @throws RuntimeException When a process cannot be opened.
+     *
+     * @return array<string, NativeProbeResult|null> The COMPILE_FAIL or LINK_FAIL result, or null, by FQCN.
+     */
+    private function build(array $dirs): array
+    {
+        $jobs = array_map($this->nativeToolchain->compileJob(...), array_values($dirs));
+        $compiled = array_combine(array_keys($dirs), $this->processPool->run($jobs));
+        $results = [];
+
+        foreach ($compiled as $root => $processResult) {
+            $results[$root] = $this->buildFailure($root, $dirs[$root], $processResult);
+        }
+
+        return $results;
+    }
+
+    /**
+     * Run every built binary and PHP beside it, and compare.
+     *
+     * @param array<string, string> $dirs Probe directory by FQCN, each with a binary.
+     *
+     * @throws RuntimeException When a process cannot be opened.
+     *
+     * @return array<string, NativeProbeResult> The OK, RUN_FAIL or MISMATCH result by FQCN.
+     */
+    private function runAll(array $dirs): array
+    {
+        $jobs = [];
+
+        foreach ($dirs as $dir) {
+            $jobs[] = $this->nativeToolchain->runNativeJob($dir);
+            $jobs[] = $this->nativeToolchain->runPhpJob($dir);
+        }
+
+        $ran = $this->processPool->run($jobs);
+        $results = [];
+
+        foreach (array_keys($dirs) as $index => $root) {
+            $results[$root] = $this->runFailure($root, $ran[2 * $index], $ran[2 * $index + 1])
+                ?? new NativeProbeResult($root, NativeProbeStatus::Ok);
+        }
+
+        return $results;
+    }
+
+    /**
+     * The failure of a compile, or null when a binary was built.
+     *
+     * @param string        $root          FQCN of the runtime class.
+     * @param string        $dir           Probe directory.
+     * @param ProcessResult $processResult The compiler's result.
      *
      * @return NativeProbeResult|null The COMPILE_FAIL or LINK_FAIL result.
      */
-    private function buildFailure(string $root, string $dir): ?NativeProbeResult
+    private function buildFailure(string $root, string $dir, ProcessResult $processResult): ?NativeProbeResult
     {
-        $processResult = $this->nativeToolchain->compile($dir);
-
         if ($processResult->exitCode !== 0) {
             $detail = $this->firstError($processResult->stdout . $processResult->stderr);
 
@@ -114,26 +183,24 @@ final readonly class NativeProbe
     }
 
     /**
-     * Run the binary and PHP; return the failure, or null when the outputs match.
+     * The failure of a run, or null when the outputs match.
      *
-     * @param string $root FQCN of the runtime class.
-     * @param string $dir  Probe directory.
+     * @param string        $root   FQCN of the runtime class.
+     * @param ProcessResult $native The binary's result.
+     * @param ProcessResult $php    PHP's result.
      *
      * @return NativeProbeResult|null The RUN_FAIL or MISMATCH result.
      */
-    private function runFailure(string $root, string $dir): ?NativeProbeResult
+    private function runFailure(string $root, ProcessResult $native, ProcessResult $php): ?NativeProbeResult
     {
-        $processResult = $this->nativeToolchain->runNative($dir);
-        $php = $this->nativeToolchain->runPhp($dir);
-
-        if ($processResult->exitCode !== 0) {
-            $detail = sprintf('exit %d: %s', $processResult->exitCode, $this->clip($processResult->stdout . $processResult->stderr));
+        if ($native->exitCode !== 0) {
+            $detail = sprintf('exit %d: %s', $native->exitCode, $this->clip($native->stdout . $native->stderr));
 
             return new NativeProbeResult($root, NativeProbeStatus::RunFail, $detail);
         }
 
-        if ($processResult->stdout !== $php->stdout) {
-            $detail = sprintf('native=%s php=%s', $this->clip($processResult->stdout), $this->clip($php->stdout));
+        if ($native->stdout !== $php->stdout) {
+            $detail = sprintf('native=%s php=%s', $this->clip($native->stdout), $this->clip($php->stdout));
 
             return new NativeProbeResult($root, NativeProbeStatus::Mismatch, $detail);
         }

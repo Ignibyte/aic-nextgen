@@ -185,6 +185,11 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   `ELEPHC_BIN` overrides), run, and compared with host PHP. Work files land in `.native-gate/`
   (gitignored); pcre2 and oniguruma are pinned in `gates/native/elephc.{toml,lock}`. Everything
   outside those two roots runs interpreted by design.
+- gate:21 caches (#110): a class whose closure files, compiler, bridge libraries, PHP, pinned
+  packages and probe program are unchanged since its last green probe reports `CACHED`
+  (`.native-gate/cache.txt`); a change reprobes only the classes whose closure holds it. Probes
+  run 8 at a time under `nice -n 10`; `AIC_NATIVE_JOBS` sets the cap. A cold run takes under a
+  minute, an unchanged tree under a second.
 - `bin/install-tools.sh` installs gitleaks (pinned, into `tools/`), semgrep and shellcheck;
   `composer install` installs the git hooks (captainhook, conventional-commit subjects).
 
@@ -222,7 +227,9 @@ Every file:
   gate:23) before a browser check on it, or it still runs the old binary. The php-fpm reference in
   DDEV picks changes up per request.
 - gate:23 and `native:serve` find Postgres through `PG*` or `ddev describe` (its published port
-  moves on every restart); with DDEV down, gate:23 defers its database steps.
+  moves on every restart). Every route opens a Postgres session, so when the app's `bin/aic
+  db:ping` does not answer (DDEV down; a host Postgres on 5432 refuses the app), gate:23 defers
+  as a whole, before building (#110).
 - Edit `composer.json` with targeted edits, never a JSON dump and rewrite (it reindents and
   escapes unicode).
 - The elephc compiler is `/srv/stacks/elephc` (carry workflow in its `FORK.md`). Run its binary

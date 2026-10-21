@@ -4,6 +4,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Changed
+
+- **gate:21 caches and runs in parallel; gate:23 defers as a whole without a database** (#110). gate:21 keys each runtime class on its closure's files and the toolchain (the compiler and its bridge libraries, host PHP, `elephc.toml`, `elephc.lock`, the probe program), reports a class whose key matched a green probe as `CACHED` (`.native-gate/cache.txt`), and probes the rest through a process pool, 8 at a time under `nice -n 10` (`AIC_NATIVE_JOBS` sets the cap). gate:21 took 596 s; a cold run now takes 13 to 55 s and an unchanged tree 0.5 s. A change reprobes only the classes whose closure holds it, and a failure is never cached. gate:23 checks the database with the app's `bin/aic db:ping`; when that fails, it defers before building, with one line naming the address. Every route opens a Postgres session (#41), so the old subset of database-free steps answered 500 on both sides. `NativeSiteStep` lost its `database` flag. The Stop hook `enforce-sast.sh` now runs semgrep over the repo filtered to the changed files, so a rule's anchored `paths` hold as they do in gate:15.
+
 ### Fixed
 
 - **A component-only Tessera visit answers with those components only** (#83, Lotline #32). #71 added every other layout region to any visit with targets, so refreshing a filtered table sent the whole shell; now only a visit naming a region brings the rest. The demo's stock list lets a request's `limit` win over its props, which fill in for a refresh without one. gate:23 compares a component-only and a one-region visit (69 steps).

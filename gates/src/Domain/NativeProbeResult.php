@@ -22,12 +22,12 @@ final readonly class NativeProbeResult
     }
 
     /**
-     * Whether the probe passed: compiled, linked, ran and matched PHP.
+     * Whether the probe passed: compiled, linked, ran and matched PHP, in this run or a cached one.
      *
-     * @return bool True when the status is OK.
+     * @return bool True when the status is OK or CACHED.
      */
     public function passed(): bool
     {
-        return $this->status === NativeProbeStatus::Ok;
+        return $this->status === NativeProbeStatus::Ok || $this->status === NativeProbeStatus::Cached;
     }
 }
