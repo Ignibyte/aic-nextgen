@@ -46,6 +46,7 @@ final readonly class DocTodosGate
         '.playwright-mcp',
         '.native-gate',
         '.psalm-cache',
+        '.phpstan-cache',
         '.rector-cache',
         'tools',
         'storage',

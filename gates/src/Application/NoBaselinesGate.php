@@ -67,6 +67,7 @@ final class NoBaselinesGate
         'tools',
         '.native-gate',
         '.psalm-cache',
+        '.phpstan-cache',
         '.rector-cache',
     ];
 

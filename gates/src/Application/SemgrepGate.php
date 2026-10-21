@@ -35,6 +35,7 @@ final readonly class SemgrepGate
         '.playwright-mcp',
         '.native-gate',
         '.psalm-cache',
+        '.phpstan-cache',
         '.rector-cache',
         'docs',
     ];

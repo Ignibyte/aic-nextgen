@@ -14,4 +14,9 @@ interface Keyed extends Component
      * @return string Its key, in Tessera's key grammar.
      */
     public function key(): string;
+
+    /**
+     * @return string Its signed props token, rendered after the key (protocol 2.5, #74); empty for none.
+     */
+    public function props(): string;
 }

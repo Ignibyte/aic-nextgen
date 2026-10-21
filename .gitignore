@@ -27,6 +27,7 @@ core.*
 
 # tool caches
 /.psalm-cache/
+/.phpstan-cache/
 /.rector-cache/
 /.rector.cache
 /.phpcs-cache

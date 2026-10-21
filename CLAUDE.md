@@ -58,6 +58,7 @@ part of #23), compiler polish with workaround removal (#53 done; #23 and #34 ope
 place, `419` for a stale token, `PageFullVisit`; the demo is enhanced throughout. #72: a write is
 applied once per `Tessera-Write-Id` (`TesseraWriteMiddleware`, `aic_tessera_writes`). #73: streams
 speak Tessera (`TesseraEvents`, ids, `tessera-close`, `Last-Event-ID`); `/ticks` streams live.
+#74: signed props tokens on `KeyedComponent`, verified by `TesseraProps`. #12's server half is done.
 
 ## Five kinds
 

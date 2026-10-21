@@ -61,7 +61,7 @@ final readonly class AppHandlers
         $visitHandlers = new VisitHandlers($htmlLayout, $pageHandlers);
         $greetingHandlers = new GreetingHandlers($htmlLayout, $pageHandlers, $this->appConfig, $this->bootedAt, $this->greeters);
         $siteHandlers = new SiteHandlers($psr7ResponseWriter, $this->appConfig, $this->bootedAt, $this->root, $this->database);
-        $databaseFeatureHandlers = new DatabaseFeatureHandlers($htmlLayout, $pageHandlers, $this->database);
+        $databaseFeatureHandlers = new DatabaseFeatureHandlers($htmlLayout, $pageHandlers, $this->database, $this->envelopeCodec);
 
         return array_merge(
             $noteHandlers->byId(),
