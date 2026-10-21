@@ -24,9 +24,10 @@ use const GLOB_ONLYDIR;
  * `<name>.module.php` required at build time, never at run time.
  *
  * A module's name is its folder's name, lower case with underscores between
- * words; its classes live in `App\<StudlyName>\`. `app` and `generated` are
- * reserved: the first is the hand-written app's own namespace, the second the
- * generated wiring's.
+ * words; its classes live in `App\<StudlyName>\`. `app`, `generated` and
+ * `module` are reserved: the hand-written app's own namespace, the generated
+ * wiring's, and the name that would make its generated classes `ModuleRoutes`
+ * and the rest.
  */
 final readonly class ModuleReader
 {
@@ -38,7 +39,7 @@ final readonly class ModuleReader
     /**
      * Names no module may take.
      */
-    private const array RESERVED = ['app', 'generated'];
+    private const array RESERVED = ['app', 'generated', 'module'];
 
     /**
      * @param string $root The repo root.
@@ -106,7 +107,7 @@ final readonly class ModuleReader
 
         if (preg_match(self::NAME, $folder) !== 1 || in_array($folder, self::RESERVED, true)) {
             throw new InvalidArgumentException(
-                'module ' . $folder . ': a module name is lower case words joined by underscores, and not app or generated.',
+                'module ' . $folder . ': a module name is lower case words joined by underscores, and not app, generated or module.',
             );
         }
     }

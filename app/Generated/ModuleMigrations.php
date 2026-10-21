@@ -13,7 +13,7 @@ use AIC\Schema\Contracts\Migration;
 final readonly class ModuleMigrations
 {
     /**
-     * @return list<Migration> The modules' migrations, in module order, each module's oldest first.
+     * @return list<Migration> The modules' migrations, in build order, each module's oldest first.
      */
     public function all(): array
     {

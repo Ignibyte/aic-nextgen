@@ -99,8 +99,9 @@ Background work is a job; the HTTP server's processes are its workers.
   implementing `AIC\Module\Contracts\Module` (routes, services, blocks, plugins, migrations,
   exports, requires); the classes sit in `modules/<name>/src/` as `App\<StudlyName>\`.
   `composer run build` checks every manifest and writes the wiring into `app/Generated/`
-  (`ModuleRoutes`, `ModuleHandlers`, `<M>Handlers`, `ModuleProvider`, `ModuleMigrations`),
-  merged after the hand-written app's; never edit those files. A new module needs one PSR-4 line
+  (per module `<M>Routes`, `<M>Handlers`, `<M>Provider`, `<M>Migrations`; then `ModuleRoutes`,
+  `ModuleHandlers`, `ModuleProvider` and `ModuleMigrations`, chained in `…Part2` and on for any
+  number of modules), merged after the hand-written app's; never edit those files. A new module needs one PSR-4 line
   in composer.json (then `composer dump-autoload`) and one PHPCS root in `phpcs.xml.dist`; the
   build prints both when missing. Until #93, the demo's features stay in `app/` beside the pilot
   `modules/faq/`.

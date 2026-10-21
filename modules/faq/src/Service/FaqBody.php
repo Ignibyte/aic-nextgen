@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Faq\Controller;
+namespace App\Faq\Service;
 
 use App\Faq\Entity\FaqEntry;
 use JsonSerializable;

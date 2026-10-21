@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use InvalidArgumentException;
+
+use function array_map;
 use function array_unique;
+use function array_values;
+use function count;
 use function implode;
+use function preg_match;
 use function sort;
+use function sprintf;
 use function strrpos;
 use function substr;
 
@@ -23,16 +30,24 @@ use const SORT_STRING;
 final readonly class PhpClassFile
 {
     /**
+     * The most classes one class may depend on (PHPMD's coupling between objects).
+     */
+    private const int MAX_COUPLING = 15;
+
+    /**
      * @param string       $namespace The file's namespace.
      * @param list<string> $classes   The classes it uses; those in its own namespace are not imported.
      * @param list<string> $functions The global functions it imports.
      * @param string       $docblock  The class docblock's text, one line per array entry joined by newlines.
      * @param string       $class     The class declaration and body, from `final readonly class` to its closing brace.
      *
+     * @throws InvalidArgumentException When it would depend on more than 15 classes, or import two with one short name.
+     *
      * @return string The file.
      */
     public function file(string $namespace, array $classes, array $functions, string $docblock, string $class): string
     {
+        $this->checkFits(array_values(array_unique($classes)), $class);
         $lines = ['<?php', '', 'declare(strict_types=1);', '', 'namespace ' . $namespace . ';', ''];
         $lines = [...$lines, ...$this->imports($namespace, $classes)];
 
@@ -73,6 +88,39 @@ final readonly class PhpClassFile
         return $position === false
             ? $class
             : substr($class, $position + 1);
+    }
+
+    /**
+     * A generated class must pass the gates like hand-written code: PHPMD's
+     * coupling of 15, and imports PHPCS can read, which no alias may rename.
+     *
+     * @param list<string> $classes The distinct classes it uses.
+     * @param string       $class   Its declaration and body, for its name.
+     *
+     * @throws InvalidArgumentException When it would depend on more than 15 classes, or import two with one short name.
+     */
+    private function checkFits(array $classes, string $class): void
+    {
+        $name = preg_match('/class (\\w+)/', $class, $match) === 1
+            ? $match[1]
+            : 'a generated class';
+
+        if (count($classes) > self::MAX_COUPLING) {
+            throw new InvalidArgumentException(sprintf(
+                "the generated %s would depend on %d classes, over PHPMD's %d; split the module.",
+                $name,
+                count($classes),
+                self::MAX_COUPLING,
+            ));
+        }
+
+        $shorts = array_map($this->short(...), $classes);
+
+        if (count(array_unique($shorts)) !== count($shorts)) {
+            throw new InvalidArgumentException(
+                'the generated ' . $name . ' would import two classes with one short name; rename one: ' . implode(', ', $classes) . '.',
+            );
+        }
     }
 
     /**

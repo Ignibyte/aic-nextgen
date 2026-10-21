@@ -7,6 +7,7 @@ namespace App\Faq\Controller;
 use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\ApiResponse;
 use AIC\Controller\Domain\JsonResponse;
+use App\Faq\Service\FaqBody;
 use App\Faq\Service\FaqEntries;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;

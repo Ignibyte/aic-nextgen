@@ -8,10 +8,15 @@ use Gates\Domain\ModuleDefinition;
 use Gates\Domain\WiredObject;
 use InvalidArgumentException;
 
+use function ucfirst;
+
 /**
- * Writes the generated module wiring under `app/Generated/` (#92): the routes,
- * the handlers (one class per module with routes, merged by
- * `ModuleHandlers`), the blocks and plugins, and the migrations.
+ * Writes the generated module wiring under `app/Generated/` (#92): for each
+ * module its own `<M>Routes`, `<M>Handlers`, `<M>Provider` and `<M>Migrations`
+ * (each only when it has something to hold, and importing only that module's
+ * classes, so two modules' same-named classes never meet), then the four
+ * aggregators the app calls, `ModuleRoutes`, `ModuleHandlers`, `ModuleProvider`
+ * and `ModuleMigrations`, each chained in parts so any number of modules fits.
  *
  * The code is straight-line in the native style: constructors and literal
  * arrays, no loops over objects, no static calls, `(new X())->m()` with its
@@ -48,22 +53,53 @@ final readonly class WiringWriter
     public function files(array $modules, array $controllers): array
     {
         $files = [];
-        $handlerClasses = [];
+        $members = ['handlers' => [], 'migrations' => [], 'provider' => [], 'routes' => []];
 
         foreach ($modules as $module) {
-            if (($controllers[$module->name] ?? []) === []) {
-                continue;
+            foreach ($this->moduleFiles($module, $controllers[$module->name] ?? []) as $kind => $source) {
+                $class = $module->studlyName() . ucfirst($kind);
+                $members[$kind][] = $class;
+                $files[$class . '.php'] = $source;
             }
-
-            $handlerClasses[] = $module->studlyName() . 'Handlers';
-            $files[$module->studlyName() . 'Handlers.php'] = $this->handlerSource->source($module, $controllers[$module->name]);
         }
 
         return [
-            'ModuleHandlers.php' => $this->moduleHandlersSource->source($handlerClasses),
-            'ModuleMigrations.php' => $this->migrationsSource->source($modules),
-            'ModuleProvider.php' => $this->providerSource->source($modules),
-            'ModuleRoutes.php' => $this->routesSource->source($modules),
-        ] + $files;
+            ...$files,
+            ...$this->moduleHandlersSource->aggregate($members['handlers']),
+            ...$this->migrationsSource->aggregate($members['migrations']),
+            ...$this->providerSource->aggregate($members['provider']),
+            ...$this->routesSource->aggregate($members['routes']),
+        ];
+    }
+
+    /**
+     * One module's own generated classes, each only when the module has something for it to hold.
+     *
+     * @param ModuleDefinition  $moduleDefinition The module.
+     * @param list<WiredObject> $controllers      Its wired controllers, in route order.
+     *
+     * @throws InvalidArgumentException When one of its classes would not fit the gates.
+     *
+     * @return array<string, string> Each class's source, by kind: `handlers`, `migrations`, `provider`, `routes`.
+     */
+    private function moduleFiles(ModuleDefinition $moduleDefinition, array $controllers): array
+    {
+        $module = $moduleDefinition->module;
+        $files = [];
+
+        if ($controllers !== []) {
+            $files['handlers'] = $this->handlerSource->source($moduleDefinition, $controllers);
+            $files['routes'] = $this->routesSource->module($moduleDefinition);
+        }
+
+        if ($module->migrations() !== []) {
+            $files['migrations'] = $this->migrationsSource->module($moduleDefinition);
+        }
+
+        if ($module->blocks() !== [] || $module->plugins() !== []) {
+            $files['provider'] = $this->providerSource->module($moduleDefinition);
+        }
+
+        return $files;
     }
 }

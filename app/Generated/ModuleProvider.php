@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
-use AIC\Block\Contracts\Block;
 use AIC\Container\Contracts\ServiceProvider;
 use AIC\Container\Contracts\ServiceRegistry;
-use App\Faq\Block\FaqNoteBlock;
 use Override;
 
 /**
@@ -17,12 +15,11 @@ use Override;
 final readonly class ModuleProvider implements ServiceProvider
 {
     /**
-     * @param ServiceRegistry $serviceRegistry Where the services and plugins go.
+     * @param ServiceRegistry $serviceRegistry Where the modules' blocks and plugins go.
      */
     #[Override]
     public function register(ServiceRegistry $serviceRegistry): void
     {
-        $serviceRegistry->singleton(FaqNoteBlock::class, static fn (): FaqNoteBlock => new FaqNoteBlock());
-        $serviceRegistry->tag(Block::class, FaqNoteBlock::class);
+        (new FaqProvider())->register($serviceRegistry);
     }
 }

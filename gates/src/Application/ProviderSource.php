@@ -11,14 +11,18 @@ use Gates\Domain\ModuleDefinition;
 use InvalidArgumentException;
 use Override;
 
+use function count;
+use function explode;
 use function implode;
 use function sprintf;
 use function strlen;
 use function strtr;
 
 /**
- * Writes `App\Generated\ModuleProvider` (#92): every module's blocks and
- * plugins, each a singleton tagged under its type, in build order.
+ * Writes the generated providers (#92): one `<M>Provider` per module with
+ * blocks or plugins, each a singleton tagged under its type, and
+ * `App\Generated\ModuleProvider`, which calls each module's in build order, in
+ * chained parts (`ChainSource`).
  */
 final readonly class ProviderSource
 {
@@ -26,6 +30,16 @@ final readonly class ProviderSource
      * The widest line PHPCS allows.
      */
     private const int LINE_LIMIT = 140;
+
+    /**
+     * The most lines a `register()` body may take (PHPCS's 20-line function limit).
+     */
+    private const int MAX_LINES = 20;
+
+    /**
+     * The most modules one part calls: its three fixed types and the next part leave 11 of PHPMD's 15.
+     */
+    private const int PART_SIZE = 11;
 
     /**
      * A singleton too long for one line, `%1$s` standing for the class's short name.
@@ -38,59 +52,118 @@ final readonly class ProviderSource
         PHP;
 
     /**
-     * The class, `{registrations}` standing for the calls on the registry.
+     * A provider, `{class}`, `{what}` and `{body}` standing for its name, what it registers and the calls.
      */
     private const string TEMPLATE = <<<'PHP'
-        final readonly class ModuleProvider implements ServiceProvider
+        final readonly class {class} implements ServiceProvider
         {
             /**
-             * @param ServiceRegistry $serviceRegistry Where the services and plugins go.
+             * @param ServiceRegistry $serviceRegistry Where {what} go.
              */
             #[Override]
             public function register(ServiceRegistry $serviceRegistry): void
             {
-        {registrations}
+        {body}
             }
         }
         PHP;
 
     /**
-     * @param PhpClassFile $phpClassFile Lays out the file.
+     * @param PhpClassFile $phpClassFile Lays out each file.
+     * @param ChainSource  $chainSource  Splits the aggregator into parts.
      */
     public function __construct(
         private PhpClassFile $phpClassFile = new PhpClassFile(),
+        private ChainSource $chainSource = new ChainSource(),
     ) {
     }
 
     /**
-     * @param list<ModuleDefinition> $modules The modules in build order.
+     * @param ModuleDefinition $moduleDefinition A module with blocks or plugins.
      *
-     * @throws InvalidArgumentException When no module has a block or a plugin, which would leave `register()`'s parameter unread.
+     * @throws InvalidArgumentException When its class would not fit the gates.
      *
-     * @return string The class file.
+     * @return string Its `<M>Provider` class file.
      */
-    public function source(array $modules): string
+    public function module(ModuleDefinition $moduleDefinition): string
     {
         $classes = [ServiceProvider::class, ServiceRegistry::class, Override::class];
         $lines = [];
 
-        foreach ($modules as $module) {
-            foreach ($this->plugins($module) as [$type, $class]) {
-                $classes = [...$classes, $type, $class];
-                $lines = [...$lines, ...$this->registration($type, $class)];
-            }
+        foreach ($this->plugins($moduleDefinition) as [$type, $class]) {
+            $classes = [...$classes, $type, $class];
+            $lines = [...$lines, ...$this->registration($type, $class)];
         }
 
-        if ($lines === []) {
+        $body = implode("\n", $lines);
+
+        if (count(explode("\n", $body)) > self::MAX_LINES) {
+            throw new InvalidArgumentException(
+                sprintf('module %s: its blocks and plugins do not fit one generated class; split the module.', $moduleDefinition->name),
+            );
+        }
+
+        $from = 'modules/' . $moduleDefinition->name . '/' . $moduleDefinition->name . '.module.php';
+        $source = strtr(self::TEMPLATE, [
+            '{body}' => $body,
+            '{class}' => $moduleDefinition->studlyName() . 'Provider',
+            '{what}' => "the module's blocks and plugins",
+        ]);
+        $docblock = $this->phpClassFile->generated($from, 'its blocks and plugins.');
+
+        return $this->phpClassFile->file('App\\Generated', $classes, [], $docblock, $source);
+    }
+
+    /**
+     * @param list<string> $moduleClasses The modules' `<M>Provider` classes, in build order.
+     *
+     * @throws InvalidArgumentException When there are none, which would leave `register()`'s parameter unread.
+     *
+     * @return array<string, string> `ModuleProvider` and its parts, by file name.
+     */
+    public function aggregate(array $moduleClasses): array
+    {
+        if ($moduleClasses === []) {
             throw new InvalidArgumentException(
                 'no module declares a block or a plugin; the generated ModuleProvider needs at least one (#92).',
             );
         }
 
+        $files = [];
         $docblock = $this->phpClassFile->generated('the module manifests', "the modules' blocks and plugins, after App\\AppProvider's.");
-        $body = strtr(self::TEMPLATE, ['{registrations}' => implode("\n", $lines)]);
 
-        return $this->phpClassFile->file('App\\Generated', $classes, [], $docblock, $body);
+        foreach ($this->chainSource->parts('ModuleProvider', $moduleClasses, self::PART_SIZE, self::PART_SIZE) as $part) {
+            $files[$part['class'] . '.php'] = $this->part($part, $docblock);
+        }
+
+        return $files;
+    }
+
+    /**
+     * @param array{class: string, members: list<string>, next: string} $part     A part of `ModuleProvider`.
+     * @param string                                                    $docblock Its class docblock.
+     *
+     * @throws InvalidArgumentException Never: each part fits by its size.
+     *
+     * @return string Its class file: each module's provider called in turn, then the next part's.
+     */
+    private function part(array $part, string $docblock): string
+    {
+        $calls = $this->chainSource->calls($part);
+        $lines = [];
+
+        foreach ($calls as $call) {
+            $lines[] = '        (new ' . $call . '())->register($serviceRegistry);';
+        }
+
+        $source = strtr(self::TEMPLATE, [
+            '{body}' => implode("\n", $lines),
+            '{class}' => $part['class'],
+            '{what}' => "the modules' blocks and plugins",
+        ]);
+        $classes = [ServiceProvider::class, ServiceRegistry::class, Override::class, ...$this->chainSource->qualified($calls)];
+
+        return $this->phpClassFile->file('App\\Generated', $classes, [], $docblock, $source);
     }
 
     /**
