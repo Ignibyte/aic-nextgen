@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace AIC\Schema\Application;
 
 use AIC\Schema\Contracts\OnDelete;
+use AIC\Schema\Domain\Alteration;
 use AIC\Schema\Domain\Column;
 use AIC\Schema\Domain\ColumnGroup;
+use AIC\Schema\Domain\Constraints;
 use AIC\Schema\Domain\ForeignKey;
 use AIC\Schema\Domain\Identifier;
 use AIC\Schema\Domain\LogicalType;
@@ -44,7 +46,7 @@ final readonly class PostgresDdl
             $definitions[] = 'PRIMARY KEY (' . implode(', ', $table->primaryKey) . ')';
         }
 
-        $definitions = array_merge($definitions, $this->uniques($table), $this->foreignKeys($table));
+        $definitions = array_merge($definitions, $this->clauses($table->constraints));
 
         return 'CREATE TABLE ' . $table->name->value . ' (' . implode(', ', $definitions) . ')';
     }
@@ -58,18 +60,25 @@ final readonly class PostgresDdl
      */
     public function createIndexes(Table $table): array
     {
+        return $this->indexes($table->name, $table->constraints);
+    }
+
+    /**
+     * @param Alteration $alteration Constraints and indexes to add to an existing table.
+     *
+     * @throws InvalidArgumentException When an index name would be longer than an identifier may be.
+     *
+     * @return list<string> An `ALTER TABLE ... ADD` for each constraint, then a `CREATE INDEX` for each index.
+     */
+    public function alterTable(Alteration $alteration): array
+    {
         $statements = [];
 
-        foreach ($table->indexes as $index) {
-            if (!($index instanceof ColumnGroup)) {
-                continue;
-            }
-
-            $statements[] = 'CREATE INDEX ' . $table->indexName($index)->value . ' ON ' . $table->name->value
-                . ' (' . implode(', ', $index->columns) . ')';
+        foreach ($this->clauses($alteration->constraints) as $clause) {
+            $statements[] = 'ALTER TABLE ' . $alteration->table->value . ' ADD ' . $clause;
         }
 
-        return $statements;
+        return array_merge($statements, $this->indexes($alteration->table, $alteration->constraints));
     }
 
     /**
@@ -93,15 +102,25 @@ final readonly class PostgresDdl
     }
 
     /**
-     * @param Table $table A table.
+     * @param Constraints $constraints A table's constraints.
+     *
+     * @return list<string> Its unique constraints and then its foreign keys, as table constraints.
+     */
+    private function clauses(Constraints $constraints): array
+    {
+        return array_merge($this->uniques($constraints), $this->foreignKeys($constraints));
+    }
+
+    /**
+     * @param Constraints $constraints A table's constraints.
      *
      * @return list<string> Its unique constraints.
      */
-    private function uniques(Table $table): array
+    private function uniques(Constraints $constraints): array
     {
         $definitions = [];
 
-        foreach ($table->uniques as $unique) {
+        foreach ($constraints->uniques as $unique) {
             if (!($unique instanceof ColumnGroup)) {
                 continue;
             }
@@ -113,15 +132,15 @@ final readonly class PostgresDdl
     }
 
     /**
-     * @param Table $table A table.
+     * @param Constraints $constraints A table's constraints.
      *
      * @return list<string> Its foreign-key constraints.
      */
-    private function foreignKeys(Table $table): array
+    private function foreignKeys(Constraints $constraints): array
     {
         $definitions = [];
 
-        foreach ($table->foreignKeys as $foreignKey) {
+        foreach ($constraints->foreignKeys as $foreignKey) {
             if (!($foreignKey instanceof ForeignKey)) {
                 continue;
             }
@@ -130,6 +149,30 @@ final readonly class PostgresDdl
         }
 
         return $definitions;
+    }
+
+    /**
+     * @param Identifier  $identifier  The table.
+     * @param Constraints $constraints Its constraints.
+     *
+     * @throws InvalidArgumentException When an index name would be longer than an identifier may be.
+     *
+     * @return list<string> A `CREATE INDEX` for each of its indexes, in order.
+     */
+    private function indexes(Identifier $identifier, Constraints $constraints): array
+    {
+        $statements = [];
+
+        foreach ($constraints->indexes as $index) {
+            if (!($index instanceof ColumnGroup)) {
+                continue;
+            }
+
+            $statements[] = 'CREATE INDEX ' . $index->indexName($identifier)->value . ' ON ' . $identifier->value
+                . ' (' . implode(', ', $index->columns) . ')';
+        }
+
+        return $statements;
     }
 
     /**

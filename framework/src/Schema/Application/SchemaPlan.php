@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace AIC\Schema\Application;
 
 use AIC\Schema\Contracts\Schema;
+use AIC\Schema\Contracts\TableAlteration;
 use AIC\Schema\Contracts\TableBuilder;
 use AIC\Schema\Domain\Identifier;
 use InvalidArgumentException;
 use Override;
 
 use function array_map;
+use function array_merge;
 
 /**
  * The Schema one migration describes its tables on: it keeps each table's
@@ -19,7 +21,7 @@ use function array_map;
 final class SchemaPlan implements Schema
 {
     /**
-     * The TableDrafts, in order.
+     * The TableDrafts and AlterationDrafts, in order.
      *
      * @var list<object>
      */
@@ -40,10 +42,26 @@ final class SchemaPlan implements Schema
     #[Override]
     public function create(string $table): TableBuilder
     {
-        $tableDraft = new TableDraft(new Identifier($table));
+        $tableDraft = new TableDraft(new Identifier($table), new ConstraintDraft());
         $this->drafts[] = $tableDraft;
 
         return $tableDraft;
+    }
+
+    /**
+     * @param string $table A table an earlier migration created.
+     *
+     * @throws InvalidArgumentException When the name is not an identifier.
+     *
+     * @return TableAlteration The constraints and indexes to add to it.
+     */
+    #[Override]
+    public function alter(string $table): TableAlteration
+    {
+        $alterationDraft = new AlterationDraft(new Identifier($table), new ConstraintDraft());
+        $this->drafts[] = $alterationDraft;
+
+        return $alterationDraft;
     }
 
     /**
@@ -60,25 +78,27 @@ final class SchemaPlan implements Schema
     /**
      * @param PostgresDdl $postgresDdl The dialect.
      *
-     * @throws InvalidArgumentException When a table names a column it lacks, or an index name is too long.
+     * @throws InvalidArgumentException When a table names a column it lacks, an alteration adds nothing, or an index name is too long.
      *
-     * @return list<string> The statements, in order: the extensions first, then each table followed by its indexes.
+     * @return list<string> The statements, in order: the extensions first, then each table with its indexes and each alteration.
      */
     public function statements(PostgresDdl $postgresDdl): array
     {
         $statements = array_map($postgresDdl->createExtension(...), $this->extensions);
 
         foreach ($this->drafts as $draft) {
+            if ($draft instanceof AlterationDraft) {
+                $statements = array_merge($statements, $postgresDdl->alterTable($draft->alteration()));
+
+                continue;
+            }
+
             if (!($draft instanceof TableDraft)) {
                 continue;
             }
 
             $table = $draft->table();
-            $statements[] = $postgresDdl->createTable($table);
-
-            foreach ($postgresDdl->createIndexes($table) as $index) {
-                $statements[] = $index;
-            }
+            $statements = array_merge($statements, [$postgresDdl->createTable($table)], $postgresDdl->createIndexes($table));
         }
 
         return $statements;

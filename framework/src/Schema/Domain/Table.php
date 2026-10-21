@@ -7,7 +7,6 @@ namespace AIC\Schema\Domain;
 use AIC\Schema\Contracts\OnDelete;
 use InvalidArgumentException;
 
-use function implode;
 use function in_array;
 
 /**
@@ -20,9 +19,7 @@ final readonly class Table
      * @param Identifier   $name        The table's name.
      * @param list<object> $columns     Its Columns, in order: objects, the list form elephc keeps (plan.md).
      * @param list<string> $primaryKey  The primary key's columns; empty for none.
-     * @param list<object> $uniques     Its unique constraints, ColumnGroups.
-     * @param list<object> $indexes     Its indexes, ColumnGroups.
-     * @param list<object> $foreignKeys Its ForeignKeys.
+     * @param Constraints  $constraints Its unique constraints, indexes and foreign keys.
      *
      * @throws InvalidArgumentException When there are no columns, a key, constraint or index names a column
      *                                  the table lacks, or a SetNull foreign key's column is required.
@@ -31,9 +28,7 @@ final readonly class Table
         public Identifier $name,
         public array $columns,
         public array $primaryKey,
-        public array $uniques,
-        public array $indexes,
-        public array $foreignKeys,
+        public Constraints $constraints,
     ) {
         $names = self::names($columns);
 
@@ -42,21 +37,9 @@ final readonly class Table
         }
 
         $this->check('the primary key', $primaryKey, $names);
-        $this->checkGroups('a unique constraint', $uniques, $names);
-        $this->checkGroups('an index', $indexes, $names);
+        $this->checkGroups('a unique constraint', $constraints->uniques, $names);
+        $this->checkGroups('an index', $constraints->indexes, $names);
         $this->checkForeignKeys($names);
-    }
-
-    /**
-     * @param ColumnGroup $columnGroup One of the table's indexes.
-     *
-     * @throws InvalidArgumentException When the name would be longer than an identifier may be.
-     *
-     * @return Identifier Its name: the table, the columns, then `idx`, joined by underscores.
-     */
-    public function indexName(ColumnGroup $columnGroup): Identifier
-    {
-        return new Identifier($this->name->value . '_' . implode('_', $columnGroup->columns) . '_idx');
     }
 
     /**
@@ -84,7 +67,7 @@ final readonly class Table
      */
     private function checkForeignKeys(array $names): void
     {
-        foreach ($this->foreignKeys as $foreignKey) {
+        foreach ($this->constraints->foreignKeys as $foreignKey) {
             if (!$foreignKey instanceof ForeignKey) {
                 continue;
             }
