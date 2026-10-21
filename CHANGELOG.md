@@ -56,6 +56,7 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **Mixed values at array and object boundaries** (#54, fork PR #14, c114cb89a). elephc now passes a `mixed` value to a declared `array`, `?array` or class-typed parameter or return and checks it at run time with PHP's `TypeError`, so `ServerRequest::withParsedBody()` hands the array straight to `withQueryParams()`, and `UploadCheck::check()` returns the first matching kind's label from a plain loop. Narrowing that validates input stays. plan.md's Mixed values rule now lists only what elephc still refuses: `iterable`, closures held in variables or called through `call_user_func`, and `array_combine` over `array_map` results.
 - **The native workarounds whose compiler fixes landed are gone** (#53). Fork PRs #10 to #12 made several shapes compile, so AIC code no longer works around them:
   - `UploadedFile::moveTo` renames the upload, now that `rename()` crosses filesystems (#45).
   - `PageHandler` and `ContentShowPage` call the narrowed value directly, since `instanceof` narrows an interface-typed value (#40).

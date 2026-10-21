@@ -49,13 +49,11 @@ final readonly class UploadCheck
         }
 
         $head = $uploadedFile->getStream()->read(self::HEAD);
-        $kind = implode('', array_map(
-            static fn (UploadKind $uploadKind): string => $uploadKind->matches($head) ? $uploadKind->label() : '',
-            $this->kinds,
-        ));
 
-        if ($kind !== '') {
-            return $kind;
+        foreach ($this->kinds as $kind) {
+            if ($kind->matches($head)) {
+                return $kind->label();
+            }
         }
 
         throw new RefusedUpload('The file must be one of: ' . implode(', ', $this->labels()) . '.');

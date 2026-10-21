@@ -207,8 +207,8 @@ final class PdoDatabase implements Database
 
     /**
      * A fetched row's values, split by the caller into scalars and nulls and
-     * kept here under string keys, in fresh arrays: the native form for data out
-     * of `mixed` (plan.md).
+     * kept here under string keys: a Row holds nothing else, so any other value
+     * or key PDO gives is left out.
      *
      * @param array<array-key, scalar> $scalars The row's scalar values.
      * @param array<array-key, null>   $nulls   The row's nulls.
