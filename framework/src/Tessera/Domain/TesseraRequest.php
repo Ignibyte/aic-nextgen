@@ -13,6 +13,7 @@ use function explode;
 use function htmlspecialchars;
 use function in_array;
 use function preg_match;
+use function str_contains;
 use function str_starts_with;
 use function strlen;
 use function trim;
@@ -150,13 +151,14 @@ final readonly class TesseraRequest
     /**
      * @param Layout $layout The page.
      *
-     * @return list<string> The requested targets, then for a visit the layout's regions apart from them; empty for the document.
+     * @return list<string> The requested targets, then, for a visit naming a region (a navigation), the layout's
+     *                      other regions apart from them; a visit naming only components gets exactly those (#83).
      */
     private function answered(Layout $layout): array
     {
         $targets = $this->targetList();
 
-        if ($this->kind !== 'visit' || $targets === []) {
+        if ($this->kind !== 'visit' || !self::namesRegion($targets)) {
             return $targets;
         }
 
@@ -211,6 +213,17 @@ final readonly class TesseraRequest
         return count($segments) === 1
             ? $html
             : (new ComponentRuns())->find($html, array_slice($segments, 1));
+    }
+
+    /**
+     * @param list<string> $targets The requested targets.
+     *
+     * @return bool Whether one is a region rather than a component path: Tessera's design answers a GET naming a
+     *              component with that component, and the server may leave out what did not change.
+     */
+    private static function namesRegion(array $targets): bool
+    {
+        return array_any($targets, static fn (string $target): bool => !str_contains($target, '/'));
     }
 
     /**

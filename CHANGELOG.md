@@ -4,6 +4,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Fixed
+
+- **A component-only Tessera visit answers with those components only** (#83, Lotline #32). #71 added every other layout region to any visit with targets, so refreshing a filtered table sent the whole shell; now only a visit naming a region brings the rest. The demo's stock list lets a request's `limit` win over its props, which fill in for a refresh without one. gate:23 compares a component-only and a one-region visit (69 steps).
+
 ### Added
 
 - **Tessera props tokens** (#74, a child of #12). `KeyedComponent` takes a props token, an `EnvelopeCodec` envelope of the component's inputs, and `Region` renders `<!--t:c KEY TOKEN-->`; `TesseraProps::forTarget()` reads the token Tessera sends back in `Tessera-Targets` and verifies it through the new `EnvelopeCodec::openToken()`, so an altered token is refused. The demo's stock list keeps its `limit` across a refresh. PHPStan caches in `.phpstan-cache/` (each config its own), out of the shared temp directory. gate:23 sends an altered token (68 steps).

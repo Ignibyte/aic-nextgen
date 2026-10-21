@@ -107,6 +107,7 @@ final readonly class NativeSiteScript
             new NativeSiteStep('tessera, another protocol', 'GET', '/stock', '', $other, 400, true, false),
             new NativeSiteStep('tessera, a component', 'GET', '/stock', '', $app . 'content/stock-list', 200, true, false),
             new NativeSiteStep('tessera, two regions', 'GET', '/notes', '', $app . 'content, nav', 200, true, false),
+            new NativeSiteStep('tessera, a region visit', 'GET', '/notes', '', $app . 'content', 200, true, false),
             new NativeSiteStep('tessera, another layout', 'GET', '/stock', '', $layout, 200, true, false),
             new NativeSiteStep('tessera, a missing target', 'GET', '/stock', '', $app . 'content/nope', 200, true, false),
             new NativeSiteStep('tessera, altered props', 'GET', '/stock', '', $app . 'content/stock-list e30.forged', 400, true, false),

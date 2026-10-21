@@ -22,9 +22,9 @@ use function min;
 
 /**
  * The stock page's list (#74): the component `content/stock-list`, showing
- * the last N items. N comes from the `limit` query field, or, when Tessera
- * asks for the list alone, from the props its marker carried, so a refresh
- * keeps it.
+ * the last N items. N comes from the `limit` query field; a request without
+ * one (a refresh of the list alone) takes it from the props the marker
+ * carried, so a refresh keeps it while a visit to `?limit=3` changes it (#83).
  */
 final readonly class StockList
 {
@@ -55,7 +55,8 @@ final readonly class StockList
     public function component(ServerRequestInterface $serverRequest, array $items): KeyedComponent
     {
         $props = $this->tesseraProps->forTarget($serverRequest, self::TARGET);
-        $limit = self::limit($props['limit'] ?? self::queryLimit($serverRequest));
+        $query = self::queryLimit($serverRequest);
+        $limit = self::limit($query === '' ? $props['limit'] ?? '' : $query);
 
         return new KeyedComponent(
             'stock-list',
