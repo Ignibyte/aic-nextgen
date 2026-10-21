@@ -19,11 +19,13 @@ final readonly class Link implements Component
      * @param string $label   The text.
      * @param string $href    Where it goes, a path on this site.
      * @param bool   $current Whether it is the page being shown (`aria-current="page"`).
+     * @param string $target  The Tessera targets it updates (`data-target`); empty for the default.
      */
     public function __construct(
         private string $label,
         private string $href,
         private bool $current = false,
+        private string $target = '',
     ) {
     }
 
@@ -33,7 +35,8 @@ final readonly class Link implements Component
     #[Override]
     public function render(): Html
     {
-        return new Html('<a' . self::attribute('href', $this->href) . ($this->current ? ' aria-current="page"' : '')
+        return new Html('<a' . self::attribute('href', $this->href) . self::attribute('data-target', $this->target)
+            . ($this->current ? ' aria-current="page"' : '')
             . ' class="aic-link">' . self::text($this->label) . '</a>');
     }
 }

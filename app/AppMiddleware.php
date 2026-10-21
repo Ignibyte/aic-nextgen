@@ -14,6 +14,7 @@ use AIC\Session\Application\RequestSession;
 use AIC\Session\Application\SessionMiddleware;
 use AIC\Session\Domain\RandomTokens;
 use AIC\Session\Domain\StringMapJson;
+use AIC\Tessera\Application\TesseraProtocolMiddleware;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -58,6 +59,8 @@ final readonly class AppMiddleware
         $authStep = new MiddlewareStep((new AppAccess($this->database, $this->responseBuilder))->middleware(), $guardStep);
         $middlewareStep = new MiddlewareStep($sessionMiddleware, $authStep);
 
-        return new MiddlewareStep(new RouteErrorMiddleware($this->responseBuilder), $middlewareStep);
+        $errorStep = new MiddlewareStep(new RouteErrorMiddleware($this->responseBuilder), $middlewareStep);
+
+        return new MiddlewareStep(new TesseraProtocolMiddleware($this->responseBuilder), $errorStep);
     }
 }

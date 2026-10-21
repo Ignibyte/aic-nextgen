@@ -11,6 +11,7 @@ use AIC\Http\Domain\ByteRange;
 use AIC\Http\Domain\RangeHeader;
 use AIC\Http\Domain\RangeKind;
 use AIC\Routing\Domain\RouteNotFoundException;
+use AIC\Tessera\Domain\TesseraRequest;
 use JsonException;
 use JsonSerializable;
 use Override;
@@ -49,7 +50,23 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
     #[Override]
     public function document(int $status, string $html): ResponseInterface
     {
-        return $this->responseBuilder->create($status, 'text/html; charset=utf-8', $html);
+        return $this->varied($this->responseBuilder->create($status, 'text/html; charset=utf-8', $html));
+    }
+
+    /**
+     * @param int    $status The page's status.
+     * @param string $body   Tessera fragments.
+     *
+     * @return ResponseInterface The response, `text/vnd.tessera+html` with `Tessera-Protocol: 0`, varied.
+     */
+    #[Override]
+    public function fragments(int $status, string $body): ResponseInterface
+    {
+        return $this->varied($this->responseBuilder->withHeader(
+            $this->responseBuilder->create($status, 'text/vnd.tessera+html; charset=utf-8', $body),
+            TesseraRequest::PROTOCOL,
+            TesseraRequest::VERSION,
+        ));
     }
 
     /**
@@ -61,11 +78,11 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
     #[Override]
     public function redirect(int $status, string $location): ResponseInterface
     {
-        return $this->responseBuilder->withHeader(
+        return $this->varied($this->responseBuilder->withHeader(
             $this->responseBuilder->create($status, 'text/plain; charset=utf-8', ''),
             'Location',
             $location,
-        );
+        ));
     }
 
     /**
@@ -137,6 +154,16 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
             'X-Accel-Buffering',
             'no',
         );
+    }
+
+    /**
+     * @param ResponseInterface $response A page's response.
+     *
+     * @return ResponseInterface It with `Vary` on Tessera's request headers (protocol 8), since the same URL answers both.
+     */
+    private function varied(ResponseInterface $response): ResponseInterface
+    {
+        return $this->responseBuilder->withHeader($response, 'Vary', TesseraRequest::VARY);
     }
 
     /**

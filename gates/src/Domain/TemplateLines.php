@@ -88,12 +88,13 @@ final class TemplateLines
     /**
      * Counts a component met.
      *
-     * @return string Its compile-time key: the template's name without `.tpl`, `#`, and its occurrence from 1.
+     * @return string Its compile-time key: the template's name without `.tpl`, `.`, and its occurrence from 1,
+     *                in Tessera's key grammar (#70).
      */
     public function key(): string
     {
         $this->components += 1;
 
-        return substr($this->name, 0, -4) . '#' . $this->components;
+        return substr($this->name, 0, -4) . '.' . $this->components;
     }
 }

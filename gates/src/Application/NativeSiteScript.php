@@ -21,7 +21,15 @@ final readonly class NativeSiteScript
      */
     public function steps(): array
     {
-        return [...$this->pages(), ...$this->forms(), ...$this->visits(), ...$this->notes(), ...$this->stock(), ...$this->signIn()];
+        return [
+            ...$this->pages(),
+            ...$this->forms(),
+            ...$this->visits(),
+            ...$this->notes(),
+            ...$this->stock(),
+            ...$this->signIn(),
+            ...$this->tessera(),
+        ];
     }
 
     /**
@@ -80,6 +88,25 @@ final readonly class NativeSiteScript
             new NativeSiteStep('uploads, accepted', 'GET', '/uploads', '', '', 200, true, false),
             new NativeSiteStep('upload, disguised', 'POST', '/uploads', $upload . 'disguised.png', '', 422, true, false),
             new NativeSiteStep('upload, none', 'POST', '/uploads', 'multipart:aic_csrf={csrf}', '', 422, true, false),
+        ];
+    }
+
+    /**
+     * @return list<NativeSiteStep> Tessera requests (#70): another protocol refused, a component and two regions as
+     *                              fragments, another layout and a missing target as the whole document.
+     */
+    private function tessera(): array
+    {
+        $other = "Tessera-Request: visit\r\nTessera-Protocol: 9";
+        $app = "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: ";
+        $layout = "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: other\r\nTessera-Targets: content";
+
+        return [
+            new NativeSiteStep('tessera, another protocol', 'GET', '/stock', '', $other, 400, true, false),
+            new NativeSiteStep('tessera, a component', 'GET', '/stock', '', $app . 'content/stock-list', 200, true, false),
+            new NativeSiteStep('tessera, two regions', 'GET', '/notes', '', $app . 'content, nav', 200, true, false),
+            new NativeSiteStep('tessera, another layout', 'GET', '/stock', '', $layout, 200, true, false),
+            new NativeSiteStep('tessera, a missing target', 'GET', '/stock', '', $app . 'content/nope', 200, true, false),
         ];
     }
 

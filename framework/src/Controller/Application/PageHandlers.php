@@ -7,6 +7,7 @@ namespace AIC\Controller\Application;
 use AIC\Block\Contracts\Blocks;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\ResponseWriter;
+use AIC\Form\Application\FormTokens;
 
 /**
  * Wraps each Page controller in its PageHandler, with the app's response
@@ -17,10 +18,12 @@ final readonly class PageHandlers
     /**
      * @param ResponseWriter $responseWriter Writes the pages' responses as PSR-7.
      * @param Blocks         $blocks         The app's blocks.
+     * @param FormTokens     $formTokens     Issues the visitor's CSRF token for the documents' heads.
      */
     public function __construct(
         private ResponseWriter $responseWriter,
         private Blocks $blocks,
+        private FormTokens $formTokens = new FormTokens(),
     ) {
     }
 
@@ -31,6 +34,6 @@ final readonly class PageHandlers
      */
     public function handler(Page $page): PageHandler
     {
-        return new PageHandler($page, $this->responseWriter, $this->blocks);
+        return new PageHandler($page, $this->responseWriter, $this->blocks, $this->formTokens);
     }
 }

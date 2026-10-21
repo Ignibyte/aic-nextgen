@@ -51,7 +51,7 @@ final readonly class Region implements Component
     }
 
     /**
-     * @return Html The region's element, its components keyed inside.
+     * @return Html The region's element, each component between Tessera's markers (#70) under its own key or `cN`.
      */
     #[Override]
     public function render(): Html
@@ -60,7 +60,10 @@ final readonly class Region implements Component
         $position = 0;
 
         foreach ($this->components as $component) {
-            $markup .= '<!--aic:c ' . $this->name . '/' . $position . '-->' . $component->render()->markup() . '<!--/aic:c-->';
+            $key = $component instanceof Keyed
+                ? $component->key()
+                : 'c' . $position;
+            $markup .= '<!--t:c ' . $key . '-->' . $component->render()->markup() . '<!--/t:c-->';
             $position += 1;
         }
 

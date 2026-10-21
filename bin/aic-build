@@ -17,6 +17,7 @@ declare(strict_types=1);
  * builds into public/assets/aic.css (#39).
  */
 
+use AIC\Config\Domain\AppConfig;
 use AIC\Database\Domain\DatabaseConfig;
 use AIC\Database\Infrastructure\PdoDatabase;
 use AIC\Notification\Domain\MailConfig;
@@ -31,16 +32,19 @@ use Gates\Application\SurfaceManifest;
 use Gates\Application\TemplateBuild;
 use Gates\Application\TemplateCompiler;
 use Gates\Application\TemplateParser;
+use Gates\Application\TesseraBuild;
 use Gates\Application\ThemeBuild;
+use Gates\Infrastructure\SystemProcessRunner;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+$appConfig = require __DIR__ . '/../config/app.php';
 $routes = require __DIR__ . '/../config/routes.php';
 $databaseConfig = require __DIR__ . '/../config/database.php';
 $mailConfig = require __DIR__ . '/../config/mail.php';
 
-if (!$routes instanceof RouteTable || !$databaseConfig instanceof DatabaseConfig || !$mailConfig instanceof MailConfig) {
-    fwrite(\STDERR, "aic-build: config/routes.php, config/database.php or config/mail.php returned the wrong type.\n");
+if (!$appConfig instanceof AppConfig || !$routes instanceof RouteTable || !$databaseConfig instanceof DatabaseConfig || !$mailConfig instanceof MailConfig) {
+    fwrite(\STDERR, "aic-build: config/app.php, config/routes.php, config/database.php or config/mail.php returned the wrong type.\n");
 
     exit(1);
 }
@@ -53,12 +57,14 @@ $root = dirname(__DIR__);
 $templateBuild = new TemplateBuild(new TemplateParser(), new TemplateCompiler(), [$root . '/app' => 'App\\', $root . '/framework/src' => 'AIC\\']);
 
 try {
+    $templates = $templateBuild->classes();
+    $tessera = (new TesseraBuild($root, $appConfig->tessera, new SystemProcessRunner()))->files();
     $outputs = [
         $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleCommands->byName(), $jobs, (new AppSchedules())->all()),
         $root . '/public/assets/aic.css' => (new ThemeBuild($root . '/theme'))->stylesheet(),
-    ] + $templateBuild->classes();
-} catch (InvalidArgumentException $invalidArgumentException) {
-    fwrite(\STDERR, 'aic-build: ' . $invalidArgumentException->getMessage() . "\n");
+    ] + $templates + $tessera;
+} catch (InvalidArgumentException|RuntimeException $exception) {
+    fwrite(\STDERR, 'aic-build: ' . $exception->getMessage() . "\n");
 
     exit(1);
 }
@@ -74,7 +80,7 @@ if (($arguments[1] ?? '') === '--check') {
         exit(1);
     }
 
-    fwrite(\STDOUT, 'gate:24 — build outputs are fresh: ' . count($routes->routes()) . ' routes, ' . count($consoleCommands->byName()) . ' commands, the theme, ' . (count($outputs) - 2) . " templates.\n");
+    fwrite(\STDOUT, 'gate:24 — build outputs are fresh: ' . count($routes->routes()) . ' routes, ' . count($consoleCommands->byName()) . ' commands, the theme, ' . count($templates) . ' templates, Tessera ' . $appConfig->tessera->version . ".\n");
 
     exit(0);
 }
@@ -89,6 +95,6 @@ foreach ($outputs as $file => $output) {
     file_put_contents($file, $output);
 }
 
-fwrite(\STDOUT, 'aic-build: wrote build/surface.json, public/assets/aic.css and ' . (count($outputs) - 2) . " templates.\n");
+fwrite(\STDOUT, 'aic-build: wrote build/surface.json, public/assets/aic.css, ' . count($templates) . ' templates and Tessera ' . $appConfig->tessera->version . ".\n");
 
 exit(0);

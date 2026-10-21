@@ -46,6 +46,14 @@ final readonly class FormToken
     }
 
     /**
+     * @return string The token itself, for the `tessera-csrf-token` meta (#70).
+     */
+    public function value(): string
+    {
+        return $this->token;
+    }
+
+    /**
      * @return Html The hidden token, and the honeypot in an off-screen label.
      */
     public function fields(): Html

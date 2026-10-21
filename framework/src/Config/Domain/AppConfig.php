@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Config\Domain;
 
+use AIC\Tessera\Domain\TesseraRelease;
 use InvalidArgumentException;
 
 use function trim;
@@ -18,12 +19,14 @@ use function trim;
 final readonly class AppConfig
 {
     /**
-     * @param string $name The application's name, as pages show it.
+     * @param string         $name    The application's name, as pages show it.
+     * @param TesseraRelease $tessera The Tessera release the pages load (#70).
      *
      * @throws InvalidArgumentException When the name is blank.
      */
     public function __construct(
         public string $name,
+        public TesseraRelease $tessera,
     ) {
         if (trim($name) === '') {
             throw new InvalidArgumentException('AppConfig: the application name must not be blank.');

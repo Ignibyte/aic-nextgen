@@ -34,7 +34,7 @@ final readonly class HtmlLayout
      */
     public function page(Regions $regions, int $status): PageDocument
     {
-        return new PageDocument(new AppLayout($this->appConfig->name, $regions), $status);
+        return new PageDocument(new AppLayout($this->appConfig->name, $regions, $this->appConfig->tessera), $status);
     }
 
     /**
