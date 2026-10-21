@@ -206,8 +206,7 @@ final class ServerRequest extends Message implements ServerRequestInterface
         $new = clone $this;
         $new->parsedBody = match (true) {
             $data === null, is_object($data) => $data,
-            // array_filter keeps every entry; it hands elephc a typed array (#23).
-            is_array($data) => $this->withQueryParams(array_filter($data, static fn (): bool => true))->queryParams,
+            is_array($data) => $this->withQueryParams($data)->queryParams,
             default => throw new InvalidArgumentException('A parsed body must be an array, an object or null.'),
         };
 
