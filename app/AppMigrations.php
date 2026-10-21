@@ -13,7 +13,10 @@ use AIC\Session\Domain\CreateSessionsTable;
 use App\Migration\CreateContentPagesTable;
 use App\Migration\CreateNotesTable;
 use App\Migration\CreateNoteTagsTable;
+use App\Migration\CreateSubscribersTable;
 use App\Migration\CreateUsersTable;
+use App\Migration\IndexNotesByCreation;
+use App\Migration\MakeSubscriberEmailUnique;
 
 /**
  * The app's migrations, the framework's among them, in the order they apply.
@@ -31,6 +34,9 @@ final readonly class AppMigrations
             new CreateNotificationsTable(),
             new CreateContentPagesTable(),
             new CreateNoteTagsTable(),
+            new IndexNotesByCreation(),
+            new CreateSubscribersTable(),
+            new MakeSubscriberEmailUnique(),
         ];
     }
 }
