@@ -43,6 +43,11 @@ interface Layout extends Component
     public function trackedAssets(): Html;
 
     /**
+     * @return string The visitor's CSRF token it carries; empty before one is issued.
+     */
+    public function csrfToken(): string;
+
+    /**
      * @param string $csrfToken The visitor's CSRF token, for the `tessera-csrf-token` meta.
      *
      * @return self The same layout carrying it.

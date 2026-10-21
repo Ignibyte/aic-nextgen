@@ -54,7 +54,8 @@ part of #23), compiler polish with workaround removal (#53 done; #23 and #34 ope
 `Ignibyte/tessera`), then a real site. WebSockets are a research ticket (#52) that #32 waits on.
 #12's server half runs as #70 to #74; #70: Tessera 0.1.0 pinned in `config/app.php` and built into
 `public/assets/tessera-0.1.0/`, `<!--t:c-->`/`<!--t:b-->` markers, fragment answers (`AIC\Tessera`),
-`Vary`; the demo keeps `data-enhance="off"` until #71 (forms and redirects).
+`Vary`. #71: redirects as `Tessera-Location` (`TesseraRedirectMiddleware`), `422`/`409` regions in
+place, `419` for a stale token, `PageFullVisit`; the demo is enhanced throughout.
 
 ## Five kinds
 

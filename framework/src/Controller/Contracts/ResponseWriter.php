@@ -33,6 +33,13 @@ interface ResponseWriter
     public function fragments(int $status, string $body): ResponseInterface;
 
     /**
+     * @param string $location Where the browser loads in full.
+     *
+     * @return ResponseInterface A `303` that also carries `Tessera-Full-Visit` (#71).
+     */
+    public function fullVisit(string $location): ResponseInterface;
+
+    /**
      * @param int    $status   A redirect status.
      * @param string $location Where to go.
      *

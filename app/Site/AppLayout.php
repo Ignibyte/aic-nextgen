@@ -32,7 +32,7 @@ final readonly class AppLayout implements Layout
         public string $name,
         private Regions $pageRegions,
         private TesseraRelease $tesseraRelease,
-        public string $csrfToken = '',
+        private string $csrfToken = '',
     ) {
     }
 
@@ -111,6 +111,15 @@ final readonly class AppLayout implements Layout
     public function withCsrfToken(string $csrfToken): self
     {
         return new self($this->name, $this->pageRegions, $this->tesseraRelease, $csrfToken);
+    }
+
+    /**
+     * @return string The visitor's CSRF token; empty before one is issued.
+     */
+    #[Override]
+    public function csrfToken(): string
+    {
+        return $this->csrfToken;
     }
 
     /**

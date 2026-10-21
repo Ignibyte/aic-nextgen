@@ -15,6 +15,7 @@ use AIC\Session\Application\SessionMiddleware;
 use AIC\Session\Domain\RandomTokens;
 use AIC\Session\Domain\StringMapJson;
 use AIC\Tessera\Application\TesseraProtocolMiddleware;
+use AIC\Tessera\Application\TesseraRedirectMiddleware;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -61,6 +62,8 @@ final readonly class AppMiddleware
 
         $errorStep = new MiddlewareStep(new RouteErrorMiddleware($this->responseBuilder), $middlewareStep);
 
-        return new MiddlewareStep(new TesseraProtocolMiddleware($this->responseBuilder), $errorStep);
+        $redirectStep = new MiddlewareStep(new TesseraRedirectMiddleware($this->responseBuilder), $errorStep);
+
+        return new MiddlewareStep(new TesseraProtocolMiddleware($this->responseBuilder), $redirectStep);
     }
 }

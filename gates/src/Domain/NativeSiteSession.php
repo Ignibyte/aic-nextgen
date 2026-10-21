@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Domain;
 
 use function preg_match;
+use function str_contains;
 use function str_ends_with;
 use function str_replace;
 
@@ -68,15 +69,18 @@ final class NativeSiteSession
     /**
      * @param NativeSiteStep $nativeSiteStep A step.
      *
-     * @return string Its own header, or else the session cookie; empty for neither.
+     * @return string Its own header lines, then the session cookie unless they set a cookie themselves (#71: a
+     *                Tessera write needs its headers and its session); empty for neither.
      */
     public function header(NativeSiteStep $nativeSiteStep): string
     {
-        if ($nativeSiteStep->header !== '' || $this->cookie === '') {
+        if ($this->cookie === '' || str_contains($nativeSiteStep->header, 'Cookie:')) {
             return $nativeSiteStep->header;
         }
 
-        return 'Cookie: ' . $this->cookie;
+        return $nativeSiteStep->header === ''
+            ? 'Cookie: ' . $this->cookie
+            : $nativeSiteStep->header . "\r\n" . 'Cookie: ' . $this->cookie;
     }
 
     /**

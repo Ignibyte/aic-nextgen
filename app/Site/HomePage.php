@@ -13,6 +13,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 use function explode;
 use function htmlspecialchars;
+use function in_array;
 use function urldecode;
 
 /**
@@ -39,6 +40,11 @@ final readonly class HomePage implements Page
         '/uploads' => 'Uploads (checked by content)',
         '/visits' => 'Visits (sessions)',
     ];
+
+    /**
+     * The demos that answer with no HTML page: Tessera leaves their links to the browser (#71).
+     */
+    private const array PLAIN = ['/api/status', '/download/hello.txt', '/events?count=5', '/health'];
 
     /**
      * @param HtmlLayout   $htmlLayout   The document around the page.
@@ -111,9 +117,24 @@ final readonly class HomePage implements Page
         $links = '';
 
         foreach (self::DEMOS as $path => $label) {
-            $links .= '<li><a class="aic-link" href="' . $path . '">' . $label . '</a></li>';
+            $links .= self::link($path, $label);
         }
 
         return '<ul id="demos">' . $links . '</ul>';
+    }
+
+    /**
+     * @param string $path  A demo's path.
+     * @param string $label What it shows.
+     *
+     * @return string Its list item, left to the browser when it is not an HTML page.
+     */
+    private static function link(string $path, string $label): string
+    {
+        $plain = in_array($path, self::PLAIN, true)
+            ? ' data-enhance="off"'
+            : '';
+
+        return '<li><a class="aic-link" href="' . $path . '"' . $plain . '>' . $label . '</a></li>';
     }
 }

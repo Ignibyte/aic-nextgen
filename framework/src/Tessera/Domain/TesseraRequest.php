@@ -40,6 +40,9 @@ final readonly class TesseraRequest
     /** The layout its page was rendered with. */
     public const string LAYOUT = 'Tessera-Layout';
 
+    /** Where the browser must load in full (protocol 5.5). */
+    public const string FULL_VISIT = 'Tessera-Full-Visit';
+
     /** What every page response varies by (protocol 8). */
     public const string VARY = 'Tessera-Request, Tessera-Protocol, Tessera-Targets, Tessera-Layout';
 
@@ -77,8 +80,11 @@ final readonly class TesseraRequest
     }
 
     /**
-     * The fragment response's body for a visit or a refresh whose targets
-     * all exist under the page's layout (protocol 5.1, 5.3).
+     * The fragment response's body for a visit, a refresh, a submission or
+     * an action whose targets all exist under the page's layout (protocol
+     * 5.1, 5.3). A visit also brings every other region of the layout, so
+     * what lies outside its targets (the nav's current link) follows the
+     * page (#71); the visitor's CSRF token comes too, as login renews it.
      *
      * @param Layout $layout The page, rendered.
      *
@@ -92,7 +98,7 @@ final readonly class TesseraRequest
 
         $templates = '';
 
-        foreach ($this->targetList() as $target) {
+        foreach ($this->answered($layout) as $target) {
             $markup = $this->markup($layout, $target);
 
             if ($markup === '') {
@@ -104,19 +110,44 @@ final readonly class TesseraRequest
 
         return $templates === ''
             ? ''
-            : '<title>' . htmlspecialchars($layout->title()) . '</title>' . $layout->trackedAssets()->markup() . $templates;
+            : '<title>' . htmlspecialchars($layout->title()) . '</title>' . self::csrfMeta($layout->csrfToken())
+                . $layout->trackedAssets()->markup() . $templates;
     }
 
     /**
      * @param Layout $layout The page.
      *
-     * @return bool Whether it is a visit or a refresh in AIC's protocol from a page with the same layout.
+     * @return bool Whether it is a request Tessera commits fragments for, in AIC's protocol, from a page with the same layout.
      */
     private function asksFragmentsOf(Layout $layout): bool
     {
-        return in_array($this->kind, ['visit', 'refresh'], true)
+        return in_array($this->kind, ['visit', 'refresh', 'submit', 'action'], true)
             && $this->speaksVersion()
             && $this->layout === $layout->tesseraLayout();
+    }
+
+    /**
+     * @param Layout $layout The page.
+     *
+     * @return list<string> The requested targets, then for a visit the layout's regions apart from them; empty for the document.
+     */
+    private function answered(Layout $layout): array
+    {
+        $targets = $this->targetList();
+
+        if ($this->kind !== 'visit' || $targets === []) {
+            return $targets;
+        }
+
+        foreach ($layout->names() as $region) {
+            if (self::overlaps($region, $targets)) {
+                continue;
+            }
+
+            $targets[] = $region;
+        }
+
+        return $targets;
     }
 
     /**
@@ -159,6 +190,18 @@ final readonly class TesseraRequest
         return count($segments) === 1
             ? $html
             : (new ComponentRuns())->find($html, array_slice($segments, 1));
+    }
+
+    /**
+     * @param string $token The visitor's CSRF token; empty when none was issued.
+     *
+     * @return string The `tessera-csrf-token` meta that renews it, or nothing.
+     */
+    private static function csrfMeta(string $token): string
+    {
+        return $token === ''
+            ? ''
+            : '<meta name="tessera-csrf-token" content="' . htmlspecialchars($token) . '">';
     }
 
     /**

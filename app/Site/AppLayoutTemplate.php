@@ -35,7 +35,7 @@ final readonly class AppLayoutTemplate
         return "\">\n"
             . $appLayout->trackedAssets()->markup()
             . "</head>\n"
-            . '<body data-enhance="off"><h1>'
+            . '<body><h1>'
             . self::text($appLayout->name)
             . "</h1>\n"
             . $appLayout->regions()->html('content')->markup()
@@ -60,7 +60,7 @@ final readonly class AppLayoutTemplate
             . self::text($appLayout->tesseraLayout())
             . "\">\n"
             . '<meta name="tessera-csrf-token" content="'
-            . self::text($appLayout->csrfToken)
+            . self::text($appLayout->csrfToken())
             . '"><meta name="tessera-csrf-header" content="'
             . self::text($appLayout->csrfHeader())
             . $this->part0($appLayout);
