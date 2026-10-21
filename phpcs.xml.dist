@@ -73,6 +73,11 @@
         <exclude name="SlevomatCodingStandard.Classes.EmptyLinesAroundClassBraces"/>
         <exclude name="SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming"/>
         <!--
+            Functions.UnusedParameter runs as Gates.Functions.KindAwareUnusedParameter
+            (#56, below): the stock sniff, except on a kind method.
+        -->
+        <exclude name="SlevomatCodingStandard.Functions.UnusedParameter"/>
+        <!--
             SuperfluousExceptionNaming objects to `class FooException extends
             Throwable` because the `extends` already says it's an exception.
             We keep the suffix because PSR-11 itself names its interfaces
@@ -277,6 +282,10 @@
                 <element value="PhpParser"/>
                 <element value="Random"/>
                 <element value="Composer"/>
+                <element value="PHPMD"/>
+                <element value="PDepend"/>
+                <element value="PHP_CodeSniffer"/>
+                <element value="SlevomatCodingStandard"/>
             </property>
             <property name="allowUseFromRootNamespace" value="true"/>
         </properties>
@@ -292,4 +301,9 @@
             </property>
         </properties>
     </rule>
+    <!--
+        Slevomat's Functions.UnusedParameter, except on a Page, Api, Stream,
+        Command or Job method, whose one parameter its interface dictates (#56).
+    -->
+    <rule ref="./gates/src/Sniffs/Functions/KindAwareUnusedParameterSniff.php"/>
 </ruleset>

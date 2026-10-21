@@ -20,6 +20,12 @@ parameters:
         - bin/aic
         - bin/aic-build
         - gates/src
+    # PHPCS loads its classes with its own autoloader, not composer's, and
+    # defines its token constants (T_SEMICOLON, ...) in Util/Tokens.php; the
+    # sniffs under gates/src/Sniffs (gate:11, #56) use both.
+    bootstrapFiles:
+        - vendor/squizlabs/php_codesniffer/autoload.php
+        - vendor/squizlabs/php_codesniffer/src/Util/Tokens.php
     excludePaths:
         - vendor
         - storage (?)
@@ -115,6 +121,9 @@ parameters:
                 # The PSR-7 message base: ServerRequest and Response share its
                 # eleven MessageInterface methods (abstract base, final subclasses).
                 - AIC\Http\Domain\Message
+                # PHPMD's extension point is a rule class: gate:10's
+                # kind-aware rule is the stock rule with one early return (#56).
+                - PHPMD\Rule\UnusedFormalParameter
         final:
             allowAbstractClasses: true
         noParameterWithContainerTypeDeclaration:
