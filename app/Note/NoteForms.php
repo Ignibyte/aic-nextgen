@@ -53,7 +53,7 @@ final readonly class NoteForms
             ? new Html('')
             : (new Alert(AlertSeverity::Error, $error, 'form-error'))->render();
         $html = $alert
-            ->append((new FormField('Title', 'title', new Input('title', 'title', $title)))->render())
+            ->append((new FormField('Title', 'title', new Input('title', 'title', $title, $error !== '')))->render())
             ->append((new FormField('Body', 'body', new Textarea('body', 'body', $body)))->render())
             ->append((new Button('Save', 'submit', ''))->render());
 

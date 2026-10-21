@@ -28,12 +28,17 @@ final readonly class Alert implements Component
     }
 
     /**
-     * @return Html `<p class="aic-alert" role="alert">`.
+     * @return Html `<p class="aic-alert" role="alert">`; an error is the form's error summary, which Tessera
+     *              focuses after a 422 (#71).
      */
     #[Override]
     public function render(): Html
     {
-        return new Html('<p' . self::attribute('id', $this->id) . ' class="aic-alert" role="alert"'
+        $summary = match ($this->alertSeverity) {
+            AlertSeverity::Error => ' data-error-summary tabindex="-1"',
+        };
+
+        return new Html('<p' . self::attribute('id', $this->id) . ' class="aic-alert" role="alert"' . $summary
             . self::attribute('data-severity', $this->alertSeverity->value) . '>' . self::text($this->message) . '</p>');
     }
 }

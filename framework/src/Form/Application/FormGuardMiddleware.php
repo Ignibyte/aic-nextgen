@@ -7,6 +7,7 @@ namespace AIC\Form\Application;
 use AIC\Form\Contracts\FormToken;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Session\Application\RequestSession;
+use AIC\Tessera\Domain\TesseraRequest;
 use LogicException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
@@ -48,7 +49,7 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
      *
      * @throws LogicException When the request carries no session.
      *
-     * @return ResponseInterface The handler's response, or 403 or 400.
+     * @return ResponseInterface The handler's response, or 403 (419 to Tessera) or 400.
      */
     #[Override]
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -64,7 +65,10 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
             : $sent;
 
         if ($expected === '' || !hash_equals($expected, $sent)) {
-            return $this->refusal(403, 'The form has expired or did not come from this site. Reload the page and send it again.');
+            return $this->refusal(
+                self::expired($request),
+                'The form has expired or did not come from this site. Reload the page and send it again.',
+            );
         }
 
         if ($this->postedFields->value($request, FormToken::HONEYPOT) !== '') {
@@ -75,7 +79,7 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @param int    $status  403 or 400.
+     * @param int    $status  403, 419 or 400.
      * @param string $message What went wrong, for a person.
      *
      * @return ResponseInterface The refusal, as plain text.
@@ -83,5 +87,17 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
     private function refusal(int $status, string $message): ResponseInterface
     {
         return $this->responseBuilder->create($status, 'text/plain; charset=utf-8', $message . "\n");
+    }
+
+    /**
+     * @param ServerRequestInterface $serverRequest A request whose token is stale or missing.
+     *
+     * @return int 419 for Tessera, whose "page expired" prompt it raises (protocol 6, #71); 403 for a plain browser.
+     */
+    private static function expired(ServerRequestInterface $serverRequest): int
+    {
+        return $serverRequest->getHeaderLine(TesseraRequest::REQUEST) === ''
+            ? 403
+            : 419;
     }
 }

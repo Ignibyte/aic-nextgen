@@ -103,7 +103,9 @@ final readonly class StreamHttpClient implements HttpClient
 
         $cookie = explode(';', $fields['set-cookie'] ?? '', 2)[0];
 
-        return new HttpExchange($status, $fields['content-type'] ?? '', $fields['location'] ?? '', $body, $cookie);
+        $location = $fields['location'] ?? $fields['tessera-location'] ?? '';
+
+        return new HttpExchange($status, $fields['content-type'] ?? '', $location, $body, $cookie);
     }
 
     /**

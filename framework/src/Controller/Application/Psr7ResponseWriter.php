@@ -157,6 +157,17 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
     }
 
     /**
+     * @param string $location Where the browser loads in full.
+     *
+     * @return ResponseInterface A `303` to it carrying `Tessera-Full-Visit`, which the redirect middleware keeps for Tessera.
+     */
+    #[Override]
+    public function fullVisit(string $location): ResponseInterface
+    {
+        return $this->responseBuilder->withHeader($this->redirect(303, $location), TesseraRequest::FULL_VISIT, $location);
+    }
+
+    /**
      * @param ResponseInterface $response A page's response.
      *
      * @return ResponseInterface It with `Vary` on Tessera's request headers (protocol 8), since the same URL answers both.

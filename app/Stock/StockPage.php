@@ -66,7 +66,7 @@ final readonly class StockPage implements Page
         return $this->htmlLayout->page(new Regions([new Region('content', [
             new Html('<h2>Stock</h2><p id="stock-latest">' . htmlspecialchars($summary) . '</p>'),
             new KeyedComponent('stock-list', new Html('<ul id="stock">' . $lines . '</ul>')),
-            new Html('<p data-enhance="on">' . $refresh . '</p>'
+            new Html('<p>' . $refresh . '</p>'
                 . $this->stockForm->render($serverRequest, new StockEntry('', '', '', false), '')->markup()),
         ])]), 200);
     }

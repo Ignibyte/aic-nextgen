@@ -107,6 +107,23 @@ final readonly class NativeSiteScript
             new NativeSiteStep('tessera, two regions', 'GET', '/notes', '', $app . 'content, nav', 200, true, false),
             new NativeSiteStep('tessera, another layout', 'GET', '/stock', '', $layout, 200, true, false),
             new NativeSiteStep('tessera, a missing target', 'GET', '/stock', '', $app . 'content/nope', 200, true, false),
+            ...$this->tesseraWrites(),
+        ];
+    }
+
+    /**
+     * @return list<NativeSiteStep> Tessera writes (#71): a redirect as `Tessera-Location`, a refusal as a 422
+     *                              fragment, a stale token as 419.
+     */
+    private function tesseraWrites(): array
+    {
+        $submit = "Tessera-Request: submit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content";
+        $ada = 'name=Ada&aic_csrf={csrf}';
+
+        return [
+            new NativeSiteStep('tessera, a submit that redirects', 'POST', '/hello', $ada, $submit, 200, true, false),
+            new NativeSiteStep('tessera, a refused submit', 'POST', '/hello', 'name=&aic_csrf={csrf}', $submit, 422, true, false),
+            new NativeSiteStep('tessera, a stale token', 'POST', '/hello', 'name=Ada&aic_csrf=stale', $submit, 419, true, false),
         ];
     }
 

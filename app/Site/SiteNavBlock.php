@@ -55,7 +55,7 @@ final readonly class SiteNavBlock implements Block
             $links .= (new Link($label, $href, self::isCurrent($href, $path), 'content nav'))->render()->markup();
         }
 
-        return new Html('<nav id="site-nav" aria-label="Demos" data-enhance="on">' . $links . '</nav>');
+        return new Html('<nav id="site-nav" aria-label="Demos">' . $links . '</nav>');
     }
 
     /**
