@@ -40,6 +40,9 @@ final readonly class TesseraRequest
     /** The layout its page was rendered with. */
     public const string LAYOUT = 'Tessera-Layout';
 
+    /** A write's id, the same on a browser's own repeat (protocol 5.8). */
+    public const string WRITE_ID = 'Tessera-Write-Id';
+
     /** Where the browser must load in full (protocol 5.5). */
     public const string FULL_VISIT = 'Tessera-Full-Visit';
 

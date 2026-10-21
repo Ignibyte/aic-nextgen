@@ -10,6 +10,7 @@ use AIC\Queue\Domain\CreateJobTables;
 use AIC\Schedule\Domain\CreateScheduleRuns;
 use AIC\Schema\Contracts\Migration;
 use AIC\Session\Domain\CreateSessionsTable;
+use AIC\Tessera\Domain\CreateTesseraWritesTable;
 use App\Migration\CreateContentPagesTable;
 use App\Migration\CreateNotesTable;
 use App\Migration\CreateNoteTagsTable;
@@ -39,6 +40,7 @@ final readonly class AppMigrations
             new CreateSubscribersTable(),
             new MakeSubscriberEmailUnique(),
             new CreateStockItemsTable(),
+            new CreateTesseraWritesTable(),
         ];
     }
 }

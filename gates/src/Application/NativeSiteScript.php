@@ -113,17 +113,22 @@ final readonly class NativeSiteScript
 
     /**
      * @return list<NativeSiteStep> Tessera writes (#71): a redirect as `Tessera-Location`, a refusal as a 422
-     *                              fragment, a stale token as 419.
+     *                              fragment, a stale token as 419; a write id applied once and repeated, and a
+     *                              malformed one refused (#72).
      */
     private function tesseraWrites(): array
     {
         $submit = "Tessera-Request: submit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content";
         $ada = 'name=Ada&aic_csrf={csrf}';
+        $withId = $submit . "\r\nTessera-Write-Id: ";
 
         return [
             new NativeSiteStep('tessera, a submit that redirects', 'POST', '/hello', $ada, $submit, 200, true, false),
             new NativeSiteStep('tessera, a refused submit', 'POST', '/hello', 'name=&aic_csrf={csrf}', $submit, 422, true, false),
             new NativeSiteStep('tessera, a stale token', 'POST', '/hello', 'name=Ada&aic_csrf=stale', $submit, 419, true, false),
+            new NativeSiteStep('tessera, a write with an id', 'POST', '/hello', $ada, $withId . 'gate-1', 200, true, false),
+            new NativeSiteStep('tessera, its repeat', 'POST', '/hello', $ada, $withId . 'gate-1', 200, true, false),
+            new NativeSiteStep('tessera, a malformed id', 'POST', '/hello', $ada, $withId . 'no good', 400, true, false),
         ];
     }
 
