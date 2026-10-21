@@ -64,6 +64,24 @@ deptrac:
       collectors:
         - type: classLike
           value: '^(PHPStan|PhpParser)\\'
+    # AIC's PHPMD rules (gate:10) and PHPCS sniffs (gate:11), and the tools'
+    # own classes they extend or call (#56).
+    - name: PhpmdRules
+      collectors:
+        - type: classLike
+          value: '^Gates\\Phpmd\\'
+    - name: PhpcsSniffs
+      collectors:
+        - type: classLike
+          value: '^Gates\\Sniffs\\'
+    - name: PhpmdVendor
+      collectors:
+        - type: classLike
+          value: '^(PHPMD|PDepend)\\'
+    - name: PhpcsVendor
+      collectors:
+        - type: classLike
+          value: '^(PHP_CodeSniffer|SlevomatCodingStandard)\\'
 
   ruleset:
     Contracts:
@@ -106,6 +124,14 @@ deptrac:
     PhpStanRules:
       - Contracts
       - PhpstanVendor
+    # The PHPMD rules and PHPCS sniffs wrap their tool's stock rule and ask
+    # Gates' Domain which methods are kind methods (#56).
+    PhpmdRules:
+      - Domain
+      - PhpmdVendor
+    PhpcsSniffs:
+      - Domain
+      - PhpcsVendor
   formatters:
     graphviz:
       hidden_layers:
