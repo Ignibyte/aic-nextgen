@@ -26,4 +26,13 @@ enum LogicalType
 
     /** A whole number, 64 bits: the type of a column that refers to an identity key. */
     case BigInteger;
+
+    /** A calendar date, with no time or zone. */
+    case Date;
+
+    /** An exact decimal of a precision and a scale, such as money. */
+    case Numeric;
+
+    /** True or false. */
+    case Boolean;
 }

@@ -55,6 +55,29 @@ interface TableBuilder
     public function timestampTz(string $name): self;
 
     /**
+     * @param string $name The column, a calendar date with no time or zone.
+     *
+     * @return self The builder.
+     */
+    public function date(string $name): self;
+
+    /**
+     * @param string $name      The column, an exact decimal such as money.
+     * @param int    $precision Its digits in all, 1 to 1000.
+     * @param int    $scale     Its digits after the point, 0 to the precision.
+     *
+     * @return self The builder.
+     */
+    public function numeric(string $name, int $precision, int $scale): self;
+
+    /**
+     * @param string $name The column, true or false.
+     *
+     * @return self The builder.
+     */
+    public function boolean(string $name): self;
+
+    /**
      * Lets the last column added hold null.
      *
      * @return self The builder.

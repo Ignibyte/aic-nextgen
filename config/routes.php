@@ -39,6 +39,8 @@ use App\Site\HomePage;
 use App\Site\ResourceDownload;
 use App\Site\StatusApi;
 use App\Site\TickEvents;
+use App\Stock\StockPage;
+use App\Stock\StockPost;
 
 return new RouteCollector(new RoutePatternCompiler())
     ->get('/', HomePage::class)
@@ -53,6 +55,8 @@ return new RouteCollector(new RoutePatternCompiler())
     ->post('/visits/forget', VisitsForget::class)
     ->get('/uploads', UploadsPage::class)
     ->post('/uploads', UploadsPost::class)
+    ->get('/stock', StockPage::class)
+    ->post('/stock', StockPost::class)
     ->get('/login', LoginPage::class)
     ->post('/login', LoginPost::class)
     ->post('/logout', LogoutPost::class)

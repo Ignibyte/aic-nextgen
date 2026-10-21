@@ -9,40 +9,23 @@ use AIC\Schema\Contracts\TableBuilder;
 use AIC\Schema\Domain\Column;
 use AIC\Schema\Domain\Identifier;
 use AIC\Schema\Domain\LogicalType;
-use AIC\Schema\Domain\Table;
 use InvalidArgumentException;
 use LogicException;
 use Override;
 
-use function array_pop;
-
 /**
- * The TableBuilder a migration chains on: it collects the columns and the
- * primary key, its ConstraintDraft the rest, and gives the Table.
+ * The TableBuilder a migration chains on: each call goes to its TableParts
+ * (columns, primary key) or its ConstraintDraft (the rest).
  */
-final class TableDraft implements TableBuilder
+final readonly class TableDraft implements TableBuilder
 {
     /**
-     * The columns so far, in order.
-     *
-     * @var list<object>
-     */
-    private array $columns = [];
-
-    /**
-     * The primary key's columns.
-     *
-     * @var list<string>
-     */
-    private array $primaryKey = [];
-
-    /**
-     * @param Identifier      $identifier      The table's name.
-     * @param ConstraintDraft $constraintDraft Collects its unique constraints, indexes and foreign keys.
+     * @param TableParts      $tableParts      Collects the columns and the primary key.
+     * @param ConstraintDraft $constraintDraft Collects the unique constraints, indexes and foreign keys.
      */
     public function __construct(
-        private readonly Identifier $identifier,
-        private readonly ConstraintDraft $constraintDraft,
+        private TableParts $tableParts,
+        private ConstraintDraft $constraintDraft,
     ) {
     }
 
@@ -54,7 +37,9 @@ final class TableDraft implements TableBuilder
     #[Override]
     public function identity(string $name): self
     {
-        return $this->add(new Column(new Identifier($name), LogicalType::BigIdentity, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), LogicalType::BigIdentity, 0, 0, false));
+
+        return $this;
     }
 
     /**
@@ -72,7 +57,9 @@ final class TableDraft implements TableBuilder
             throw new InvalidArgumentException('Column ' . $name . ': a string column has a positive length.');
         }
 
-        return $this->add(new Column(new Identifier($name), LogicalType::String, $length, false));
+        $this->tableParts->add(new Column(new Identifier($name), LogicalType::String, $length, 0, false));
+
+        return $this;
     }
 
     /**
@@ -83,7 +70,9 @@ final class TableDraft implements TableBuilder
     #[Override]
     public function text(string $name): self
     {
-        return $this->add(new Column(new Identifier($name), LogicalType::Text, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), LogicalType::Text, 0, 0, false));
+
+        return $this;
     }
 
     /**
@@ -94,7 +83,9 @@ final class TableDraft implements TableBuilder
     #[Override]
     public function integer(string $name): self
     {
-        return $this->add(new Column(new Identifier($name), LogicalType::Integer, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), LogicalType::Integer, 0, 0, false));
+
+        return $this;
     }
 
     /**
@@ -105,7 +96,9 @@ final class TableDraft implements TableBuilder
     #[Override]
     public function bigInteger(string $name): self
     {
-        return $this->add(new Column(new Identifier($name), LogicalType::BigInteger, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), LogicalType::BigInteger, 0, 0, false));
+
+        return $this;
     }
 
     /**
@@ -116,7 +109,58 @@ final class TableDraft implements TableBuilder
     #[Override]
     public function timestampTz(string $name): self
     {
-        return $this->add(new Column(new Identifier($name), LogicalType::TimestampTz, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), LogicalType::TimestampTz, 0, 0, false));
+
+        return $this;
+    }
+
+    /**
+     * @param string $name The column, a calendar date with no time or zone.
+     *
+     * @return self The builder.
+     */
+    #[Override]
+    public function date(string $name): self
+    {
+        $this->tableParts->add(new Column(new Identifier($name), LogicalType::Date, 0, 0, false));
+
+        return $this;
+    }
+
+    /**
+     * @param string $name      The column, an exact decimal.
+     * @param int    $precision Its digits in all, 1 to 1000.
+     * @param int    $scale     Its digits after the point, 0 to the precision.
+     *
+     * @throws InvalidArgumentException When the precision or the scale is out of range.
+     *
+     * @return self The builder.
+     */
+    #[Override]
+    public function numeric(string $name, int $precision, int $scale): self
+    {
+        if ($precision < 1 || $precision > 1_000 || $scale < 0 || $scale > $precision) {
+            throw new InvalidArgumentException(
+                'Column ' . $name . ': numeric takes a precision of 1 to 1000 and a scale of 0 to the precision.',
+            );
+        }
+
+        $this->tableParts->add(new Column(new Identifier($name), LogicalType::Numeric, $precision, $scale, false));
+
+        return $this;
+    }
+
+    /**
+     * @param string $name The column, true or false.
+     *
+     * @return self The builder.
+     */
+    #[Override]
+    public function boolean(string $name): self
+    {
+        $this->tableParts->add(new Column(new Identifier($name), LogicalType::Boolean, 0, 0, false));
+
+        return $this;
     }
 
     /**
@@ -129,13 +173,9 @@ final class TableDraft implements TableBuilder
     #[Override]
     public function nullable(): self
     {
-        $last = array_pop($this->columns);
+        $this->tableParts->nullableLast();
 
-        if (!$last instanceof Column) {
-            throw new LogicException('nullable() follows a column.');
-        }
-
-        return $this->add($last->asNullable());
+        return $this;
     }
 
     /**
@@ -146,7 +186,7 @@ final class TableDraft implements TableBuilder
     #[Override]
     public function primary(array $columns): self
     {
-        $this->primaryKey = $columns;
+        $this->tableParts->primary($columns);
 
         return $this;
     }
@@ -195,28 +235,6 @@ final class TableDraft implements TableBuilder
     public function foreignKey(string $column, string $table, string $foreignColumn, OnDelete $onDelete): self
     {
         $this->constraintDraft->foreignKey($column, $table, $foreignColumn, $onDelete);
-
-        return $this;
-    }
-
-    /**
-     * @throws InvalidArgumentException When a key, constraint or index names a column the table lacks.
-     *
-     * @return Table The table as built.
-     */
-    public function table(): Table
-    {
-        return new Table($this->identifier, $this->columns, $this->primaryKey, $this->constraintDraft->constraints());
-    }
-
-    /**
-     * @param Column $column The next column.
-     *
-     * @return self The builder.
-     */
-    private function add(Column $column): self
-    {
-        $this->columns[] = $column;
 
         return $this;
     }

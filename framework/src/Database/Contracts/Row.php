@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace AIC\Database\Contracts;
 
 use function array_key_exists;
+use function is_bool;
 use function is_int;
 use function is_string;
 
 /**
- * One result row, its values narrowed to scalars or null when it was read.
+ * One result row, its values narrowed to scalars or null when it was read. A
+ * `date` reads as a `YYYY-MM-DD` string and a `numeric` as its decimal string,
+ * under PHP and natively alike.
  */
 final readonly class Row
 {
@@ -56,6 +59,26 @@ final readonly class Row
 
         if (!is_int($value)) {
             throw new QueryException('The row has no integer column ' . $column . '.');
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param string $column The column name.
+     *
+     * @throws QueryException When the column is missing or not a boolean.
+     *
+     * @return bool Its value.
+     */
+    public function bool(string $column): bool
+    {
+        $value = array_key_exists($column, $this->values)
+            ? $this->values[$column]
+            : null;
+
+        if (!is_bool($value)) {
+            throw new QueryException('The row has no boolean column ' . $column . '.');
         }
 
         return $value;

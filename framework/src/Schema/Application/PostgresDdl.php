@@ -206,6 +206,9 @@ final readonly class PostgresDdl
             LogicalType::TimestampTz => 'timestamptz',
             LogicalType::Integer => 'integer',
             LogicalType::BigInteger => 'bigint',
+            LogicalType::Date => 'date',
+            LogicalType::Numeric => 'numeric(' . $column->length . ', ' . $column->scale . ')',
+            LogicalType::Boolean => 'boolean',
         };
 
         return $column->name->value . ' ' . $type . ($column->nullable ? '' : ' NOT NULL');
