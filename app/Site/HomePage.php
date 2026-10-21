@@ -37,6 +37,7 @@ final readonly class HomePage implements Page
         '/notifications' => 'Notifications (mail and database)',
         '/pages' => 'Content pages (by slug, written when signed in)',
         '/stock' => 'Stock (date, numeric and boolean columns)',
+        '/ticks' => 'Live ticks (a Tessera stream)',
         '/uploads' => 'Uploads (checked by content)',
         '/visits' => 'Visits (sessions)',
     ];

@@ -56,7 +56,8 @@ part of #23), compiler polish with workaround removal (#53 done; #23 and #34 ope
 `public/assets/tessera-0.1.0/`, `<!--t:c-->`/`<!--t:b-->` markers, fragment answers (`AIC\Tessera`),
 `Vary`. #71: redirects as `Tessera-Location` (`TesseraRedirectMiddleware`), `422`/`409` regions in
 place, `419` for a stale token, `PageFullVisit`; the demo is enhanced throughout. #72: a write is
-applied once per `Tessera-Write-Id` (`TesseraWriteMiddleware`, `aic_tessera_writes`).
+applied once per `Tessera-Write-Id` (`TesseraWriteMiddleware`, `aic_tessera_writes`). #73: streams
+speak Tessera (`TesseraEvents`, ids, `tessera-close`, `Last-Event-ID`); `/ticks` streams live.
 
 ## Five kinds
 

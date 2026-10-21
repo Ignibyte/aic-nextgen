@@ -55,6 +55,12 @@
             "path": "/events"
         },
         {
+            "handler": "App\\Site\\TicksPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/ticks"
+        },
+        {
             "handler": "App\\Session\\VisitsPage",
             "kind": "Page",
             "method": "GET",

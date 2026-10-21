@@ -24,6 +24,12 @@ use const SEEK_SET;
 final class EventStreamBody implements StreamInterface
 {
     /**
+     * What ends every finished stream: Tessera stops and does not reconnect (protocol 7.2, #73); a plain
+     * EventSource client ignores the event.
+     */
+    private const string CLOSE = "event: tessera-close\ndata: reason done\n\n";
+
+    /**
      * The wire bytes pulled but not read yet.
      */
     private string $buffer = '';
@@ -177,7 +183,7 @@ final class EventStreamBody implements StreamInterface
     {
         if ($this->buffer === '' && !$this->ended) {
             $event = $this->eventSource->next();
-            $this->buffer = $event->wire();
+            $this->buffer = $event->wire() . ($event->last ? self::CLOSE : '');
             $this->ended = $event->last;
         }
 

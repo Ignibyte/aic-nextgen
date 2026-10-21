@@ -17,12 +17,13 @@ use function min;
 
 /**
  * GET /events: Server-Sent Events, `count` ticks (from the query, 1 to 10,
- * 3 by default), each sent as it comes.
+ * 3 by default), each sent as it comes as a Tessera fragment for the `ticks`
+ * region; a reconnect with `Last-Event-ID` resumes after that tick (#73).
  */
 final readonly class TickEvents implements Stream
 {
     /**
-     * @param ServerRequestInterface $serverRequest The request, with an optional `count` query field.
+     * @param ServerRequestInterface $serverRequest The request, with an optional `count` query field and `Last-Event-ID`.
      *
      * @return StreamResponse The event stream.
      */
@@ -33,7 +34,11 @@ final readonly class TickEvents implements Stream
         $ticks = is_string($count) && ctype_digit($count)
             ? (int) $count
             : 3;
+        $seen = $serverRequest->getHeaderLine('Last-Event-ID');
+        $after = ctype_digit($seen)
+            ? (int) $seen
+            : 0;
 
-        return new EventStream(new TickSource(max(1, min(10, $ticks))));
+        return new EventStream(new TickSource(max(1, min(10, $ticks)), $after));
     }
 }
