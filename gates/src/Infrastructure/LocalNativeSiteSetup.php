@@ -14,25 +14,28 @@ use function is_resource;
 use function is_string;
 use function preg_match;
 use function random_bytes;
-use function restore_error_handler;
-use function set_error_handler;
-use function stream_socket_client;
 use function stream_socket_get_name;
 use function stream_socket_server;
+
+use const PHP_BINARY;
 
 /**
  * Reads where the two sites of gate:23 run on this host. The database is the
  * `PG*` environment when PGPORT is set, otherwise DDEV's published Postgres
- * port (`ddev describe -j`), otherwise 127.0.0.1:5432. The ports are free
- * local ports, asked of the kernel.
+ * port (`ddev describe -j`), otherwise 127.0.0.1:5432. It counts as reachable
+ * when the app's own `bin/aic db:ping` answers with that environment: an open
+ * port is not enough, since another Postgres on the host accepts connections
+ * and refuses the app. The ports are free local ports, asked of the kernel.
  */
 final readonly class LocalNativeSiteSetup
 {
     /**
-     * @param ProcessRunner $processRunner Runs `ddev describe`.
+     * @param ProcessRunner $processRunner Runs `ddev describe` and the console.
+     * @param string        $php           The PHP binary the console runs under.
      */
     public function __construct(
         private ProcessRunner $processRunner,
+        private string $php = PHP_BINARY,
     ) {
     }
 
@@ -53,49 +56,34 @@ final readonly class LocalNativeSiteSetup
             $env['AIC_APP_SECRET'] = bin2hex(random_bytes(32));
         }
 
-        $host = $env['PGHOST'] ?? '127.0.0.1';
-        $port = (int) $env['PGPORT'];
+        $database = ($env['PGHOST'] ?? '127.0.0.1') . ':' . $env['PGPORT'];
 
-        return new NativeSiteSetup($env, $host . ':' . $port, self::answers($host, $port), self::freePort(), self::freePort());
+        return new NativeSiteSetup($env, $database, $this->answers($root, $env), self::freePort(), self::freePort());
     }
 
     /**
      * @param string $root Repo-root absolute path.
      *
-     * @return int DDEV's published Postgres port; 5432 when DDEV does not say.
+     * @return int DDEV's published Postgres port; 5432 when DDEV does not say (a stopped project publishes port 0).
      */
     private function ddevPort(string $root): int
     {
         $processResult = $this->processRunner->run(['ddev', 'describe', '-j'], $root);
 
-        return preg_match('/"published_port":\\s*(\\d+)/', $processResult->stdout, $match) === 1
+        return preg_match('/"published_port":\\s*([1-9]\\d*)/', $processResult->stdout, $match) === 1
             ? (int) $match[1]
             : 5_432;
     }
 
     /**
-     * @param string $host A host.
-     * @param int    $port A port.
+     * @param string                $root Repo-root absolute path.
+     * @param array<string, string> $env  The environment the sites run with.
      *
-     * @return bool Whether something accepts connections there within a second.
+     * @return bool Whether the app's database answers `bin/aic db:ping`.
      */
-    private static function answers(string $host, int $port): bool
+    private function answers(string $root, array $env): bool
     {
-        set_error_handler(static fn (): bool => true);
-
-        try {
-            $socket = stream_socket_client('tcp://' . $host . ':' . $port, timeout: 1.0);
-        } finally {
-            restore_error_handler();
-        }
-
-        if (!is_resource($socket)) {
-            return false;
-        }
-
-        fclose($socket);
-
-        return true;
+        return $this->processRunner->run([$this->php, $root . '/bin/aic', 'db:ping'], $root, $env)->exitCode === 0;
     }
 
     /**

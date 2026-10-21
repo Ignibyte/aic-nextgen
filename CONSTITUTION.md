@@ -38,9 +38,9 @@ The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every fai
 | 18 | shellcheck | every shell script in `bin/` and `.claude/hooks/`, at `-S warning` |
 | 19 | documentation | no `(TODO)` or `(WIP)` markers and no dead relative links in markdown |
 | 20 | captainhook | the enabled git hooks are installed |
-| 21 | native | every runtime class compiles, links, runs and matches PHP under elephc |
+| 21 | native | every runtime class compiles, links, runs and matches PHP under elephc; a class whose closure and toolchain hash as at its last green probe is reported cached, the rest probed in parallel |
 | 22 | pipeline docs | the pipeline docs and phase commands: frontmatter, line caps, internal links |
-| 23 | native site | the app compiled with `elephc --web` answers the step script as the interpreted app does: status, content type, location, normalised body; database steps defer when Postgres does not answer |
+| 23 | native site | the app compiled with `elephc --web` answers the step script as the interpreted app does: status, content type, location, normalised body; the whole gate defers when the app's database does not answer (`bin/aic db:ping`) |
 | 24 | build manifests | `build/surface.json` (every route and command with its kind, #26) matches what `composer run build` writes |
 
 A new gate or rule is done only when it has been seen to fail on a planted violation.
@@ -152,6 +152,7 @@ This Constitution is amended by editing this file through the four phases (`/pip
 
 ### Amendment log
 
+- **2026-10-21 — gate:21 caches, gate:23 defers whole (#110).** §0's rows 21 and 23. gate:21 skips a class only when everything its probe compiled, ran and compared is unchanged (the closure's files by content, the compiler and its bridge libraries, host PHP, the pinned packages, the probe program), so its coverage is the same; a failure is never cached. gate:23 no longer runs a subset of steps without the database: since #41 every route opens a Postgres session, so the subset answered 500 on both sides and proved nothing. It now defers, named, as the rest of §0 requires.
 - **2026-10-19 — Wiring is code (#21).** §14 rule 10 names the composition root, not a container, as what wires: constructors and readonly properties, typed throughout and compiled natively. The rule against `new` in business logic is unchanged. The PSR-11 container arrives with plugins (#5).
 - **2026-10-19 — PSR overrides (#20, Chad's decision).** §14 rule 7 names its one exception: a `#[Override]` method whose PSR interface dictates `mixed`. PHPStan accepts only `array<mixed>` as the contravariant phpdoc of PSR-7's `array` parameters, PHPCS `DisallowMixedTypeHint` already exempted overrides, and semgrep's `aic-no-mixed-in-phpdoc-template` now does the same, bite-checked both ways.
 - **2026-10-19 — nextgen (#3).** Ported from old AIC's Constitution at `e0778896` and trimmed to one package: the ward, Swoole and Forge history stays in the archive; the gates are renumbered from gate:0 with no gaps (#2, #14, #3); §3 restated for the FrankenPHP worker and native compilation from the first class (and in #33 for the compiled site); §4 collects the workflow rules old AIC cited as §9, §11, §15 and §16; §18.3 and §18.4 (the retired inspection checkpoint and worktrees) dropped.

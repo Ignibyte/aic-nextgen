@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\NativeSiteSetup;
-use Gates\Domain\NativeSiteStep;
+use Gates\Domain\ProcessResult;
 use Gates\Domain\ServerLauncher;
 use RuntimeException;
 
-use function array_filter;
 use function array_slice;
-use function array_values;
 use function count;
 use function explode;
 use function fwrite;
@@ -25,11 +23,18 @@ use const STDOUT;
 /**
  * gate:23 — the native site: the app compiled with `elephc --web` answers every
  * step of the script as the interpreted app does. Both sites run side by side
- * on local ports with the same environment; the database steps defer, named,
- * when Postgres does not answer.
+ * on local ports with the same environment. Every route opens a Postgres
+ * session (#41), so when the app's database does not answer the whole gate defers, named,
+ * before anything is built: two sites answering 500 alike prove nothing.
  */
 final readonly class NativeSiteGate
 {
+    /**
+     * The deferral line when the app's database does not answer, its address in place of `%s`.
+     */
+    private const string DEFERRAL = 'gate:23 — deferring the native site: the app\'s database does not answer at %s'
+        . ' (bin/aic db:ping), and every route opens a Postgres session (#41).';
+
     /**
      * @param NativeToolchain    $nativeToolchain    The compiler and host PHP.
      * @param NativeSiteBuilder  $nativeSiteBuilder  Builds the compiled site.
@@ -70,17 +75,36 @@ final readonly class NativeSiteGate
             return 1;
         }
 
+        if (!$nativeSiteSetup->reachable) {
+            fwrite($stdout, sprintf(self::DEFERRAL, $nativeSiteSetup->database) . PHP_EOL);
+
+            return 0;
+        }
+
         $workDir = $root . '/.native-site';
         $processResult = $this->nativeSiteBuilder->build($root, $workDir);
 
         if ($processResult->exitCode !== 0) {
-            $output = implode(PHP_EOL, array_slice(explode(PHP_EOL, $processResult->stdout . $processResult->stderr), 0, 12));
-            fwrite($stderr, 'gate:23 — the site does not compile natively:' . PHP_EOL . $output . PHP_EOL);
-
-            return 1;
+            return $this->buildFailed($processResult, $stderr);
         }
 
         return $this->compare($root, $workDir, $nativeSiteSetup, $stdout, $stderr);
+    }
+
+    /**
+     * Report a site that does not compile: the first lines of the compiler's output.
+     *
+     * @param ProcessResult $processResult The build's result.
+     * @param resource      $stderr        Stream failures are written to.
+     *
+     * @return int The exit code, 1.
+     */
+    private function buildFailed(ProcessResult $processResult, mixed $stderr): int
+    {
+        $output = implode(PHP_EOL, array_slice(explode(PHP_EOL, $processResult->stdout . $processResult->stderr), 0, 12));
+        fwrite($stderr, 'gate:23 — the site does not compile natively:' . PHP_EOL . $output . PHP_EOL);
+
+        return 1;
     }
 
     /**
@@ -99,10 +123,7 @@ final readonly class NativeSiteGate
         mixed $stdout,
         mixed $stderr,
     ): int {
-        $all = $this->nativeSiteScript->steps();
-        $steps = $nativeSiteSetup->reachable
-            ? $all
-            : array_values(array_filter($all, static fn (NativeSiteStep $nativeSiteStep): bool => !$nativeSiteStep->database));
+        $steps = $this->nativeSiteScript->steps();
 
         if (!$this->startSites($root, $workDir, $nativeSiteSetup)) {
             $this->serverLauncher->stopAll();
@@ -111,16 +132,14 @@ final readonly class NativeSiteGate
             return 1;
         }
 
-        $password = $nativeSiteSetup->reachable
-            ? $this->gateUser->create($root, $nativeSiteSetup->env)
-            : '';
+        $password = $this->gateUser->create($root, $nativeSiteSetup->env);
         $php = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->phpPort, $steps, $password);
         $native = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->nativePort, $steps, $password);
         $this->serverLauncher->stopAll();
 
         $differences = $this->nativeSiteComparer->differences($steps, $php, $native);
 
-        return $this->report($differences, count($steps), count($all) - count($steps), $nativeSiteSetup, $stdout, $stderr);
+        return $this->report($differences, count($steps), $stdout, $stderr);
     }
 
     /**
@@ -143,23 +162,15 @@ final readonly class NativeSiteGate
     }
 
     /**
-     * @param list<string>    $differences     What the sites disagreed on.
-     * @param int             $run             How many steps ran.
-     * @param int             $deferred        How many database steps were deferred.
-     * @param NativeSiteSetup $nativeSiteSetup Where the sites ran.
-     * @param resource        $stdout          Stream the summary is written to.
-     * @param resource        $stderr          Stream failures are written to.
+     * @param list<string> $differences What the sites disagreed on.
+     * @param int          $run         How many steps ran.
+     * @param resource     $stdout      Stream the summary is written to.
+     * @param resource     $stderr      Stream failures are written to.
      *
      * @return int The exit code.
      */
-    private function report(
-        array $differences,
-        int $run,
-        int $deferred,
-        NativeSiteSetup $nativeSiteSetup,
-        mixed $stdout,
-        mixed $stderr,
-    ): int {
+    private function report(array $differences, int $run, mixed $stdout, mixed $stderr): int
+    {
         foreach ($differences as $difference) {
             fwrite($stderr, 'gate:23 — DIFF ' . $difference . PHP_EOL);
         }
@@ -172,11 +183,6 @@ final readonly class NativeSiteGate
         }
 
         fwrite($stdout, sprintf('gate:23 — native site: %d of %d step(s) answer as PHP does.%s', $run, $run, PHP_EOL));
-
-        if ($deferred > 0) {
-            $deferral = sprintf('gate:23 — deferring %d database step(s): no Postgres at %s.', $deferred, $nativeSiteSetup->database);
-            fwrite($stdout, $deferral . PHP_EOL);
-        }
 
         return 0;
     }

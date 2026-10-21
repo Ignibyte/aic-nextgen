@@ -33,40 +33,40 @@ final readonly class NativeSiteScript
     }
 
     /**
-     * @return list<NativeSiteStep> The steps that need no database: pages without a form, API, download, asset, events, errors.
+     * @return list<NativeSiteStep> The pages without a form, the API, the download, an asset, events and errors.
      */
     private function pages(): array
     {
         return [
-            new NativeSiteStep('greeting', 'GET', '/hello/Ada', '', '', 200, false, false),
-            new NativeSiteStep('status', 'GET', '/api/status', '', '', 200, false, false),
-            new NativeSiteStep('health', 'GET', '/health', '', '', 200, true, false),
-            new NativeSiteStep('download', 'GET', '/download/hello.txt', '', '', 200, false, false),
-            new NativeSiteStep('missing file', 'GET', '/download/nope.txt', '', '', 404, false, false),
-            new NativeSiteStep('asset', 'GET', '/assets/aic.css', '', '', 200, false, false),
-            new NativeSiteStep('range part', 'GET', '/download/hello.txt', '', 'Range: bytes=0-4', 206, false, false),
-            new NativeSiteStep('range suffix', 'GET', '/download/hello.txt', '', 'Range: bytes=-6', 206, false, false),
-            new NativeSiteStep('range unsatisfiable', 'GET', '/download/hello.txt', '', 'Range: bytes=9999-', 416, false, false),
-            new NativeSiteStep('events', 'GET', '/events?count=3', '', '', 200, false, false),
-            new NativeSiteStep('events, resumed', 'GET', '/events?count=3', '', 'Last-Event-ID: 2', 200, false, false),
-            new NativeSiteStep('events, all seen', 'GET', '/events?count=3', '', 'Last-Event-ID: 3', 200, false, false),
-            new NativeSiteStep('no route', 'GET', '/nope', '', '', 404, false, false),
+            new NativeSiteStep('greeting', 'GET', '/hello/Ada', '', '', 200, false),
+            new NativeSiteStep('status', 'GET', '/api/status', '', '', 200, false),
+            new NativeSiteStep('health', 'GET', '/health', '', '', 200, false),
+            new NativeSiteStep('download', 'GET', '/download/hello.txt', '', '', 200, false),
+            new NativeSiteStep('missing file', 'GET', '/download/nope.txt', '', '', 404, false),
+            new NativeSiteStep('asset', 'GET', '/assets/aic.css', '', '', 200, false),
+            new NativeSiteStep('range part', 'GET', '/download/hello.txt', '', 'Range: bytes=0-4', 206, false),
+            new NativeSiteStep('range suffix', 'GET', '/download/hello.txt', '', 'Range: bytes=-6', 206, false),
+            new NativeSiteStep('range unsatisfiable', 'GET', '/download/hello.txt', '', 'Range: bytes=9999-', 416, false),
+            new NativeSiteStep('events', 'GET', '/events?count=3', '', '', 200, false),
+            new NativeSiteStep('events, resumed', 'GET', '/events?count=3', '', 'Last-Event-ID: 2', 200, false),
+            new NativeSiteStep('events, all seen', 'GET', '/events?count=3', '', 'Last-Event-ID: 3', 200, false),
+            new NativeSiteStep('no route', 'GET', '/nope', '', '', 404, false),
         ];
     }
 
     /**
-     * @return list<NativeSiteStep> The greeting form and its guard (#42), which need a session and so Postgres.
+     * @return list<NativeSiteStep> The greeting form and its guard (#42).
      */
     private function forms(): array
     {
         return [
-            new NativeSiteStep('home', 'GET', '/', '', '', 200, true, false),
-            new NativeSiteStep('greet blank', 'POST', '/hello', 'name=&aic_csrf={csrf}', '', 422, true, false),
-            new NativeSiteStep('greet', 'POST', '/hello', 'name=Ada&aic_csrf={csrf}', '', 303, true, false),
-            new NativeSiteStep('greet, no token', 'POST', '/hello', 'name=Ada', '', 403, true, false),
-            new NativeSiteStep('greet, wrong token', 'POST', '/hello', 'name=Ada&aic_csrf=forged', '', 403, true, false),
-            new NativeSiteStep('greet, honeypot', 'POST', '/hello', 'name=Ada&aic_csrf={csrf}&aic_website=spam', '', 400, true, false),
-            new NativeSiteStep('unsafe method, forged header', 'DELETE', '/', '', 'X-AIC-CSRF: forged', 403, true, false),
+            new NativeSiteStep('home', 'GET', '/', '', '', 200, false),
+            new NativeSiteStep('greet blank', 'POST', '/hello', 'name=&aic_csrf={csrf}', '', 422, false),
+            new NativeSiteStep('greet', 'POST', '/hello', 'name=Ada&aic_csrf={csrf}', '', 303, false),
+            new NativeSiteStep('greet, no token', 'POST', '/hello', 'name=Ada', '', 403, false),
+            new NativeSiteStep('greet, wrong token', 'POST', '/hello', 'name=Ada&aic_csrf=forged', '', 403, false),
+            new NativeSiteStep('greet, honeypot', 'POST', '/hello', 'name=Ada&aic_csrf={csrf}&aic_website=spam', '', 400, false),
+            new NativeSiteStep('unsafe method, forged header', 'DELETE', '/', '', 'X-AIC-CSRF: forged', 403, false),
         ];
     }
 
@@ -78,18 +78,18 @@ final readonly class NativeSiteScript
         $upload = 'multipart:aic_csrf={csrf}&file=@resources/';
 
         return [
-            new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, true, false),
-            new NativeSiteStep('visits, unknown', 'GET', '/visits', '', 'Cookie: __Host-aic_session=unknown', 200, true, false),
-            new NativeSiteStep('forget, off-site', 'POST', '/visits/forget', 'next=%2F%2Fevil.test&aic_csrf={csrf}', '', 303, true, false),
-            new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, true, false),
-            new NativeSiteStep('forget, next', 'POST', '/visits/forget', 'next=%2Fnotes&aic_csrf={csrf}', '', 303, true, false),
-            new NativeSiteStep('jobs', 'GET', '/jobs', '', '', 200, true, false),
-            new NativeSiteStep('notifications', 'GET', '/notifications', '', '', 200, true, false),
-            new NativeSiteStep('uploads', 'GET', '/uploads', '', '', 200, true, false),
-            new NativeSiteStep('upload a PNG', 'POST', '/uploads', $upload . 'upload.png', '', 303, true, false),
-            new NativeSiteStep('uploads, accepted', 'GET', '/uploads', '', '', 200, true, false),
-            new NativeSiteStep('upload, disguised', 'POST', '/uploads', $upload . 'disguised.png', '', 422, true, false),
-            new NativeSiteStep('upload, none', 'POST', '/uploads', 'multipart:aic_csrf={csrf}', '', 422, true, false),
+            new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, false),
+            new NativeSiteStep('visits, unknown', 'GET', '/visits', '', 'Cookie: __Host-aic_session=unknown', 200, false),
+            new NativeSiteStep('forget, off-site', 'POST', '/visits/forget', 'next=%2F%2Fevil.test&aic_csrf={csrf}', '', 303, false),
+            new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, false),
+            new NativeSiteStep('forget, next', 'POST', '/visits/forget', 'next=%2Fnotes&aic_csrf={csrf}', '', 303, false),
+            new NativeSiteStep('jobs', 'GET', '/jobs', '', '', 200, false),
+            new NativeSiteStep('notifications', 'GET', '/notifications', '', '', 200, false),
+            new NativeSiteStep('uploads', 'GET', '/uploads', '', '', 200, false),
+            new NativeSiteStep('upload a PNG', 'POST', '/uploads', $upload . 'upload.png', '', 303, false),
+            new NativeSiteStep('uploads, accepted', 'GET', '/uploads', '', '', 200, false),
+            new NativeSiteStep('upload, disguised', 'POST', '/uploads', $upload . 'disguised.png', '', 422, false),
+            new NativeSiteStep('upload, none', 'POST', '/uploads', 'multipart:aic_csrf={csrf}', '', 422, false),
         ];
     }
 
@@ -104,13 +104,13 @@ final readonly class NativeSiteScript
         $layout = "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: other\r\nTessera-Targets: content";
 
         return [
-            new NativeSiteStep('tessera, another protocol', 'GET', '/stock', '', $other, 400, true, false),
-            new NativeSiteStep('tessera, a component', 'GET', '/stock', '', $app . 'content/stock-list', 200, true, false),
-            new NativeSiteStep('tessera, two regions', 'GET', '/notes', '', $app . 'content, nav', 200, true, false),
-            new NativeSiteStep('tessera, a region visit', 'GET', '/notes', '', $app . 'content', 200, true, false),
-            new NativeSiteStep('tessera, another layout', 'GET', '/stock', '', $layout, 200, true, false),
-            new NativeSiteStep('tessera, a missing target', 'GET', '/stock', '', $app . 'content/nope', 200, true, false),
-            new NativeSiteStep('tessera, altered props', 'GET', '/stock', '', $app . 'content/stock-list e30.forged', 400, true, false),
+            new NativeSiteStep('tessera, another protocol', 'GET', '/stock', '', $other, 400, false),
+            new NativeSiteStep('tessera, a component', 'GET', '/stock', '', $app . 'content/stock-list', 200, false),
+            new NativeSiteStep('tessera, two regions', 'GET', '/notes', '', $app . 'content, nav', 200, false),
+            new NativeSiteStep('tessera, a region visit', 'GET', '/notes', '', $app . 'content', 200, false),
+            new NativeSiteStep('tessera, another layout', 'GET', '/stock', '', $layout, 200, false),
+            new NativeSiteStep('tessera, a missing target', 'GET', '/stock', '', $app . 'content/nope', 200, false),
+            new NativeSiteStep('tessera, altered props', 'GET', '/stock', '', $app . 'content/stock-list e30.forged', 400, false),
             ...$this->tesseraWrites(),
         ];
     }
@@ -127,12 +127,12 @@ final readonly class NativeSiteScript
         $withId = $submit . "\r\nTessera-Write-Id: ";
 
         return [
-            new NativeSiteStep('tessera, a submit that redirects', 'POST', '/hello', $ada, $submit, 200, true, false),
-            new NativeSiteStep('tessera, a refused submit', 'POST', '/hello', 'name=&aic_csrf={csrf}', $submit, 422, true, false),
-            new NativeSiteStep('tessera, a stale token', 'POST', '/hello', 'name=Ada&aic_csrf=stale', $submit, 419, true, false),
-            new NativeSiteStep('tessera, a write with an id', 'POST', '/hello', $ada, $withId . 'gate-1', 200, true, false),
-            new NativeSiteStep('tessera, its repeat', 'POST', '/hello', $ada, $withId . 'gate-1', 200, true, false),
-            new NativeSiteStep('tessera, a malformed id', 'POST', '/hello', $ada, $withId . 'no good', 400, true, false),
+            new NativeSiteStep('tessera, a submit that redirects', 'POST', '/hello', $ada, $submit, 200, false),
+            new NativeSiteStep('tessera, a refused submit', 'POST', '/hello', 'name=&aic_csrf={csrf}', $submit, 422, false),
+            new NativeSiteStep('tessera, a stale token', 'POST', '/hello', 'name=Ada&aic_csrf=stale', $submit, 419, false),
+            new NativeSiteStep('tessera, a write with an id', 'POST', '/hello', $ada, $withId . 'gate-1', 200, false),
+            new NativeSiteStep('tessera, its repeat', 'POST', '/hello', $ada, $withId . 'gate-1', 200, false),
+            new NativeSiteStep('tessera, a malformed id', 'POST', '/hello', $ada, $withId . 'no good', 400, false),
         ];
     }
 
@@ -147,12 +147,12 @@ final readonly class NativeSiteScript
         $badDate = 'name=Gate+car&price=1&added_on=2026-02-30&aic_csrf={csrf}';
 
         return [
-            new NativeSiteStep('stock, bad price', 'POST', '/stock', $badPrice, '', 422, true, false),
-            new NativeSiteStep('stock, bad date', 'POST', '/stock', $badDate, '', 422, true, false),
-            new NativeSiteStep('stock add, certified', 'POST', '/stock', $car, '', 303, true, false),
-            new NativeSiteStep('stock, certified', 'GET', '/stock', '', '', 200, true, false),
-            new NativeSiteStep('stock add, not certified', 'POST', '/stock', $van, '', 303, true, false),
-            new NativeSiteStep('stock, not certified', 'GET', '/stock', '', '', 200, true, false),
+            new NativeSiteStep('stock, bad price', 'POST', '/stock', $badPrice, '', 422, false),
+            new NativeSiteStep('stock, bad date', 'POST', '/stock', $badDate, '', 422, false),
+            new NativeSiteStep('stock add, certified', 'POST', '/stock', $car, '', 303, false),
+            new NativeSiteStep('stock, certified', 'GET', '/stock', '', '', 200, false),
+            new NativeSiteStep('stock add, not certified', 'POST', '/stock', $van, '', 303, false),
+            new NativeSiteStep('stock, not certified', 'GET', '/stock', '', '', 200, false),
         ];
     }
 
@@ -164,17 +164,17 @@ final readonly class NativeSiteScript
         $update = 'title=Gate+edited&body=y&aic_csrf={csrf}&aic_envelope={envelope}';
 
         return [
-            new NativeSiteStep('content pages', 'GET', '/pages', '', '', 200, true, false),
-            new NativeSiteStep('content page, none', 'GET', '/pages/no-such-page', '', '', 404, true, false),
-            new NativeSiteStep('notes', 'GET', '/notes', '', '', 200, true, false),
-            new NativeSiteStep('note blank', 'POST', '/notes', 'title=&aic_csrf={csrf}', '', 422, true, false),
-            new NativeSiteStep('note create', 'POST', '/notes', 'title=Gate&body=x&aic_csrf={csrf}', '', 303, true, true),
-            new NativeSiteStep('note show', 'GET', '{note}', '', '', 200, true, false),
-            new NativeSiteStep('note update, altered', 'POST', '{note}', $update . 'x', '', 400, true, false),
-            new NativeSiteStep('note update', 'POST', '{note}', $update, '', 303, true, false),
-            new NativeSiteStep('note show again', 'GET', '{note}', '', '', 200, true, false),
-            new NativeSiteStep('note delete', 'POST', '{note}/delete', 'aic_csrf={csrf}&aic_envelope={envelope}', '', 303, true, false),
-            new NativeSiteStep('note gone', 'GET', '{note}', '', '', 404, true, false),
+            new NativeSiteStep('content pages', 'GET', '/pages', '', '', 200, false),
+            new NativeSiteStep('content page, none', 'GET', '/pages/no-such-page', '', '', 404, false),
+            new NativeSiteStep('notes', 'GET', '/notes', '', '', 200, false),
+            new NativeSiteStep('note blank', 'POST', '/notes', 'title=&aic_csrf={csrf}', '', 422, false),
+            new NativeSiteStep('note create', 'POST', '/notes', 'title=Gate&body=x&aic_csrf={csrf}', '', 303, true),
+            new NativeSiteStep('note show', 'GET', '{note}', '', '', 200, false),
+            new NativeSiteStep('note update, altered', 'POST', '{note}', $update . 'x', '', 400, false),
+            new NativeSiteStep('note update', 'POST', '{note}', $update, '', 303, false),
+            new NativeSiteStep('note show again', 'GET', '{note}', '', '', 200, false),
+            new NativeSiteStep('note delete', 'POST', '{note}/delete', 'aic_csrf={csrf}&aic_envelope={envelope}', '', 303, false),
+            new NativeSiteStep('note gone', 'GET', '{note}', '', '', 404, false),
         ];
     }
 
@@ -186,13 +186,13 @@ final readonly class NativeSiteScript
         $login = 'login=gate&next=%2Faccount&aic_csrf={csrf}&password=';
 
         return [
-            new NativeSiteStep('account, anonymous', 'GET', '/account', '', '', 303, true, false),
-            new NativeSiteStep('login page', 'GET', '/login?next=%2Faccount', '', '', 200, true, false),
-            new NativeSiteStep('login, wrong', 'POST', '/login', $login . 'wrong', '', 422, true, false),
-            new NativeSiteStep('login', 'POST', '/login', $login . '{password}', '', 303, true, false),
-            new NativeSiteStep('account', 'GET', '/account', '', '', 200, true, false),
-            new NativeSiteStep('logout', 'POST', '/logout', 'aic_csrf={csrf}', '', 303, true, false),
-            new NativeSiteStep('account, signed out', 'GET', '/account', '', '', 303, true, false),
+            new NativeSiteStep('account, anonymous', 'GET', '/account', '', '', 303, false),
+            new NativeSiteStep('login page', 'GET', '/login?next=%2Faccount', '', '', 200, false),
+            new NativeSiteStep('login, wrong', 'POST', '/login', $login . 'wrong', '', 422, false),
+            new NativeSiteStep('login', 'POST', '/login', $login . '{password}', '', 303, false),
+            new NativeSiteStep('account', 'GET', '/account', '', '', 200, false),
+            new NativeSiteStep('logout', 'POST', '/logout', 'aic_csrf={csrf}', '', 303, false),
+            new NativeSiteStep('account, signed out', 'GET', '/account', '', '', 303, false),
         ];
     }
 }

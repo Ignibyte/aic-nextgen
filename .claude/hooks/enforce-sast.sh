@@ -88,8 +88,15 @@ $(echo "$DEPTRAC_OUTPUT" | tail -20)")
     fi
 
     # --- 4. semgrep ---
+    # The repo root is the target and each changed file an --include: a rule's
+    # anchored paths ("/bin/**") match only relative to the scan root, so
+    # passing the files as targets ignored them and reported what gate:15 does not.
     if command -v semgrep &>/dev/null && [ -f semgrep.yml ]; then
-        SEMGREP_OUTPUT=$(semgrep scan --config semgrep.yml --quiet --error --metrics=off "${PHP_FILES[@]}" 2>&1) || \
+        SEMGREP_INCLUDES=()
+        for file in "${PHP_FILES[@]}"; do
+            SEMGREP_INCLUDES+=("--include=${file}")
+        done
+        SEMGREP_OUTPUT=$(semgrep scan --config semgrep.yml --quiet --error --metrics=off "${SEMGREP_INCLUDES[@]}" . 2>&1) || \
             VIOLATIONS+=("SEMGREP:
 $SEMGREP_OUTPUT")
     fi
