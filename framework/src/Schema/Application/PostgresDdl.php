@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Schema\Application;
 
+use AIC\Schema\Contracts\ColumnType;
+use AIC\Schema\Contracts\LogicalType;
 use AIC\Schema\Contracts\OnDelete;
 use AIC\Schema\Domain\Alteration;
 use AIC\Schema\Domain\Column;
@@ -11,7 +13,7 @@ use AIC\Schema\Domain\ColumnGroup;
 use AIC\Schema\Domain\Constraints;
 use AIC\Schema\Domain\ForeignKey;
 use AIC\Schema\Domain\Identifier;
-use AIC\Schema\Domain\LogicalType;
+use AIC\Schema\Domain\Retype;
 use AIC\Schema\Domain\Table;
 use InvalidArgumentException;
 
@@ -64,21 +66,57 @@ final readonly class PostgresDdl
     }
 
     /**
-     * @param Alteration $alteration Constraints and indexes to add to an existing table.
+     * @param Alteration $alteration Changes to an existing table.
      *
      * @throws InvalidArgumentException When an index name would be longer than an identifier may be.
      *
-     * @return list<string> An `ALTER TABLE ... ADD` for each constraint, then a `CREATE INDEX` for each index.
+     * @return list<string> An `ALTER TABLE` for each column added, then for each type change, then for each
+     *                      constraint, then a `CREATE INDEX` for each index (#86).
      */
     public function alterTable(Alteration $alteration): array
     {
+        $table = 'ALTER TABLE ' . $alteration->table->value;
         $statements = [];
 
+        foreach ($alteration->added as $column) {
+            if (!($column instanceof Column)) {
+                continue;
+            }
+
+            $statements[] = $table . ' ADD COLUMN ' . $this->column($column);
+        }
+
+        $statements = array_merge($statements, $this->retypes($table, $alteration->retyped));
+
         foreach ($this->clauses($alteration->constraints) as $clause) {
-            $statements[] = 'ALTER TABLE ' . $alteration->table->value . ' ADD ' . $clause;
+            $statements[] = $table . ' ADD ' . $clause;
         }
 
         return array_merge($statements, $this->indexes($alteration->table, $alteration->constraints));
+    }
+
+    /**
+     * @param string       $table   The `ALTER TABLE` the statements start with.
+     * @param list<object> $retyped Retypes, in order.
+     *
+     * @return list<string> An `ALTER COLUMN ... TYPE` for each, with its `USING` when it has one.
+     */
+    private function retypes(string $table, array $retyped): array
+    {
+        $statements = [];
+
+        foreach ($retyped as $retype) {
+            if (!($retype instanceof Retype)) {
+                continue;
+            }
+
+            $using = $retype->using === ''
+                ? ''
+                : ' USING ' . $retype->using;
+            $statements[] = $table . ' ALTER COLUMN ' . $retype->column->value . ' TYPE ' . $this->type($retype->type) . $using;
+        }
+
+        return $statements;
     }
 
     /**
@@ -199,18 +237,26 @@ final readonly class PostgresDdl
      */
     private function column(Column $column): string
     {
-        $type = match ($column->type) {
+        return $column->name->value . ' ' . $this->type($column->type) . ($column->nullable ? '' : ' NOT NULL');
+    }
+
+    /**
+     * @param ColumnType $columnType A column's type.
+     *
+     * @return string Its Postgres name.
+     */
+    private function type(ColumnType $columnType): string
+    {
+        return match ($columnType->logicalType) {
             LogicalType::BigIdentity => 'bigint GENERATED ALWAYS AS IDENTITY',
-            LogicalType::String => 'varchar(' . $column->length . ')',
+            LogicalType::String => 'varchar(' . $columnType->length . ')',
             LogicalType::Text => 'text',
             LogicalType::TimestampTz => 'timestamptz',
             LogicalType::Integer => 'integer',
             LogicalType::BigInteger => 'bigint',
             LogicalType::Date => 'date',
-            LogicalType::Numeric => 'numeric(' . $column->length . ', ' . $column->scale . ')',
+            LogicalType::Numeric => 'numeric(' . $columnType->length . ', ' . $columnType->scale . ')',
             LogicalType::Boolean => 'boolean',
         };
-
-        return $column->name->value . ' ' . $type . ($column->nullable ? '' : ' NOT NULL');
     }
 }

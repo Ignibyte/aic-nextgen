@@ -17,9 +17,15 @@ interface Schema
     public function create(string $table): TableBuilder;
 
     /**
+     * @return ColumnTypes Every column type a migration can name, for `TableAlteration::addColumn()` and
+     *                     `changeType()` (#86).
+     */
+    public function types(): ColumnTypes;
+
+    /**
      * @param string $table A table an earlier migration created.
      *
-     * @return TableAlteration The constraints and indexes to add to it.
+     * @return TableAlteration Its columns to add or change, and its constraints and indexes to add.
      */
     public function alter(string $table): TableAlteration;
 

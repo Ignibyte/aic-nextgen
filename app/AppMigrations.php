@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace App;
 
-use AIC\Auth\Domain\EnablePgcrypto;
-use AIC\Notification\Domain\CreateNotificationsTable;
-use AIC\Queue\Domain\CreateJobTables;
-use AIC\Schedule\Domain\CreateScheduleRuns;
 use AIC\Schema\Contracts\Migration;
-use AIC\Session\Domain\CreateSessionsTable;
-use AIC\Tessera\Domain\CreateTesseraWritesTable;
+use App\Migration\AddStockCost;
+use App\Migration\ConvertStockCost;
 use App\Migration\CreateContentPagesTable;
 use App\Migration\CreateNotesTable;
 use App\Migration\CreateNoteTagsTable;
@@ -20,8 +16,10 @@ use App\Migration\CreateUsersTable;
 use App\Migration\IndexNotesByCreation;
 use App\Migration\MakeSubscriberEmailUnique;
 
+use function array_merge;
+
 /**
- * The app's migrations, the framework's among them, in the order they apply.
+ * The app's migrations, after the framework's, in the order they apply.
  */
 final readonly class AppMigrations
 {
@@ -30,17 +28,17 @@ final readonly class AppMigrations
      */
     public function all(): array
     {
-        return [
-            new CreateNotesTable(), new CreateSessionsTable(), new EnablePgcrypto(), new CreateUsersTable(), new CreateJobTables(),
-            new CreateScheduleRuns(),
-            new CreateNotificationsTable(),
+        return array_merge((new FrameworkMigrations())->all(), [
+            new CreateNotesTable(),
+            new CreateUsersTable(),
             new CreateContentPagesTable(),
             new CreateNoteTagsTable(),
             new IndexNotesByCreation(),
             new CreateSubscribersTable(),
             new MakeSubscriberEmailUnique(),
             new CreateStockItemsTable(),
-            new CreateTesseraWritesTable(),
-        ];
+            new AddStockCost(),
+            new ConvertStockCost(),
+        ]);
     }
 }

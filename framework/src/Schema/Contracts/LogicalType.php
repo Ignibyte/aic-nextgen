@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AIC\Schema\Domain;
+namespace AIC\Schema\Contracts;
 
 /**
  * A column's type, independent of the database: a dialect compiler names it.

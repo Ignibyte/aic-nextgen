@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace AIC\Schema\Application;
 
+use AIC\Schema\Contracts\ColumnTypes;
 use AIC\Schema\Contracts\OnDelete;
 use AIC\Schema\Contracts\TableBuilder;
 use AIC\Schema\Domain\Column;
 use AIC\Schema\Domain\Identifier;
-use AIC\Schema\Domain\LogicalType;
 use InvalidArgumentException;
 use LogicException;
 use Override;
@@ -19,13 +19,17 @@ use Override;
  */
 final readonly class TableDraft implements TableBuilder
 {
+    use AddsConstraints;
+
     /**
      * @param TableParts      $tableParts      Collects the columns and the primary key.
      * @param ConstraintDraft $constraintDraft Collects the unique constraints, indexes and foreign keys.
+     * @param ColumnTypes     $columnTypes     Makes each column's type, with its checks.
      */
     public function __construct(
         private TableParts $tableParts,
         private ConstraintDraft $constraintDraft,
+        private ColumnTypes $columnTypes,
     ) {
     }
 
@@ -37,7 +41,7 @@ final readonly class TableDraft implements TableBuilder
     #[Override]
     public function identity(string $name): self
     {
-        $this->tableParts->add(new Column(new Identifier($name), LogicalType::BigIdentity, 0, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), $this->columnTypes->identity(), false));
 
         return $this;
     }
@@ -53,11 +57,7 @@ final readonly class TableDraft implements TableBuilder
     #[Override]
     public function string(string $name, int $length): self
     {
-        if ($length < 1) {
-            throw new InvalidArgumentException('Column ' . $name . ': a string column has a positive length.');
-        }
-
-        $this->tableParts->add(new Column(new Identifier($name), LogicalType::String, $length, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), $this->columnTypes->string($length), false));
 
         return $this;
     }
@@ -70,7 +70,7 @@ final readonly class TableDraft implements TableBuilder
     #[Override]
     public function text(string $name): self
     {
-        $this->tableParts->add(new Column(new Identifier($name), LogicalType::Text, 0, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), $this->columnTypes->text(), false));
 
         return $this;
     }
@@ -83,7 +83,7 @@ final readonly class TableDraft implements TableBuilder
     #[Override]
     public function integer(string $name): self
     {
-        $this->tableParts->add(new Column(new Identifier($name), LogicalType::Integer, 0, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), $this->columnTypes->integer(), false));
 
         return $this;
     }
@@ -96,7 +96,7 @@ final readonly class TableDraft implements TableBuilder
     #[Override]
     public function bigInteger(string $name): self
     {
-        $this->tableParts->add(new Column(new Identifier($name), LogicalType::BigInteger, 0, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), $this->columnTypes->bigInteger(), false));
 
         return $this;
     }
@@ -109,7 +109,7 @@ final readonly class TableDraft implements TableBuilder
     #[Override]
     public function timestampTz(string $name): self
     {
-        $this->tableParts->add(new Column(new Identifier($name), LogicalType::TimestampTz, 0, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), $this->columnTypes->timestampTz(), false));
 
         return $this;
     }
@@ -122,7 +122,7 @@ final readonly class TableDraft implements TableBuilder
     #[Override]
     public function date(string $name): self
     {
-        $this->tableParts->add(new Column(new Identifier($name), LogicalType::Date, 0, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), $this->columnTypes->date(), false));
 
         return $this;
     }
@@ -139,13 +139,7 @@ final readonly class TableDraft implements TableBuilder
     #[Override]
     public function numeric(string $name, int $precision, int $scale): self
     {
-        if ($precision < 1 || $precision > 1_000 || $scale < 0 || $scale > $precision) {
-            throw new InvalidArgumentException(
-                'Column ' . $name . ': numeric takes a precision of 1 to 1000 and a scale of 0 to the precision.',
-            );
-        }
-
-        $this->tableParts->add(new Column(new Identifier($name), LogicalType::Numeric, $precision, $scale, false));
+        $this->tableParts->add(new Column(new Identifier($name), $this->columnTypes->numeric($precision, $scale), false));
 
         return $this;
     }
@@ -158,7 +152,7 @@ final readonly class TableDraft implements TableBuilder
     #[Override]
     public function boolean(string $name): self
     {
-        $this->tableParts->add(new Column(new Identifier($name), LogicalType::Boolean, 0, 0, false));
+        $this->tableParts->add(new Column(new Identifier($name), $this->columnTypes->boolean(), false));
 
         return $this;
     }
@@ -187,36 +181,6 @@ final readonly class TableDraft implements TableBuilder
     public function primary(array $columns): self
     {
         $this->tableParts->primary($columns);
-
-        return $this;
-    }
-
-    /**
-     * @param list<string> $columns Columns whose values, taken together, no two rows share.
-     *
-     * @throws InvalidArgumentException When the list is empty.
-     *
-     * @return self The builder.
-     */
-    #[Override]
-    public function unique(array $columns): self
-    {
-        $this->constraintDraft->unique($columns);
-
-        return $this;
-    }
-
-    /**
-     * @param list<string> $columns The columns to index, in order.
-     *
-     * @throws InvalidArgumentException When the list is empty.
-     *
-     * @return self The builder.
-     */
-    #[Override]
-    public function index(array $columns): self
-    {
-        $this->constraintDraft->index($columns);
 
         return $this;
     }
