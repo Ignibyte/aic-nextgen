@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Domain;
 
+use AIC\Block\Contracts\Block;
 use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
@@ -14,17 +15,19 @@ use function array_any;
 use function ltrim;
 
 /**
- * The five kinds' methods (#56). Each interface dictates its method's one
- * parameter, so an entry point that does not need it cannot drop it; gate:10
- * and gate:11 let such a method leave it unread, and nothing else.
+ * The five kinds' methods (#56), and a block's `component()` (#58). Each
+ * interface dictates its method's one parameter, so a class that does not
+ * need it cannot drop it; gate:10 and gate:11 let such a method leave it
+ * unread, and nothing else.
  */
 final readonly class KindMethods
 {
     /**
-     * Each kind interface and the method it declares.
+     * Each interface and the method it declares.
      */
     private const array METHODS = [
         Api::class => 'api',
+        Block::class => 'component',
         Command::class => 'command',
         Job::class => 'run',
         Page::class => 'page',

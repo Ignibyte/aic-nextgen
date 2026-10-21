@@ -16,12 +16,14 @@ final readonly class Link implements Component
     use RendersMarkup;
 
     /**
-     * @param string $label The text.
-     * @param string $href  Where it goes, a path on this site.
+     * @param string $label   The text.
+     * @param string $href    Where it goes, a path on this site.
+     * @param bool   $current Whether it is the page being shown (`aria-current="page"`).
      */
     public function __construct(
         private string $label,
         private string $href,
+        private bool $current = false,
     ) {
     }
 
@@ -31,6 +33,7 @@ final readonly class Link implements Component
     #[Override]
     public function render(): Html
     {
-        return new Html('<a' . self::attribute('href', $this->href) . ' class="aic-link">' . self::text($this->label) . '</a>');
+        return new Html('<a' . self::attribute('href', $this->href) . ($this->current ? ' aria-current="page"' : '')
+            . ' class="aic-link">' . self::text($this->label) . '</a>');
     }
 }

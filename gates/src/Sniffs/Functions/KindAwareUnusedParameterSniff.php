@@ -20,8 +20,9 @@ use const T_FUNCTION;
 
 /**
  * Slevomat's Functions.UnusedParameter (gate:11), except on a kind method
- * (#56): a Page, Api, Stream, Command or Job method may leave the parameter
- * its interface dictates unread. The class's `implements` names are resolved
+ * (#56): a Page, Api, Stream, Command or Job method, or a Block's
+ * `component()` (#58), may leave the parameter its interface dictates unread
+ * (Gates\Domain\KindMethods). The class's `implements` names are resolved
  * to full names before they are compared. PHPCS builds a sniff with no
  * arguments, so the collaborators are made where they are used.
  */

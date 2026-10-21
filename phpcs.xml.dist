@@ -303,7 +303,8 @@
     </rule>
     <!--
         Slevomat's Functions.UnusedParameter, except on a Page, Api, Stream,
-        Command or Job method, whose one parameter its interface dictates (#56).
+        Command or Job method or a Block's component(), whose one parameter its
+        interface dictates (#56, #58).
     -->
     <rule ref="./gates/src/Sniffs/Functions/KindAwareUnusedParameterSniff.php"/>
 </ruleset>

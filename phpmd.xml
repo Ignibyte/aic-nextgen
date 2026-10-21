@@ -93,8 +93,9 @@
 
     <!--
         UnusedFormalParameter runs as Gates\Phpmd\KindAwareUnusedFormalParameter
-        (#56): the stock rule, except on a Page, Api, Stream, Command or Job
-        method, whose one parameter its interface dictates.
+        (#56): the stock rule, except for the own parameter of a Page, Api,
+        Stream, Command or Job method or a Block's component() (#58), which
+        its interface dictates.
     -->
     <rule ref="rulesets/unusedcode.xml">
         <exclude name="UnusedFormalParameter"/>
@@ -103,7 +104,7 @@
           message="Avoid unused parameters such as '{0}'."
           class="Gates\Phpmd\KindAwareUnusedFormalParameter"
           externalInfoUrl="https://phpmd.org/rules/unusedcode.html#unusedformalparameter">
-        <description>Avoid unused parameters, except the one a kind interface dictates to a kind method (#56).</description>
+        <description>Avoid unused parameters, except the one a kind or Block interface dictates (#56, #58).</description>
         <priority>3</priority>
     </rule>
 </ruleset>

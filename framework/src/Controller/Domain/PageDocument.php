@@ -11,6 +11,7 @@ use AIC\Controller\Contracts\ResponseWriter;
 use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 use function in_array;
 
@@ -60,14 +61,14 @@ final readonly class PageDocument implements PageResponse
     }
 
     /**
-     * @param Blocks $blocks The app's blocks.
-     * @param string $path   The request's path.
+     * @param Blocks                 $blocks        The app's blocks.
+     * @param ServerRequestInterface $serverRequest The request the document answers.
      *
-     * @return self The same document, its layout holding the matching blocks.
+     * @return self The same document, its layout holding the matching blocks' components.
      */
-    public function withBlocks(Blocks $blocks, string $path): self
+    public function withBlocks(Blocks $blocks, ServerRequestInterface $serverRequest): self
     {
-        $regions = $blocks->place($this->layout->regions(), $this->layout->names(), $path);
+        $regions = $blocks->place($this->layout->regions(), $this->layout->names(), $serverRequest);
 
         return new self($this->layout->withRegions($regions), $this->status);
     }
