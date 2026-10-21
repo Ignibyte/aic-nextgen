@@ -11,10 +11,7 @@ use AIC\Controller\Application\Psr7ResponseWriter;
 use AIC\Database\Contracts\Database;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Http\Application\ResponseBuilder;
-use App\Auth\AuthHandlers;
-use App\Content\ContentHandlers;
 use App\Greeting\GreetingHandlers;
-use App\Job\JobHandlers;
 use App\Note\NoteHandlers;
 use App\Session\VisitHandlers;
 use App\Site\HtmlLayout;
@@ -25,8 +22,8 @@ use function array_merge;
 
 /**
  * The app's controllers, each wrapped in its kind's handler, by the handler id
- * config/routes.php names, gathered from NoteHandlers, StreamHandlers,
- * VisitHandlers, GreetingHandlers, AuthHandlers, JobHandlers and ApiHandlers.
+ * config/routes.php names, gathered from NoteHandlers, VisitHandlers,
+ * GreetingHandlers, SiteHandlers and DatabaseFeatureHandlers.
  */
 final readonly class AppHandlers
 {
@@ -63,19 +60,15 @@ final readonly class AppHandlers
         $noteHandlers = new NoteHandlers($htmlLayout, $pageHandlers, $this->database, $this->envelopeCodec);
         $visitHandlers = new VisitHandlers($htmlLayout, $pageHandlers);
         $greetingHandlers = new GreetingHandlers($htmlLayout, $pageHandlers, $this->appConfig, $this->bootedAt, $this->greeters);
-        $authHandlers = new AuthHandlers($htmlLayout, $pageHandlers, $this->database);
-        $jobHandlers = new JobHandlers($htmlLayout, $pageHandlers, $this->database);
         $siteHandlers = new SiteHandlers($psr7ResponseWriter, $this->appConfig, $this->bootedAt, $this->root, $this->database);
-        $contentHandlers = new ContentHandlers($htmlLayout, $pageHandlers, $this->database);
+        $databaseFeatureHandlers = new DatabaseFeatureHandlers($htmlLayout, $pageHandlers, $this->database);
 
         return array_merge(
             $noteHandlers->byId(),
-            $contentHandlers->byId(),
             $visitHandlers->byId(),
             $greetingHandlers->byId(),
-            $authHandlers->byId(),
-            $jobHandlers->byId(),
             $siteHandlers->byId(),
+            $databaseFeatureHandlers->byId(),
         );
     }
 }

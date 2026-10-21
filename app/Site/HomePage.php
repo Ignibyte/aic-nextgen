@@ -35,6 +35,7 @@ final readonly class HomePage implements Page
         '/notes' => 'Notes (entity CRUD, templates, signed forms)',
         '/notifications' => 'Notifications (mail and database)',
         '/pages' => 'Content pages (by slug, written when signed in)',
+        '/stock' => 'Stock (date, numeric and boolean columns)',
         '/uploads' => 'Uploads (checked by content)',
         '/visits' => 'Visits (sessions)',
     ];

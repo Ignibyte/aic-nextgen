@@ -21,7 +21,7 @@ use function array_merge;
 final class SchemaPlan implements Schema
 {
     /**
-     * The TableDrafts and AlterationDrafts, in order.
+     * The TableParts and AlterationDrafts, in order.
      *
      * @var list<object>
      */
@@ -42,10 +42,11 @@ final class SchemaPlan implements Schema
     #[Override]
     public function create(string $table): TableBuilder
     {
-        $tableDraft = new TableDraft(new Identifier($table), new ConstraintDraft());
-        $this->drafts[] = $tableDraft;
+        $constraintDraft = new ConstraintDraft();
+        $tableParts = new TableParts(new Identifier($table), $constraintDraft);
+        $this->drafts[] = $tableParts;
 
-        return $tableDraft;
+        return new TableDraft($tableParts, $constraintDraft);
     }
 
     /**
@@ -93,7 +94,7 @@ final class SchemaPlan implements Schema
                 continue;
             }
 
-            if (!($draft instanceof TableDraft)) {
+            if (!($draft instanceof TableParts)) {
                 continue;
             }
 

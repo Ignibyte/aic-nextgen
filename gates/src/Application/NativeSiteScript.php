@@ -21,7 +21,7 @@ final readonly class NativeSiteScript
      */
     public function steps(): array
     {
-        return [...$this->pages(), ...$this->forms(), ...$this->visits(), ...$this->notes(), ...$this->signIn()];
+        return [...$this->pages(), ...$this->forms(), ...$this->visits(), ...$this->notes(), ...$this->stock(), ...$this->signIn()];
     }
 
     /**
@@ -80,6 +80,26 @@ final readonly class NativeSiteScript
             new NativeSiteStep('uploads, accepted', 'GET', '/uploads', '', '', 200, true, false),
             new NativeSiteStep('upload, disguised', 'POST', '/uploads', $upload . 'disguised.png', '', 422, true, false),
             new NativeSiteStep('upload, none', 'POST', '/uploads', 'multipart:aic_csrf={csrf}', '', 422, true, false),
+        ];
+    }
+
+    /**
+     * @return list<NativeSiteStep> Stock items with a date, a price and a certified flag, written and read back (#65).
+     */
+    private function stock(): array
+    {
+        $car = 'name=Gate+car&price=18999.99&added_on=2026-10-21&certified=1&aic_csrf={csrf}';
+        $van = 'name=Gate+van&price=7000&added_on=2024-02-29&aic_csrf={csrf}';
+        $badPrice = 'name=Gate+car&price=abc&added_on=2026-10-21&aic_csrf={csrf}';
+        $badDate = 'name=Gate+car&price=1&added_on=2026-02-30&aic_csrf={csrf}';
+
+        return [
+            new NativeSiteStep('stock, bad price', 'POST', '/stock', $badPrice, '', 422, true, false),
+            new NativeSiteStep('stock, bad date', 'POST', '/stock', $badDate, '', 422, true, false),
+            new NativeSiteStep('stock add, certified', 'POST', '/stock', $car, '', 303, true, false),
+            new NativeSiteStep('stock, certified', 'GET', '/stock', '', '', 200, true, false),
+            new NativeSiteStep('stock add, not certified', 'POST', '/stock', $van, '', 303, true, false),
+            new NativeSiteStep('stock, not certified', 'GET', '/stock', '', '', 200, true, false),
         ];
     }
 

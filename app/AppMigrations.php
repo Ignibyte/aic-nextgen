@@ -13,6 +13,7 @@ use AIC\Session\Domain\CreateSessionsTable;
 use App\Migration\CreateContentPagesTable;
 use App\Migration\CreateNotesTable;
 use App\Migration\CreateNoteTagsTable;
+use App\Migration\CreateStockItemsTable;
 use App\Migration\CreateSubscribersTable;
 use App\Migration\CreateUsersTable;
 use App\Migration\IndexNotesByCreation;
@@ -37,6 +38,7 @@ final readonly class AppMigrations
             new IndexNotesByCreation(),
             new CreateSubscribersTable(),
             new MakeSubscriberEmailUnique(),
+            new CreateStockItemsTable(),
         ];
     }
 }

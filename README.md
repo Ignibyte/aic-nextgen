@@ -8,7 +8,8 @@ cutover.
 
 The demo app shows every system at work, one feature folder each under `app/`: a home page that
 links every demo, notes with CRUD, templates and signed forms, sessions, uploads, sign-in, jobs,
-schedules and notifications, Server-Sent Events, downloads, `/api/status` and `/health`. The
+schedules and notifications, content pages, stock items with a date, a price and a flag,
+Server-Sent Events, downloads, `/api/status` and `/health`. The
 compiled binary serves it, and PHP serves the same app as the reference.
 
 ## Layout

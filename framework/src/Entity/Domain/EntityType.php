@@ -6,7 +6,6 @@ namespace AIC\Entity\Domain;
 
 use InvalidArgumentException;
 
-use function array_merge;
 use function preg_match;
 
 /**
@@ -36,19 +35,39 @@ final readonly class EntityType
     }
 
     /**
-     * @return list<string> The key, then every field's column.
+     * @return list<string> The key, then every field's column, in order.
      */
     public function columns(): array
     {
-        return array_merge([$this->key], $this->named(FieldType::Text), $this->named(FieldType::CreatedAt));
+        $columns = [$this->key];
+
+        foreach ($this->fields as $field) {
+            if (!($field instanceof Field)) {
+                continue;
+            }
+
+            $columns[] = $field->name;
+        }
+
+        return $columns;
     }
 
     /**
-     * @return list<string> The fields a caller writes: the Text fields.
+     * @return list<string> The fields a caller writes: all but the CreatedAt fields, in order.
      */
     public function writable(): array
     {
-        return $this->named(FieldType::Text);
+        $names = [];
+
+        foreach ($this->fields as $field) {
+            if (!($field instanceof Field) || !$field->type->isWritable()) {
+                continue;
+            }
+
+            $names[] = $field->name;
+        }
+
+        return $names;
     }
 
     /**
@@ -57,6 +76,14 @@ final readonly class EntityType
     public function createdAt(): array
     {
         return $this->named(FieldType::CreatedAt);
+    }
+
+    /**
+     * @return list<string> The Boolean fields, the only ones that take a bool.
+     */
+    public function booleans(): array
+    {
+        return $this->named(FieldType::Boolean);
     }
 
     /**

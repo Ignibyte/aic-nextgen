@@ -73,6 +73,18 @@
             "path": "/uploads"
         },
         {
+            "handler": "App\\Stock\\StockPage",
+            "kind": "Page",
+            "method": "GET",
+            "path": "/stock"
+        },
+        {
+            "handler": "App\\Stock\\StockPost",
+            "kind": "Page",
+            "method": "POST",
+            "path": "/stock"
+        },
+        {
             "handler": "App\\Auth\\LoginPage",
             "kind": "Page",
             "method": "GET",

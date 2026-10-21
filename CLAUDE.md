@@ -82,8 +82,8 @@ Background work is a job; the HTTP server's processes are its workers.
   path repository and moves to its own repo when published.
 - The repo root is the demo app, `aic/app`, namespace `App\`, under `app/`: composition classes
   (`AppServices`, `AppHandlers`, ...) at the top, then one folder per feature (`Site`, `Greeting`,
-  `Note`, `Auth`, `Session`, `Job`, plus `Console` and `Migration`), each holding its pages, forms,
-  templates, handlers and domain together (#49).
+  `Note`, `Auth`, `Session`, `Job`, `Content`, `Stock`, plus `Console` and `Migration`), each
+  holding its pages, forms, templates, handlers and domain together (#49).
 - One project theme at `theme/` renders into `public/`.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 
