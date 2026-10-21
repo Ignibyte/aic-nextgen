@@ -13,7 +13,8 @@ use function sort;
  * Lists the runtime corpus the native gate compiles (gate:21).
  *
  * The runtime is every class, interface, trait and enum under `framework/src`
- * (`AIC\`) and `app` (`App\`). The gate tooling (`gates/`, `Gates\`), the
+ * (`AIC\`), `app` and `modules` (`App\`; a module's classes sit in its `src/`,
+ * and its manifest declares no named class, so it is never probed, #92). The gate tooling (`gates/`, `Gates\`), the
  * entry scripts in `bin/` and the SAPI shell (`public/index.php`,
  * `bootstrap/serve.php`, which gate:23 compiles with the whole app) stay out;
  * keeping them outside the two runtime roots means no scope list is needed. A runtime class that must be left out
@@ -22,9 +23,9 @@ use function sort;
 final readonly class RuntimeClassFinder
 {
     /**
-     * The runtime roots, as PSR-4 prefix => directory relative to the repo root.
+     * The runtime roots, as PSR-4 prefix => directories relative to the repo root.
      */
-    private const array RUNTIME_ROOTS = ['AIC\\' => 'framework/src', 'App\\' => 'app'];
+    private const array RUNTIME_ROOTS = ['AIC\\' => 'framework/src', 'App\\' => ['app', 'modules']];
 
     /**
      * @param ClassReferenceScanner $classReferenceScanner Reads what each file declares.

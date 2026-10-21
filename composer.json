@@ -52,7 +52,8 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "App\\": "app/"
+            "App\\": "app/",
+            "App\\Faq\\": "modules/faq/src/"
         }
     },
     "autoload-dev": {
@@ -82,7 +83,7 @@
         "gate": "bash bin/gate-runner.sh",
         "gate:0": "@php bin/gate-composer-audit.php",
         "gate:1": "@php bin/gate-normalize-all.php",
-        "gate:10": "vendor/bin/phpmd framework/src,app,gates text phpmd.xml --strict",
+        "gate:10": "vendor/bin/phpmd framework/src,app,modules,gates text phpmd.xml --strict",
         "gate:11": "vendor/bin/phpcs --standard=phpcs.xml.dist",
         "gate:12": "vendor/bin/deptrac analyse --no-progress --fail-on-uncovered",
         "gate:13": "vendor/bin/psalm --no-progress --show-info=true --no-cache --no-diff",

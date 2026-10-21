@@ -59,6 +59,8 @@ place, `419` for a stale token, `PageFullVisit`; the demo is enhanced throughout
 applied once per `Tessera-Write-Id` (`TesseraWriteMiddleware`, `aic_tessera_writes`). #73: streams
 speak Tessera (`TesseraEvents`, ids, `tessera-close`, `Last-Event-ID`); `/ticks` streams live.
 #74: signed props tokens on `KeyedComponent`, verified by `TesseraProps`. #12's server half is done.
+M8a (the app shape) runs as #92 to #109; #92: modules, a manifest per `modules/<name>/` read by
+`bin/aic-build`, which writes the wiring into `app/Generated/` (pilot: `modules/faq/`).
 
 ## Five kinds
 
@@ -93,6 +95,15 @@ Background work is a job; the HTTP server's processes are its workers.
   holding its pages, forms, templates, handlers and domain together (#49).
 - One project theme at `theme/` renders into `public/`.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
+- **Modules** (#90, #92): `modules/<name>/<name>.module.php` returns an anonymous class
+  implementing `AIC\Module\Contracts\Module` (routes, services, blocks, plugins, migrations,
+  exports, requires); the classes sit in `modules/<name>/src/` as `App\<StudlyName>\`.
+  `composer run build` checks every manifest and writes the wiring into `app/Generated/`
+  (`ModuleRoutes`, `ModuleHandlers`, `<M>Handlers`, `ModuleProvider`, `ModuleMigrations`),
+  merged after the hand-written app's; never edit those files. A new module needs one PSR-4 line
+  in composer.json (then `composer dump-autoload`) and one PHPCS root in `phpcs.xml.dist`; the
+  build prints both when missing. Until #93, the demo's features stay in `app/` beside the pilot
+  `modules/faq/`.
 
 ## Tickets and planning
 

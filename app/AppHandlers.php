@@ -11,6 +11,7 @@ use AIC\Controller\Application\Psr7ResponseWriter;
 use AIC\Database\Contracts\Database;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Http\Application\ResponseBuilder;
+use App\Generated\ModuleHandlers;
 use App\Greeting\GreetingHandlers;
 use App\Note\NoteHandlers;
 use App\Session\VisitHandlers;
@@ -23,7 +24,8 @@ use function array_merge;
 /**
  * The app's controllers, each wrapped in its kind's handler, by the handler id
  * config/routes.php names, gathered from NoteHandlers, VisitHandlers,
- * GreetingHandlers, SiteHandlers and DatabaseFeatureHandlers.
+ * GreetingHandlers, SiteHandlers and DatabaseFeatureHandlers, and the modules'
+ * from the generated ModuleHandlers (#92).
  */
 final readonly class AppHandlers
 {
@@ -62,6 +64,7 @@ final readonly class AppHandlers
         $greetingHandlers = new GreetingHandlers($htmlLayout, $pageHandlers, $this->appConfig, $this->bootedAt, $this->greeters);
         $siteHandlers = new SiteHandlers($psr7ResponseWriter, $this->appConfig, $this->bootedAt, $this->root, $this->database);
         $databaseFeatureHandlers = new DatabaseFeatureHandlers($htmlLayout, $pageHandlers, $this->database, $this->envelopeCodec);
+        $moduleHandlers = $this->moduleHandlers($pageHandlers, $psr7ResponseWriter);
 
         return array_merge(
             $noteHandlers->byId(),
@@ -69,6 +72,26 @@ final readonly class AppHandlers
             $greetingHandlers->byId(),
             $siteHandlers->byId(),
             $databaseFeatureHandlers->byId(),
+            $moduleHandlers->byId(),
+        );
+    }
+
+    /**
+     * @param PageHandlers       $pageHandlers       Wraps each page with the response writer and the blocks.
+     * @param Psr7ResponseWriter $psr7ResponseWriter Writes the responses as PSR-7.
+     *
+     * @return ModuleHandlers The modules' handlers, from the generated wiring (#92).
+     */
+    private function moduleHandlers(PageHandlers $pageHandlers, Psr7ResponseWriter $psr7ResponseWriter): ModuleHandlers
+    {
+        return new ModuleHandlers(
+            $pageHandlers,
+            $psr7ResponseWriter,
+            $this->appConfig,
+            $this->database,
+            $this->envelopeCodec,
+            $this->bootedAt,
+            $this->root,
         );
     }
 }

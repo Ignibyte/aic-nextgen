@@ -110,11 +110,25 @@ if [ -x vendor/bin/rector ] && [ ${#RECTOR_FILES[@]} -gt 0 ]; then
 $RECTOR_OUTPUT")
 fi
 
-# --- 6. PHPCS on the changed files ---
-if [ -x vendor/bin/phpcs ] && [ -f phpcs.xml.dist ]; then
+# --- 6. PHPCS on the changed files inside gate:11's scope ---
+# phpcs.xml.dist's <file> roots are gate:11's scope; a file passed by name is
+# checked whatever the ruleset lists, so a changed file outside them (rector.php)
+# would meet rules gate:11 never applies to it.
+PHPCS_ROOTS=$(grep -oP '(?<=<file>)[^<]+(?=</file>)' phpcs.xml.dist 2>/dev/null || true)
+PHPCS_FILES=()
+for file in "${FILE_LIST[@]}"; do
+    while IFS= read -r phpcs_root; do
+        if [ -n "$phpcs_root" ] && { [ "$file" = "$phpcs_root" ] || [[ "$file" == "$phpcs_root"/* ]]; }; then
+            PHPCS_FILES+=("$file")
+            break
+        fi
+    done <<< "$PHPCS_ROOTS"
+done
+
+if [ -x vendor/bin/phpcs ] && [ -f phpcs.xml.dist ] && [ ${#PHPCS_FILES[@]} -gt 0 ]; then
     PHPCS_OUTPUT=$(vendor/bin/phpcs --standard=phpcs.xml.dist --no-cache --no-colors \
         --exclude=SlevomatCodingStandard.TypeHints.PropertyTypeHint,SlevomatCodingStandard.TypeHints.ReturnTypeHint,SlevomatCodingStandard.TypeHints.ParameterTypeHint,SlevomatCodingStandard.TypeHints.DisallowMixedTypeHint \
-        "${FILE_LIST[@]}" 2>&1) || \
+        "${PHPCS_FILES[@]}" 2>&1) || \
         VIOLATIONS+=("PHPCS: coding standard. Run 'vendor/bin/phpcbf' for what it can fix:
 $PHPCS_OUTPUT")
 fi

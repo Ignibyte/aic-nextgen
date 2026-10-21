@@ -13,6 +13,7 @@
 
     <file>framework/src</file>
     <file>app</file>
+    <file>modules</file>
     <file>public</file>
     <file>bootstrap</file>
     <file>config</file>
@@ -296,6 +297,7 @@
             <property name="rootNamespaces" type="array">
                 <element key="framework/src" value="AIC"/>
                 <element key="app" value="App"/>
+                <element key="modules/faq/src" value="App\Faq"/>
                 <element key="gates/src" value="Gates"/>
                 <element key="gates/architecture" value="Gates\Architecture"/>
             </property>

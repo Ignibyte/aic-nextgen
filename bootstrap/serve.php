@@ -9,7 +9,8 @@ declare(strict_types=1);
  * and compiled (the class bundle and this file built with `elephc --web`, see
  * gate:23). Either way it runs once per request with fresh state, as PHP-FPM
  * does: it reads the app's config (config/app.php, config/routes.php,
- * config/database.php and config/secret.php, typed), wires the framework's SAPI services and the
+ * config/database.php and config/secret.php, typed), adds the modules' routes
+ * (App\Generated\ModuleRoutes, #92) to config/routes.php's, wires the framework's SAPI services and the
  * app's composition root (App\AppServices), narrows the superglobals into a
  * SapiRequest, answers it through the kernel and emits the response through
  * PhpSapiSink (header(), http_response_code() and echo). This is the one place
@@ -20,12 +21,13 @@ use AIC\Config\Domain\AppConfig;
 use AIC\Database\Domain\DatabaseConfig;
 use AIC\Database\Infrastructure\PdoDatabase;
 use AIC\Kernel\Infrastructure\SapiServices;
-use AIC\Routing\Domain\RouteTable;
+use AIC\Routing\Application\RouteCollector;
 use AIC\Sapi\Contracts\SapiRequest;
 use AIC\Sapi\Contracts\SapiUpload;
 use AIC\Sapi\Infrastructure\PhpSapiSink;
 use AIC\Secret\Domain\AppSecret;
 use App\AppServices;
+use App\Generated\ModuleRoutes;
 
 $appConfig = require __DIR__ . '/../config/app.php';
 
@@ -33,11 +35,13 @@ if (!$appConfig instanceof AppConfig) {
     throw new RuntimeException('config/app.php must return an ' . AppConfig::class . '.');
 }
 
-$routes = require __DIR__ . '/../config/routes.php';
+$routeCollector = require __DIR__ . '/../config/routes.php';
 
-if (!$routes instanceof RouteTable) {
-    throw new RuntimeException('config/routes.php must return an ' . RouteTable::class . '.');
+if (!$routeCollector instanceof RouteCollector) {
+    throw new RuntimeException('config/routes.php must return a ' . RouteCollector::class . '.');
 }
+
+$routes = (new ModuleRoutes())->add($routeCollector)->table();
 
 $databaseConfig = require __DIR__ . '/../config/database.php';
 

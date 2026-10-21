@@ -30,6 +30,7 @@ final readonly class HomePage implements Page
         '/api/status' => 'Status API (JSON)',
         '/download/hello.txt' => 'A download (byte ranges)',
         '/events?count=5' => 'Server-Sent Events',
+        '/faq' => 'FAQ (a module, wired from its manifest)',
         '/health' => 'Health check',
         '/hello/World' => 'Greeting plugins',
         '/jobs' => 'Jobs, the queue and the scheduler',

@@ -4,205 +4,253 @@
             "handler": "App\\Site\\HomePage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/"
         },
         {
             "handler": "App\\Greeting\\GreetingPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/hello/{name}"
         },
         {
             "handler": "App\\Greeting\\GreetingPost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/hello"
         },
         {
             "handler": "App\\Site\\StatusApi",
             "kind": "Api",
             "method": "GET",
+            "module": "",
             "path": "/api/status"
         },
         {
             "handler": "App\\Site\\HealthApi",
             "kind": "Api",
             "method": "GET",
+            "module": "",
             "path": "/health"
         },
         {
             "handler": "App\\Site\\ResourceDownload",
             "kind": "Stream",
             "method": "GET",
+            "module": "",
             "path": "/download/{file}"
         },
         {
             "handler": "App\\Site\\AssetFile",
             "kind": "Stream",
             "method": "GET",
+            "module": "",
             "path": "/assets/{file}"
         },
         {
             "handler": "App\\Site\\AssetFile",
             "kind": "Stream",
             "method": "GET",
+            "module": "",
             "path": "/assets/{dir}/{file}"
         },
         {
             "handler": "App\\Site\\TickEvents",
             "kind": "Stream",
             "method": "GET",
+            "module": "",
             "path": "/events"
         },
         {
             "handler": "App\\Site\\TicksPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/ticks"
         },
         {
             "handler": "App\\Session\\VisitsPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/visits"
         },
         {
             "handler": "App\\Session\\VisitsForget",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/visits/forget"
         },
         {
             "handler": "App\\Session\\UploadsPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/uploads"
         },
         {
             "handler": "App\\Session\\UploadsPost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/uploads"
         },
         {
             "handler": "App\\Stock\\StockPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/stock"
         },
         {
             "handler": "App\\Stock\\StockPost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/stock"
         },
         {
             "handler": "App\\Auth\\LoginPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/login"
         },
         {
             "handler": "App\\Auth\\LoginPost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/login"
         },
         {
             "handler": "App\\Auth\\LogoutPost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/logout"
         },
         {
             "handler": "App\\Auth\\AccountPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/account"
         },
         {
             "handler": "App\\Job\\JobsPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/jobs"
         },
         {
             "handler": "App\\Job\\JobsPost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/jobs"
         },
         {
             "handler": "App\\Job\\NotificationsPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/notifications"
         },
         {
             "handler": "App\\Job\\NotificationsPost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/notifications"
         },
         {
             "handler": "App\\Content\\ContentListPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/pages"
         },
         {
             "handler": "App\\Content\\ContentShowPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/pages/{slug}"
         },
         {
             "handler": "App\\Content\\ContentNewPost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/account/pages"
         },
         {
             "handler": "App\\Content\\ContentEditPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/account/pages/{slug}"
         },
         {
             "handler": "App\\Content\\ContentSavePost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/account/pages/{slug}"
         },
         {
             "handler": "App\\Note\\NoteListPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/notes"
         },
         {
             "handler": "App\\Note\\NoteCreatePost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/notes"
         },
         {
             "handler": "App\\Note\\NoteShowPage",
             "kind": "Page",
             "method": "GET",
+            "module": "",
             "path": "/notes/{id:int}"
         },
         {
             "handler": "App\\Note\\NoteUpdatePost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/notes/{id:int}"
         },
         {
             "handler": "App\\Note\\NoteDeletePost",
             "kind": "Page",
             "method": "POST",
+            "module": "",
             "path": "/notes/{id:int}/delete"
+        },
+        {
+            "handler": "App\\Faq\\Controller\\FaqPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "faq",
+            "path": "/faq"
+        },
+        {
+            "handler": "App\\Faq\\Controller\\FaqApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "faq",
+            "path": "/api/faq"
         }
     ],
     "commands": [
@@ -259,6 +307,21 @@
             "cadence": "* * * * *",
             "job": "demo",
             "name": "demo-every-minute"
+        }
+    ],
+    "modules": [
+        {
+            "blocks": [
+                "App\\Faq\\Block\\FaqNoteBlock"
+            ],
+            "exports": [
+                "App\\Faq\\Component\\FaqItem"
+            ],
+            "migrations": [],
+            "name": "faq",
+            "namespace": "App\\Faq\\",
+            "plugins": [],
+            "requires": []
         }
     ]
 }

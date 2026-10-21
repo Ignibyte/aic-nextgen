@@ -17,6 +17,7 @@ parameters:
     paths:
         - framework/src
         - app
+        - modules
         - public
         - bootstrap
         - config

@@ -33,7 +33,8 @@ final readonly class NativeSiteScript
     }
 
     /**
-     * @return list<NativeSiteStep> The pages without a form, the API, the download, an asset, events and errors.
+     * @return list<NativeSiteStep> The pages without a form, the API, the faq module's page and API (#92), the download,
+     *                              an asset, events and errors.
      */
     private function pages(): array
     {
@@ -41,6 +42,8 @@ final readonly class NativeSiteScript
             new NativeSiteStep('greeting', 'GET', '/hello/Ada', '', '', 200, false),
             new NativeSiteStep('status', 'GET', '/api/status', '', '', 200, false),
             new NativeSiteStep('health', 'GET', '/health', '', '', 200, false),
+            new NativeSiteStep('faq', 'GET', '/faq', '', '', 200, false),
+            new NativeSiteStep('faq api', 'GET', '/api/faq', '', '', 200, false),
             new NativeSiteStep('download', 'GET', '/download/hello.txt', '', '', 200, false),
             new NativeSiteStep('missing file', 'GET', '/download/nope.txt', '', '', 404, false),
             new NativeSiteStep('asset', 'GET', '/assets/aic.css', '', '', 200, false),
