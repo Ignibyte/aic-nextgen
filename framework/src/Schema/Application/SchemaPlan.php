@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Schema\Application;
 
+use AIC\Schema\Contracts\ColumnTypes;
 use AIC\Schema\Contracts\Schema;
 use AIC\Schema\Contracts\TableAlteration;
 use AIC\Schema\Contracts\TableBuilder;
@@ -35,6 +36,28 @@ final class SchemaPlan implements Schema
     private array $extensions = [];
 
     /**
+     * The column types its builders and migrations name.
+     */
+    private readonly ColumnTypes $columnTypes;
+
+    /**
+     * A plan with nothing described yet.
+     */
+    public function __construct()
+    {
+        $this->columnTypes = new ColumnTypeFactory();
+    }
+
+    /**
+     * @return ColumnTypes Every column type a migration can name (#86).
+     */
+    #[Override]
+    public function types(): ColumnTypes
+    {
+        return $this->columnTypes;
+    }
+
+    /**
      * @param string $table The new table's name.
      *
      * @return TableBuilder Its columns, added in order.
@@ -46,7 +69,7 @@ final class SchemaPlan implements Schema
         $tableParts = new TableParts(new Identifier($table), $constraintDraft);
         $this->drafts[] = $tableParts;
 
-        return new TableDraft($tableParts, $constraintDraft);
+        return new TableDraft($tableParts, $constraintDraft, $this->columnTypes);
     }
 
     /**
@@ -54,12 +77,12 @@ final class SchemaPlan implements Schema
      *
      * @throws InvalidArgumentException When the name is not an identifier.
      *
-     * @return TableAlteration The constraints and indexes to add to it.
+     * @return TableAlteration Its columns to add or change, and its constraints and indexes to add.
      */
     #[Override]
     public function alter(string $table): TableAlteration
     {
-        $alterationDraft = new AlterationDraft(new Identifier($table), new ConstraintDraft());
+        $alterationDraft = new AlterationDraft(new Identifier($table), new ColumnChanges(), new ConstraintDraft());
         $this->drafts[] = $alterationDraft;
 
         return $alterationDraft;
