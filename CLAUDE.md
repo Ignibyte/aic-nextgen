@@ -55,7 +55,8 @@ part of #23), compiler polish with workaround removal (#53 done; #23 and #34 ope
 #12's server half runs as #70 to #74; #70: Tessera 0.1.0 pinned in `config/app.php` and built into
 `public/assets/tessera-0.1.0/`, `<!--t:c-->`/`<!--t:b-->` markers, fragment answers (`AIC\Tessera`),
 `Vary`. #71: redirects as `Tessera-Location` (`TesseraRedirectMiddleware`), `422`/`409` regions in
-place, `419` for a stale token, `PageFullVisit`; the demo is enhanced throughout.
+place, `419` for a stale token, `PageFullVisit`; the demo is enhanced throughout. #72: a write is
+applied once per `Tessera-Write-Id` (`TesseraWriteMiddleware`, `aic_tessera_writes`).
 
 ## Five kinds
 
