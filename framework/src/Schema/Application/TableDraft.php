@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace AIC\Schema\Application;
 
+use AIC\Schema\Contracts\OnDelete;
 use AIC\Schema\Contracts\TableBuilder;
 use AIC\Schema\Domain\Column;
+use AIC\Schema\Domain\ColumnGroup;
+use AIC\Schema\Domain\ForeignKey;
 use AIC\Schema\Domain\Identifier;
 use AIC\Schema\Domain\LogicalType;
 use AIC\Schema\Domain\Table;
@@ -16,8 +19,9 @@ use Override;
 use function array_pop;
 
 /**
- * The TableBuilder a migration chains on: it collects the columns and the
- * primary key, and gives the Table.
+ * The TableBuilder a migration chains on: it collects the columns, the
+ * primary key, the unique constraints, the indexes and the foreign keys, and
+ * gives the Table.
  */
 final class TableDraft implements TableBuilder
 {
@@ -34,6 +38,27 @@ final class TableDraft implements TableBuilder
      * @var list<string>
      */
     private array $primaryKey = [];
+
+    /**
+     * The unique constraints, ColumnGroups.
+     *
+     * @var list<object>
+     */
+    private array $uniques = [];
+
+    /**
+     * The indexes, ColumnGroups.
+     *
+     * @var list<object>
+     */
+    private array $indexes = [];
+
+    /**
+     * The ForeignKeys.
+     *
+     * @var list<object>
+     */
+    private array $foreignKeys = [];
 
     /**
      * @param Identifier $identifier The table's name.
@@ -95,6 +120,17 @@ final class TableDraft implements TableBuilder
     }
 
     /**
+     * @param string $name The column, a 64-bit whole number.
+     *
+     * @return self The builder.
+     */
+    #[Override]
+    public function bigInteger(string $name): self
+    {
+        return $this->add(new Column(new Identifier($name), LogicalType::BigInteger, 0, false));
+    }
+
+    /**
      * @param string $name The column, a point in time with its time zone.
      *
      * @return self The builder.
@@ -138,11 +174,61 @@ final class TableDraft implements TableBuilder
     }
 
     /**
+     * @param list<string> $columns Columns whose values, taken together, no two rows share.
+     *
+     * @throws InvalidArgumentException When the list is empty.
+     *
+     * @return self The builder.
+     */
+    #[Override]
+    public function unique(array $columns): self
+    {
+        $this->uniques[] = new ColumnGroup($columns);
+
+        return $this;
+    }
+
+    /**
+     * @param list<string> $columns The columns to index, in order.
+     *
+     * @throws InvalidArgumentException When the list is empty.
+     *
+     * @return self The builder.
+     */
+    #[Override]
+    public function index(array $columns): self
+    {
+        $this->indexes[] = new ColumnGroup($columns);
+
+        return $this;
+    }
+
+    /**
+     * @param string   $column        The referring column, on this table.
+     * @param string   $table         The table it refers to.
+     * @param string   $foreignColumn The column it refers to there.
+     * @param OnDelete $onDelete      What deleting the row it refers to does here.
+     *
+     * @throws InvalidArgumentException When a name is not an identifier.
+     *
+     * @return self The builder.
+     */
+    #[Override]
+    public function foreignKey(string $column, string $table, string $foreignColumn, OnDelete $onDelete): self
+    {
+        $this->foreignKeys[] = new ForeignKey(new Identifier($column), new Identifier($table), new Identifier($foreignColumn), $onDelete);
+
+        return $this;
+    }
+
+    /**
+     * @throws InvalidArgumentException When a key, constraint or index names a column the table lacks.
+     *
      * @return Table The table as built.
      */
     public function table(): Table
     {
-        return new Table($this->identifier, $this->columns, $this->primaryKey);
+        return new Table($this->identifier, $this->columns, $this->primaryKey, $this->uniques, $this->indexes, $this->foreignKeys);
     }
 
     /**

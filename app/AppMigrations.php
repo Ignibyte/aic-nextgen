@@ -12,6 +12,7 @@ use AIC\Schema\Contracts\Migration;
 use AIC\Session\Domain\CreateSessionsTable;
 use App\Migration\CreateContentPagesTable;
 use App\Migration\CreateNotesTable;
+use App\Migration\CreateNoteTagsTable;
 use App\Migration\CreateUsersTable;
 
 /**
@@ -29,6 +30,7 @@ final readonly class AppMigrations
             new CreateScheduleRuns(),
             new CreateNotificationsTable(),
             new CreateContentPagesTable(),
+            new CreateNoteTagsTable(),
         ];
     }
 }
