@@ -60,13 +60,25 @@ final readonly class Region implements Component
         $position = 0;
 
         foreach ($this->components as $component) {
-            $key = $component instanceof Keyed
-                ? $component->key()
+            $opening = $component instanceof Keyed
+                ? self::opening($component)
                 : 'c' . $position;
-            $markup .= '<!--t:c ' . $key . '-->' . $component->render()->markup() . '<!--/t:c-->';
+            $markup .= '<!--t:c ' . $opening . '-->' . $component->render()->markup() . '<!--/t:c-->';
             $position += 1;
         }
 
         return new Html('<div data-region="' . $this->name . '">' . $markup . '</div>');
+    }
+
+    /**
+     * @param Keyed $keyed A component with its own key.
+     *
+     * @return string Its key, then its props token when it has one.
+     */
+    private static function opening(Keyed $keyed): string
+    {
+        return $keyed->props() === ''
+            ? $keyed->key()
+            : $keyed->key() . ' ' . $keyed->props();
     }
 }

@@ -83,6 +83,24 @@ final readonly class TesseraRequest
     }
 
     /**
+     * @param string $target A region or a component's path.
+     *
+     * @return string The props token the request sent for it in `Tessera-Targets`, unverified (#74); empty for none.
+     */
+    public function props(string $target): string
+    {
+        foreach (explode(',', $this->targets) as $entry) {
+            $props = self::entryProps(trim($entry), $target);
+
+            if ($props !== '') {
+                return $props;
+            }
+        }
+
+        return '';
+    }
+
+    /**
      * The fragment response's body for a visit, a refresh, a submission or
      * an action whose targets all exist under the page's layout (protocol
      * 5.1, 5.3). A visit also brings every other region of the layout, so
@@ -205,6 +223,21 @@ final readonly class TesseraRequest
         return $token === ''
             ? ''
             : '<meta name="tessera-csrf-token" content="' . htmlspecialchars($token) . '">';
+    }
+
+    /**
+     * @param string $entry  One `Tessera-Targets` entry: a target, then a space and its props.
+     * @param string $target The target sought.
+     *
+     * @return string The entry's props when it names the target; empty otherwise.
+     */
+    private static function entryProps(string $entry, string $target): string
+    {
+        $parts = explode(' ', $entry, 2);
+
+        return $parts[0] === $target
+            ? $parts[1] ?? ''
+            : '';
     }
 
     /**

@@ -30,6 +30,7 @@ paths = [
     '''vendor/.*''',
     '''storage/.*''',
     '''\.psalm-cache/.*''',
+    '''\.phpstan-cache/.*''',
     '''\.rector-cache/.*''',
     # DDEV-generated local-dev TLS certs/keys. .ddev/.gitignore excludes them
     # from commits; this entry keeps a working-tree scan from flagging them.

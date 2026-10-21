@@ -77,14 +77,25 @@ final readonly class EnvelopeCodec
      */
     public function open(ServerRequestInterface $serverRequest): array
     {
-        $envelope = self::envelope($serverRequest);
+        return $this->openToken(self::envelope($serverRequest));
+    }
+
+    /**
+     * @param string $envelope An envelope as seal() made it, such as a component's props token (#74).
+     *
+     * @throws InvalidEnvelope When it is empty, malformed or altered.
+     *
+     * @return array<string, string> Its values.
+     */
+    public function openToken(string $envelope): array
+    {
         $dot = strpos($envelope, '.');
         $body = $dot === false
             ? ''
             : substr($envelope, 0, $dot);
 
         if ($body === '' || !$this->hmacSigner->verify($body, substr($envelope, $dot + 1))) {
-            throw new InvalidEnvelope("The form's envelope is missing or was altered.");
+            throw new InvalidEnvelope('The envelope is missing or was altered.');
         }
 
         $json = base64_decode(strtr($body, '-_', '+/'), true);

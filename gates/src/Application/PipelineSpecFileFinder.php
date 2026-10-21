@@ -36,6 +36,7 @@ final readonly class PipelineSpecFileFinder
         '.native-gate',
         '.playwright-mcp',
         '.psalm-cache',
+        '.phpstan-cache',
         '.rector-cache',
         'tools',
         'storage',

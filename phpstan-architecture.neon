@@ -9,6 +9,8 @@ includes:
     - phpstan.neon
 
 parameters:
+    # Its own cache beside gate:8's (#74): the two configs analyse different paths.
+    tmpDir: .phpstan-cache/architecture
     paths:
         - gates/architecture
     phpat:

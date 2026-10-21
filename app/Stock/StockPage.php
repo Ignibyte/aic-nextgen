@@ -7,12 +7,12 @@ namespace App\Stock;
 use AIC\Component\Contracts\Html;
 use AIC\Component\Contracts\Region;
 use AIC\Component\Contracts\Regions;
-use AIC\Component\Domain\KeyedComponent;
-use AIC\Component\Domain\Link;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
+use AIC\Form\Exception\InvalidEnvelope;
 use App\Site\HtmlLayout;
+use JsonException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -31,43 +31,46 @@ final readonly class StockPage implements Page
      * @param HtmlLayout      $htmlLayout      Makes the page.
      * @param StockRepository $stockRepository Holds the items.
      * @param StockForm       $stockForm       The form.
+     * @param StockList       $stockList       The list, the component Tessera refreshes alone.
      */
     public function __construct(
         private HtmlLayout $htmlLayout,
         private StockRepository $stockRepository,
         private StockForm $stockForm,
+        private StockList $stockList,
     ) {
     }
 
     /**
-     * @param ServerRequestInterface $serverRequest The request, with its session.
+     * @param ServerRequestInterface $serverRequest The request, with its session, an optional `limit` and maybe
+     *                                              the list's props.
      *
      * @throws QueryException When the items cannot be read.
+     * @throws JsonException  When the list's props cannot be sealed.
      *
-     * @return PageResponse The page.
+     * @return PageResponse The page; 400 when the list's props were altered.
      */
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
         $items = $this->stockRepository->all();
-        $lines = '';
 
-        foreach ($items as $item) {
-            $lines .= '<li>' . htmlspecialchars($item->line()) . '</li>';
+        try {
+            $list = $this->stockList->component($serverRequest, $items);
+        } catch (InvalidEnvelope) {
+            return $this->htmlLayout->content('<p>The list could not be refreshed. Reload the page.</p>', 400);
         }
 
         $latest = $items[count($items) - 1] ?? null;
         $summary = $latest instanceof StockItem
             ? 'Latest: ' . $latest->line() . '.'
             : 'Nothing in stock yet.';
-
-        $refresh = (new Link('Refresh the list', '/stock', false, 'content/stock-list'))->render()->markup();
+        $html = $this->stockForm->render($serverRequest, new StockEntry('', '', '', false), '');
 
         return $this->htmlLayout->page(new Regions([new Region('content', [
             new Html('<h2>Stock</h2><p id="stock-latest">' . htmlspecialchars($summary) . '</p>'),
-            new KeyedComponent('stock-list', new Html('<ul id="stock">' . $lines . '</ul>')),
-            new Html('<p>' . $refresh . '</p>'
-                . $this->stockForm->render($serverRequest, new StockEntry('', '', '', false), '')->markup()),
+            $list,
+            $this->stockList->links()->append($html),
         ])]), 200);
     }
 }

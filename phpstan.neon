@@ -9,6 +9,10 @@ includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
 
 parameters:
+    # A cache of this repo's own: the default under the system temp directory is
+    # shared with every project on the box, and another project's run clearing it
+    # mid-run lost the dead-code detector's files (#74).
+    tmpDir: .phpstan-cache/main
     level: 10
     paths:
         - framework/src
