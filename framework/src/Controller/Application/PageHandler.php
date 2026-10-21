@@ -43,7 +43,7 @@ final readonly class PageHandler implements RequestHandlerInterface
         $pageResponse = $this->page->page($request);
 
         if ($pageResponse instanceof PageDocument) {
-            return $pageResponse->withBlocks($this->blocks, $request->getUri()->getPath())
+            return $pageResponse->withBlocks($this->blocks, $request)
                 ->writeTo($this->responseWriter);
         }
 

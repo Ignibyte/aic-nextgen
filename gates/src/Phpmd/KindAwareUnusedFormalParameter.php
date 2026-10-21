@@ -14,8 +14,9 @@ use PHPMD\Rule\UnusedFormalParameter;
 
 /**
  * PHPMD's UnusedFormalParameter (gate:10), except for a kind method's own
- * parameter (#56): a Page, Api, Stream, Command or Job method may leave the
- * parameter its interface dictates unread, while closures inside it are still
+ * parameter (#56): a Page, Api, Stream, Command or Job method, or a Block's
+ * `component()` (#58), may leave the parameter its interface dictates unread
+ * (Gates\Domain\KindMethods), while closures inside it are still
  * checked. pdepend's AST has no attributes, so the test is the class's
  * interfaces, which it resolves to full names.
  */

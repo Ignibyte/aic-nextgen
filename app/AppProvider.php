@@ -12,6 +12,7 @@ use App\Greeting\Greeter;
 use App\Greeting\SpanishGreeter;
 use App\Note\NoteTipsBlock;
 use App\Site\PoweredByBlock;
+use App\Site\SiteNavBlock;
 use Override;
 
 /**
@@ -33,5 +34,7 @@ final readonly class AppProvider implements ServiceProvider
         $serviceRegistry->tag(Block::class, PoweredByBlock::class);
         $serviceRegistry->singleton(NoteTipsBlock::class, static fn (): NoteTipsBlock => new NoteTipsBlock());
         $serviceRegistry->tag(Block::class, NoteTipsBlock::class);
+        $serviceRegistry->singleton(SiteNavBlock::class, static fn (): SiteNavBlock => new SiteNavBlock());
+        $serviceRegistry->tag(Block::class, SiteNavBlock::class);
     }
 }

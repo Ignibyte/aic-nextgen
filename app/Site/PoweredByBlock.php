@@ -6,8 +6,10 @@ namespace App\Site;
 
 use AIC\Block\Contracts\Block;
 use AIC\Block\Contracts\Placement;
+use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Html;
 use Override;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * A line saying what serves the site, in `nav` on every page, last.
@@ -24,10 +26,12 @@ final readonly class PoweredByBlock implements Block
     }
 
     /**
-     * @return Html `<p id="powered-by">`.
+     * @param ServerRequestInterface $serverRequest The page's request; the line is the same on every page.
+     *
+     * @return Component `<p id="powered-by">`.
      */
     #[Override]
-    public function render(): Html
+    public function component(ServerRequestInterface $serverRequest): Component
     {
         return new Html('<p id="powered-by">Served by AIC.</p>');
     }
