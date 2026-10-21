@@ -23,4 +23,7 @@ enum LogicalType
 
     /** A whole number, 32 bits. */
     case Integer;
+
+    /** A whole number, 64 bits: the type of a column that refers to an identity key. */
+    case BigInteger;
 }

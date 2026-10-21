@@ -60,7 +60,9 @@ final class SchemaPlan implements Schema
     /**
      * @param PostgresDdl $postgresDdl The dialect.
      *
-     * @return list<string> The statements, in order: the extensions first, then the tables.
+     * @throws InvalidArgumentException When a table names a column it lacks, or an index name is too long.
+     *
+     * @return list<string> The statements, in order: the extensions first, then each table followed by its indexes.
      */
     public function statements(PostgresDdl $postgresDdl): array
     {
@@ -71,7 +73,12 @@ final class SchemaPlan implements Schema
                 continue;
             }
 
-            $statements[] = $postgresDdl->createTable($draft->table());
+            $table = $draft->table();
+            $statements[] = $postgresDdl->createTable($table);
+
+            foreach ($postgresDdl->createIndexes($table) as $index) {
+                $statements[] = $index;
+            }
         }
 
         return $statements;
