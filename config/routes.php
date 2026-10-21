@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 /*
- * The app's routes. Each names a handler id; the worker gives the router the
- * handlers by these ids. The table compiles once per worker boot.
+ * The app's own routes. Each names a handler id; the worker gives the router the
+ * handlers by these ids. It returns the collector, not the table: the modules'
+ * routes (app/Generated/ModuleRoutes, #92) are added after these, by
+ * bootstrap/serve.php at run time and by bin/aic-build for surface.json.
  */
 
 use AIC\Routing\Application\RouteCollector;
@@ -77,5 +79,4 @@ return new RouteCollector(new RoutePatternCompiler())
     ->post('/notes', NoteCreatePost::class)
     ->get('/notes/{id:int}', NoteShowPage::class)
     ->post('/notes/{id:int}', NoteUpdatePost::class)
-    ->post('/notes/{id:int}/delete', NoteDeletePost::class)
-    ->table();
+    ->post('/notes/{id:int}/delete', NoteDeletePost::class);

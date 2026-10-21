@@ -7,6 +7,7 @@ namespace App;
 use AIC\Block\Contracts\Block;
 use AIC\Container\Contracts\ServiceProvider;
 use AIC\Container\Contracts\ServiceRegistry;
+use App\Generated\ModuleProvider;
 use App\Greeting\EnglishGreeter;
 use App\Greeting\Greeter;
 use App\Greeting\SpanishGreeter;
@@ -16,7 +17,8 @@ use App\Site\SiteNavBlock;
 use Override;
 
 /**
- * The app's services and plugins: its two Greeter plugins.
+ * The app's services and plugins: its two Greeter plugins and its blocks, then
+ * the modules' blocks and plugins from the generated ModuleProvider (#92).
  */
 final readonly class AppProvider implements ServiceProvider
 {
@@ -36,5 +38,6 @@ final readonly class AppProvider implements ServiceProvider
         $serviceRegistry->tag(Block::class, NoteTipsBlock::class);
         $serviceRegistry->singleton(SiteNavBlock::class, static fn (): SiteNavBlock => new SiteNavBlock());
         $serviceRegistry->tag(Block::class, SiteNavBlock::class);
+        (new ModuleProvider())->register($serviceRegistry);
     }
 }

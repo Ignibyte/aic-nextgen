@@ -34,7 +34,7 @@ use const STDOUT;
  * holds the rule from the first class (plan.md, decision 2); this gate is
  * what holds it.
  *
- * Scope is the runtime code: `framework/src` and `app`. `public/` and `bin/`
+ * Scope is the runtime code: `framework/src`, `app` and `modules` (#92). `public/` and `bin/`
  * are the sanctioned homes for a dynamic include: `public/worker.php` is the
  * boot seam, and neither is compiled natively. That exclusion IS the
  * architecture, not a loophole.
@@ -52,7 +52,7 @@ final readonly class NoDynamicRequireGate
     /**
      * The runtime roots, relative to the repo root: everything elephc compiles.
      */
-    private const array RUNTIME_ROOTS = ['framework/src', 'app'];
+    private const array RUNTIME_ROOTS = ['framework/src', 'app', 'modules'];
 
     /**
      * Wire the gate to its operand classifier.

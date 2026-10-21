@@ -101,6 +101,28 @@ final class CoreArchitectureTest
     }
 
     /**
+     * A module's manifest is build input (#92): only the build reads it, so no
+     * named runtime class depends on the manifest contract. The manifests
+     * themselves are anonymous classes and are not selected.
+     *
+     * @return Rule The rule.
+     */
+    public function testRuntimeDoesNotDependOnModuleContracts(): Rule
+    {
+        return PHPat::rule()
+            ->classes(
+                Selector::AllOf(
+                    Selector::AnyOf(Selector::inNamespace('AIC'), Selector::inNamespace('App')),
+                    Selector::Not(Selector::inNamespace('AIC\\Module\\Contracts')),
+                ),
+            )
+            ->shouldNot()
+            ->dependOn()
+            ->classes(Selector::inNamespace('AIC\\Module\\Contracts'))
+            ->because('the manifests are read by bin/aic-build only; nothing at run time may read a module manifest.');
+    }
+
+    /**
      * Nothing uses Swoole: the compiled elephc --web server is the runtime.
      *
      * @return Rule The rule.

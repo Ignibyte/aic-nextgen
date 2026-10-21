@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use AIC\Schema\Contracts\Migration;
+use App\Generated\ModuleMigrations;
 use App\Migration\AddStockCost;
 use App\Migration\ConvertStockCost;
 use App\Migration\CreateContentPagesTable;
@@ -19,7 +20,8 @@ use App\Migration\MakeSubscriberEmailUnique;
 use function array_merge;
 
 /**
- * The app's migrations, after the framework's, in the order they apply.
+ * The app's migrations, after the framework's, in the order they apply; the
+ * modules' come last, from the generated ModuleMigrations (#92).
  */
 final readonly class AppMigrations
 {
@@ -39,6 +41,6 @@ final readonly class AppMigrations
             new CreateStockItemsTable(),
             new AddStockCost(),
             new ConvertStockCost(),
-        ]);
+        ], (new ModuleMigrations())->all());
     }
 }

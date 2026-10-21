@@ -32,6 +32,7 @@
     <projectFiles>
         <directory name="framework/src"/>
         <directory name="app"/>
+        <directory name="modules"/>
         <directory name="public"/>
         <directory name="bootstrap"/>
         <directory name="config"/>
