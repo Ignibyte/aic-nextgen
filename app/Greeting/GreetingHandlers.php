@@ -9,11 +9,12 @@ use AIC\Controller\Application\PageHandlers;
 use AIC\Form\Application\FormTokens;
 use App\Site\HomePage;
 use App\Site\HtmlLayout;
+use App\Site\TicksPage;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * The home page, which holds the greeting form, and the greeting pages, each wrapped in the Page
- * handler, by the handler id config/routes.php names.
+ * The home page, which holds the greeting form, the greeting pages and the ticks page (#73), each
+ * wrapped in the Page handler, by the handler id config/routes.php names.
  */
 final readonly class GreetingHandlers
 {
@@ -46,6 +47,7 @@ final readonly class GreetingHandlers
             HomePage::class => $this->pageHandlers->handler(
                 new HomePage($this->htmlLayout, $greetingForm, $this->appConfig, $this->bootedAt),
             ),
+            TicksPage::class => $this->pageHandlers->handler(new TicksPage($this->htmlLayout)),
         ];
     }
 }

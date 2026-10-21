@@ -48,6 +48,8 @@ final readonly class NativeSiteScript
             new NativeSiteStep('range suffix', 'GET', '/download/hello.txt', '', 'Range: bytes=-6', 206, false, false),
             new NativeSiteStep('range unsatisfiable', 'GET', '/download/hello.txt', '', 'Range: bytes=9999-', 416, false, false),
             new NativeSiteStep('events', 'GET', '/events?count=3', '', '', 200, false, false),
+            new NativeSiteStep('events, resumed', 'GET', '/events?count=3', '', 'Last-Event-ID: 2', 200, false, false),
+            new NativeSiteStep('events, all seen', 'GET', '/events?count=3', '', 'Last-Event-ID: 3', 200, false, false),
             new NativeSiteStep('no route', 'GET', '/nope', '', '', 404, false, false),
         ];
     }

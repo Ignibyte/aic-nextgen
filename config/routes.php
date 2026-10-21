@@ -39,6 +39,7 @@ use App\Site\HomePage;
 use App\Site\ResourceDownload;
 use App\Site\StatusApi;
 use App\Site\TickEvents;
+use App\Site\TicksPage;
 use App\Stock\StockPage;
 use App\Stock\StockPost;
 
@@ -52,6 +53,7 @@ return new RouteCollector(new RoutePatternCompiler())
     ->get('/assets/{file}', AssetFile::class)
     ->get('/assets/{dir}/{file}', AssetFile::class)
     ->get('/events', TickEvents::class)
+    ->get('/ticks', TicksPage::class)
     ->get('/visits', VisitsPage::class)
     ->post('/visits/forget', VisitsForget::class)
     ->get('/uploads', UploadsPage::class)

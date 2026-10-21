@@ -147,13 +147,11 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
     #[Override]
     public function events(EventSource $eventSource): ResponseInterface
     {
-        $response = $this->responseBuilder->createFromStream(200, 'text/event-stream', new EventStreamBody($eventSource));
+        $response = $this->responseBuilder->createFromStream(200, 'text/event-stream; charset=utf-8', new EventStreamBody($eventSource));
+        $response = $this->responseBuilder->withHeader($response, 'Cache-Control', 'no-store');
+        $response = $this->responseBuilder->withHeader($response, 'X-Accel-Buffering', 'no');
 
-        return $this->responseBuilder->withHeader(
-            $this->responseBuilder->withHeader($response, 'Cache-Control', 'no-cache'),
-            'X-Accel-Buffering',
-            'no',
-        );
+        return $this->varied($this->responseBuilder->withHeader($response, TesseraRequest::PROTOCOL, TesseraRequest::VERSION));
     }
 
     /**
