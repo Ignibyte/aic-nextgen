@@ -41,7 +41,8 @@ final readonly class ModuleShellRule implements ModuleRule
         // The page layouts' templates (#93).
         'templates/layouts/*',
         // The project theme; assets/ from #95.
-        'theme/*',
+        // The site theme's CSS, bundled last into public/assets/aic.css (#95).
+        'assets/*',
         // surface.json, the build's manifest (#26).
         'build/*',
         // The console.

@@ -16,7 +16,10 @@ declare(strict_types=1);
  * `XTemplate.php`: beside itself under framework/src/ (#36), into
  * modules/<m>/src/Component/ from modules/<m>/templates/components/, and from
  * templates/layouts/ beside the one module component of its name (#93).
- * theme/*.css builds into public/assets/aic.css (#39).
+ * The assets (#39, #95): each module's assets/*.css in requires order, then
+ * the site theme's assets/*.css, build public/assets/aic.css; a module's other
+ * assets are copied to public/assets/<module>/. The build owns public/assets/:
+ * a file there it would not write is deleted, and --check calls it stale.
  *
  * The modules come first (#92): every modules/<name>/<name>.module.php is read
  * and checked, and the wiring under generated/ is written (or, with --check,
@@ -36,14 +39,15 @@ use AIC\Notification\Infrastructure\SmtpTransport;
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\RoutePatternCompiler;
 use App\Generated\ConsoleModules;
+use Gates\Application\AssetBundle;
 use Gates\Application\BuildOutputs;
 use Gates\Application\ModuleBuild;
+use Gates\Application\PublicAssetOrphans;
 use Gates\Application\SurfaceManifest;
 use Gates\Application\TemplateBuild;
 use Gates\Application\TemplateCompiler;
 use Gates\Application\TemplateParser;
 use Gates\Application\TesseraBuild;
-use Gates\Application\ThemeBuild;
 use Gates\Infrastructure\SystemProcessRunner;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -114,22 +118,25 @@ try {
     $tessera = (new TesseraBuild($root, $appConfig->tessera, new SystemProcessRunner()))->files();
     $outputs = [
         $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleKernel->commands(), $consoleKernel->jobs(), $consoleKernel->schedules(), $modules),
-        $root . '/public/assets/aic.css' => (new ThemeBuild($root . '/theme'))->stylesheet(),
-    ] + $templates + $tessera;
+    ] + (new AssetBundle($root))->outputs($modules) + $templates + $tessera;
 } catch (InvalidArgumentException|RuntimeException $exception) {
     fwrite(\STDERR, 'aic-build: ' . $exception->getMessage() . "\n");
 
     exit(1);
 }
 
+$publicAssetOrphans = new PublicAssetOrphans();
+$assetOrphans = $publicAssetOrphans->orphans($root . '/public/assets', $outputs);
+$stale = [...$buildOutputs->stale($outputs), ...$assetOrphans];
+
 if ($checking) {
-    if ($buildOutputs->stale($outputs) !== []) {
-        fwrite(\STDERR, 'gate:24 — stale: ' . $buildOutputs->names($buildOutputs->stale($outputs)) . "; run composer run build and commit them.\n");
+    if ($stale !== []) {
+        fwrite(\STDERR, 'gate:24 — stale: ' . $buildOutputs->names($stale) . "; run composer run build and commit them.\n");
 
         exit(1);
     }
 
-    fwrite(\STDOUT, 'gate:24 — build outputs are fresh: ' . count($routes->routes()) . ' routes, ' . count($consoleKernel->commands()) . ' commands, ' . count($modules) . ' module(s) and their wiring, the theme, ' . count($templates) . ' templates, Tessera ' . $appConfig->tessera->version . ".\n");
+    fwrite(\STDOUT, 'gate:24 — build outputs are fresh: ' . count($routes->routes()) . ' routes, ' . count($consoleKernel->commands()) . ' commands, ' . count($modules) . ' module(s) and their wiring, the assets, ' . count($templates) . ' templates, Tessera ' . $appConfig->tessera->version . ".\n");
 
     exit(0);
 }
@@ -144,6 +151,8 @@ foreach ($outputs as $file => $output) {
     file_put_contents($file, $output);
 }
 
-fwrite(\STDOUT, 'aic-build: wrote generated/ (' . count($modules) . ' module(s)), build/surface.json, public/assets/aic.css, ' . count($templates) . ' templates and Tessera ' . $appConfig->tessera->version . ".\n");
+$publicAssetOrphans->delete($assetOrphans, $root . '/public/assets');
+
+fwrite(\STDOUT, 'aic-build: wrote generated/ (' . count($modules) . ' module(s)), build/surface.json, public/assets/, ' . count($templates) . ' templates and Tessera ' . $appConfig->tessera->version . ".\n");
 
 exit(0);

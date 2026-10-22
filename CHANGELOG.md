@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Module assets, bundled at build** (#95, part 4 of #90). The site theme moves from `theme/` to the top-level `assets/`, which holds CSS only, and each module may bring `modules/<name>/assets/`.
+  - **The stylesheet:** `composer run build` writes one `public/assets/aic.css` at the same URL: a header, each module's CSS by file name with the modules in requires order, then the theme last, so the site's theme has the final word. Each part sits behind a comment naming its file.
+  - **The copies:** a module's other assets are copied byte for byte to `public/assets/<module>/<file>` and committed. Scripts are copied and never linked (Chad); a component that needs one declares it from #55.
+  - **What the build refuses:** a subfolder (flat until #55), a name or extension the compiled site does not serve, a non-CSS file in the theme, `@import` and a relative `url()`.
+  - **gate:24:** it names a stale bundle, a missing copy and an orphan under `public/assets/`, and the build deletes orphans there and nowhere else. `AssetBundle`, `ModuleAssets`, `BundledCss` and `PublicAssetOrphans` replace `ThemeBuild`.
+  - **The demo:** the `#site-nav` rules move to `modules/site/assets/site.css`, and `modules/site/assets/favicon.svg` is linked from the layout, which ends the `/favicon.ico` 404 on every page. gate:23 fetches it on both runtimes (72 steps), and gate:26's shell allows `assets/` in place of `theme/`.
+
 - **gate:26, the module boundaries** (#94, part 3 of #90). `bin/gate-modules.php` reads the module manifests, `git ls-files -co --exclude-standard`, each PHP file's symbols, the build's template classes and composer.json's `App\` prefixes, then holds five rules.
   - **R1:** a class's kind decides its `src/` folder, at any depth, and a kind folder holds only its kind. The kinds come from the interfaces through `Gates\Domain\ClassKinds`, which the surface manifest now shares; Repository and Form go by name suffix. A plain class sits in `Entity/`, `Service/` or `Form/`, and a module's root holds only its manifest, `src/`, `templates/components/`, `assets/` and `resources/`.
   - **R2:** at most 15 files per folder; `src/Migration/` is exempt.

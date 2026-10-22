@@ -47,6 +47,7 @@ final readonly class NativeSiteScript
             new NativeSiteStep('download', 'GET', '/download/hello.txt', '', '', 200, false),
             new NativeSiteStep('missing file', 'GET', '/download/nope.txt', '', '', 404, false),
             new NativeSiteStep('asset', 'GET', '/assets/aic.css', '', '', 200, false),
+            new NativeSiteStep('module asset', 'GET', '/assets/site/favicon.svg', '', '', 200, false),
             new NativeSiteStep('range part', 'GET', '/download/hello.txt', '', 'Range: bytes=0-4', 206, false),
             new NativeSiteStep('range suffix', 'GET', '/download/hello.txt', '', 'Range: bytes=-6', 206, false),
             new NativeSiteStep('range unsatisfiable', 'GET', '/download/hello.txt', '', 'Range: bytes=9999-', 416, false),

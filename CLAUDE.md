@@ -36,7 +36,7 @@ component's `X.tpl` compiles to `XTemplate.php` beside it (`composer run build`,
 gate:24); the generated class passes every gate unexcluded. #37: a Page returns
 `PageDocument(Layout)`; regions render as `data-region` elements, components and blocks between
 `<!--aic:...-->` markers. #38: blocks (`AIC\Block`) place themselves in a region by weight and
-route prefix, as tagged plugins. #39: `theme/` builds into `public/assets/aic.css` (gate:24);
+route prefix, as tagged plugins. #39: the theme builds into `public/assets/aic.css` (gate:24; `assets/` since #95);
 nginx serves it in DDEV, a proxy in production, `/assets/{file}` on the compiled site. #7 and M3
 are done. #8 runs as #41 to #44; #41: `AIC\Session` (a Postgres session behind
 `__Host-aic_session`, on the request as `aic.session`). #42: `FormGuardMiddleware` checks the CSRF
@@ -64,7 +64,8 @@ M8a (the app shape) runs as #92 to #109; #92: modules, a manifest per `modules/<
 is ten modules and `app/` is gone; `AppKernel` and `ConsoleKernel` compose the framework's own
 wiring around the generated pieces. #94: gate:26 holds the module boundaries (a class's kind
 decides its `src/` folder, 15 files per folder, exports and requires, nothing outside `modules/`
-but the shell).
+but the shell). #95: module assets: the theme moves to `assets/`, each module's
+`assets/` joins the build, and the site module's nav styles and favicon live in `modules/site/assets/`.
 
 ## Five kinds
 
@@ -98,7 +99,12 @@ Background work is a job; the HTTP server's processes are its workers.
   in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Component`, `Block`,
   `Form`, `Entity`, `Repository`, `Service`, `Command`, `Job`, `Migration`). There is no `app/`
   and no hand-written composition class (#93). Page layouts compile from `templates/layouts/`.
-- One project theme at `theme/` renders into `public/`.
+- One site theme, CSS only, at the top-level `assets/` (#95). `composer run build` bundles each
+  module's `modules/<name>/assets/*.css` (in requires order), then the theme last, into
+  `public/assets/aic.css`. It copies a module's other assets (scripts, images, fonts, flat until #55)
+  to `public/assets/<module>/`. Nothing links a module script; a component that needs one declares
+  it from #55 (Chad, 2026-10-21). The build owns `public/assets/`: gate:24 calls an orphan there
+  stale.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 - **Modules** (#90, #92, #93): `modules/<name>/<name>.module.php` returns a fluent
   `AIC\Module\Contracts\ModuleManifest`, naming only what the module has:
