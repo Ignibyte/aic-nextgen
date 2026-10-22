@@ -41,16 +41,37 @@ final readonly class GuardParts
     {
         $diskPaths = new DiskPaths($this->home);
         $guardLedgerFile = new GuardLedgerFile($this->root);
-        $protectedPaths = new ProtectedPaths($this->root, $this->home, $this->package, $diskPaths, (new PackManifest())->guarded());
+        $protectedPaths = $this->protectedPaths($diskPaths);
         $writeScope = new WriteScope($this->root, new SpecFile($this->root), $guardLedgerFile, $diskPaths);
         $phpWall = new PhpWall($this->root, $this->package, $diskPaths);
 
         return new GuardHook(
-            new EditWall($protectedPaths, $writeScope, $diskPaths),
+            $this->editWall(),
             new ShellWall($protectedPaths, $writeScope, $diskPaths, $phpWall),
             new StopHold($guardLedgerFile),
             $guardLedgerFile,
             new UtcTime(new SystemClock()),
         );
+    }
+
+    /**
+     * @return EditWall The edit wall alone, which a make asks for each file it would write (#122).
+     */
+    public function editWall(): EditWall
+    {
+        $diskPaths = new DiskPaths($this->home);
+        $writeScope = new WriteScope($this->root, new SpecFile($this->root), new GuardLedgerFile($this->root), $diskPaths);
+
+        return new EditWall($this->protectedPaths($diskPaths), $writeScope, $diskPaths);
+    }
+
+    /**
+     * @param DiskPaths $diskPaths Where paths land.
+     *
+     * @return ProtectedPaths What is never written.
+     */
+    private function protectedPaths(DiskPaths $diskPaths): ProtectedPaths
+    {
+        return new ProtectedPaths($this->root, $this->home, $this->package, $diskPaths, (new PackManifest())->guarded());
     }
 }

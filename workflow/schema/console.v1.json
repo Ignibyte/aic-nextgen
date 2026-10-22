@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Ignibyte/aic-nextgen/blob/main/workflow/schema/console.v1.json",
   "title": "AIC console answer, version 1",
-  "description": "What a bin/aic inspect command prints with --json (#109): one envelope on one line, keys in order. data is the command's answer, shaped per command in $defs; notes holds what the answer noted (a stale surface, a lookup not recorded); an error envelope replaces data with error and exit. Additive only within version 1.",
+  "description": "What a bin/aic inspect command (#109) or make command (#122) prints with --json: one envelope on one line, keys in order. data is the command's answer, shaped per command in $defs; notes holds what the answer noted (a stale surface, a lookup not recorded, the guard's nudge, a code.made record); an error envelope replaces data with error and exit. Additive only within version 1.",
   "oneOf": [
     {
       "$ref": "#/$defs/answer:route:list"
@@ -24,6 +24,9 @@
     },
     {
       "$ref": "#/$defs/answer:kind:list"
+    },
+    {
+      "$ref": "#/$defs/answer:make"
     },
     {
       "$ref": "#/$defs/error"
@@ -612,6 +615,66 @@
       },
       "additionalProperties": false
     },
+    "make": {
+      "type": "object",
+      "description": "A make's plan (with dry_run) or what it wrote: each file with its hash, the manifest call it added (empty for none), the lines to add to composer.json and phpcs.xml.dist (make:module), and the commands to run next.",
+      "required": [
+        "call",
+        "dry_run",
+        "files",
+        "lines",
+        "manifest",
+        "next",
+        "target"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "call": {
+          "type": "string"
+        },
+        "dry_run": {
+          "type": "boolean"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "hash",
+              "path"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "hash": {
+                "type": "string",
+                "pattern": "^xxh128:[0-9a-f]{32}$"
+              },
+              "path": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "manifest": {
+          "type": "string"
+        },
+        "next": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "target": {
+          "type": "string"
+        }
+      }
+    },
     "answer:route:list": {
       "type": "object",
       "required": [
@@ -808,6 +871,43 @@
         },
         "data": {
           "$ref": "#/$defs/kind:list"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "enum": [
+            "aic.console/1"
+          ]
+        }
+      }
+    },
+    "answer:make": {
+      "type": "object",
+      "required": [
+        "command",
+        "data",
+        "schema"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "enum": [
+            "make:api",
+            "make:block",
+            "make:command",
+            "make:component",
+            "make:job",
+            "make:migration",
+            "make:module",
+            "make:page"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/make"
         },
         "notes": {
           "type": "array",

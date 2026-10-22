@@ -74,6 +74,20 @@ final readonly class GuardKernel
     }
 
     /**
+     * @return GuardScene The settings and the open run, or why the run could not be read; `MakeParts` asks it too (#122).
+     */
+    public function scene(): GuardScene
+    {
+        $workflowSettings = $this->settings();
+
+        try {
+            return new GuardScene($workflowSettings, (new RunStateFile($this->root))->load());
+        } catch (WorkflowRefusal $workflowRefusal) {
+            return new GuardScene($workflowSettings, null, $workflowRefusal->getMessage());
+        }
+    }
+
+    /**
      * @param string    $verb      The verb.
      * @param Throwable $throwable What the guard threw.
      *
@@ -84,20 +98,6 @@ final readonly class GuardKernel
         return in_array($verb, ['record', 'returned'], true)
             ? new GuardVerdict()
             : new GuardVerdict('refuse', 'crash', 'the guard failed (' . $throwable->getMessage() . '), so it refuses.');
-    }
-
-    /**
-     * @return GuardScene The settings and the open run, or why the run could not be read.
-     */
-    private function scene(): GuardScene
-    {
-        $workflowSettings = $this->settings();
-
-        try {
-            return new GuardScene($workflowSettings, (new RunStateFile($this->root))->load());
-        } catch (WorkflowRefusal $workflowRefusal) {
-            return new GuardScene($workflowSettings, null, $workflowRefusal->getMessage());
-        }
     }
 
     /**

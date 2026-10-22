@@ -54,6 +54,7 @@
             "App\\Account\\": "modules/account/src/",
             "App\\Generated\\": "generated/",
             "App\\Note\\": "modules/note/src/",
+            "App\\Scaffold\\": "modules/scaffold/src/",
             "App\\Site\\": "modules/site/src/"
         }
     },
@@ -104,6 +105,7 @@
         "gate:29": "aic-gate 29",
         "gate:3": "aic-gate 3",
         "gate:30": "aic-gate 30",
+        "gate:31": "aic-gate 31",
         "gate:4": "aic-gate 4",
         "gate:5": "aic-gate 5",
         "gate:6": "aic-gate 6",

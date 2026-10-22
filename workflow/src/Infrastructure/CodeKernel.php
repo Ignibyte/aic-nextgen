@@ -46,6 +46,7 @@ final readonly class CodeKernel
             'code:tree' => new CodeTreeCommand($codeAsk, $codeTree),
             'code:wiki' => (new WikiKernel($this->root))->command($codeAsk),
             ...(new InspectKernel($this->root))->commands(),
+            ...(new MakeKernel($this->root))->commands(),
         ];
     }
 }

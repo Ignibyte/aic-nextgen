@@ -44,6 +44,25 @@ final readonly class EditWall
     }
 
     /**
+     * The verdict on one absolute path (#122): the protected paths, then the phase's scope. A make asks it for each
+     * file it would write, since the hook never sees a write made inside bin/aic.
+     *
+     * @param string     $absolute   An absolute path.
+     * @param GuardScene $guardScene The run and the levers.
+     * @param string     $named      The path as the call named it, for the message; the absolute path when empty.
+     *
+     * @return GuardVerdict Its verdict.
+     */
+    public function landing(string $absolute, GuardScene $guardScene, string $named = ''): GuardVerdict
+    {
+        $why = $this->protectedPaths->reason($absolute, $guardScene);
+
+        return $why === ''
+            ? $this->writeScope->verdict($absolute, $guardScene)
+            : new GuardVerdict('refuse', 'protected', ($named === '' ? $absolute : $named) . ': ' . $why);
+    }
+
+    /**
      * @param HookCall   $hookCall   The call.
      * @param GuardScene $guardScene The run and the levers.
      *
@@ -77,11 +96,6 @@ final readonly class EditWall
      */
     private function path(string $path, string $cwd, GuardScene $guardScene): GuardVerdict
     {
-        $absolute = $this->pathResolver->absolute($path, $cwd);
-        $why = $this->protectedPaths->reason($absolute, $guardScene);
-
-        return $why === ''
-            ? $this->writeScope->verdict($absolute, $guardScene)
-            : new GuardVerdict('refuse', 'protected', $path . ': ' . $why);
+        return $this->landing($this->pathResolver->absolute($path, $cwd), $guardScene, $path);
     }
 }

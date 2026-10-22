@@ -25,8 +25,8 @@ use const PHP_BINARY;
  * project's `vendor/bin/<tool>`; `{config}` in an argument names this
  * package's `config/`, where the base configs are, and `{classRoots}` the
  * profile's class roots (#130). AIC's own repository runs every row; an app
- * runs the `app` rows, since the `aic` rows (22, 28, 29) hold AIC's own docs
- * and rules.
+ * runs the `app` rows, since the `aic` rows (22, 28, 29, 31) hold AIC's own
+ * docs, rules and made scaffold.
  */
 final readonly class GateSuite
 {
@@ -201,6 +201,12 @@ final readonly class GateSuite
                 . "composer.json carries the suite's scripts and plugins as shipped; aic-gate init restores the files.",
             'app',
             ['php', 'gate-suite-files.php'],
+        ],
+        31 => [
+            'Made scaffold: modules/scaffold/ is byte for byte what the ten bin/aic make:* lines make, the make commands run '
+                . 'in memory over a project without it.',
+            'aic',
+            ['php', 'gate-make-scaffold.php'],
         ],
     ];
 

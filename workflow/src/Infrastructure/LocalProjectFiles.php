@@ -104,7 +104,7 @@ final readonly class LocalProjectFiles implements ProjectFiles
     }
 
     /**
-     * @param string $path A path init would write.
+     * @param string $path A path init or a make would write.
      *
      * @return string What keeps a regular file from it; empty when nothing.
      */
@@ -119,7 +119,7 @@ final readonly class LocalProjectFiles implements ProjectFiles
     }
 
     /**
-     * @param string $path A path init would write.
+     * @param string $path A path init or a make would write.
      *
      * @return string Which of its directories is a symlink or a file; empty when none is.
      */
@@ -133,7 +133,7 @@ final readonly class LocalProjectFiles implements ProjectFiles
                 : $walked . '/' . $part;
 
             if ($this->blocks($walked)) {
-                return $walked . ' is a symlink or a file where init needs a directory';
+                return $walked . ' is a symlink or a file where a directory is needed';
             }
         }
 

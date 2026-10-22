@@ -70,6 +70,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 28 | house rules | *AIC only*: the workflow's shipped rules bite on their probes | not run in an app |
 | 29 | architecture docs | *AIC only*: these pages state what the code has | not run in an app |
 | 30 | suite files | the tools' root configs are aic/gates' stubs (`phpcs.xml.dist` with one root per module), and `composer.json` carries the suite's scripts and plugins as shipped | `vendor/bin/aic-gate init`, and paste the composer.json lines it prints |
+| 31 | make scaffold | *AIC only*: `modules/scaffold/` is what the ten `bin/aic make:*` lines make, byte for byte, and `make:module` prints the lines the build asks for | not run in an app |
 
 ## The gates that need more than PHP
 

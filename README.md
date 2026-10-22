@@ -6,12 +6,13 @@ package with a namespace per system. It is being
 built by porting what earns its place from old AIC (`Ignibyte/aic`) and will replace it at
 cutover.
 
-The root is AIC's fixture app, the site every gate holds to code: three modules under
+The root is AIC's fixture app, the site every gate holds to code: four modules under
 `modules/`. `site` has the home page, greetings, jobs, schedules and notifications,
 Server-Sent Events, downloads, `/api/status` and `/health`. `note` has notes with CRUD,
 templates and signed forms, and stock items with a date, a price and a flag. `account` has
-sign-in, sessions and uploads. The compiled binary serves it, and PHP serves the same app as the
-reference. The ten-module demo it was cut from is the tag `demo-reference`; it is rebuilt as an
+sign-in, sessions and uploads. `scaffold` is what the `bin/aic make:*` commands make (pages, an
+API, components, a block, a command, a job and a migration), held byte for byte by gate:31. The
+compiled binary serves the app, and PHP serves the same app as the reference. The ten-module demo it was cut from is the tag `demo-reference`; it is rebuilt as an
 app of its own in `Ignibyte/aic-demo` (#128, #129).
 
 **Architecture:** [framework/docs/README.md](framework/docs/README.md), the pages an app's agent
@@ -23,7 +24,7 @@ They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs
 | Path | Holds |
 |---|---|
 | `framework/` | `aic/framework`, namespace `AIC\` under `framework/src/`, its architecture pages in `framework/docs/`, pulled in through a composer path repository |
-| `modules/` | The fixture app, `aic/app`: three modules, `modules/<name>/<name>.module.php` (its manifest) and `src/` (`App\<Name>\`) |
+| `modules/` | The fixture app, `aic/app`: four modules, `modules/<name>/<name>.module.php` (its manifest) and `src/` (`App\<Name>\`) |
 | `generated/` | The wiring `composer run build` writes from the manifests (`App\Generated\`); never edited by hand |
 | `docs/wiki/` | The code wiki `composer run build` writes from the surface and the code index: an index and a page per module; never edited by hand (notes go in `modules/<m>/README.md`) |
 | `templates/layouts/` | The page layouts' templates |
@@ -32,7 +33,7 @@ They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs
 | `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
 | `gates/` | `aic/gates`, the gate suite (#116): a dev-only package with every gate's code and entry, the runner, the build (`vendor/bin/aic-build`, behind `composer run build`; `--check` is gate:24) and each tool's base config. `vendor/bin/aic-gate --list` names the gates and `aic-gate N` runs one |
 | `build/surface.json` | The app's surface: every route (method, path, handler, kind) and console command (name, class, kind) |
-| `workflow/` | `aic/workflow`, the agent workflow's engine (`AIC\Workflow\`): a dev-only package. `bin/aic workflow:run <ticket>` runs one phase of a ticket per call; `workflow:status` shows the run; `workflow:reset` is the operator's, from a terminal. At each phase exit the engine runs the gates and the spec's audits itself (#101) and keeps the verdicts in `var/workflow/evidence.sqlite`. `workflow/bin/aic-guard.sh`, wired by `workflow/pack/hooks.json`, is the Claude Code hook that holds the agent to the open run (#102). House rules (`workflow/rules/`, #104) judge each run's change from files frozen at begin; gate:28 holds them to their probes. `bin/aic code:tree`, `code:search`, `code:refs` and `code:index` answer from the code index in `var/index/code.sqlite` (#106). Plan cannot pass until its grounding check finds every declared path and class real and the run's own lookups show the agent looked (#118). `bin/aic route:list`, `command:list`, `job:list`, `schedule:list`, `module:list`, `module:show <name>` and `kind:list` answer what the app declares from `build/surface.json`, as text or with `--json` (#109). `bin/aic workflow:init` installs it in an app (#105; `workflow/pack/`). Once per run, at code, an independent `aic-seeker` subagent checks the run's change against the AIC checklist; `bin/aic workflow:seeker-brief` gives it its scope (the diff plus one hop) and `bin/aic workflow:seeker-report` files its ledger, whose findings are advisory (#103, #127). Its state is `var/workflow/` (gitignored) |
+| `workflow/` | `aic/workflow`, the agent workflow's engine (`AIC\Workflow\`): a dev-only package. `bin/aic workflow:run <ticket>` runs one phase of a ticket per call; `workflow:status` shows the run; `workflow:reset` is the operator's, from a terminal. At each phase exit the engine runs the gates and the spec's audits itself (#101) and keeps the verdicts in `var/workflow/evidence.sqlite`. `workflow/bin/aic-guard.sh`, wired by `workflow/pack/hooks.json`, is the Claude Code hook that holds the agent to the open run (#102). House rules (`workflow/rules/`, #104) judge each run's change from files frozen at begin; gate:28 holds them to their probes. `bin/aic code:tree`, `code:search`, `code:refs` and `code:index` answer from the code index in `var/index/code.sqlite` (#106). Plan cannot pass until its grounding check finds every declared path and class real and the run's own lookups show the agent looked (#118). `bin/aic route:list`, `command:list`, `job:list`, `schedule:list`, `module:list`, `module:show <name>` and `kind:list` answer what the app declares from `build/surface.json`, as text or with `--json` (#109). `bin/aic make:module`, `make:page`, `make:api`, `make:component`, `make:block`, `make:command`, `make:job` and `make:migration` write a new class that passes every gate and add its manifest call (#122). `bin/aic workflow:init` installs it in an app (#105; `workflow/pack/`). Once per run, at code, an independent `aic-seeker` subagent checks the run's change against the AIC checklist; `bin/aic workflow:seeker-brief` gives it its scope (the diff plus one hop) and `bin/aic workflow:seeker-report` files its ledger, whose findings are advisory (#103, #127). Its state is `var/workflow/` (gitignored) |
 | `.ddev/` | DDEV: nginx-fpm serving the interpreted reference, and Postgres 17 |
 
 ## Bring it up

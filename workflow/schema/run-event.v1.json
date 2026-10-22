@@ -183,6 +183,23 @@
       "properties": {
         "type": {
           "enum": [
+            "code.made"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/code.made"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
             "seeker.filed"
           ]
         },
@@ -278,6 +295,7 @@
             "run.held",
             "run.resumed",
             "code.queried",
+            "code.made",
             "seeker.filed",
             "question.asked",
             "question.answered"
@@ -542,6 +560,60 @@
         },
         "truncated": {
           "type": "boolean"
+        }
+      }
+    },
+    "code.made": {
+      "description": "A bin/aic make:* command wrote files while a run was open (#122): the make, what it made, the phase, and each file it wrote with the hash of its bytes, the manifest last.",
+      "type": "object",
+      "required": [
+        "command",
+        "target",
+        "phase",
+        "files"
+      ],
+      "properties": {
+        "command": {
+          "enum": [
+            "make:api",
+            "make:block",
+            "make:command",
+            "make:component",
+            "make:job",
+            "make:migration",
+            "make:module",
+            "make:page"
+          ]
+        },
+        "target": {
+          "type": "string"
+        },
+        "phase": {
+          "enum": [
+            "plan",
+            "code",
+            "check",
+            "complete"
+          ]
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "hash"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "hash": {
+                "type": "string",
+                "pattern": "^xxh128:[0-9a-f]{32}$"
+              }
+            }
+          }
         }
       }
     },

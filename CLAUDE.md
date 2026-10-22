@@ -111,6 +111,9 @@ three-module fixture app; a module's handlers build in parts that fit (`HandlerP
 the gate suite is the dev package `aic/gates`, run by `vendor/bin/aic-gate`. #130: the app side,
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
+#122: `bin/aic make:*` (module, page, api, component, block, command, job, migration; dev-only in
+`aic/workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the ten make lines.
 
 ## Five kinds
 
@@ -139,10 +142,11 @@ Background work is a job; the HTTP server's processes are its workers.
 - One package, **`aic/framework`**, in `framework/`, namespace `AIC\` with one namespace per
   system (`AIC\Http`, `AIC\Routing`, `AIC\Entity`, ...). It reaches the root through a composer
   path repository and moves to its own repo when published.
-- The repo root is AIC's fixture app, `aic/app` (#126): three modules under `modules/`, cut
+- The repo root is AIC's fixture app, `aic/app` (#126): four modules under `modules/`, three cut
   from the ten-module demo (the tag `demo-reference`; rebuilt in `Ignibyte/aic-demo` by #128 and
   #129). `site` holds home, greeting and job; `note` holds stock; `account` holds auth and
-  session; content and faq were dropped. It is AIC's test bed, not a showcase: a feature the
+  session; content and faq were dropped. `scaffold` (#122) is what the make commands make, held
+  by gate:31: regenerate it, never edit it by hand. It is AIC's test bed, not a showcase: a feature the
   gates need is added here with its framework change. Each module has its classes
   in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Component`, `Block`,
   `Form`, `Entity`, `Repository`, `Service`, `Command`, `Job`, `Migration`). There is no `app/`
@@ -325,6 +329,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | | | 28 | house rules: every shipped rule bites on its probe |
 | | | 29 | architecture docs: `framework/docs/` states what the code has |
 | | | 30 | suite files: the root configs are aic/gates' stubs, composer.json's suite lines as shipped |
+| | | 31 | make scaffold: `modules/scaffold/` is what the make lines make |
 
 - The gate code is the dev-only package `aic/gates` in `gates/` (#116; namespace `Gates\`,
   outside `AIC\` and `App\`), required by path like `aic/workflow`; a phpat rule keeps runtime

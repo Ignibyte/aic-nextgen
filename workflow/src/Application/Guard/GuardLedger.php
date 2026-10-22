@@ -7,9 +7,9 @@ namespace AIC\Workflow\Application\Guard;
 use AIC\Workflow\Domain\Guard\GuardRow;
 
 /**
- * The guard's ledger (#102): one row per hook call, appended by the hook,
- * read by the engine. A row that cannot be written is lost, never a
- * refusal.
+ * The guard's ledger (#102): one row per hook call, appended by the hook
+ * (and one per target a make asks about, #122), read by the engine. A row
+ * that cannot be written is lost, never a refusal.
  */
 interface GuardLedger
 {
