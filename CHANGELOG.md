@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Engine-run gates and evidence** (#101, part 2 of #91). A workflow phase advances only on verdicts the engine measured itself. Each verdict is stored beside the subject hash of the tree it judged, so any later edit makes it stale.
+  - **Plan:** the spec must read as a contract: criteria, a `### File Manifest`, and the new `## Entry Points` section of the pipeline template. It is then frozen with the project's gate list.
+  - **Code, check and complete** run `composer run gate`, the spec freeze (a rewritten frozen row is a breach), the declaration audit (every changed path, exact, in the manifest) and the composition check (declared entry points against `build/surface.json` and its base-commit version, once gate:24 passed on the tree). Check and complete add the rendered check against the `site` in `config/workflow.php`; check reuses a gate verdict only while it is fresh; complete holds a deferred gate:21 or gate:23 and verifies each criterion's cited checks.
+  - **`bin/gate-runner.sh`** prints one `gate-result: gate:N passed|deferred|failed` line per gate before the summary. A run whose lines, summary, exit code and frozen gate list disagree did not reach a verdict.
+  - **The store:** `var/workflow/evidence.sqlite` (pdo_sqlite, schema v1). `maxGateRetries` failures of one check at a phase leave the phase to the operator.
+  - **The proof:** a scratch clone ran three tickets through every planted case: an undeclared file; a stale verdict re-run; a Page built as an Api; a route built and not declared; a reworded criterion; gate:23 deferred at code and at complete; a killed gate run; a route answering 500; a spent retry budget. 28 gates green.
+
 - **The workflow's run engine** (#100, part 1 of #91). `aic/workflow`, a dev-only package in `workflow/`, runs one ticket through plan, code, check and complete, one phase per `bin/aic workflow:run <ticket>` call, and only the engine writes the run's state.
   - **State:** `var/workflow/run.json` (schema v1, read strictly: bad JSON or an unknown key is refused by name and left as it is), the append-only `events.jsonl` in `aic.run-event/1` (`workflow/schema/run-event.v1.json`; a torn last line is skipped) and `history/` with each finished run and its spec.
   - **The ticket** moves with the run (`in-progress` with its phase, then `in-review` at `docs`), written the way `bin/ticket.sh` writes it. The plan phase's one check is that the spec exists; the engine-run gates and the rest of #91 arrive with #101 to #106.

@@ -16,6 +16,9 @@
 #             source). A deferral is named in the summary; it is not coverage.
 #   failed    any non-zero exit
 #
+# Before the summary, one line per gate gives its verdict for the workflow
+# engine (#101): gate-result: gate:N passed|deferred|failed.
+#
 # The last line is always the summary:
 #   gate-summary: P passed, D deferred (reasons), F failed (gate:a,gate:b).
 #   gate-summary: P passed, 0 deferred. Full coverage.
@@ -53,6 +56,7 @@ trap 'rm -f "${GATE_LOG}"' EXIT
 PASSED=0
 FAILED=()
 DEFERRED=()
+RESULTS=()
 
 for gate in "${GATES[@]}"; do
     echo ""
@@ -62,6 +66,7 @@ for gate in "${GATES[@]}"; do
 
     if [ "${status}" -ne 0 ]; then
         FAILED+=("${gate}")
+        RESULTS+=("${gate} failed")
         continue
     fi
 
@@ -70,10 +75,12 @@ for gate in "${GATES[@]}"; do
 
     if [ -n "${deferrals}" ]; then
         DEFERRED+=("${gate}: ${deferrals//|/ | }")
+        RESULTS+=("${gate} deferred")
         continue
     fi
 
     PASSED=$((PASSED + 1))
+    RESULTS+=("${gate} passed")
 done
 
 if [ "${#DEFERRED[@]}" -gt 0 ]; then
@@ -84,6 +91,10 @@ else
 fi
 
 echo ""
+
+# One line per gate, which the workflow engine reads (#101): the summary's
+# reasons are free text, so they cannot be parsed safely on their own.
+printf 'gate-result: %s\n' "${RESULTS[@]}"
 
 if [ "${#FAILED[@]}" -gt 0 ]; then
     FAILED_LIST=$(printf '%s,' "${FAILED[@]}")

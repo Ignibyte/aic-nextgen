@@ -41,7 +41,7 @@ final readonly class PhaseReport
     {
         return array_values(array_filter(
             $this->rows,
-            static fn (CheckRow $checkRow): bool => $checkRow->checkStatus === CheckStatus::Blocked,
+            static fn (CheckRow $checkRow): bool => $checkRow->checkStatus->holds(),
         ));
     }
 

@@ -10,13 +10,6 @@ use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\RunState;
 use Override;
 
-use function file_get_contents;
-use function is_file;
-use function is_link;
-use function realpath;
-use function str_starts_with;
-use function trim;
-
 /**
  * #100's one check: plan holds until its spec is written (Droost's
  * `awaitingSpecRow`). The spec is a regular file inside the project, at the
@@ -25,10 +18,10 @@ use function trim;
 final readonly class SpecPresentCheck implements PhaseCheck
 {
     /**
-     * @param string $root The project's root.
+     * @param SpecFile $specFile Reads the spec.
      */
     public function __construct(
-        private string $root,
+        private SpecFile $specFile,
     ) {
     }
 
@@ -51,7 +44,7 @@ final readonly class SpecPresentCheck implements PhaseCheck
     {
         $specPath = $runState->runStart->specPath;
 
-        if ($this->written($this->root . '/' . $specPath)) {
+        if ($this->specFile->text($specPath) !== null) {
             return new CheckRow('spec', CheckStatus::Passed, $specPath . ' is written.', '');
         }
 
@@ -61,28 +54,5 @@ final readonly class SpecPresentCheck implements PhaseCheck
             'plan holds until its spec is written.',
             "write the plan's spec to " . $specPath . ', then run bin/aic workflow:run again.',
         );
-    }
-
-    /**
-     * @param string $path The spec's path.
-     *
-     * @return bool Whether it is a regular file, no symlink, inside the project, with text in it.
-     */
-    private function written(string $path): bool
-    {
-        $real = realpath($path);
-        $root = realpath($this->root);
-
-        if (
-            !is_file($path)
-            || is_link($path)
-            || $real === false
-            || $root === false
-            || !str_starts_with($real, $root . '/')
-        ) {
-            return false;
-        }
-
-        return trim((string) file_get_contents($path)) !== '';
     }
 }

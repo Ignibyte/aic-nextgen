@@ -5,6 +5,8 @@
     "type": "library",
     "require": {
         "php": "^8.5",
+        "ext-pdo": "*",
+        "ext-pdo_sqlite": "*",
         "aic/framework": "0.1.x-dev",
         "psr/clock": "^1.0"
     },
