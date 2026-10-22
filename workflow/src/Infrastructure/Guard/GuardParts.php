@@ -15,6 +15,7 @@ use AIC\Workflow\Application\Guard\StopHold;
 use AIC\Workflow\Application\Guard\WriteScope;
 use AIC\Workflow\Application\SpecFile;
 use AIC\Workflow\Application\UtcTime;
+use AIC\Workflow\Infrastructure\PackManifest;
 use AIC\Workflow\Infrastructure\SystemClock;
 
 /**
@@ -42,7 +43,7 @@ final readonly class GuardParts
     {
         $diskPaths = new DiskPaths($this->home);
         $guardLedgerFile = new GuardLedgerFile($this->root);
-        $protectedPaths = new ProtectedPaths($this->root, $this->home, $this->package, $diskPaths);
+        $protectedPaths = new ProtectedPaths($this->root, $this->home, $this->package, $diskPaths, (new PackManifest())->guarded());
         $writeScope = new WriteScope($this->root, new SpecFile($this->root), $guardLedgerFile, $diskPaths);
         $shellWall = new ShellWall(new ShellWords(), new OperatorVerbs(), new ShellWrites(), $protectedPaths, $writeScope, $diskPaths);
 

@@ -86,6 +86,7 @@ runs as #100 to #106; #100: the run engine and its state, the dev-only `aic/work
 beside the subject hash of the tree it judged. #102: the guard hook holds the agent to the open run.
 #104: house rules judge each run's change, frozen at begin; the probe sweep is #119.
 #106: the code index (`bin/aic code:index|tree|search|refs`); the plan check reading it is #118.
+#105: `bin/aic workflow:init` installs the workflow in an app (`workflow/pack/`); it refuses here.
 
 ## Five kinds
 
@@ -139,12 +140,14 @@ Background work is a job; the HTTP server's processes are its workers.
     engine runs `composer run gate`, the freeze, the declaration audit (exact paths from the
     spec's `### File Manifest`) and the composition check (the spec's `## Entry Points` against
     `build/surface.json`); check and complete add the rendered check against `site` in
-    `config/workflow.php`; complete adds the criteria, each `Met` cell citing a fresh green check.
+    `config/workflow.php` (with no site, declared GET routes hold the run for the operator,
+    #105); complete adds the criteria, each `Met` cell citing a fresh green check.
   - A verdict is fresh only on the tree it judged; a deferral is never a pass, and a deferred
     gate:21 or gate:23 holds complete. `maxGateRetries` failures of one check at a phase leave
     the phase to the operator.
   - **The guard** (#102): `workflow/bin/aic-guard.sh <edit|shell|record|stop>`, wired by
-    `workflow/pack/hooks.json` (#105 installs it into an app). It refuses writes outside the
+    `workflow/pack/hooks.json` (#105 installs it into an app); the shim hands the guard the
+    project's autoloader, which a path-repository link hides from `__DIR__`. It refuses writes outside the
     phase's scope (no run: the ticket directory; plan: the spec; code, check and complete: the
     spec and the File Manifest), any write to `var/workflow/`, `config/workflow.php`, the hook
     wiring or the package (MCP tools with a path field included), and the operator's verbs in the
@@ -168,6 +171,15 @@ Background work is a job; the HTTP server's processes are its workers.
     `config/workflow.php`. While a run is open, each lookup appends `code.queried` (the files and
     scopes it showed) to the run's event log, which the guard walls. gate:2 admits
     `nikic/php-parser` for `workflow/composer.json` only.
+  - **The installer** (#105): `bin/aic workflow:init [--force[=<path>,...]]` needs no config and
+    refuses in this repo (the package's own source). `PackManifest` is the one list of what it
+    writes from `workflow/pack/` (`claude/` stands for `.claude/`, since gate:19 skips `.claude`):
+    the `aic-workflow-*` skills and `/aic:workflow:*` commands, `config/workflow.php` once,
+    `<tickets>/README.md`, marker regions in `AGENTS.md` and `CLAUDE.md`, and `hooks.json`
+    merged into `.claude/settings.json` (fail-closed commands, `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`).
+    `.claude/aic-workflow.lock` (committed) hashes what init wrote, so edits are kept;
+    `--force` is the operator's, from a terminal. The guard walls the pack's files and the lock.
+    The pack is written for an app: semgrep keeps AIC's own process and `claude/` links out of it.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 - **Modules** (#90, #92, #93): `modules/<name>/<name>.module.php` returns a fluent
   `AIC\Module\Contracts\ModuleManifest`, naming only what the module has:

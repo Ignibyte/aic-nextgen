@@ -18,9 +18,9 @@ use function substr;
 /**
  * What the agent never writes, run or no run, whatever the enforcement
  * (#102): the run's state but its spec, the opt-in, the hook wiring, the
- * workflow package itself, and Claude Code's own global settings and
- * plugins. A path counts as spelled and as landed. Reading is never
- * refused.
+ * workflow package itself, the pack `workflow:init` installed and its lock
+ * (#105), and Claude Code's own global settings and plugins. A path counts
+ * as spelled and as landed. Reading is never refused.
  */
 final readonly class ProtectedPaths
 {
@@ -30,16 +30,23 @@ final readonly class ProtectedPaths
     private const array FILES = ['config/workflow.php', '.claude/settings.json', '.claude/settings.local.json'];
 
     /**
+     * Why a file of the pack is protected (#105).
+     */
+    private const string PACK = " is the workflow's pack: bin/aic workflow:init writes it, and the operator edits it between runs.";
+
+    /**
      * @param string       $root         The project's root.
      * @param string       $home         The user's home; empty when unknown.
      * @param string       $package      The workflow package the guard runs from.
      * @param PathResolver $pathResolver Where a path lands.
+     * @param list<string> $pack         The pack's files and its lock, relative to the project (#105).
      */
     public function __construct(
         private string $root,
         private string $home,
         private string $package,
         private PathResolver $pathResolver,
+        private array $pack = [],
     ) {
     }
 
@@ -132,7 +139,7 @@ final readonly class ProtectedPaths
 
         $named = substr($entry, strlen($this->root) + 1);
 
-        return in_array($named, self::FILES, true)
+        return in_array($named, [...self::FILES, ...$this->pack], true)
             ? $named
             : $named . '/';
     }
@@ -151,6 +158,10 @@ final readonly class ProtectedPaths
             $this->root . '/config/workflow.php' => 'config/workflow.php holds the levers: the operator changes it.',
             $this->root . '/var/workflow' => "var/workflow/ is the run's state: only the engine writes it, through bin/aic workflow:*.",
         ];
+
+        foreach ($this->pack as $path) {
+            $entries[$this->root . '/' . $path] = $path . self::PACK;
+        }
 
         $entries = [...$entries, ...$this->ruled($guardScene)];
 

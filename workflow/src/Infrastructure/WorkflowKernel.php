@@ -9,6 +9,7 @@ use AIC\Workflow\Application\RunEngine;
 use AIC\Workflow\Application\RunReset;
 use AIC\Workflow\Application\RunStore;
 use AIC\Workflow\Application\WorkflowContext;
+use AIC\Workflow\Application\WorkflowInitCommand;
 use AIC\Workflow\Application\WorkflowResetCommand;
 use AIC\Workflow\Application\WorkflowRunCommand;
 use AIC\Workflow\Application\WorkflowStatusCommand;
@@ -33,11 +34,13 @@ final readonly class WorkflowKernel implements WorkflowContext
     }
 
     /**
-     * @return array<string, Command> The workflow's commands, by name, the code index's among them (#106).
+     * @return array<string, Command> The workflow's commands, by name, the installer (#105) and the code index's (#106)
+     *                                among them.
      */
     public function commands(): array
     {
         return [
+            'workflow:init' => new WorkflowInitCommand(new InstallParts($this->root)),
             'workflow:reset' => new WorkflowResetCommand($this),
             'workflow:run' => new WorkflowRunCommand($this),
             'workflow:status' => new WorkflowStatusCommand($this),
