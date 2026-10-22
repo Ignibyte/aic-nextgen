@@ -2,186 +2,772 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Ignibyte/aic-nextgen/blob/main/workflow/schema/run-event.v1.json",
   "title": "AIC run event, version 1",
-  "description": "One line of a project's run-event log (var/workflow/events.jsonl), written by the aic/workflow engine after each state change it saves (#100). Additive only within version 1: a consumer ignores event types and keys it does not know, and renaming or removing one is aic.run-event/2. event_id is the dedup key; seq rises by one per log and is a reader's cursor, never an identity. Ported from droost-workflow's droost.run-event/1.",
-  "type": "object",
-  "required": ["schema", "event_id", "seq", "run_id", "ticket_id", "at", "type", "payload"],
-  "properties": {
-    "schema": { "const": "aic.run-event/1" },
-    "event_id": { "type": "string", "pattern": "^evt-[0-9a-f]{16}$" },
-    "seq": { "type": "integer", "minimum": 1 },
-    "run_id": { "type": "string", "pattern": "^run-[0-9a-f]{12}$" },
-    "ticket_id": { "type": "string", "minLength": 1 },
-    "at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
-    "type": { "enum": ["run.started", "phase.began", "phase.attempted", "phase.ended", "ticket.moved", "run.completed", "run.reset", "run.held", "run.resumed", "code.queried", "seeker.filed", "question.asked", "question.answered"] },
-    "payload": { "type": "object" }
-  },
-  "allOf": [
-    { "if": { "properties": { "type": { "const": "run.started" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.started" } } } },
-    { "if": { "properties": { "type": { "const": "phase.began" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/phase" } } } },
-    { "if": { "properties": { "type": { "const": "phase.attempted" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/phase.attempted" } } } },
-    { "if": { "properties": { "type": { "const": "phase.ended" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/phase" } } } },
-    { "if": { "properties": { "type": { "const": "ticket.moved" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/ticket.moved" } } } },
-    { "if": { "properties": { "type": { "const": "run.completed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.completed" } } } },
-    { "if": { "properties": { "type": { "const": "run.reset" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.reset" } } } },
-    { "if": { "properties": { "type": { "const": "run.held" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.held" } } } },
-    { "if": { "properties": { "type": { "const": "run.resumed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.resumed" } } } },
-    { "if": { "properties": { "type": { "const": "code.queried" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/code.queried" } } } },
-    { "if": { "properties": { "type": { "const": "seeker.filed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/seeker.filed" } } } },
-    { "if": { "properties": { "type": { "const": "question.asked" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/question.asked" } } } },
-    { "if": { "properties": { "type": { "const": "question.answered" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/question.answered" } } } }
+  "description": "One line of a project's run-event log (var/workflow/events.jsonl), written by the aic/workflow engine after each state change it saves (#100). Additive only within version 1: a consumer ignores event types and keys it does not know, and renaming or removing one is aic.run-event/2. event_id is the dedup key; seq rises by one per log and is a reader's cursor, never an identity. Ported from droost-workflow's droost.run-event/1. Each type is one oneOf branch, its type a one-value enum and its payload's shape a $ref; fixed values are enums too, since the validator the repo uses (justinrainbow 6.13) ignores if/then and const (#124).",
+  "oneOf": [
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "run.started"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/run.started"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "phase.began"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/phase"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "phase.attempted"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/phase.attempted"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "phase.ended"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/phase"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "ticket.moved"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/ticket.moved"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "run.completed"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/run.completed"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "run.reset"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/run.reset"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "run.held"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/run.held"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "run.resumed"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/run.resumed"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "code.queried"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/code.queried"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "seeker.filed"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/seeker.filed"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "question.asked"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/question.asked"
+        }
+      }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "question.answered"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/question.answered"
+        }
+      }
+    }
   ],
   "$defs": {
+    "envelope": {
+      "description": "The keys every event carries.",
+      "type": "object",
+      "required": [
+        "schema",
+        "event_id",
+        "seq",
+        "run_id",
+        "ticket_id",
+        "at",
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "schema": {
+          "enum": [
+            "aic.run-event/1"
+          ]
+        },
+        "event_id": {
+          "type": "string",
+          "pattern": "^evt-[0-9a-f]{16}$"
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "run_id": {
+          "type": "string",
+          "pattern": "^run-[0-9a-f]{12}$"
+        },
+        "ticket_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "at": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        },
+        "type": {
+          "enum": [
+            "run.started",
+            "phase.began",
+            "phase.attempted",
+            "phase.ended",
+            "ticket.moved",
+            "run.completed",
+            "run.reset",
+            "run.held",
+            "run.resumed",
+            "code.queried",
+            "seeker.filed",
+            "question.asked",
+            "question.answered"
+          ]
+        },
+        "payload": {
+          "type": "object"
+        }
+      }
+    },
     "run.started": {
       "description": "A run began on a ticket.",
       "type": "object",
-      "required": ["ticket", "spec", "base_commit", "phases"],
+      "required": [
+        "ticket",
+        "spec",
+        "base_commit",
+        "phases"
+      ],
       "properties": {
-        "ticket": { "type": "string" },
-        "spec": { "type": "string" },
-        "base_commit": { "type": ["string", "null"] },
-        "phases": { "type": "array", "items": { "type": "string" } },
+        "ticket": {
+          "type": "string"
+        },
+        "spec": {
+          "type": "string"
+        },
+        "base_commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "rule_files": {
           "description": "The house rules' files and config/workflow.php by path, each with its sha256 at begin, or null when missing (#104).",
           "type": "object",
-          "additionalProperties": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9a-f]{64}$"
+          }
         }
       }
     },
     "phase": {
       "description": "A phase became current (phase.began), or the run left it (phase.ended).",
       "type": "object",
-      "required": ["phase"],
-      "properties": { "phase": { "enum": ["plan", "code", "check", "complete"] } }
+      "required": [
+        "phase"
+      ],
+      "properties": {
+        "phase": {
+          "enum": [
+            "plan",
+            "code",
+            "check",
+            "complete"
+          ]
+        }
+      }
     },
     "phase.attempted": {
       "description": "A phase's checks ran, held or not: report is the phase report (phase, attempt, advance, rows), outcome what the call did.",
       "type": "object",
-      "required": ["phase", "attempt", "outcome", "report"],
+      "required": [
+        "phase",
+        "attempt",
+        "outcome",
+        "report"
+      ],
       "properties": {
-        "phase": { "enum": ["plan", "code", "check", "complete"] },
-        "attempt": { "type": "integer", "minimum": 1 },
-        "outcome": { "enum": ["advanced", "blocked", "completed", "held", "inspection-due", "paused"] },
-        "report": { "type": "object" }
+        "phase": {
+          "enum": [
+            "plan",
+            "code",
+            "check",
+            "complete"
+          ]
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "outcome": {
+          "enum": [
+            "advanced",
+            "blocked",
+            "completed",
+            "held",
+            "inspection-due",
+            "paused"
+          ]
+        },
+        "report": {
+          "type": "object"
+        }
       }
     },
     "ticket.moved": {
       "description": "The engine wrote the ticket's status and phase, or tried to: ok is false and note says why when the source refused.",
       "type": "object",
-      "required": ["ticket", "path", "status", "phase", "ok", "note"],
+      "required": [
+        "ticket",
+        "path",
+        "status",
+        "phase",
+        "ok",
+        "note"
+      ],
       "properties": {
-        "ticket": { "type": "string" },
-        "path": { "type": "string" },
-        "status": { "type": "string" },
-        "phase": { "type": "string" },
-        "ok": { "type": "boolean" },
-        "note": { "type": "string" }
+        "ticket": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "phase": {
+          "type": "string"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string"
+        }
       }
     },
     "run.completed": {
       "description": "complete passed: outcome is the envelope the call printed.",
       "type": "object",
-      "required": ["outcome"],
-      "properties": { "outcome": { "type": "object" } }
+      "required": [
+        "outcome"
+      ],
+      "properties": {
+        "outcome": {
+          "type": "object"
+        }
+      }
     },
     "run.held": {
       "description": "A phase held a row only the operator can clear (#102): the run waits on the operator, and run.json's awaiting says why.",
       "type": "object",
-      "required": ["kind", "phase", "why", "at"],
+      "required": [
+        "kind",
+        "phase",
+        "why",
+        "at"
+      ],
       "properties": {
-        "kind": { "const": "operator" },
-        "phase": { "enum": ["plan", "code", "check", "complete"] },
-        "why": { "type": "string" },
-        "at": { "type": "string" }
+        "kind": {
+          "enum": [
+            "operator"
+          ]
+        },
+        "phase": {
+          "enum": [
+            "plan",
+            "code",
+            "check",
+            "complete"
+          ]
+        },
+        "why": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        }
       }
     },
     "run.resumed": {
       "description": "The operator ran workflow:run from a terminal and cleared the hold (#102).",
       "type": "object",
-      "required": ["kind", "phase"],
+      "required": [
+        "kind",
+        "phase"
+      ],
       "properties": {
-        "kind": { "const": "operator" },
-        "phase": { "enum": ["plan", "code", "check", "complete"] }
+        "kind": {
+          "enum": [
+            "operator"
+          ]
+        },
+        "phase": {
+          "enum": [
+            "plan",
+            "code",
+            "check",
+            "complete"
+          ]
+        }
       }
     },
     "code.queried": {
       "description": "The agent asked the code index (#106): the command, its target, whether it answered, the indexed files the answer showed (500 at most) and the areas it outlined. Recorded only while a run is open.",
       "type": "object",
-      "required": ["command", "target", "outcome", "phase", "files", "scopes", "truncated"],
+      "required": [
+        "command",
+        "target",
+        "outcome",
+        "phase",
+        "files",
+        "scopes",
+        "truncated"
+      ],
       "properties": {
-        "command": { "enum": ["code:tree", "code:search", "code:refs", "code:wiki", "route:list", "command:list", "job:list", "schedule:list", "module:list", "module:show", "kind:list"] },
-        "target": { "type": "string" },
-        "outcome": { "enum": ["ok", "fail"] },
-        "phase": { "enum": ["plan", "code", "check", "complete"] },
-        "files": { "description": "The files whose declarations the answer printed: an outline line, a match line, or code:refs' subject only (#118).", "type": "array", "items": { "type": "string" }, "maxItems": 500 },
-        "scopes": { "type": "array", "items": { "type": "string" } },
-        "truncated": { "type": "boolean" }
+        "command": {
+          "enum": [
+            "code:tree",
+            "code:search",
+            "code:refs",
+            "code:wiki",
+            "route:list",
+            "command:list",
+            "job:list",
+            "schedule:list",
+            "module:list",
+            "module:show",
+            "kind:list"
+          ]
+        },
+        "target": {
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "ok",
+            "fail"
+          ]
+        },
+        "phase": {
+          "enum": [
+            "plan",
+            "code",
+            "check",
+            "complete"
+          ]
+        },
+        "files": {
+          "description": "The files whose declarations the answer printed: an outline line, a match line, or code:refs' subject only (#118).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 500
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "truncated": {
+          "type": "boolean"
+        }
       }
     },
     "seeker.filed": {
       "description": "A seeker's ledger was filed through workflow:seeker-report (#103): its round, who read, what the guard's record says of it, whether it counts, the tree it read, its digest, its open findings by severity and how many hold the run.",
       "type": "object",
-      "required": ["phase", "round", "inspector", "dispatch", "counted", "subject", "digest", "counts", "holding"],
+      "required": [
+        "phase",
+        "round",
+        "inspector",
+        "dispatch",
+        "counted",
+        "subject",
+        "digest",
+        "counts",
+        "holding"
+      ],
       "properties": {
-        "phase": { "enum": ["code", "check", "complete"] },
-        "round": { "type": "integer", "minimum": 1 },
-        "inspector": { "enum": ["independent", "self-reviewed"] },
-        "dispatch": { "enum": ["verified", "unverified", "none"] },
-        "counted": { "type": "boolean" },
-        "subject": { "type": "string" },
-        "digest": { "type": "string" },
+        "phase": {
+          "enum": [
+            "code",
+            "check",
+            "complete"
+          ]
+        },
+        "round": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "inspector": {
+          "enum": [
+            "independent",
+            "self-reviewed"
+          ]
+        },
+        "dispatch": {
+          "enum": [
+            "verified",
+            "unverified",
+            "none"
+          ]
+        },
+        "counted": {
+          "type": "boolean"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "digest": {
+          "type": "string"
+        },
         "counts": {
           "type": "object",
-          "required": ["critical", "high", "medium", "low"],
+          "required": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ],
           "properties": {
-            "critical": { "type": "integer", "minimum": 0 },
-            "high": { "type": "integer", "minimum": 0 },
-            "medium": { "type": "integer", "minimum": 0 },
-            "low": { "type": "integer", "minimum": 0 }
+            "critical": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "high": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "medium": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "low": {
+              "type": "integer",
+              "minimum": 0
+            }
           }
         },
-        "holding": { "type": "integer", "minimum": 0 }
+        "holding": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "run.reset": {
       "description": "The operator abandoned the run: it was archived unfinished, its ticket left as it was.",
       "type": "object",
-      "required": ["archived_run_id", "archived_to", "phase"],
+      "required": [
+        "archived_run_id",
+        "archived_to",
+        "phase"
+      ],
       "properties": {
-        "archived_run_id": { "type": "string" },
-        "archived_to": { "type": "string" },
-        "phase": { "type": ["string", "null"] }
+        "archived_run_id": {
+          "type": "string"
+        },
+        "archived_to": {
+          "type": "string"
+        },
+        "phase": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "question.asked": {
       "description": "The run waits for the operator's answer (#117): a phase exit to confirm (kind conversation, or complete in an agentic run with human_complete), asked by the engine with options advance and stay, or the agent's question from workflow:ask. key is the progress key of the tree it was asked about.",
       "type": "object",
-      "required": ["kind", "phase", "why", "at", "asked_by", "key", "options", "question"],
+      "required": [
+        "kind",
+        "phase",
+        "why",
+        "at",
+        "asked_by",
+        "key",
+        "options",
+        "question"
+      ],
       "properties": {
-        "kind": { "enum": ["question", "conversation", "complete"] },
-        "phase": { "enum": ["plan", "code", "check", "complete"] },
-        "why": { "type": "string" },
-        "at": { "type": "string" },
-        "asked_by": { "enum": ["engine", "agent"] },
-        "key": { "type": "string" },
-        "options": { "type": "array", "items": { "type": "string" } },
-        "question": { "type": "string" }
+        "kind": {
+          "enum": [
+            "question",
+            "conversation",
+            "complete"
+          ]
+        },
+        "phase": {
+          "enum": [
+            "plan",
+            "code",
+            "check",
+            "complete"
+          ]
+        },
+        "why": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        },
+        "asked_by": {
+          "enum": [
+            "engine",
+            "agent"
+          ]
+        },
+        "key": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "question": {
+          "type": "string"
+        }
       }
     },
     "question.answered": {
       "description": "The operator answered from a terminal with workflow:answer (#117); the entry appended to run.json's qa_history.",
       "type": "object",
-      "required": ["answer", "answered_at", "asked_at", "asked_by", "key", "kind", "option", "phase", "question", "via"],
+      "required": [
+        "answer",
+        "answered_at",
+        "asked_at",
+        "asked_by",
+        "key",
+        "kind",
+        "option",
+        "phase",
+        "question",
+        "via"
+      ],
       "properties": {
-        "answer": { "type": "string" },
-        "answered_at": { "type": "string" },
-        "asked_at": { "type": "string" },
-        "asked_by": { "enum": ["engine", "agent"] },
-        "key": { "type": "string" },
-        "kind": { "enum": ["question", "conversation", "complete"] },
-        "option": { "enum": ["", "advance", "stay"] },
-        "phase": { "enum": ["plan", "code", "check", "complete"] },
-        "question": { "type": "string" },
-        "via": { "const": "terminal" }
+        "answer": {
+          "type": "string"
+        },
+        "answered_at": {
+          "type": "string"
+        },
+        "asked_at": {
+          "type": "string"
+        },
+        "asked_by": {
+          "enum": [
+            "engine",
+            "agent"
+          ]
+        },
+        "key": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "question",
+            "conversation",
+            "complete"
+          ]
+        },
+        "option": {
+          "enum": [
+            "",
+            "advance",
+            "stay"
+          ]
+        },
+        "phase": {
+          "enum": [
+            "plan",
+            "code",
+            "check",
+            "complete"
+          ]
+        },
+        "question": {
+          "type": "string"
+        },
+        "via": {
+          "enum": [
+            "terminal"
+          ]
+        }
       }
     }
   }
