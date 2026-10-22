@@ -13,6 +13,7 @@ use App\Job\Controller\JobsPage;
 use App\Job\Controller\JobsPost;
 use App\Job\Controller\NotificationsPage;
 use App\Job\Controller\NotificationsPost;
+use App\Job\Service\ScheduleLines;
 use App\Site\Service\HtmlLayout;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -41,7 +42,7 @@ final readonly class JobHandlers
 
         return [
             JobsPage::class => $this->handlerContext->page(
-                new JobsPage($htmlLayout, $postgresQueue, $scheduler, $this->handlerContext->schedules()),
+                new JobsPage($htmlLayout, $postgresQueue, new ScheduleLines($scheduler), $this->handlerContext->schedules()),
             ),
             JobsPost::class => $this->handlerContext->page(new JobsPost($postgresQueue)),
             NotificationsPage::class => $this->handlerContext->page(

@@ -71,7 +71,7 @@ forwards the rest. Without a proxy, the app's `/assets/{file}` route answers the
 ```bash
 bash bin/install-tools.sh   # once: gitleaks (pinned, into tools/), semgrep, shellcheck
 composer run gate           # every gate, on the host; ends with one gate-summary line
-composer run gate:8         # one gate alone (gate:0 to gate:26)
+composer run gate:8         # one gate alone (gate:0 to gate:27)
 composer run gate:21        # the native gate: every runtime class through elephc
 ```
 

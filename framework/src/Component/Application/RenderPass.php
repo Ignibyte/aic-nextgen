@@ -8,6 +8,7 @@ use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Keyed;
 use AIC\Component\Contracts\Region;
 use AIC\Component\Domain\KeyedComponent;
+use AIC\Component\Domain\RawHtml;
 use AIC\Component\Exception\UnknownComponent;
 
 use function str_starts_with;
@@ -90,13 +91,17 @@ final class RenderPass
      *
      * @throws UnknownComponent When no template renders it.
      *
-     * @return string Its markup.
+     * @return string Its markup; a RawHtml's trusted markup as it is (#99), the one string not made by a template.
      */
     public function inline(Component $component): string
     {
         $inner = $component instanceof KeyedComponent
             ? $component->component
             : $component;
+
+        if ($inner instanceof RawHtml) {
+            return $inner->trustedMarkup;
+        }
 
         return $this->componentTemplates->compose($inner, $this);
     }

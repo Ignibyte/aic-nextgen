@@ -30,3 +30,7 @@ services:
         class: Gates\Architecture\KindsArchitectureTest
         tags:
             - phpat.test
+    -
+        class: Gates\Architecture\RenderingArchitectureTest
+        tags:
+            - phpat.test
