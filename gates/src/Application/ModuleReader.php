@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Module\Contracts\Module;
+use AIC\Module\Contracts\ModuleManifest;
 use Gates\Domain\ModuleDefinition;
 use InvalidArgumentException;
 
@@ -82,13 +82,15 @@ final readonly class ModuleReader
 
         $module = require $file;
 
-        if (!$module instanceof Module) {
-            throw new InvalidArgumentException('modules/' . $name . '/' . $name . '.module.php must return a ' . Module::class . '.');
+        if (!$module instanceof ModuleManifest) {
+            throw new InvalidArgumentException(
+                'modules/' . $name . '/' . $name . '.module.php must return a ' . ModuleManifest::class . '.',
+            );
         }
 
-        $this->checkName($name, $module->name());
+        $this->checkName($name, $module->name);
 
-        return new ModuleDefinition($name, 'App\\' . str_replace('_', '', ucwords($name, '_')) . '\\', $directory, $module);
+        return new ModuleDefinition($name, 'App\\' . str_replace('_', '', ucwords($name, '_')) . '\\', $module);
     }
 
     /**

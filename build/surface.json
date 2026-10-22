@@ -1,242 +1,116 @@
 {
     "routes": [
         {
-            "handler": "App\\Site\\HomePage",
-            "kind": "Page",
-            "method": "GET",
-            "module": "",
-            "path": "/"
-        },
-        {
-            "handler": "App\\Greeting\\GreetingPage",
-            "kind": "Page",
-            "method": "GET",
-            "module": "",
-            "path": "/hello/{name}"
-        },
-        {
-            "handler": "App\\Greeting\\GreetingPost",
-            "kind": "Page",
-            "method": "POST",
-            "module": "",
-            "path": "/hello"
-        },
-        {
-            "handler": "App\\Site\\StatusApi",
+            "handler": "App\\Site\\Controller\\StatusApi",
             "kind": "Api",
             "method": "GET",
-            "module": "",
+            "module": "site",
             "path": "/api/status"
         },
         {
-            "handler": "App\\Site\\HealthApi",
+            "handler": "App\\Site\\Controller\\HealthApi",
             "kind": "Api",
             "method": "GET",
-            "module": "",
+            "module": "site",
             "path": "/health"
         },
         {
-            "handler": "App\\Site\\ResourceDownload",
+            "handler": "App\\Site\\Controller\\ResourceDownload",
             "kind": "Stream",
             "method": "GET",
-            "module": "",
+            "module": "site",
             "path": "/download/{file}"
         },
         {
-            "handler": "App\\Site\\AssetFile",
+            "handler": "App\\Site\\Controller\\AssetFile",
             "kind": "Stream",
             "method": "GET",
-            "module": "",
+            "module": "site",
             "path": "/assets/{file}"
         },
         {
-            "handler": "App\\Site\\AssetFile",
+            "handler": "App\\Site\\Controller\\AssetFile",
             "kind": "Stream",
             "method": "GET",
-            "module": "",
+            "module": "site",
             "path": "/assets/{dir}/{file}"
         },
         {
-            "handler": "App\\Site\\TickEvents",
+            "handler": "App\\Site\\Controller\\TickEvents",
             "kind": "Stream",
             "method": "GET",
-            "module": "",
+            "module": "site",
             "path": "/events"
         },
         {
-            "handler": "App\\Site\\TicksPage",
+            "handler": "App\\Site\\Controller\\TicksPage",
             "kind": "Page",
             "method": "GET",
-            "module": "",
+            "module": "site",
             "path": "/ticks"
         },
         {
-            "handler": "App\\Session\\VisitsPage",
+            "handler": "App\\Auth\\Controller\\LoginPage",
             "kind": "Page",
             "method": "GET",
-            "module": "",
-            "path": "/visits"
-        },
-        {
-            "handler": "App\\Session\\VisitsForget",
-            "kind": "Page",
-            "method": "POST",
-            "module": "",
-            "path": "/visits/forget"
-        },
-        {
-            "handler": "App\\Session\\UploadsPage",
-            "kind": "Page",
-            "method": "GET",
-            "module": "",
-            "path": "/uploads"
-        },
-        {
-            "handler": "App\\Session\\UploadsPost",
-            "kind": "Page",
-            "method": "POST",
-            "module": "",
-            "path": "/uploads"
-        },
-        {
-            "handler": "App\\Stock\\StockPage",
-            "kind": "Page",
-            "method": "GET",
-            "module": "",
-            "path": "/stock"
-        },
-        {
-            "handler": "App\\Stock\\StockPost",
-            "kind": "Page",
-            "method": "POST",
-            "module": "",
-            "path": "/stock"
-        },
-        {
-            "handler": "App\\Auth\\LoginPage",
-            "kind": "Page",
-            "method": "GET",
-            "module": "",
+            "module": "auth",
             "path": "/login"
         },
         {
-            "handler": "App\\Auth\\LoginPost",
+            "handler": "App\\Auth\\Controller\\LoginPost",
             "kind": "Page",
             "method": "POST",
-            "module": "",
+            "module": "auth",
             "path": "/login"
         },
         {
-            "handler": "App\\Auth\\LogoutPost",
+            "handler": "App\\Auth\\Controller\\LogoutPost",
             "kind": "Page",
             "method": "POST",
-            "module": "",
+            "module": "auth",
             "path": "/logout"
         },
         {
-            "handler": "App\\Auth\\AccountPage",
+            "handler": "App\\Auth\\Controller\\AccountPage",
             "kind": "Page",
             "method": "GET",
-            "module": "",
+            "module": "auth",
             "path": "/account"
         },
         {
-            "handler": "App\\Job\\JobsPage",
+            "handler": "App\\Content\\Controller\\ContentListPage",
             "kind": "Page",
             "method": "GET",
-            "module": "",
-            "path": "/jobs"
-        },
-        {
-            "handler": "App\\Job\\JobsPost",
-            "kind": "Page",
-            "method": "POST",
-            "module": "",
-            "path": "/jobs"
-        },
-        {
-            "handler": "App\\Job\\NotificationsPage",
-            "kind": "Page",
-            "method": "GET",
-            "module": "",
-            "path": "/notifications"
-        },
-        {
-            "handler": "App\\Job\\NotificationsPost",
-            "kind": "Page",
-            "method": "POST",
-            "module": "",
-            "path": "/notifications"
-        },
-        {
-            "handler": "App\\Content\\ContentListPage",
-            "kind": "Page",
-            "method": "GET",
-            "module": "",
+            "module": "content",
             "path": "/pages"
         },
         {
-            "handler": "App\\Content\\ContentShowPage",
+            "handler": "App\\Content\\Controller\\ContentShowPage",
             "kind": "Page",
             "method": "GET",
-            "module": "",
+            "module": "content",
             "path": "/pages/{slug}"
         },
         {
-            "handler": "App\\Content\\ContentNewPost",
+            "handler": "App\\Content\\Controller\\ContentNewPost",
             "kind": "Page",
             "method": "POST",
-            "module": "",
+            "module": "content",
             "path": "/account/pages"
         },
         {
-            "handler": "App\\Content\\ContentEditPage",
+            "handler": "App\\Content\\Controller\\ContentEditPage",
             "kind": "Page",
             "method": "GET",
-            "module": "",
+            "module": "content",
             "path": "/account/pages/{slug}"
         },
         {
-            "handler": "App\\Content\\ContentSavePost",
+            "handler": "App\\Content\\Controller\\ContentSavePost",
             "kind": "Page",
             "method": "POST",
-            "module": "",
+            "module": "content",
             "path": "/account/pages/{slug}"
-        },
-        {
-            "handler": "App\\Note\\NoteListPage",
-            "kind": "Page",
-            "method": "GET",
-            "module": "",
-            "path": "/notes"
-        },
-        {
-            "handler": "App\\Note\\NoteCreatePost",
-            "kind": "Page",
-            "method": "POST",
-            "module": "",
-            "path": "/notes"
-        },
-        {
-            "handler": "App\\Note\\NoteShowPage",
-            "kind": "Page",
-            "method": "GET",
-            "module": "",
-            "path": "/notes/{id:int}"
-        },
-        {
-            "handler": "App\\Note\\NoteUpdatePost",
-            "kind": "Page",
-            "method": "POST",
-            "module": "",
-            "path": "/notes/{id:int}"
-        },
-        {
-            "handler": "App\\Note\\NoteDeletePost",
-            "kind": "Page",
-            "method": "POST",
-            "module": "",
-            "path": "/notes/{id:int}/delete"
         },
         {
             "handler": "App\\Faq\\Controller\\FaqPage",
@@ -251,16 +125,142 @@
             "method": "GET",
             "module": "faq",
             "path": "/api/faq"
+        },
+        {
+            "handler": "App\\Greeting\\Controller\\GreetingPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "greeting",
+            "path": "/hello/{name}"
+        },
+        {
+            "handler": "App\\Greeting\\Controller\\GreetingPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "greeting",
+            "path": "/hello"
+        },
+        {
+            "handler": "App\\Home\\Controller\\HomePage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "home",
+            "path": "/"
+        },
+        {
+            "handler": "App\\Job\\Controller\\JobsPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "job",
+            "path": "/jobs"
+        },
+        {
+            "handler": "App\\Job\\Controller\\JobsPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "job",
+            "path": "/jobs"
+        },
+        {
+            "handler": "App\\Job\\Controller\\NotificationsPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "job",
+            "path": "/notifications"
+        },
+        {
+            "handler": "App\\Job\\Controller\\NotificationsPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "job",
+            "path": "/notifications"
+        },
+        {
+            "handler": "App\\Note\\Controller\\NoteListPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "note",
+            "path": "/notes"
+        },
+        {
+            "handler": "App\\Note\\Controller\\NoteCreatePost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "note",
+            "path": "/notes"
+        },
+        {
+            "handler": "App\\Note\\Controller\\NoteShowPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "note",
+            "path": "/notes/{id:int}"
+        },
+        {
+            "handler": "App\\Note\\Controller\\NoteUpdatePost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "note",
+            "path": "/notes/{id:int}"
+        },
+        {
+            "handler": "App\\Note\\Controller\\NoteDeletePost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "note",
+            "path": "/notes/{id:int}/delete"
+        },
+        {
+            "handler": "App\\Session\\Controller\\VisitsPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "session",
+            "path": "/visits"
+        },
+        {
+            "handler": "App\\Session\\Controller\\VisitsForget",
+            "kind": "Page",
+            "method": "POST",
+            "module": "session",
+            "path": "/visits/forget"
+        },
+        {
+            "handler": "App\\Session\\Controller\\UploadsPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "session",
+            "path": "/uploads"
+        },
+        {
+            "handler": "App\\Session\\Controller\\UploadsPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "session",
+            "path": "/uploads"
+        },
+        {
+            "handler": "App\\Stock\\Controller\\StockPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "stock",
+            "path": "/stock"
+        },
+        {
+            "handler": "App\\Stock\\Controller\\StockPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "stock",
+            "path": "/stock"
         }
     ],
     "commands": [
         {
-            "class": "App\\Console\\DatabasePing",
+            "class": "App\\Site\\Command\\DatabasePing",
             "kind": "Command",
             "name": "db:ping"
         },
         {
-            "class": "App\\Console\\Greet",
+            "class": "App\\Greeting\\Command\\Greet",
             "kind": "Command",
             "name": "greet"
         },
@@ -285,14 +285,14 @@
             "name": "schedule:run"
         },
         {
-            "class": "App\\Console\\UserAdd",
+            "class": "App\\Auth\\Command\\UserAdd",
             "kind": "Command",
             "name": "user:add"
         }
     ],
     "jobs": [
         {
-            "class": "App\\Job\\DemoJob",
+            "class": "App\\Job\\Job\\DemoJob",
             "kind": "Job",
             "name": "demo"
         },
@@ -312,6 +312,47 @@
     "modules": [
         {
             "blocks": [
+                "App\\Site\\Block\\PoweredByBlock",
+                "App\\Site\\Block\\SiteNavBlock"
+            ],
+            "exports": [
+                "App\\Site\\Service\\HtmlLayout",
+                "App\\Site\\Component\\AppLayout"
+            ],
+            "migrations": [],
+            "name": "site",
+            "namespace": "App\\Site\\",
+            "plugins": [],
+            "requires": []
+        },
+        {
+            "blocks": [],
+            "exports": [],
+            "migrations": [
+                "App\\Auth\\Migration\\CreateUsersTable"
+            ],
+            "name": "auth",
+            "namespace": "App\\Auth\\",
+            "plugins": [],
+            "requires": [
+                "site"
+            ]
+        },
+        {
+            "blocks": [],
+            "exports": [],
+            "migrations": [
+                "App\\Content\\Migration\\CreateContentPagesTable"
+            ],
+            "name": "content",
+            "namespace": "App\\Content\\",
+            "plugins": [],
+            "requires": [
+                "site"
+            ]
+        },
+        {
+            "blocks": [
                 "App\\Faq\\Block\\FaqNoteBlock"
             ],
             "exports": [
@@ -321,7 +362,100 @@
             "name": "faq",
             "namespace": "App\\Faq\\",
             "plugins": [],
-            "requires": []
+            "requires": [
+                "site"
+            ]
+        },
+        {
+            "blocks": [],
+            "exports": [
+                "App\\Greeting\\Form\\GreetingForm"
+            ],
+            "migrations": [],
+            "name": "greeting",
+            "namespace": "App\\Greeting\\",
+            "plugins": [
+                {
+                    "class": "App\\Greeting\\Service\\EnglishGreeter",
+                    "type": "App\\Greeting\\Service\\Greeter"
+                },
+                {
+                    "class": "App\\Greeting\\Service\\SpanishGreeter",
+                    "type": "App\\Greeting\\Service\\Greeter"
+                }
+            ],
+            "requires": [
+                "site"
+            ]
+        },
+        {
+            "blocks": [],
+            "exports": [],
+            "migrations": [],
+            "name": "home",
+            "namespace": "App\\Home\\",
+            "plugins": [],
+            "requires": [
+                "site",
+                "greeting"
+            ]
+        },
+        {
+            "blocks": [],
+            "exports": [],
+            "migrations": [
+                "App\\Job\\Migration\\CreateSubscribersTable",
+                "App\\Job\\Migration\\MakeSubscriberEmailUnique"
+            ],
+            "name": "job",
+            "namespace": "App\\Job\\",
+            "plugins": [],
+            "requires": [
+                "site"
+            ]
+        },
+        {
+            "blocks": [
+                "App\\Note\\Block\\NoteTipsBlock"
+            ],
+            "exports": [],
+            "migrations": [
+                "App\\Note\\Migration\\CreateNotesTable",
+                "App\\Note\\Migration\\CreateNoteTagsTable",
+                "App\\Note\\Migration\\IndexNotesByCreation"
+            ],
+            "name": "note",
+            "namespace": "App\\Note\\",
+            "plugins": [],
+            "requires": [
+                "site"
+            ]
+        },
+        {
+            "blocks": [],
+            "exports": [],
+            "migrations": [],
+            "name": "session",
+            "namespace": "App\\Session\\",
+            "plugins": [],
+            "requires": [
+                "site"
+            ]
+        },
+        {
+            "blocks": [],
+            "exports": [],
+            "migrations": [
+                "App\\Stock\\Migration\\CreateStockItemsTable",
+                "App\\Stock\\Migration\\AddStockCost",
+                "App\\Stock\\Migration\\ConvertStockCost"
+            ],
+            "name": "stock",
+            "namespace": "App\\Stock\\",
+            "plugins": [],
+            "requires": [
+                "site"
+            ]
         }
     ]
 }

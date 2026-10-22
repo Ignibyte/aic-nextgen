@@ -4,102 +4,67 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use Gates\Domain\ModuleDefinition;
-use Gates\Domain\WiredObject;
+use Gates\Domain\WiredModule;
 use InvalidArgumentException;
 
-use function ucfirst;
+use function array_keys;
+use function array_map;
+use function substr;
 
 /**
- * Writes the generated module wiring under `app/Generated/` (#92): for each
- * module its own `<M>Routes`, `<M>Handlers`, `<M>Provider` and `<M>Migrations`
- * (each only when it has something to hold, and importing only that module's
- * classes, so two modules' same-named classes never meet), then the four
- * aggregators the app calls, `ModuleRoutes`, `ModuleHandlers`, `ModuleProvider`
- * and `ModuleMigrations`, each chained in parts so any number of modules fits.
- *
- * The code is straight-line in the native style: constructors and literal
- * arrays, no loops over objects, no static calls, `(new X())->m()` with its
- * parentheses for PDepend. It is committed and gated like hand-written code,
- * so a module set the generator cannot write within the gates' limits is
- * refused, never written loose.
+ * Writes the generated module wiring under `generated/` (#92, #93): for each
+ * module its own classes, each only when it has something to hold and
+ * importing only that module's classes (`<M>Routes`, `<M>Handlers`,
+ * `<M>Middleware`, `<M>Commands`, `<M>Jobs`, `<M>Provider`, `<M>Migrations`,
+ * `<M>Schedules`, `<M>Prefixes`); then the aggregators, each chained in parts
+ * so any number of modules fits; then the two facades the kernels take.
  */
 final readonly class WiringWriter
 {
     /**
-     * @param RoutesSource         $routesSource         Writes `ModuleRoutes`.
-     * @param ModuleHandlersSource $moduleHandlersSource Writes `ModuleHandlers`.
-     * @param HandlerSource        $handlerSource        Writes each module's handlers.
-     * @param ProviderSource       $providerSource       Writes `ModuleProvider`.
-     * @param MigrationsSource     $migrationsSource     Writes `ModuleMigrations`.
+     * @param ModuleClassSource $moduleClassSource Writes each module's own classes built from a context.
+     * @param ModuleDataClasses $moduleDataClasses Writes each module's own classes that hold no context.
+     * @param AggregateSources  $aggregateSources  Writes the aggregators.
+     * @param FacadeSource      $facadeSource      Writes the facades.
      */
     public function __construct(
-        private RoutesSource $routesSource = new RoutesSource(),
-        private ModuleHandlersSource $moduleHandlersSource = new ModuleHandlersSource(),
-        private HandlerSource $handlerSource = new HandlerSource(),
-        private ProviderSource $providerSource = new ProviderSource(),
-        private MigrationsSource $migrationsSource = new MigrationsSource(),
+        private ModuleClassSource $moduleClassSource = new ModuleClassSource(),
+        private ModuleDataClasses $moduleDataClasses = new ModuleDataClasses(),
+        private AggregateSources $aggregateSources = new AggregateSources(),
+        private FacadeSource $facadeSource = new FacadeSource(),
     ) {
     }
 
     /**
-     * @param list<ModuleDefinition>           $modules     The modules in build order.
-     * @param array<string, list<WiredObject>> $controllers Each module's wired controllers, in route order, by module name.
+     * @param list<WiredModule> $wiredModules The modules in build order, wired.
      *
-     * @throws InvalidArgumentException When the modules do not fit the generated classes.
+     * @throws InvalidArgumentException When a module's classes would not fit the gates.
      *
-     * @return array<string, string> The source of each generated file, by file name in `app/Generated/`.
+     * @return array<string, string> The source of each generated file, by file name in `generated/`.
      */
-    public function files(array $modules, array $controllers): array
+    public function files(array $wiredModules): array
     {
         $files = [];
-        $members = ['handlers' => [], 'migrations' => [], 'provider' => [], 'routes' => []];
+        $members = [];
+        $rootless = [];
 
-        foreach ($modules as $module) {
-            foreach ($this->moduleFiles($module, $controllers[$module->name] ?? []) as $kind => $source) {
-                $class = $module->studlyName() . ucfirst($kind);
-                $members[$kind][] = $class;
-                $files[$class . '.php'] = $source;
+        foreach ($wiredModules as $wiredModule) {
+            $own = [...$this->moduleClassSource->files($wiredModule), ...$this->moduleDataClasses->files($wiredModule->module)];
+            $studly = $wiredModule->module->studlyName();
+
+            foreach ($own as $kind => $source) {
+                $members[$kind][] = $studly . $kind;
+                $files[$studly . $kind . '.php'] = $source;
+            }
+
+            foreach ($this->moduleClassSource->rootless($wiredModule) as $kind) {
+                $rootless[] = $studly . $kind;
             }
         }
 
-        return [
-            ...$files,
-            ...$this->moduleHandlersSource->aggregate($members['handlers']),
-            ...$this->migrationsSource->aggregate($members['migrations']),
-            ...$this->providerSource->aggregate($members['provider']),
-            ...$this->routesSource->aggregate($members['routes']),
-        ];
-    }
+        $aggregates = $this->aggregateSources->files($members, $rootless);
+        $roots = array_map(static fn (string $file): string => substr($file, 0, -4), array_keys($aggregates));
 
-    /**
-     * One module's own generated classes, each only when the module has something for it to hold.
-     *
-     * @param ModuleDefinition  $moduleDefinition The module.
-     * @param list<WiredObject> $controllers      Its wired controllers, in route order.
-     *
-     * @throws InvalidArgumentException When one of its classes would not fit the gates.
-     *
-     * @return array<string, string> Each class's source, by kind: `handlers`, `migrations`, `provider`, `routes`.
-     */
-    private function moduleFiles(ModuleDefinition $moduleDefinition, array $controllers): array
-    {
-        $module = $moduleDefinition->module;
-        $files = [];
-
-        if ($controllers !== []) {
-            $files['handlers'] = $this->handlerSource->source($moduleDefinition, $controllers);
-            $files['routes'] = $this->routesSource->module($moduleDefinition);
-        }
-
-        if ($module->migrations() !== []) {
-            $files['migrations'] = $this->migrationsSource->module($moduleDefinition);
-        }
-
-        if ($module->blocks() !== [] || $module->plugins() !== []) {
-            $files['provider'] = $this->providerSource->module($moduleDefinition);
-        }
-
-        return $files;
+        return [...$files, ...$aggregates, ...$this->facadeSource->files($roots, $this->aggregateSources->rootless($members, $rootless))];
     }
 }

@@ -9,21 +9,13 @@ use AIC\Module\Contracts\RouteMethod;
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use Gates\Domain\ModuleDefinition;
-use Gates\Domain\WiredObject;
-use Gates\Domain\WiringScope;
 use InvalidArgumentException;
 
-use function array_map;
-use function in_array;
-
 /**
- * The module build `bin/aic-build` runs (#92): read every manifest, check it,
- * order the modules by what they require, wire each route's controller, and
- * give back the generated files and the routes on the app's collector.
- *
- * Until #93 moves the demo into modules, a module set the generator cannot
- * write gate-clean is refused: no route in any module, or no block or plugin
- * in any.
+ * The module build `bin/aic-build` runs (#92, #93): read every manifest, check
+ * it and the set, order the modules by what they require, wire every
+ * declaration, and give back the generated files under `generated/` and the
+ * routes on the app's collector.
  */
 final readonly class ModuleBuild
 {
@@ -33,7 +25,9 @@ final readonly class ModuleBuild
      * @param ModuleGraph       $moduleGraph       Orders the modules.
      * @param ModuleChecks      $moduleChecks      Checks each module as a whole.
      * @param DeclarationChecks $declarationChecks Checks what each manifest declares.
-     * @param Autowirer         $autowirer         Wires each controller.
+     * @param EntryChecks       $entryChecks       Checks each manifest's commands, jobs, middleware, prefixes and factories.
+     * @param ModuleSetChecks   $moduleSetChecks   Checks the names across modules.
+     * @param ModuleWirer       $moduleWirer       Wires each module's declarations.
      * @param WiringWriter      $wiringWriter      Writes the generated classes.
      * @param QuietFileReader   $quietFileReader   Reads composer.json and phpcs.xml.dist.
      */
@@ -43,7 +37,9 @@ final readonly class ModuleBuild
         private ModuleGraph $moduleGraph = new ModuleGraph(),
         private ModuleChecks $moduleChecks = new ModuleChecks(),
         private DeclarationChecks $declarationChecks = new DeclarationChecks(),
-        private Autowirer $autowirer = new Autowirer(),
+        private EntryChecks $entryChecks = new EntryChecks(),
+        private ModuleSetChecks $moduleSetChecks = new ModuleSetChecks(),
+        private ModuleWirer $moduleWirer = new ModuleWirer(),
         private WiringWriter $wiringWriter = new WiringWriter(),
         private QuietFileReader $quietFileReader = new QuietFileReader(),
     ) {
@@ -61,9 +57,12 @@ final readonly class ModuleBuild
         $phpcs = $this->quietFileReader->read($this->root . '/phpcs.xml.dist') ?? '';
 
         foreach ($modules as $module) {
-            $this->moduleChecks->check($module, $this->root, $composer, $phpcs);
+            $this->moduleChecks->check($module, $composer, $phpcs);
             $this->declarationChecks->check($module);
+            $this->entryChecks->check($module);
         }
+
+        $this->moduleSetChecks->check($modules);
 
         return $modules;
     }
@@ -77,21 +76,10 @@ final readonly class ModuleBuild
      */
     public function files(array $modules): array
     {
-        $namespaces = array_map(static fn (ModuleDefinition $moduleDefinition): string => $moduleDefinition->namespace, $modules);
-        $controllers = [];
-
-        foreach ($modules as $module) {
-            $wiringScope = $this->scope($module, $modules, $namespaces);
-            $controllers[$module->name] = array_map(
-                fn (ModuleRoute $moduleRoute): WiredObject => $this->autowirer->wire($moduleRoute->handler, $wiringScope),
-                $module->module->routes(),
-            );
-        }
-
         $files = [];
 
-        foreach ($this->wiringWriter->files($modules, $controllers) as $file => $source) {
-            $files[$this->root . '/app/Generated/' . $file] = $source;
+        foreach ($this->wiringWriter->files($this->moduleWirer->wire($modules)) as $file => $source) {
+            $files[$this->root . '/generated/' . $file] = $source;
         }
 
         return $files;
@@ -101,7 +89,7 @@ final readonly class ModuleBuild
      * Add the modules' routes to the app's, as the generated `ModuleRoutes` does at run time.
      *
      * @param list<ModuleDefinition> $modules        The checked modules, in build order.
-     * @param RouteCollector         $routeCollector The app's routes from `config/routes.php`.
+     * @param RouteCollector         $routeCollector The routes so far; the build starts from an empty collector.
      *
      * @throws InvalidArgumentException When a module's route repeats one already declared.
      *
@@ -110,7 +98,7 @@ final readonly class ModuleBuild
     public function routes(array $modules, RouteCollector $routeCollector): RouteCollector
     {
         foreach ($modules as $module) {
-            foreach ($module->module->routes() as $moduleRoute) {
+            foreach ($module->declared(ModuleRoute::class) as $moduleRoute) {
                 $routeCollector = $this->route($module, $moduleRoute, $routeCollector);
             }
         }
@@ -143,46 +131,5 @@ final readonly class ModuleBuild
                 $duplicateRouteException,
             );
         }
-    }
-
-    /**
-     * @param ModuleDefinition       $moduleDefinition The module to wire.
-     * @param list<ModuleDefinition> $modules          Every module.
-     * @param list<string>           $namespaces       Every module's namespace.
-     *
-     * @return WiringScope What its constructors may be wired from: itself and the modules it requires.
-     */
-    private function scope(ModuleDefinition $moduleDefinition, array $modules, array $namespaces): WiringScope
-    {
-        $required = $moduleDefinition->module->requires();
-        $visible = [];
-        $bindings = [];
-
-        foreach ($modules as $module) {
-            if ($module !== $moduleDefinition && !in_array($module->name, $required, true)) {
-                continue;
-            }
-
-            $visible[] = $module->namespace;
-            $bindings = [...$bindings, ...$this->bindings($module)];
-        }
-
-        return new WiringScope($moduleDefinition, $visible, $namespaces, $bindings);
-    }
-
-    /**
-     * @param ModuleDefinition $moduleDefinition A module.
-     *
-     * @return array<string, class-string> Its bound classes by interface.
-     */
-    private function bindings(ModuleDefinition $moduleDefinition): array
-    {
-        $bindings = [];
-
-        foreach ($moduleDefinition->module->services() as $binding) {
-            $bindings[$binding->interface] = $binding->class;
-        }
-
-        return $bindings;
     }
 }

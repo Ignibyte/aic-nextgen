@@ -8,23 +8,30 @@ use function array_any;
 use function str_starts_with;
 
 /**
- * What one module's constructors may be wired from (#92): its own classes and
- * bindings, those of the modules it requires, the hand-written app's classes
- * outside every module, and the framework's.
+ * What one module's constructors may be wired from (#92, #93): its own classes,
+ * bindings and factories, those of the modules it requires, the hand-written
+ * app's classes outside every module, the framework's, and the roots of the
+ * side being wired, web or console.
  */
 final readonly class WiringScope
 {
     /**
-     * @param ModuleDefinition            $module   The module being wired.
-     * @param list<string>                $visible  The namespaces of the module and the modules it requires.
-     * @param list<string>                $modules  The namespaces of every module.
-     * @param array<string, class-string> $bindings The bound class by interface, from the module and the modules it requires.
+     * @param ModuleDefinition                           $module    The module being wired.
+     * @param list<string>                               $visible   The namespaces of the module and the modules it requires.
+     * @param list<string>                               $modules   The namespaces of every module.
+     * @param array<string, class-string>                $bindings  The bound class by interface, from the module and the
+     *                                                              modules it requires.
+     * @param array<string, array{class-string, string}> $factories The factory class and method that make a type, by the
+     *                                                              type, from the module and the modules it requires.
+     * @param WiringRoots                                $roots     The roots of the side being wired.
      */
     public function __construct(
         public ModuleDefinition $module,
         public array $visible,
         public array $modules,
         public array $bindings,
+        public array $factories,
+        public WiringRoots $roots,
     ) {
     }
 

@@ -18,17 +18,17 @@ use const STDOUT;
 /**
  * Gate #4 — composer-unused: every runtime require of the root is used.
  *
- * composer-unused reads the root package's autoload roots. While `app/` holds
- * no PHP file, every require is unused by definition, so the gate defers and
- * says so instead of failing or filtering the requires away. It runs in full
- * once the demo app has code.
+ * composer-unused reads the root package's autoload roots. While `modules/`
+ * holds no PHP file, every require is unused by definition, so the gate defers
+ * and says so instead of failing or filtering the requires away. It runs in
+ * full once the demo app has a module (#93).
  */
 final readonly class ComposerUnusedGate
 {
     /**
-     * The root package's autoload root (`App\` → `app/`), relative to the repo root.
+     * The demo app's modules (`App\<Module>\` → `modules/<module>/src/`), relative to the repo root.
      */
-    private const string APP_ROOT = 'app';
+    private const string APP_ROOT = 'modules';
 
     /**
      * @param ProcessRunner $processRunner Seam wrapping `proc_open`.

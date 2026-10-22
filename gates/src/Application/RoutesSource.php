@@ -19,8 +19,8 @@ use function strtr;
 /**
  * Writes the generated routes (#92): one `<M>Routes` per module with routes,
  * chaining its routes onto the collector, and `App\Generated\ModuleRoutes`,
- * which hands the collector `config/routes.php` returns to each module's in
- * build order, in chained parts (`ChainSource`).
+ * which hands the kernel's collector to each module's in build order, in
+ * chained parts (`ChainSource`).
  */
 final readonly class RoutesSource
 {
@@ -91,7 +91,7 @@ final readonly class RoutesSource
         $classes = [RouteCollector::class, DuplicateRouteException::class];
         $chain = '';
 
-        foreach ($moduleDefinition->module->routes() as $moduleRoute) {
+        foreach ($moduleDefinition->declared(ModuleRoute::class) as $moduleRoute) {
             $classes[] = $moduleRoute->handler;
             $chain .= $this->call($moduleRoute);
         }
@@ -112,7 +112,7 @@ final readonly class RoutesSource
     public function aggregate(array $moduleClasses): array
     {
         $files = [];
-        $docblock = $this->phpClassFile->generated('the module manifests', "the modules' routes, added after config/routes.php's.");
+        $docblock = $this->phpClassFile->generated('the module manifests', "the modules' routes, in build order.");
 
         foreach ($this->chainSource->parts('ModuleRoutes', $moduleClasses, self::PART_SIZE, self::PART_SIZE) as $part) {
             $calls = $this->chainSource->calls($part);

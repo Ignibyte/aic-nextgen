@@ -7,6 +7,8 @@ namespace Gates\Application;
 use AIC\Block\Contracts\Block;
 use AIC\Container\Contracts\ServiceProvider;
 use AIC\Container\Contracts\ServiceRegistry;
+use AIC\Module\Contracts\ModuleSection;
+use AIC\Module\Contracts\PluginTag;
 use Gates\Domain\ModuleDefinition;
 use InvalidArgumentException;
 use Override;
@@ -175,11 +177,11 @@ final readonly class ProviderSource
     {
         $plugins = [];
 
-        foreach ($moduleDefinition->module->blocks() as $block) {
+        foreach ($moduleDefinition->entries(ModuleSection::Blocks) as $block) {
             $plugins[] = [Block::class, $block];
         }
 
-        foreach ($moduleDefinition->module->plugins() as $pluginTag) {
+        foreach ($moduleDefinition->declared(PluginTag::class) as $pluginTag) {
             $plugins[] = [$pluginTag->type, $pluginTag->class];
         }
 

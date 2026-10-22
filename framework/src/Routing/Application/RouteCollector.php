@@ -12,8 +12,8 @@ use AIC\Routing\Domain\RouteTable;
 use LogicException;
 
 /**
- * Declares the app's routes, in `config/routes.php`, and compiles them to a
- * RouteTable. Immutable: each declaration returns a new collector.
+ * Collects the app's routes, which the generated wiring adds from the module
+ * manifests (#93), and compiles them to a RouteTable. Immutable: each declaration returns a new collector.
  */
 final readonly class RouteCollector
 {

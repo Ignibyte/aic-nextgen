@@ -8,10 +8,10 @@ declare(strict_types=1);
  * The same file runs interpreted (public/index.php under php-fpm or `php -S`)
  * and compiled (the class bundle and this file built with `elephc --web`, see
  * gate:23). Either way it runs once per request with fresh state, as PHP-FPM
- * does: it reads the app's config (config/app.php, config/routes.php,
- * config/database.php and config/secret.php, typed), adds the modules' routes
- * (App\Generated\ModuleRoutes, #92) to config/routes.php's, wires the framework's SAPI services and the
- * app's composition root (App\AppServices), narrows the superglobals into a
+ * does: it reads the app's config (config/app.php, config/database.php and
+ * config/secret.php, typed), wires the framework's SAPI services and the app
+ * kernel (AIC\Module\Application\AppKernel) over the generated wiring
+ * (App\Generated\WebModules, #93), narrows the superglobals into a
  * SapiRequest, answers it through the kernel and emits the response through
  * PhpSapiSink (header(), http_response_code() and echo). This is the one place
  * that reads the superglobals.
@@ -21,27 +21,19 @@ use AIC\Config\Domain\AppConfig;
 use AIC\Database\Domain\DatabaseConfig;
 use AIC\Database\Infrastructure\PdoDatabase;
 use AIC\Kernel\Infrastructure\SapiServices;
-use AIC\Routing\Application\RouteCollector;
+use AIC\Module\Application\AppKernel;
+use AIC\Module\Application\HandlerContexts;
 use AIC\Sapi\Contracts\SapiRequest;
 use AIC\Sapi\Contracts\SapiUpload;
 use AIC\Sapi\Infrastructure\PhpSapiSink;
 use AIC\Secret\Domain\AppSecret;
-use App\AppServices;
-use App\Generated\ModuleRoutes;
+use App\Generated\WebModules;
 
 $appConfig = require __DIR__ . '/../config/app.php';
 
 if (!$appConfig instanceof AppConfig) {
     throw new RuntimeException('config/app.php must return an ' . AppConfig::class . '.');
 }
-
-$routeCollector = require __DIR__ . '/../config/routes.php';
-
-if (!$routeCollector instanceof RouteCollector) {
-    throw new RuntimeException('config/routes.php must return a ' . RouteCollector::class . '.');
-}
-
-$routes = (new ModuleRoutes())->add($routeCollector)->table();
 
 $databaseConfig = require __DIR__ . '/../config/database.php';
 
@@ -56,15 +48,13 @@ if (!$appSecret instanceof AppSecret) {
 }
 
 $sapiServices = new SapiServices(new PhpSapiSink());
-$appServices = new AppServices(
-    $appConfig,
-    $routes,
+$database = new PdoDatabase($databaseConfig);
+$appKernel = new AppKernel(
+    new HandlerContexts($appConfig, $sapiServices->responseBuilder(), $database, $appSecret, gmdate('Y-m-d\\TH:i:s\\Z'), __DIR__ . '/..'),
     $sapiServices->requestExtractor(),
     $sapiServices->responseBuilder(),
-    gmdate('Y-m-d\\TH:i:s\\Z'),
-    __DIR__ . '/..',
-    new PdoDatabase($databaseConfig),
-    $appSecret,
+    $database,
+    new WebModules(),
 );
 
 $server = [];
@@ -114,7 +104,7 @@ foreach ($_FILES as $field => $file) {
 }
 
 $sapiServices->sapiResponseEmitter()->emit(
-    $appServices->kernel()->serve(new SapiRequest(
+    $appKernel->kernel()->serve(new SapiRequest(
         $server,
         $body === false ? '' : $body,
         $fields,

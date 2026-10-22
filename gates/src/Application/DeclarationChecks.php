@@ -8,7 +8,10 @@ use AIC\Block\Contracts\Block;
 use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\Stream;
-use AIC\Module\Contracts\Module;
+use AIC\Module\Contracts\Binding;
+use AIC\Module\Contracts\ModuleRoute;
+use AIC\Module\Contracts\ModuleSection;
+use AIC\Module\Contracts\PluginTag;
 use AIC\Schema\Contracts\Migration;
 use Gates\Domain\ModuleDefinition;
 use InvalidArgumentException;
@@ -41,37 +44,34 @@ final readonly class DeclarationChecks
      */
     public function check(ModuleDefinition $moduleDefinition): void
     {
-        $module = $moduleDefinition->module;
-
-        foreach ($module->routes() as $moduleRoute) {
+        foreach ($moduleDefinition->declared(ModuleRoute::class) as $moduleRoute) {
             $this->checkRoute($moduleDefinition, $moduleRoute->handler);
         }
 
-        foreach ($module->services() as $binding) {
+        foreach ($moduleDefinition->declared(Binding::class) as $binding) {
             $this->checkBinding($moduleDefinition, $binding->interface, $binding->class);
         }
 
-        $this->checkPlugins($moduleDefinition, $module);
-        $this->checkMigrations($moduleDefinition, $module);
+        $this->checkPlugins($moduleDefinition);
+        $this->checkMigrations($moduleDefinition);
 
-        foreach ($module->exports() as $export) {
+        foreach ($moduleDefinition->entries(ModuleSection::Exports) as $export) {
             $this->checkOwned($moduleDefinition, $export, 'export');
         }
     }
 
     /**
      * @param ModuleDefinition $moduleDefinition The module.
-     * @param Module           $module           Its manifest.
      *
      * @throws InvalidArgumentException When a block or plugin fails its check.
      */
-    private function checkPlugins(ModuleDefinition $moduleDefinition, Module $module): void
+    private function checkPlugins(ModuleDefinition $moduleDefinition): void
     {
-        foreach ($module->blocks() as $block) {
+        foreach ($moduleDefinition->entries(ModuleSection::Blocks) as $block) {
             $this->checkPlain($moduleDefinition, $block, Block::class, 'block');
         }
 
-        foreach ($module->plugins() as $pluginTag) {
+        foreach ($moduleDefinition->declared(PluginTag::class) as $pluginTag) {
             if (!interface_exists($pluginTag->type) || $pluginTag->type === Block::class) {
                 $why = 'plugin type ' . $pluginTag->type . ' must be an interface other than Block; declare blocks in blocks()';
 
@@ -84,13 +84,12 @@ final readonly class DeclarationChecks
 
     /**
      * @param ModuleDefinition $moduleDefinition The module.
-     * @param Module           $module           Its manifest.
      *
      * @throws InvalidArgumentException When a migration fails its check or lives outside `src/Migration/`.
      */
-    private function checkMigrations(ModuleDefinition $moduleDefinition, Module $module): void
+    private function checkMigrations(ModuleDefinition $moduleDefinition): void
     {
-        foreach ($module->migrations() as $migration) {
+        foreach ($moduleDefinition->entries(ModuleSection::Migrations) as $migration) {
             $this->checkPlain($moduleDefinition, $migration, Migration::class, 'migration');
 
             if (!str_starts_with($migration, $moduleDefinition->namespace . 'Migration\\')) {
@@ -120,15 +119,17 @@ final readonly class DeclarationChecks
      * @param string           $interface        The bound interface.
      * @param string           $class            The class bound to it.
      *
-     * @throws InvalidArgumentException When the interface is none, or the class is not the module's readonly implementation of it.
+     * @throws InvalidArgumentException When the interface is none, or the class is no readonly implementation of it in the
+     *                                  module or the framework.
      */
     private function checkBinding(ModuleDefinition $moduleDefinition, string $interface, string $class): void
     {
-        $this->checkOwned($moduleDefinition, $class, 'service');
+        $placed = $moduleDefinition->owns($class) || str_starts_with($class, 'AIC\\');
         $readonly = class_exists($class) && (new ReflectionClass($class))->isReadOnly();
 
-        if (!$readonly || !interface_exists($interface) || !is_a($class, $interface, true)) {
-            $why = 'service ' . $class . ' must be a readonly class implementing the interface ' . $interface;
+        if (!$placed || !$readonly || !interface_exists($interface) || !is_a($class, $interface, true)) {
+            $why = 'service ' . $class . ' must be a readonly class of the module or the framework'
+                . ' implementing the interface ' . $interface;
 
             throw $this->refusal($moduleDefinition, $why);
         }

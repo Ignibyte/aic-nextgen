@@ -12,8 +12,8 @@
     <arg value="np"/>
 
     <file>framework/src</file>
-    <file>app</file>
     <file>modules</file>
+    <file>generated</file>
     <file>public</file>
     <file>bootstrap</file>
     <file>config</file>
@@ -296,8 +296,17 @@
         <properties>
             <property name="rootNamespaces" type="array">
                 <element key="framework/src" value="AIC"/>
-                <element key="app" value="App"/>
+                <element key="modules/auth/src" value="App\Auth"/>
+                <element key="modules/content/src" value="App\Content"/>
                 <element key="modules/faq/src" value="App\Faq"/>
+                <element key="modules/greeting/src" value="App\Greeting"/>
+                <element key="modules/home/src" value="App\Home"/>
+                <element key="modules/job/src" value="App\Job"/>
+                <element key="modules/note/src" value="App\Note"/>
+                <element key="modules/session/src" value="App\Session"/>
+                <element key="modules/site/src" value="App\Site"/>
+                <element key="modules/stock/src" value="App\Stock"/>
+                <element key="generated" value="App\Generated"/>
                 <element key="gates/src" value="Gates"/>
                 <element key="gates/architecture" value="Gates\Architecture"/>
             </property>

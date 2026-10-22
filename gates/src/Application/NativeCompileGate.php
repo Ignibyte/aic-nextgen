@@ -81,7 +81,7 @@ final readonly class NativeCompileGate
         $classes = $this->runtimeClassFinder->find($root);
 
         if ($classes === []) {
-            fwrite($stdout, 'gate:21 — no runtime classes under framework/src, app or modules yet; deferring the native gate.' . PHP_EOL);
+            fwrite($stdout, 'gate:21 — no runtime classes under framework/src or modules yet; deferring the native gate.' . PHP_EOL);
 
             return 0;
         }

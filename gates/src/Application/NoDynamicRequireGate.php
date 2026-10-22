@@ -52,7 +52,7 @@ final readonly class NoDynamicRequireGate
     /**
      * The runtime roots, relative to the repo root: everything elephc compiles.
      */
-    private const array RUNTIME_ROOTS = ['framework/src', 'app', 'modules'];
+    private const array RUNTIME_ROOTS = ['framework/src', 'modules', 'generated'];
 
     /**
      * Wire the gate to its operand classifier.

@@ -7,7 +7,7 @@
 #
 #   1. PHPMD (phpmd.xml) on the changed PHP files under framework/src, app, gates
 #   2. Deptrac over the whole tree, when PHP changed
-#   3. composer-unused (gate:4, deferring while app/ is empty), when composer.json changed
+#   3. composer-unused (gate:4, deferring while modules/ holds no PHP file), when composer.json changed
 #   4. semgrep (semgrep.yml), when PHP changed
 #   5. dangerous patterns in changed runtime code (framework/src, app, public):
 #      shell execution, eval, unserialize without allowed_classes, hardcoded
@@ -50,7 +50,7 @@ if ! is_pipeline_session "$TRANSCRIPT_PATH"; then
     clean_pass_exit
 fi
 
-SCAN_PATHS=('framework/src/*.php' 'app/*.php' 'gates/*.php' 'public/*.php' 'bin/*.php')
+SCAN_PATHS=('framework/src/*.php' 'modules/*.php' 'generated/*.php' 'gates/*.php' 'public/*.php' 'bin/*.php')
 git_capture CHANGED enforce-sast.sh git diff --name-only --diff-filter=ACM HEAD -- "${SCAN_PATHS[@]}"
 git_capture UNTRACKED enforce-sast.sh git ls-files --others --exclude-standard -- "${SCAN_PATHS[@]}"
 git_capture COMPOSER_CHANGED enforce-sast.sh git diff --name-only HEAD -- composer.json
@@ -71,7 +71,7 @@ if [ ${#PHP_FILES[@]} -gt 0 ]; then
     PHPMD_FILES=()
     for file in "${PHP_FILES[@]}"; do
         case "$file" in
-            framework/src/*|app/*|gates/*) PHPMD_FILES+=("$file") ;;
+            framework/src/*|modules/*|generated/*|gates/*) PHPMD_FILES+=("$file") ;;
         esac
     done
     if [ -x vendor/bin/phpmd ] && [ ${#PHPMD_FILES[@]} -gt 0 ]; then
@@ -105,7 +105,7 @@ $SEMGREP_OUTPUT")
     SECURITY_ISSUES=""
     for file in "${PHP_FILES[@]}"; do
         case "$file" in
-            framework/src/*|app/*|public/*) ;;
+            framework/src/*|modules/*|generated/*|public/*) ;;
             *) continue ;;
         esac
         HITS=$(grep -nP '(?<!->)(?<!::)\b(shell_exec|exec|system|passthru|proc_open|popen)\s*\(|\beval\s*\(' "$file" 2>/dev/null || true)

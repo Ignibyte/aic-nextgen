@@ -120,7 +120,7 @@ Every PHP file:
 7. No `mixed`. Genericity goes in phpdoc (`array<string, Foo>`, `list<T>`). The one exception is a method marked `#[Override]` whose PSR interface dictates `mixed` (PSR-7's `getAttribute`, `withQueryParams(array $query)`): PHPCS and semgrep both exempt such overrides, and nothing else.
 8. `final` by default; `abstract` only when an extension hierarchy is intended.
 9. Modern PHP 8.5: `match` over `switch`, enums over class constants, first-class callables, named arguments where they read better.
-10. No `new` in business logic: the composition root wires (`App\AppServices`, with the framework's `SapiServices`), in typed code.
+10. No `new` in business logic: the generated wiring (`generated/`, written by the build from the module manifests) and the framework kernels (`AppKernel`, `ConsoleKernel`, with `SapiServices`) compose the app, in typed code.
 11. No `env()` outside `config/`; no `getenv()` in runtime code.
 12. No `global`, no `$GLOBALS`, no superglobals outside the SAPI entry point (`bootstrap/serve.php`).
 13. No suppression annotations (`@phpstan-ignore`, `@psalm-suppress`, `@phpcs:ignore`, `@phpmd:*`).

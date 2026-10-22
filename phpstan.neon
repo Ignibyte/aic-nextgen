@@ -16,8 +16,8 @@ parameters:
     level: 10
     paths:
         - framework/src
-        - app
         - modules
+        - generated
         - public
         - bootstrap
         - config

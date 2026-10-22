@@ -31,7 +31,7 @@ Your job: run `composer run gate` (the 23 gates: style, static analysis, archite
 Detailed procedures are in [check.runbook.md](check.runbook.md):
 
 1. **Run** `composer run gate` in the background (about 20 seconds) and read the `gate-summary:` line.
-2. **Fix** every failing gate at its source; run again. Repeat until the summary has no `failed` clause. A named deferral is fine while its condition holds (gate:3 and gate:4 defer while `app/` is empty).
+2. **Fix** every failing gate at its source; run again. Repeat until the summary has no `failed` clause. A named deferral is fine while its condition holds (gate:4 defers while `modules/` holds no PHP file).
 3. **Re-check the browser** if a fix changed rendered output on a browser-testable pipeline.
 4. **Record**: notes' Phase 3 entry with each run's summary and fix; the final green summary verbatim. Spec `status: Phase 3 — Quality checks PASS; ready for Phase 4 — Documentation`, `next_step: Run /pipeline:complete`.
 5. **Hand off**: invoke `/pipeline:complete`.

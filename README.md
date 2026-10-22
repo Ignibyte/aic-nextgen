@@ -6,7 +6,7 @@ package with a namespace per system. It is being
 built by porting what earns its place from old AIC (`Ignibyte/aic`) and will replace it at
 cutover.
 
-The demo app shows every system at work, one feature folder each under `app/`: a home page that
+The demo app shows every system at work as ten modules under `modules/`: a home page that
 links every demo, notes with CRUD, templates and signed forms, sessions, uploads, sign-in, jobs,
 schedules and notifications, content pages, stock items with a date, a price and a flag,
 Server-Sent Events, downloads, `/api/status` and `/health`. The
@@ -17,11 +17,13 @@ compiled binary serves it, and PHP serves the same app as the reference.
 | Path | Holds |
 |---|---|
 | `framework/` | `aic/framework`, namespace `AIC\` under `framework/src/`, pulled in through a composer path repository |
-| `app/` | The demo app, `aic/app`, namespace `App\` |
+| `modules/` | The demo app, `aic/app`: one module per feature, `modules/<name>/<name>.module.php` (its manifest) and `src/` (`App\<Name>\`) |
+| `generated/` | The wiring `composer run build` writes from the manifests (`App\Generated\`); never edited by hand |
+| `templates/layouts/` | The page layouts' templates |
 | `bootstrap/serve.php` | Serves one request: the wiring, the request in, the response out; compiled into the site or run under PHP |
 | `public/index.php` | The interpreted entry (php-fpm in DDEV, `php -S`): the autoloader, then `serve.php` |
 | `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
-| `bin/aic-build` | The build step (`composer run build`): writes `build/surface.json`; `--check` is gate:24 |
+| `bin/aic-build` | The build step (`composer run build`): reads the manifests, writes `generated/`, the compiled templates and `build/surface.json`; `--check` is gate:24 |
 | `build/surface.json` | The app's surface: every route (method, path, handler, kind) and console command (name, class, kind) |
 | `.ddev/` | DDEV: nginx-fpm serving the interpreted reference, and Postgres 17 |
 

@@ -9,7 +9,7 @@ namespace AIC\Module\Contracts;
  * that answers it. The controller's kind (Page, Api or Stream) is read from its
  * class at build time, never declared a second time (#26).
  */
-final readonly class ModuleRoute
+final readonly class ModuleRoute implements ModuleDeclaration
 {
     /**
      * @param RouteMethod  $method  GET or POST.
