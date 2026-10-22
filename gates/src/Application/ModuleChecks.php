@@ -29,8 +29,8 @@ final readonly class ModuleChecks
     public function check(ModuleDefinition $moduleDefinition, string $composer, string $phpcs): void
     {
         $name = $moduleDefinition->name;
-        $autoload = '"' . str_replace('\\', '\\\\', $moduleDefinition->namespace) . '": "modules/' . $name . '/src/"';
-        $phpcsRoot = '<element key="modules/' . $name . '/src" value="' . substr($moduleDefinition->namespace, 0, -1) . '"/>';
+        $autoload = $this->autoload($name, $moduleDefinition->namespace);
+        $phpcsRoot = $this->phpcsRoot($name, $moduleDefinition->namespace);
 
         if (!str_contains($composer, $autoload)) {
             throw new InvalidArgumentException(
@@ -43,5 +43,28 @@ final readonly class ModuleChecks
                 'module ' . $name . ': add ' . $phpcsRoot . ' to the rootNamespaces of TypeNameMatchesFileName in phpcs.xml.dist.',
             );
         }
+    }
+
+    /**
+     * @param string $name      A module's name.
+     * @param string $namespace Its namespace, with its last `\`.
+     *
+     * @return string Its line in composer.json's autoload.psr-4, which the build searches for (and `make:module` prints, #122).
+     */
+    public function autoload(string $name, string $namespace): string
+    {
+        return '"' . str_replace('\\', '\\\\', $namespace) . '": "modules/' . $name . '/src/"';
+    }
+
+    /**
+     * @param string $name      A module's name.
+     * @param string $namespace Its namespace, with its last `\`.
+     *
+     * @return string Its root in phpcs.xml.dist's TypeNameMatchesFileName, which the build searches for (and `make:module`
+     *                prints, #122).
+     */
+    public function phpcsRoot(string $name, string $namespace): string
+    {
+        return '<element key="modules/' . $name . '/src" value="' . substr($namespace, 0, -1) . '"/>';
     }
 }

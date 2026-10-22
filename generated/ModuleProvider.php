@@ -22,5 +22,6 @@ final readonly class ModuleProvider implements ServiceProvider
     {
         (new SiteProvider())->register($serviceRegistry);
         (new NoteProvider())->register($serviceRegistry);
+        (new ScaffoldProvider())->register($serviceRegistry);
     }
 }

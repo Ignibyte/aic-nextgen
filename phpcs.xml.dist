@@ -37,6 +37,7 @@
                 <element key="workflow/src" value="AIC\Workflow"/>
                 <element key="modules/account/src" value="App\Account"/>
                 <element key="modules/note/src" value="App\Note"/>
+                <element key="modules/scaffold/src" value="App\Scaffold"/>
                 <element key="modules/site/src" value="App\Site"/>
                 <element key="generated" value="App\Generated"/>
                 <element key="gates/src" value="Gates"/>

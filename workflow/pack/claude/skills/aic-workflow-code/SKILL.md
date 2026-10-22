@@ -31,6 +31,10 @@ another file, add its row to the manifest first; the run records it as declared 
   `composer run build`. It writes `generated/`, `build/surface.json`, `public/assets/` and each
   component's compiled `src/Component/<Name>Template.php`; never edit those by hand. The
   compiled template is a path in the module, so it needs its manifest row.
+- **Make a new class.** For a new module, page, api, component, block, command, job or
+  migration, prefer `bin/aic make:*` (`bin/aic command:list` names the eight) to writing it by
+  hand: it writes the class in its folder, adds the manifest call, and the result passes every
+  gate. `--dry-run` lists the paths it will write; add each to the manifest first.
 - **Find before you add.** `bin/aic code:search` and `bin/aic code:refs` before you write a
   class: reuse what the app has instead of a second copy.
 

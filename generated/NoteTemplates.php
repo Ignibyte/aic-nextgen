@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
-use AIC\Component\Application\AtomTemplates;
 use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
@@ -29,7 +28,7 @@ final readonly class NoteTemplates implements ComponentTemplates
      * @param ComponentTemplates $componentTemplates The templates after these.
      */
     public function __construct(
-        private ComponentTemplates $componentTemplates = new AtomTemplates(),
+        private ComponentTemplates $componentTemplates = new ScaffoldTemplates(),
     ) {
     }
 

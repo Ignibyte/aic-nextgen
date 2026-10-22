@@ -202,6 +202,34 @@
             "method": "POST",
             "module": "note",
             "path": "/stock"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "scaffold",
+            "path": "/scaffold"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldAboutPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "scaffold",
+            "path": "/scaffold/about"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "scaffold",
+            "path": "/scaffold"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "scaffold",
+            "path": "/api/scaffold"
         }
     ],
     "commands": [
@@ -236,6 +264,12 @@
             "name": "queue:work"
         },
         {
+            "class": "App\\Scaffold\\Command\\ScaffoldHello",
+            "kind": "Command",
+            "module": "scaffold",
+            "name": "scaffold:hello"
+        },
+        {
             "class": "AIC\\Schedule\\Application\\ScheduleRunCommand",
             "kind": "Command",
             "module": "framework",
@@ -260,6 +294,12 @@
             "kind": "Job",
             "module": "framework",
             "name": "notify"
+        },
+        {
+            "class": "App\\Scaffold\\Job\\ScaffoldHelloJob",
+            "kind": "Job",
+            "module": "scaffold",
+            "name": "scaffold-hello"
         }
     ],
     "schedules": [
@@ -356,6 +396,27 @@
             ],
             "name": "note",
             "namespace": "App\\Note\\",
+            "plugins": [],
+            "prefixes": [],
+            "requires": [
+                "site"
+            ]
+        },
+        {
+            "bindings": [],
+            "blocks": [
+                "App\\Scaffold\\Block\\ScaffoldBlock"
+            ],
+            "exports": [
+                "App\\Scaffold\\Component\\ScaffoldCard"
+            ],
+            "factories": [],
+            "middleware": [],
+            "migrations": [
+                "App\\Scaffold\\Migration\\CreateScaffoldItemsTable"
+            ],
+            "name": "scaffold",
+            "namespace": "App\\Scaffold\\",
             "plugins": [],
             "prefixes": [],
             "requires": [

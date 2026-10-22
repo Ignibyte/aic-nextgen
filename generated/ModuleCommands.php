@@ -31,6 +31,7 @@ final readonly class ModuleCommands
         return array_merge(
             (new SiteCommands($this->consoleContext))->byName(),
             (new AccountCommands($this->consoleContext))->byName(),
+            (new ScaffoldCommands())->byName(),
         );
     }
 }

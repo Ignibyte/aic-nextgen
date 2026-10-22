@@ -1,0 +1,92 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AIC\Workflow\Application\Make;
+
+use AIC\Controller\Contracts\Command;
+use AIC\Controller\Contracts\CommandInput;
+use AIC\Controller\Contracts\CommandResponse;
+use AIC\Workflow\Application\Make\Source\MigrationSource;
+use AIC\Workflow\Application\UtcTime;
+use AIC\Workflow\Domain\Console\CommandUsage;
+use AIC\Workflow\Domain\Console\ParsedArguments;
+use AIC\Workflow\Domain\Make\MadeFile;
+use AIC\Workflow\Domain\Make\MakeRecipe;
+use AIC\Workflow\Exception\WorkflowRefusal;
+use Override;
+
+use function str_replace;
+
+/**
+ * `bin/aic make:migration <module> <Class> <table> [--version=<v>]` (#122): a
+ * migration creating its table with an id and a creation time. The version
+ * is `--version`, or now in UTC and the class in snake case. The manifest
+ * lists it.
+ */
+final readonly class MakeMigrationCommand implements Command
+{
+    /**
+     * @param MakeRun         $makeRun         The run.
+     * @param UtcTime         $utcTime         Now, for a version not given.
+     * @param MakeNames       $makeNames       The rules.
+     * @param MakeCalls       $makeCalls       The migration call.
+     * @param MigrationSource $migrationSource Writes the migration.
+     */
+    public function __construct(
+        private MakeRun $makeRun,
+        private UtcTime $utcTime,
+        private MakeNames $makeNames = new MakeNames(),
+        private MakeCalls $makeCalls = new MakeCalls(),
+        private MigrationSource $migrationSource = new MigrationSource(),
+    ) {
+    }
+
+    /**
+     * @param CommandInput $commandInput The line.
+     *
+     * @return CommandResponse What it wrote.
+     */
+    #[Override]
+    public function command(CommandInput $commandInput): CommandResponse
+    {
+        return $this->makeRun->run(
+            $commandInput,
+            new CommandUsage(
+                'make:migration',
+                'make:migration <module> <Class> <table> [--version=<v>] [--dry-run] [--json]',
+                ['dry-run'],
+                ['version'],
+                3,
+            ),
+            $this->recipe(...),
+        );
+    }
+
+    /**
+     * @param ParsedArguments $parsedArguments The line.
+     *
+     * @throws WorkflowRefusal When a name breaks a rule.
+     *
+     * @return MakeRecipe The migration.
+     */
+    private function recipe(ParsedArguments $parsedArguments): MakeRecipe
+    {
+        [$module, $namespace, $class] = $this->makeNames->target('', $parsedArguments);
+        $table = $this->makeNames->word($parsedArguments->positional(2), 'table');
+        $given = $parsedArguments->flag('version');
+        $version = $this->makeNames->version($given === '' ? $this->now() . '_' . $this->makeNames->snake($class) : $given);
+        $source = $this->migrationSource->source($namespace, $class, $table, $version);
+        $madeFile = new MadeFile('modules/' . $module . '/src/Migration/' . $class . '.php', $source);
+
+        return new MakeRecipe($module, $class, [$madeFile], $this->makeCalls->classOnly('migration', 'Migration', $class, $namespace));
+    }
+
+    /**
+     * @return string Now in UTC as a version's start, `YYYY_MM_DD_HHMMSS`.
+     */
+    private function now(): string
+    {
+        return str_replace(['-', 'T', ':', 'Z'], ['_', '_', '', ''], $this->utcTime->now());
+    }
+}

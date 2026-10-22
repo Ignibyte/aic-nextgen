@@ -23,6 +23,7 @@ final readonly class ModuleMigrations
             (new SiteMigrations())->all(),
             (new AccountMigrations())->all(),
             (new NoteMigrations())->all(),
+            (new ScaffoldMigrations())->all(),
         );
     }
 }
