@@ -257,36 +257,43 @@
         {
             "class": "App\\Site\\Command\\DatabasePing",
             "kind": "Command",
+            "module": "site",
             "name": "db:ping"
         },
         {
             "class": "App\\Greeting\\Command\\Greet",
             "kind": "Command",
+            "module": "greeting",
             "name": "greet"
         },
         {
             "class": "AIC\\Schema\\Application\\MigrateCommand",
             "kind": "Command",
+            "module": "framework",
             "name": "migrate"
         },
         {
             "class": "AIC\\Schema\\Application\\MigrationStatusCommand",
             "kind": "Command",
+            "module": "framework",
             "name": "migrate:status"
         },
         {
             "class": "AIC\\Queue\\Application\\QueueWorkCommand",
             "kind": "Command",
+            "module": "framework",
             "name": "queue:work"
         },
         {
             "class": "AIC\\Schedule\\Application\\ScheduleRunCommand",
             "kind": "Command",
+            "module": "framework",
             "name": "schedule:run"
         },
         {
             "class": "App\\Auth\\Command\\UserAdd",
             "kind": "Command",
+            "module": "auth",
             "name": "user:add"
         }
     ],
@@ -294,11 +301,13 @@
         {
             "class": "App\\Job\\Job\\DemoJob",
             "kind": "Job",
+            "module": "job",
             "name": "demo"
         },
         {
             "class": "AIC\\Notification\\Application\\DeliverNotification",
             "kind": "Job",
+            "module": "framework",
             "name": "notify"
         }
     ],
@@ -306,11 +315,13 @@
         {
             "cadence": "* * * * *",
             "job": "demo",
+            "module": "job",
             "name": "demo-every-minute"
         }
     ],
     "modules": [
         {
+            "bindings": [],
             "blocks": [
                 "App\\Site\\Block\\PoweredByBlock",
                 "App\\Site\\Block\\SiteNavBlock"
@@ -319,58 +330,99 @@
                 "App\\Site\\Service\\HtmlLayout",
                 "App\\Site\\Component\\AppLayout"
             ],
+            "factories": [],
+            "middleware": [],
             "migrations": [],
             "name": "site",
             "namespace": "App\\Site\\",
             "plugins": [],
+            "prefixes": [],
             "requires": []
         },
         {
+            "bindings": [
+                {
+                    "class": "App\\Auth\\Repository\\UserRepository",
+                    "interface": "AIC\\Auth\\Contracts\\UserProvider"
+                },
+                {
+                    "class": "AIC\\Auth\\Application\\PgcryptoPasswordHasher",
+                    "interface": "AIC\\Auth\\Contracts\\PasswordHasher"
+                }
+            ],
             "blocks": [],
             "exports": [],
+            "factories": [
+                "App\\Auth\\Service\\AccessRules"
+            ],
+            "middleware": [
+                {
+                    "class": "AIC\\Auth\\Application\\RequireAuthenticationMiddleware",
+                    "position": "AfterSession"
+                }
+            ],
             "migrations": [
                 "App\\Auth\\Migration\\CreateUsersTable"
             ],
             "name": "auth",
             "namespace": "App\\Auth\\",
             "plugins": [],
+            "prefixes": [
+                "/account"
+            ],
             "requires": [
                 "site"
             ]
         },
         {
+            "bindings": [],
             "blocks": [],
             "exports": [],
+            "factories": [],
+            "middleware": [],
             "migrations": [
                 "App\\Content\\Migration\\CreateContentPagesTable"
             ],
             "name": "content",
             "namespace": "App\\Content\\",
             "plugins": [],
+            "prefixes": [],
             "requires": [
                 "site"
             ]
         },
         {
+            "bindings": [
+                {
+                    "class": "App\\Faq\\Service\\DemoFaqEntries",
+                    "interface": "App\\Faq\\Service\\FaqEntries"
+                }
+            ],
             "blocks": [
                 "App\\Faq\\Block\\FaqNoteBlock"
             ],
             "exports": [
                 "App\\Faq\\Component\\FaqList"
             ],
+            "factories": [],
+            "middleware": [],
             "migrations": [],
             "name": "faq",
             "namespace": "App\\Faq\\",
             "plugins": [],
+            "prefixes": [],
             "requires": [
                 "site"
             ]
         },
         {
+            "bindings": [],
             "blocks": [],
             "exports": [
                 "App\\Greeting\\Form\\GreetingForm"
             ],
+            "factories": [],
+            "middleware": [],
             "migrations": [],
             "name": "greeting",
             "namespace": "App\\Greeting\\",
@@ -384,25 +436,33 @@
                     "type": "App\\Greeting\\Service\\Greeter"
                 }
             ],
+            "prefixes": [],
             "requires": [
                 "site"
             ]
         },
         {
+            "bindings": [],
             "blocks": [],
             "exports": [],
+            "factories": [],
+            "middleware": [],
             "migrations": [],
             "name": "home",
             "namespace": "App\\Home\\",
             "plugins": [],
+            "prefixes": [],
             "requires": [
                 "site",
                 "greeting"
             ]
         },
         {
+            "bindings": [],
             "blocks": [],
             "exports": [],
+            "factories": [],
+            "middleware": [],
             "migrations": [
                 "App\\Job\\Migration\\CreateSubscribersTable",
                 "App\\Job\\Migration\\MakeSubscriberEmailUnique"
@@ -410,15 +470,19 @@
             "name": "job",
             "namespace": "App\\Job\\",
             "plugins": [],
+            "prefixes": [],
             "requires": [
                 "site"
             ]
         },
         {
+            "bindings": [],
             "blocks": [
                 "App\\Note\\Block\\NoteTipsBlock"
             ],
             "exports": [],
+            "factories": [],
+            "middleware": [],
             "migrations": [
                 "App\\Note\\Migration\\CreateNotesTable",
                 "App\\Note\\Migration\\CreateNoteTagsTable",
@@ -427,24 +491,34 @@
             "name": "note",
             "namespace": "App\\Note\\",
             "plugins": [],
+            "prefixes": [],
             "requires": [
                 "site"
             ]
         },
         {
+            "bindings": [],
             "blocks": [],
             "exports": [],
+            "factories": [
+                "App\\Session\\Service\\UploadRules"
+            ],
+            "middleware": [],
             "migrations": [],
             "name": "session",
             "namespace": "App\\Session\\",
             "plugins": [],
+            "prefixes": [],
             "requires": [
                 "site"
             ]
         },
         {
+            "bindings": [],
             "blocks": [],
             "exports": [],
+            "factories": [],
+            "middleware": [],
             "migrations": [
                 "App\\Stock\\Migration\\CreateStockItemsTable",
                 "App\\Stock\\Migration\\AddStockCost",
@@ -453,9 +527,108 @@
             "name": "stock",
             "namespace": "App\\Stock\\",
             "plugins": [],
+            "prefixes": [],
             "requires": [
                 "site"
             ]
+        }
+    ],
+    "kinds": [
+        {
+            "contract": "AIC\\Controller\\Contracts\\Page",
+            "entry": true,
+            "folder": "Controller",
+            "kind": "Page",
+            "method": "page",
+            "response": "AIC\\Controller\\Contracts\\PageResponse"
+        },
+        {
+            "contract": "AIC\\Controller\\Contracts\\Api",
+            "entry": true,
+            "folder": "Controller",
+            "kind": "Api",
+            "method": "api",
+            "response": "AIC\\Controller\\Contracts\\ApiResponse"
+        },
+        {
+            "contract": "AIC\\Controller\\Contracts\\Stream",
+            "entry": true,
+            "folder": "Controller",
+            "kind": "Stream",
+            "method": "stream",
+            "response": "AIC\\Controller\\Contracts\\StreamResponse"
+        },
+        {
+            "contract": "AIC\\Controller\\Contracts\\Command",
+            "entry": true,
+            "folder": "Command",
+            "kind": "Command",
+            "method": "command",
+            "response": "AIC\\Controller\\Contracts\\CommandResponse"
+        },
+        {
+            "contract": "AIC\\Controller\\Contracts\\Job",
+            "entry": true,
+            "folder": "Job",
+            "kind": "Job",
+            "method": "run",
+            "response": "AIC\\Controller\\Contracts\\JobResponse"
+        },
+        {
+            "contract": "AIC\\Block\\Contracts\\Block",
+            "entry": false,
+            "folder": "Block",
+            "kind": "Block",
+            "method": "component",
+            "response": "AIC\\Component\\Contracts\\Component"
+        },
+        {
+            "contract": "AIC\\Component\\Contracts\\Component",
+            "entry": false,
+            "folder": "Component",
+            "kind": "Component",
+            "method": "",
+            "response": ""
+        },
+        {
+            "contract": "Psr\\Http\\Server\\MiddlewareInterface",
+            "entry": false,
+            "folder": "Middleware",
+            "kind": "Middleware",
+            "method": "",
+            "response": ""
+        },
+        {
+            "contract": "AIC\\Schema\\Contracts\\Migration",
+            "entry": false,
+            "folder": "Migration",
+            "kind": "Migration",
+            "method": "",
+            "response": ""
+        },
+        {
+            "contract": "AIC\\Notification\\Contracts\\Notification",
+            "entry": false,
+            "folder": "Notification",
+            "kind": "Notification",
+            "method": "",
+            "response": ""
+        },
+        {
+            "contract": "",
+            "entry": false,
+            "folder": "Form",
+            "kind": "Form",
+            "method": "",
+            "response": ""
+        },
+        {
+            "contract": "",
+            "entry": false,
+            "folder": "Repository",
+            "kind": "Repository",
+            "method": "",
+            "response": ""
         }
     ]
 }

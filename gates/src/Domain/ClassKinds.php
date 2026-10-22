@@ -15,12 +15,16 @@ use AIC\Notification\Contracts\Notification;
 use AIC\Schema\Contracts\Migration;
 use Psr\Http\Server\MiddlewareInterface;
 
+use function array_map;
+use function array_search;
 use function array_values;
 use function class_exists;
+use function count;
 use function in_array;
 use function interface_exists;
 use function is_a;
 use function str_ends_with;
+use function usort;
 
 /**
  * A class's kind and the module folder it belongs in (#26, #94), the one map
@@ -98,6 +102,24 @@ final readonly class ClassKinds
         }
 
         return $this->byInterface($class) ?? $this->bySuffix($class);
+    }
+
+    /**
+     * @return list<array{string, string, string}> Every kind as kind, contract and folder (#109): the entry kinds first,
+     *                                             in their order, then the others by interface, then the suffix kinds,
+     *                                             whose contract is empty.
+     */
+    public function table(): array
+    {
+        $rows = [];
+
+        foreach (self::BY_INTERFACE as $interface => [$kind, $folder]) {
+            $rows[] = [$kind, $interface, $folder];
+        }
+
+        usort($rows, static fn (array $one, array $other): int => self::rank($one[0]) <=> self::rank($other[0]));
+
+        return [...$rows, ...array_map(static fn (array $kind): array => [$kind[0], '', $kind[1]], $this->suffixKinds())];
     }
 
     /**
@@ -190,5 +212,19 @@ final readonly class ClassKinds
         }
 
         return $kinds;
+    }
+
+    /**
+     * @param string $kind A kind.
+     *
+     * @return int Its place among the entry kinds; after them all when it is none.
+     */
+    private static function rank(string $kind): int
+    {
+        $index = array_search($kind, self::ENTRY_KINDS, true);
+
+        return $index === false
+            ? count(self::ENTRY_KINDS)
+            : $index;
     }
 }

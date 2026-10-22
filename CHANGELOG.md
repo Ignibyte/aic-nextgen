@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Inspect commands for agents** (#109, part 1). `bin/aic` answers what the app declares, from `build/surface.json`, without booting the app or opening the database.
+  - **The commands:** `route:list [<module>] [--kind=<Kind>]`, `command:list` (each command `runtime` or `dev`), `job:list` (with the schedules that queue each job), `schedule:list`, `module:list` (requires, dependents, counts), `module:show <name>` (the manifest as declared, with each export's users from the code index) and `kind:list` (contract, method, response, folder, count). They are dev-only, in `aic/workflow`: an install with `--no-dev` has none of them.
+  - **Output:** plain text in columns, or with `--json` one `aic.console/1` envelope on one line, described by `workflow/schema/console.v1.json`. An unknown flag, a missing value or a wrong count of arguments exits 2 with the usage line; nothing found exits 1.
+  - **The surface** now records each command's, job's and schedule's module, each module's bindings, middleware, protected prefixes and factories, and a `kinds` table. A manifest newer than the surface puts a stale line first.
+  - **The record:** while a run is open, every lookup is a `code.queried` event; `module:show` names its module as the scope and the manifest and its classes as the files.
+  - `CommandInput::arguments()` gives a command all its arguments; it compiles natively with the rest of the runtime.
+
 - **Workflow modes and holds** (#117, part 3b of #91). A run is agentic or interactive, the agent can ask the operator a question, and a row the agent cannot clear goes to the operator instead of holding Stop forever.
   - **Modes:** `config/workflow.php` gains `mode` (Agentic, the default, or Interactive) and `humanComplete` (false), both frozen into run.json at begin. Interactive waits for the operator to confirm every phase exit; `humanComplete` makes an agentic run wait at complete. A confirmation waits as `paused` (exit 1) with the question in `awaiting`.
   - **Questions:** `bin/aic workflow:ask "<question>"` is the agent's; `bin/aic workflow:answer advance|stay ["<note>"]` or `"<answer>"` is the operator's, from a terminal only, refused in the agent's shell. Every answer is appended to run.json's `qa_history`; `question.asked` and `question.answered` join the event schema. An `advance` binds to the tree it was asked about, so an edit after the pause asks again. While a question waits, every write in the project is refused.

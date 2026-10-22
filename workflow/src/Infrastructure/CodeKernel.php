@@ -29,7 +29,7 @@ final readonly class CodeKernel
     }
 
     /**
-     * @return array<string, Command> `code:index`, `code:tree`, `code:search` and `code:refs`.
+     * @return array<string, Command> `code:index`, `code:tree`, `code:search` and `code:refs`, and the inspect commands (#109).
      */
     public function commands(): array
     {
@@ -44,6 +44,7 @@ final readonly class CodeKernel
             'code:refs' => new CodeRefsCommand($codeAsk, $codeTree),
             'code:search' => new CodeSearchCommand($codeAsk, $codeTree),
             'code:tree' => new CodeTreeCommand($codeAsk, $codeTree),
+            ...(new InspectKernel($this->root))->commands(),
         ];
     }
 }

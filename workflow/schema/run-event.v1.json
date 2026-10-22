@@ -108,7 +108,7 @@
       "type": "object",
       "required": ["command", "target", "outcome", "phase", "files", "scopes", "truncated"],
       "properties": {
-        "command": { "enum": ["code:tree", "code:search", "code:refs"] },
+        "command": { "enum": ["code:tree", "code:search", "code:refs", "route:list", "command:list", "job:list", "schedule:list", "module:list", "module:show", "kind:list"] },
         "target": { "type": "string" },
         "outcome": { "enum": ["ok", "fail"] },
         "phase": { "enum": ["plan", "code", "check", "complete"] },

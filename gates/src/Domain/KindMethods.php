@@ -35,6 +35,16 @@ final readonly class KindMethods
     ];
 
     /**
+     * @param string $contract A kind's interface.
+     *
+     * @return string The one method it declares for the kind; empty when it declares none or several (#109).
+     */
+    public function methodOf(string $contract): string
+    {
+        return self::METHODS[$contract] ?? '';
+    }
+
+    /**
      * @param list<string> $interfaces The full names of the interfaces a class implements.
      * @param string       $method     A method of that class.
      *

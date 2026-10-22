@@ -1,0 +1,826 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ignibyte/aic-nextgen/blob/main/workflow/schema/console.v1.json",
+  "title": "AIC console answer, version 1",
+  "description": "What a bin/aic inspect command prints with --json (#109): one envelope on one line, keys in order. data is the command's answer, shaped per command in $defs; notes holds what the answer noted (a stale surface, a lookup not recorded); an error envelope replaces data with error and exit. Additive only within version 1.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/answer:route:list"
+    },
+    {
+      "$ref": "#/$defs/answer:command:list"
+    },
+    {
+      "$ref": "#/$defs/answer:job:list"
+    },
+    {
+      "$ref": "#/$defs/answer:schedule:list"
+    },
+    {
+      "$ref": "#/$defs/answer:module:list"
+    },
+    {
+      "$ref": "#/$defs/answer:module:show"
+    },
+    {
+      "$ref": "#/$defs/answer:kind:list"
+    },
+    {
+      "$ref": "#/$defs/error"
+    }
+  ],
+  "$defs": {
+    "error": {
+      "type": "object",
+      "required": [
+        "command",
+        "error",
+        "exit",
+        "schema"
+      ],
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "exit": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "schema": {
+          "enum": [
+            "aic.console/1"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "route:list": {
+      "type": "object",
+      "required": [
+        "routes"
+      ],
+      "properties": {
+        "routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "handler",
+              "kind",
+              "method",
+              "module",
+              "path"
+            ],
+            "properties": {
+              "handler": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "method": {
+                "type": "string"
+              },
+              "module": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "command:list": {
+      "type": "object",
+      "required": [
+        "commands"
+      ],
+      "properties": {
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "class",
+              "kind",
+              "name",
+              "source",
+              "where"
+            ],
+            "properties": {
+              "class": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "where": {
+                "enum": [
+                  "runtime",
+                  "dev"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "job:list": {
+      "type": "object",
+      "required": [
+        "jobs"
+      ],
+      "properties": {
+        "jobs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "class",
+              "module",
+              "name",
+              "schedules"
+            ],
+            "properties": {
+              "class": {
+                "type": "string"
+              },
+              "module": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "schedules": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "schedule:list": {
+      "type": "object",
+      "required": [
+        "schedules"
+      ],
+      "properties": {
+        "schedules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "cadence",
+              "job",
+              "module",
+              "name"
+            ],
+            "properties": {
+              "cadence": {
+                "type": "string"
+              },
+              "job": {
+                "type": "string"
+              },
+              "module": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "module:list": {
+      "type": "object",
+      "required": [
+        "modules"
+      ],
+      "properties": {
+        "modules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "blocks",
+              "commands",
+              "dependents",
+              "jobs",
+              "migrations",
+              "name",
+              "namespace",
+              "requires",
+              "routes"
+            ],
+            "properties": {
+              "blocks": {
+                "type": "integer"
+              },
+              "commands": {
+                "type": "integer"
+              },
+              "dependents": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "jobs": {
+                "type": "integer"
+              },
+              "migrations": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "namespace": {
+                "type": "string"
+              },
+              "requires": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "routes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "count",
+                    "kind"
+                  ],
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "kind": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "module:show": {
+      "type": "object",
+      "required": [
+        "module"
+      ],
+      "properties": {
+        "module": {
+          "type": "object",
+          "required": [
+            "bindings",
+            "blocks",
+            "commands",
+            "dependents",
+            "exports",
+            "factories",
+            "jobs",
+            "middleware",
+            "migrations",
+            "name",
+            "namespace",
+            "plugins",
+            "prefixes",
+            "requires",
+            "routes",
+            "schedules"
+          ],
+          "properties": {
+            "bindings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "class",
+                  "interface"
+                ],
+                "properties": {
+                  "class": {
+                    "type": "string"
+                  },
+                  "interface": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "commands": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "class",
+                  "kind",
+                  "module",
+                  "name"
+                ],
+                "properties": {
+                  "class": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "module": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "dependents": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "exports": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "class",
+                  "users"
+                ],
+                "properties": {
+                  "class": {
+                    "type": "string"
+                  },
+                  "users": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "factories": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "jobs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "class",
+                  "kind",
+                  "module",
+                  "name"
+                ],
+                "properties": {
+                  "class": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "module": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "middleware": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "class",
+                  "position"
+                ],
+                "properties": {
+                  "class": {
+                    "type": "string"
+                  },
+                  "position": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "migrations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "name": {
+              "type": "string"
+            },
+            "namespace": {
+              "type": "string"
+            },
+            "plugins": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "class",
+                  "type"
+                ],
+                "properties": {
+                  "class": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "prefixes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "requires": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "routes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "handler",
+                  "kind",
+                  "method",
+                  "module",
+                  "path"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "method": {
+                    "type": "string"
+                  },
+                  "module": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "schedules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "cadence",
+                  "job",
+                  "module",
+                  "name"
+                ],
+                "properties": {
+                  "cadence": {
+                    "type": "string"
+                  },
+                  "job": {
+                    "type": "string"
+                  },
+                  "module": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "kind:list": {
+      "type": "object",
+      "required": [
+        "kinds"
+      ],
+      "properties": {
+        "kinds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "contract",
+              "count",
+              "entry",
+              "folder",
+              "kind",
+              "method",
+              "response"
+            ],
+            "properties": {
+              "contract": {
+                "type": "string"
+              },
+              "count": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "entry": {
+                "type": "boolean"
+              },
+              "folder": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "method": {
+                "type": "string"
+              },
+              "response": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "answer:route:list": {
+      "type": "object",
+      "required": [
+        "command",
+        "data",
+        "schema"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "enum": [
+            "route:list"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/route:list"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "enum": [
+            "aic.console/1"
+          ]
+        }
+      }
+    },
+    "answer:command:list": {
+      "type": "object",
+      "required": [
+        "command",
+        "data",
+        "schema"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "enum": [
+            "command:list"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/command:list"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "enum": [
+            "aic.console/1"
+          ]
+        }
+      }
+    },
+    "answer:job:list": {
+      "type": "object",
+      "required": [
+        "command",
+        "data",
+        "schema"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "enum": [
+            "job:list"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/job:list"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "enum": [
+            "aic.console/1"
+          ]
+        }
+      }
+    },
+    "answer:schedule:list": {
+      "type": "object",
+      "required": [
+        "command",
+        "data",
+        "schema"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "enum": [
+            "schedule:list"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/schedule:list"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "enum": [
+            "aic.console/1"
+          ]
+        }
+      }
+    },
+    "answer:module:list": {
+      "type": "object",
+      "required": [
+        "command",
+        "data",
+        "schema"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "enum": [
+            "module:list"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/module:list"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "enum": [
+            "aic.console/1"
+          ]
+        }
+      }
+    },
+    "answer:module:show": {
+      "type": "object",
+      "required": [
+        "command",
+        "data",
+        "schema"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "enum": [
+            "module:show"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/module:show"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "enum": [
+            "aic.console/1"
+          ]
+        }
+      }
+    },
+    "answer:kind:list": {
+      "type": "object",
+      "required": [
+        "command",
+        "data",
+        "schema"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "enum": [
+            "kind:list"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/kind:list"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "enum": [
+            "aic.console/1"
+          ]
+        }
+      }
+    }
+  }
+}
