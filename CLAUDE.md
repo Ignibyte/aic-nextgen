@@ -66,6 +66,8 @@ wiring around the generated pieces. #94: gate:26 holds the module boundaries (a 
 decides its `src/` folder, 15 files per folder, exports and requires, nothing outside `modules/`
 but the shell). #95: module assets: the theme moves to `assets/`, each module's
 `assets/` joins the build, and the site module's nav styles and favicon live in `modules/site/assets/`.
+#96: gate:25 holds every `*.html.php` template to the plain PHP grammar (deny by default); the
+class tools skip `modules/*/templates/` and `templates/`.
 
 ## Five kinds
 
@@ -200,6 +202,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | | | 22 | pipeline docs: frontmatter, line caps, links |
 | | | 23 | native site: the compiled app answers as PHP does |
 | | | 24 | build manifests: `build/surface.json` is fresh |
+| | | 25 | templates: the plain PHP grammar, deny by default |
 | | | 26 | module boundaries: kind folders, the 15-file cap, exports and requires, the shell |
 
 - The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
@@ -216,6 +219,20 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   `ELEPHC_BIN` overrides), run, and compared with host PHP. Work files land in `.native-gate/`
   (gitignored); pcre2 and oniguruma are pinned in `gates/native/elephc.{toml,lock}`. Everything
   outside those roots runs interpreted by design.
+- gate:25 (`bin/gate-templates.php`, #96) parses each `*.html.php` under `modules/` and
+  `templates/` with php-parser (`Gates\Templates\`), deny by default.
+  - **Allowed:** inline HTML; `<?= one expression ?>`; `if`, `switch`, `for` and `foreach` in
+    the alternative syntax; `match`; `break` and `continue`; the component variable (from the
+    first line's `<?php /** @var \Fqcn\Name $name */ ?>`) and loop variables; property and
+    array reads, `?->`; literals, comparisons, `&& || !`, `?:`, `??`, `isset()`, `empty()`,
+    `.` and arithmetic; enum cases and class constants (`Status::Sold`).
+  - **Refused:** every function (`TemplateGrammar::functions()` is empty), method and static
+    call, `::class`, `new`, closures, assignment outside a `for` header, `while` and
+    `do`/`while`, `<?php echo`, declarations, superglobals, and anything else.
+  - **Placement:** `modules/<m>/templates/components/` or `templates/layouts/`.
+  - **The class tools skip templates,** by Chad's decision, and so do the Stop hooks. A tool
+    handed a template by explicit path ignores its excludes (Pint and phpcbf then rewrite it),
+    so never pass a template to a fixer.
 - gate:26 (`bin/gate-modules.php`, #94) reads the manifests and `git ls-files -co
   --exclude-standard`. A class's kind (`Gates\Domain\ClassKinds`, shared with the surface
   manifest) decides its folder: Page, Api and Stream in `src/Controller/`, then `Command/`,

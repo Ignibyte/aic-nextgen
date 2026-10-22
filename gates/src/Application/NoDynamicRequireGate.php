@@ -17,6 +17,7 @@ use function restore_error_handler;
 use function set_error_handler;
 use function sort;
 use function sprintf;
+use function str_contains;
 use function str_ends_with;
 use function str_replace;
 
@@ -265,13 +266,14 @@ final readonly class NoDynamicRequireGate
     }
 
     /**
-     * Whether one (already-narrowed) directory entry is a `*.php` regular file.
+     * Whether one (already-narrowed) directory entry is a `*.php` regular file outside a module's templates.
      *
      * @param SplFileInfo $entry Entry yielded by the recursive iterator.
      */
     private static function isPhpEntry(SplFileInfo $entry): bool
     {
-        return $entry->isFile() && str_ends_with($entry->getFilename(), '.php');
+        // Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
+        return $entry->isFile() && str_ends_with($entry->getFilename(), '.php') && !str_contains($entry->getPathname(), '/templates/');
     }
 
     /**

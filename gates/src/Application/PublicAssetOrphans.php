@@ -4,16 +4,10 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
-
 use function array_filter;
 use function array_key_exists;
 use function array_values;
 use function dirname;
-use function is_dir;
 use function rmdir;
 use function scandir;
 use function sort;
@@ -28,6 +22,14 @@ use function unlink;
 final readonly class PublicAssetOrphans
 {
     /**
+     * @param FileLister $fileLister Lists the files under a folder.
+     */
+    public function __construct(
+        private FileLister $fileLister = new FileLister(),
+    ) {
+    }
+
+    /**
      * @param string                $directory `public/assets`, absolute.
      * @param array<string, string> $outputs   Every output, by absolute path.
      *
@@ -36,7 +38,7 @@ final readonly class PublicAssetOrphans
     public function orphans(string $directory, array $outputs): array
     {
         $orphans = array_values(array_filter(
-            $this->files($directory),
+            $this->fileLister->files($directory),
             static fn (string $file): bool => !array_key_exists($file, $outputs),
         ));
         sort($orphans);
@@ -54,30 +56,6 @@ final readonly class PublicAssetOrphans
             unlink($orphan);
             $this->prune(dirname($orphan), $directory);
         }
-    }
-
-    /**
-     * @param string $directory A folder, absolute.
-     *
-     * @return list<string> Every file under it, at any depth; none when it does not exist.
-     */
-    private function files(string $directory): array
-    {
-        if (!is_dir($directory)) {
-            return [];
-        }
-
-        $files = [];
-
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS)) as $file) {
-            if (!($file instanceof SplFileInfo) || !$file->isFile()) {
-                continue;
-            }
-
-            $files[] = $file->getPathname();
-        }
-
-        return $files;
     }
 
     /**

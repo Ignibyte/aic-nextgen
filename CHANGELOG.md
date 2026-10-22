@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **gate:25, the plain PHP template grammar** (#96, part 1 of #88). `bin/gate-templates.php` parses every `*.html.php` under `modules/` and `templates/` with php-parser (now a direct `require-dev`) and refuses, with file and line, every construct outside Chad's grammar, deny by default.
+  - **The grammar:** inline HTML, `<?= ?>` with one expression, the alternative control syntax for `if`, `switch`, `for` and `foreach`, `match`, the component variable its typing line names, and loop variables. Property and array reads, literals, comparisons, logic, `??`, `?:`, `isset()`, `empty()`, concatenation, arithmetic, enum cases and class constants.
+  - **Refused:** no function at all (the allow-list starts empty), no method or static call, no `::class`, no `new`, no assignment but a `for` counter, no `while` or `do`/`while`, and everything else.
+  - **Placement:** a template sits in a module's `templates/components/` or in `templates/layouts/`.
+  - **The class tools skip templates.** PHPStan, Psalm, PHPCS, PHPMD, Pint, Rector, Deptrac, phpcpd, semgrep, the dynamic-require scan and the Stop hooks leave them to gate:25 (Chad, 2026-10-21).
+  - **The proof:** 38 planted templates each gave their one line. Two valid templates in the tree left all 27 gates green. gate:25 defers until #97 converts the `.tpl` templates.
+  - `FileLister` now lists files for both the asset orphans and the template finder.
+
 - **Module assets, bundled at build** (#95, part 4 of #90). The site theme moves from `theme/` to the top-level `assets/`, which holds CSS only, and each module may bring `modules/<name>/assets/`.
   - **The stylesheet:** `composer run build` writes one `public/assets/aic.css` at the same URL: a header, each module's CSS by file name with the modules in requires order, then the theme last, so the site's theme has the final word. Each part sits behind a comment naming its file.
   - **The copies:** a module's other assets are copied byte for byte to `public/assets/<module>/<file>` and committed. Scripts are copied and never linked (Chad); a component that needs one declares it from #55.

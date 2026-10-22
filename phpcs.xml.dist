@@ -21,6 +21,8 @@
     <file>gates/src</file>
     <file>gates/architecture</file>
 
+    <!-- Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96). -->
+    <exclude-pattern>*/modules/*/templates/*</exclude-pattern>
     <exclude-pattern>vendor/*</exclude-pattern>
     <exclude-pattern>storage/*</exclude-pattern>
     <exclude-pattern>.rector-cache/*</exclude-pattern>

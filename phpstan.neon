@@ -32,6 +32,8 @@ parameters:
         - vendor/squizlabs/php_codesniffer/autoload.php
         - vendor/squizlabs/php_codesniffer/src/Util/Tokens.php
     excludePaths:
+        # Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
+        - modules/*/templates/*
         - vendor
         - storage (?)
         - tools (?)
@@ -129,6 +131,10 @@ parameters:
                 # PHPMD's extension point is a rule class: gate:10's
                 # kind-aware rule is the stock rule with one early return (#56).
                 - PHPMD\Rule\UnusedFormalParameter
+                # php-parser's extension point is a visitor: gate:25's template
+                # walk (#96) overrides enterNode and leaveNode; the base's no-op
+                # hooks spare it two parameters it would never read.
+                - PhpParser\NodeVisitorAbstract
         final:
             allowAbstractClasses: true
         noParameterWithContainerTypeDeclaration:

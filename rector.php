@@ -20,6 +20,8 @@ return RectorConfig::configure()
         __DIR__ . '/gates',
     ])
     ->withSkip([
+        // Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
+        __DIR__ . '/modules/*/templates',
         __DIR__ . '/vendor',
         __DIR__ . '/storage',
         __DIR__ . '/tools',

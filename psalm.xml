@@ -41,6 +41,8 @@
         <file name="bin/aic-build"/>
         <directory name="gates"/>
         <ignoreFiles>
+            <!-- Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96). -->
+            <directory name="modules/*/templates"/>
             <directory name="vendor"/>
             <directory name=".rector-cache"/>
             <directory name=".psalm-cache"/>
