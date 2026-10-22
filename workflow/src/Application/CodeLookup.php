@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application;
 
+use AIC\Workflow\Domain\CodeCrossing;
 use AIC\Workflow\Domain\CodeEdge;
 use AIC\Workflow\Domain\CodeSymbol;
 use AIC\Workflow\Exception\WorkflowRefusal;
@@ -83,4 +84,13 @@ interface CodeLookup
      * @return list<CodeEdge> The edges that start at it, or at one of its methods.
      */
     public function outgoing(string $name): array;
+
+    /**
+     * @param string $area An area, such as `module:note`.
+     *
+     * @throws WorkflowRefusal When the index cannot be read.
+     *
+     * @return list<CodeCrossing> Each class-like named across the area's edge, with the naming area and its own (#108).
+     */
+    public function crossing(string $area): array;
 }

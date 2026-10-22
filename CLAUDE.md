@@ -97,7 +97,11 @@ make:* is #122. #118: plan's grounding check (`GroundingCheck`, after the contra
 rebuilds in full, every File Manifest row and Entry Points class must be real, and the run's own
 `code.queried` events at plan must show `code:tree`, a lookup of each modified or deleted file
 and existing class (`code:refs` counts its subject only), the area of each created file, and a
-`code:search` before each new class; `var/index/` is walled.
+`code:search` before each new class; `var/index/` is walled. #108: the code wiki, `docs/wiki/`
+(`README.md` and `modules/<m>.md`), written by `composer run build` as its last step from the
+surface and the code index, held by gate:24, read live with `bin/aic code:wiki [<module>|<Class>]`;
+a module's notes go in `modules/<m>/README.md`. After any change under `modules/`, run
+`composer run build` and commit `docs/wiki/` with it.
 #105: `bin/aic workflow:init` installs the workflow in an app (`workflow/pack/`); it refuses here.
 #103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist
 at code and complete. #117: modes and holds (agentic or interactive, `workflow:ask` and the

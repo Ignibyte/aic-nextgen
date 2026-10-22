@@ -33,7 +33,7 @@ final readonly class WriteScope
     /**
      * What `composer run build` writes.
      */
-    private const array BUILD = ['build/', 'generated/', 'public/assets/'];
+    private const array BUILD = ['build/', 'generated/', 'public/assets/', 'docs/wiki/'];
 
     /**
      * What an undeclared path's refusal says after the path.

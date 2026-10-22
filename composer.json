@@ -139,7 +139,7 @@
         ]
     },
     "scripts-descriptions": {
-        "build": "Write the build-time outputs: the generated wiring, build/surface.json, each component template's class, and public/assets/ (the modules' CSS and the theme in aic.css, the modules' other assets copied).",
+        "build": "Write the build-time outputs: the generated wiring, build/surface.json, each component template's class, public/assets/ (the modules' CSS and the theme in aic.css, the modules' other assets copied), and the code wiki in docs/wiki/.",
         "gate": "Run every quality gate and print one gate-summary line (bin/gate-runner.sh).",
         "gate:0": "composer audit: no known security advisories in the locked dependencies.",
         "gate:1": "composer-normalize: the root and framework manifests are in canonical order.",
@@ -158,7 +158,7 @@
         "gate:21": "Native: every runtime class compiles, links, runs and matches PHP under elephc.",
         "gate:22": "Pipeline docs: frontmatter, line caps and internal links of the pipeline docs and phase commands.",
         "gate:23": "Native site: the app compiled with elephc --web answers every step as the interpreted app does.",
-        "gate:24": "Build outputs: the generated wiring, build/surface.json, the template classes and public/assets/ match what composer run build writes; an orphan there is stale.",
+        "gate:24": "Build outputs: the generated wiring, build/surface.json, the template classes, public/assets/ and the code wiki in docs/wiki/ match what composer run build writes; an orphan there is stale.",
         "gate:25": "Templates: every component template (*.html.php) uses only the plain PHP template grammar; deny by default.",
         "gate:26": "Module boundaries: kind folders, the 15-file cap, exports and requires, no require cycles, nothing outside modules/ but the shell.",
         "gate:27": "RawHtml, counted: every use listed and held to its grant in config/raw-html.php; RawHtml:: only in the Renderer.",

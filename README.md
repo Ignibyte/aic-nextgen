@@ -23,6 +23,7 @@ They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs
 | `framework/` | `aic/framework`, namespace `AIC\` under `framework/src/`, its architecture pages in `framework/docs/`, pulled in through a composer path repository |
 | `modules/` | The demo app, `aic/app`: one module per feature, `modules/<name>/<name>.module.php` (its manifest) and `src/` (`App\<Name>\`) |
 | `generated/` | The wiring `composer run build` writes from the manifests (`App\Generated\`); never edited by hand |
+| `docs/wiki/` | The code wiki `composer run build` writes from the surface and the code index: an index and a page per module; never edited by hand (notes go in `modules/<m>/README.md`) |
 | `templates/layouts/` | The page layouts' templates |
 | `bootstrap/serve.php` | Serves one request: the wiring, the request in, the response out; compiled into the site or run under PHP |
 | `public/index.php` | The interpreted entry (php-fpm in DDEV, `php -S`): the autoloader, then `serve.php` |

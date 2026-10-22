@@ -32,6 +32,8 @@ final readonly class ModuleShellRule implements ModuleRule
         // The app's own shell.
         // The wiring bin/aic-build writes from the manifests (#93).
         'generated/*',
+        // The code wiki bin/aic-build writes from the surface and the code index (#108).
+        'docs/wiki/*',
         // The app's settings.
         'config/*',
         // serve.php, the one request the compiled site and php-fpm serve.

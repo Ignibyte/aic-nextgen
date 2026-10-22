@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The code wiki** (#108). `composer run build` now writes `docs/wiki/`: an index and one page per module, generated whole from the module manifests, `build/surface.json` and the code index, and committed so a reviewer sees in the diff what a change did to a module.
+  - **A module page:** namespace, manifest, requires and required by, exports, routes with their kinds, commands, jobs with their schedules, schedules, blocks, migrations in order, plugins, bindings, middleware, protected prefixes, factories, classes by kind folder (components beside their templates and template classes), the framework systems it uses (each linked to its section of `framework/docs/systems.md`), the other modules' classes it uses, and what other modules use of it. Notes go in `modules/<m>/README.md`, which the page links.
+  - **The index:** every module with its routes by kind and class count, the requires graph as a mermaid block, every route, command, job and schedule, and a link to the architecture pages.
+  - **Freshness:** gate:24 calls any page stale that the build would not write byte for byte, and a page for no module an orphan; the code index is rebuilt in full for it, so a hand-edited index cannot shape a page. A missing architecture page refuses the build.
+  - **`bin/aic code:wiki [<module>|<Class>]`** renders a page live, recorded while a run is open. The guard refuses an edit under `docs/wiki/`, and a run that rebuilds pages it did not declare passes the declaration audit.
+
 - **Plan's grounding check** (#118, part 7b of #91). Plan cannot pass until the engine, on a code index it rebuilds in full each attempt, finds the plan grounded.
   - **Real:** every File Manifest row is one file path with `create`, `modify` or `delete`; a modify or delete row names a file git lists; a create row names a path that is not there; no path appears twice; every Entry Points class exists or a create row makes it (by PSR-4, or the module convention for a new module).
   - **Looked:** the run's own `code.queried` events at plan show at least one `code:tree`, a lookup of every file it modifies or deletes and every existing class it names, an outline of each created file's area, and a `code:search` before each new class. A `code:refs` answer now counts for its subject's file only.
