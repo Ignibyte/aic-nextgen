@@ -39,7 +39,8 @@ another file, add its row to the manifest first; the run records it as declared 
 The gates and the tools' configuration, `gates/`, baselines and suppressions; and what the hook
 walls whatever the manifest says: `config/workflow.php`, `var/workflow/` (but the spec), `var/index/` (the code index),
 `.claude/settings.json`, the workflow's skills, commands and lock in `.claude/`, `AGENTS.md` and
-`CLAUDE.md`. A gate that fails is fixed in the code. A house rule holds each run to this too.
+`CLAUDE.md`. Nothing outside the project and nothing under `vendor/` is written either, even through a
+symlink: the hook judges where a write really lands. A gate that fails is fixed in the code. A house rule holds each run to this too.
 
 ## Leaving code
 

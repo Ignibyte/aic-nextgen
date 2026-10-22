@@ -101,7 +101,9 @@ and existing class (`code:refs` counts its subject only), the area of each creat
 (`README.md` and `modules/<m>.md`), written by `composer run build` as its last step from the
 surface and the code index, held by gate:24, read live with `bin/aic code:wiki [<module>|<Class>]`;
 a module's notes go in `modules/<m>/README.md`. After any change under `modules/`, run
-`composer run build` and commit `docs/wiki/` with it.
+`composer run build` and commit `docs/wiki/` with it. #125: the guard judges a write by where it
+really lands and refuses, at every lever, one outside the project (symlinked `vendor/aic/*`
+included) or under `vendor/`; only `/dev/` is open outside.
 #105: `bin/aic workflow:init` installs the workflow in an app (`workflow/pack/`); it refuses here.
 #103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist
 at code and complete. #117: modes and holds (agentic or interactive, `workflow:ask` and the
