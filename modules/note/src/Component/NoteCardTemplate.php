@@ -8,7 +8,7 @@ use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\RendersMarkup;
 
 /**
- * NoteCard's markup, compiled from NoteCard.tpl by bin/aic-build (#36):
+ * NoteCard's markup, compiled from NoteCard.html.php by bin/aic-build (#97):
  * edit the template and run composer run build, never this file.
  */
 final readonly class NoteCardTemplate
@@ -28,7 +28,7 @@ final readonly class NoteCardTemplate
     /**
      * @param NoteCard $noteCard The component.
      *
-     * @return string Markup from NoteCard.tpl.
+     * @return string Markup from NoteCard.html.php.
      */
     private function part0(NoteCard $noteCard): string
     {

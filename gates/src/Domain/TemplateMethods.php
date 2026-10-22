@@ -63,19 +63,44 @@ final class TemplateMethods
      */
     public function add(array $scope, array $pieces): int
     {
-        $code = (string) preg_replace(self::LITERAL, '', implode(' ', $pieces));
-        preg_match_all('/\\$(\\w+)/', $code, $matches);
-        $parameters = array_values(array_filter(
-            $scope,
-            static fn (string $parameter): bool => in_array(self::variable($parameter), $matches[1], true),
-        ));
-        $index = count($this->sources);
-        $this->parameters[] = $parameters;
-        $this->sources[] = $this->docblock($parameters)
-            . '    private function part' . $index . '(' . implode(', ', $parameters) . "): string\n    {\n"
-            . $this->body($pieces) . "    }\n";
+        $parameters = $this->used($scope, implode(' ', $pieces));
 
-        return $index;
+        return $this->append($parameters, 'string', $this->body($pieces), 'Markup from ' . $this->template . '.');
+    }
+
+    /**
+     * A part that runs a real loop (#97): it appends each pass's markup and returns it all, so `break` and `continue`
+     * mean what PHP means.
+     *
+     * @param list<string> $scope  The variables in scope outside the loop, `Type $var`.
+     * @param string       $header The loop's header: `foreach (...)` or `for (...)`.
+     * @param list<string> $lines  The loop body's statements, each with its own nested lines.
+     *
+     * @return int The new method's number.
+     */
+    public function addLoop(array $scope, string $header, array $lines): int
+    {
+        $parameters = $this->used($scope, $header . ' ' . implode(' ', $lines));
+        $body = (string) preg_replace('/^(?=.)/m', '            ', implode("\n", $lines));
+
+        return $this->append($parameters, 'string', "        \$markup = '';\n\n        " . $header . " {\n" . $body
+            . "\n        }\n\n        return \$markup;\n", 'Markup from ' . $this->template . '.');
+    }
+
+    /**
+     * A part that computes a condition inside a loop (#97), so it reads the loop's typed variables.
+     *
+     * @param list<string> $scope The variables in scope, `Type $var`.
+     * @param string       $code  The condition.
+     *
+     * @return int The new method's number.
+     */
+    public function addTest(array $scope, string $code): int
+    {
+        $parameters = $this->used($scope, $code);
+        $summary = 'Whether a condition of ' . $this->template . ' holds.';
+
+        return $this->append($parameters, 'bool', '        return ' . $code . ";\n", $summary);
     }
 
     /**
@@ -108,10 +133,46 @@ final class TemplateMethods
 
     /**
      * @param list<string> $parameters The method's parameters, `Type $var`.
+     * @param string       $return     Its return type.
+     * @param string       $body       Its body, indented.
+     * @param string       $returns    What it returns, for its docblock.
+     *
+     * @return int The new method's number.
+     */
+    private function append(array $parameters, string $return, string $body, string $returns): int
+    {
+        $index = count($this->sources);
+        $this->parameters[] = $parameters;
+        $this->sources[] = $this->docblock($parameters, $return . ' ' . $returns)
+            . '    private function part' . $index . '(' . implode(', ', $parameters) . '): ' . $return . "\n    {\n"
+            . $body . "    }\n";
+
+        return $index;
+    }
+
+    /**
+     * @param list<string> $scope The variables in scope, `Type $var`.
+     * @param string       $code  Code that may read some of them.
+     *
+     * @return list<string> Those it reads, outside its string literals.
+     */
+    private function used(array $scope, string $code): array
+    {
+        preg_match_all('/\\$(\\w+)/', (string) preg_replace(self::LITERAL, '', $code), $matches);
+
+        return array_values(array_filter(
+            $scope,
+            static fn (string $parameter): bool => in_array(self::variable($parameter), $matches[1], true),
+        ));
+    }
+
+    /**
+     * @param list<string> $parameters The method's parameters, `Type $var`.
+     * @param string       $return     Its `@return`: the type and what it is.
      *
      * @return string Its docblock, the parameters aligned.
      */
-    private function docblock(array $parameters): string
+    private function docblock(array $parameters, string $return): string
     {
         $types = array_map(static fn (string $parameter): string => substr($parameter, 0, (int) strrpos($parameter, ' ')), $parameters);
         $width = max([0, ...array_map(strlen(...), $types)]);
@@ -121,11 +182,11 @@ final class TemplateMethods
         foreach ($parameters as $at => $parameter) {
             $variable = self::variable($parameter);
             $lines .= '     * @param ' . str_pad($types[$at], $width) . ' ' . str_pad('$' . $variable, $nameWidth) . ' '
-                . ($variable === $this->component ? 'The component.' : "A loop's item.") . "\n";
+                . ($variable === $this->component ? 'The component.' : "A loop's variable.") . "\n";
         }
 
         return "    /**\n" . ($lines === '' ? '' : $lines . "     *\n")
-            . '     * @return string Markup from ' . $this->template . ".\n     */\n";
+            . '     * @return ' . $return . "\n     */\n";
     }
 
     /**

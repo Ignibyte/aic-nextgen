@@ -8,7 +8,6 @@ use InvalidArgumentException;
 
 use function array_map;
 use function array_merge;
-use function implode;
 use function in_array;
 
 /**
@@ -75,13 +74,22 @@ final readonly class Regions
      */
     public function html(string $name): Html
     {
-        $markup = implode('', array_map(
-            static fn (Region $region): string => $region->name() === $name ? $region->render()->markup() : '',
-            $this->regions,
-        ));
+        return $this->region($name)->render();
+    }
 
-        return $markup === ''
-            ? (new Region($name, []))->render()
-            : new Html($markup);
+    /**
+     * @param string $name A region's name.
+     *
+     * @return Region The region of that name the page filled, or an empty one: a layout's template echoes it as is.
+     */
+    public function region(string $name): Region
+    {
+        foreach ($this->regions as $region) {
+            if ($region->name() === $name) {
+                return $region;
+            }
+        }
+
+        return new Region($name, []);
     }
 }

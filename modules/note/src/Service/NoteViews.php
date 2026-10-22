@@ -8,14 +8,21 @@ use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Html;
 use AIC\Component\Contracts\Region;
 use AIC\Component\Contracts\Regions;
+use AIC\Component\Domain\Badge;
+use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\Link;
 use AIC\Controller\Domain\PageDocument;
+use App\Note\Component\NoteList;
+use App\Note\Entity\Note;
 use App\Site\Service\HtmlLayout;
 use InvalidArgumentException;
 
+use function count;
+
 /**
  * The note pages' documents: their content and the All notes link on
- * AppLayout, the 404 among them. The forms are NoteForms'.
+ * AppLayout, the 404 among them, and the list of notes. The forms are
+ * NoteForms'.
  */
 final readonly class NoteViews
 {
@@ -41,6 +48,22 @@ final readonly class NoteViews
             new Regions([new Region('content', $content), new Region('nav', [new Link('All notes', '/notes')])]),
             $status,
         );
+    }
+
+    /**
+     * @param list<Note> $notes The notes, in order.
+     *
+     * @return NoteList Their count as a badge and a link to each note's page, keyed by its id.
+     */
+    public function noteList(array $notes): NoteList
+    {
+        $links = [];
+
+        foreach ($notes as $note) {
+            $links[] = new KeyedComponent((string) $note->id, new Link($note->title, '/notes/' . $note->id));
+        }
+
+        return new NoteList(new Badge((string) count($notes), 'note-count'), $links);
     }
 
     /**

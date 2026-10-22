@@ -6,13 +6,12 @@ namespace App\Site\Component;
 
 use AIC\Component\Contracts\Html;
 use AIC\Component\Contracts\Layout;
+use AIC\Component\Contracts\Region;
 use AIC\Component\Contracts\Regions;
-use AIC\Form\Contracts\FormToken;
-use AIC\Tessera\Domain\TesseraRelease;
 use Override;
 
 /**
- * The app's document, from AppLayout.tpl: the app's name as title and
+ * The app's document, from AppLayout.html.php: the app's name as title and
  * heading, the `content` region, then the `nav` region.
  */
 final readonly class AppLayout implements Layout
@@ -20,19 +19,23 @@ final readonly class AppLayout implements Layout
     /**
      * The layout's name for Tessera (`tessera-layout`).
      */
-    private const string ID = 'app';
+    public const string ID = 'app';
 
     /**
-     * @param string         $name           The app's name.
-     * @param Regions        $pageRegions    The regions the page filled.
-     * @param TesseraRelease $tesseraRelease The Tessera release the head loads.
-     * @param string         $csrfToken      The visitor's CSRF token, for Tessera's header; empty before one is issued.
+     * @param string  $name          The app's name.
+     * @param Html    $trackedAssets The theme's stylesheet and Tessera's script, each `data-track`.
+     * @param Regions $pageRegions   The regions the page filled.
+     * @param Region  $content       The `content` region: the page's filled one, or an empty one.
+     * @param Region  $nav           The `nav` region: the page's filled one, or an empty one.
+     * @param string  $csrfToken     The visitor's CSRF token, for Tessera's header; empty before one is issued.
      */
     public function __construct(
         public string $name,
+        public Html $trackedAssets,
         private Regions $pageRegions,
-        private TesseraRelease $tesseraRelease,
-        private string $csrfToken = '',
+        public Region $content,
+        public Region $nav,
+        public string $csrfToken = '',
     ) {
     }
 
@@ -71,7 +74,14 @@ final readonly class AppLayout implements Layout
     #[Override]
     public function withRegions(Regions $regions): self
     {
-        return new self($this->name, $regions, $this->tesseraRelease, $this->csrfToken);
+        return new self(
+            $this->name,
+            $this->trackedAssets,
+            $regions,
+            $regions->region('content'),
+            $regions->region('nav'),
+            $this->csrfToken,
+        );
     }
 
     /**
@@ -98,8 +108,7 @@ final readonly class AppLayout implements Layout
     #[Override]
     public function trackedAssets(): Html
     {
-        return new Html('<link rel="stylesheet" href="/assets/aic.css" data-track>'
-            . '<script defer src="' . $this->tesseraRelease->scriptPath() . '" data-track></script>');
+        return $this->trackedAssets;
     }
 
     /**
@@ -110,7 +119,7 @@ final readonly class AppLayout implements Layout
     #[Override]
     public function withCsrfToken(string $csrfToken): self
     {
-        return new self($this->name, $this->pageRegions, $this->tesseraRelease, $csrfToken);
+        return new self($this->name, $this->trackedAssets, $this->pageRegions, $this->content, $this->nav, $csrfToken);
     }
 
     /**
@@ -120,13 +129,5 @@ final readonly class AppLayout implements Layout
     public function csrfToken(): string
     {
         return $this->csrfToken;
-    }
-
-    /**
-     * @return string The header Tessera sends the token in, AIC's own (`tessera-csrf-header`).
-     */
-    public function csrfHeader(): string
-    {
-        return FormToken::HEADER;
     }
 }

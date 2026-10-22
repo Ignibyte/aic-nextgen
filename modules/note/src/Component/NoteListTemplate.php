@@ -5,16 +5,11 @@ declare(strict_types=1);
 namespace App\Note\Component;
 
 use AIC\Component\Contracts\Html;
-use AIC\Component\Domain\Badge;
-use AIC\Component\Domain\Link;
+use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\RendersMarkup;
-use App\Note\Entity\Note;
-
-use function array_map;
-use function implode;
 
 /**
- * NoteList's markup, compiled from NoteList.tpl by bin/aic-build (#36):
+ * NoteList's markup, compiled from NoteList.html.php by bin/aic-build (#97):
  * edit the template and run composer run build, never this file.
  */
 final readonly class NoteListTemplate
@@ -28,11 +23,11 @@ final readonly class NoteListTemplate
      */
     public function render(NoteList $noteList): Html
     {
-        return new Html($this->part3($noteList));
+        return new Html($this->part4($noteList));
     }
 
     /**
-     * @return string Markup from NoteList.tpl.
+     * @return string Markup from NoteList.html.php.
      */
     private function part0(): string
     {
@@ -40,17 +35,17 @@ final readonly class NoteListTemplate
     }
 
     /**
-     * @param Note $note A loop's item.
+     * @param KeyedComponent $keyedComponent A loop's variable.
      *
-     * @return string Markup from NoteList.tpl.
+     * @return string Markup from NoteList.html.php.
      */
-    private function part1(Note $note): string
+    private function part1(KeyedComponent $keyedComponent): string
     {
         return '<li>'
             . '<!--t:c NoteList.2:'
-            . self::text((string) $note->id)
+            . self::text($keyedComponent->key())
             . '-->'
-            . (new Link($note->title, '/notes/' . $note->id))->render()->markup()
+            . $keyedComponent->render()->markup()
             . '<!--/t:c-->'
             . "</li>\n";
     }
@@ -58,16 +53,29 @@ final readonly class NoteListTemplate
     /**
      * @param NoteList $noteList The component.
      *
-     * @return string Markup from NoteList.tpl.
+     * @return string Markup from NoteList.html.php.
      */
     private function part2(NoteList $noteList): string
     {
+        $markup = '';
+
+        foreach ($noteList->links as $keyedComponent) {
+            $markup .= $this->part1($keyedComponent);
+        }
+
+        return $markup;
+    }
+
+    /**
+     * @param NoteList $noteList The component.
+     *
+     * @return string Markup from NoteList.html.php.
+     */
+    private function part3(NoteList $noteList): string
+    {
         return "<ul id=\"notes\">\n"
             . '<!--t:b-->'
-            . implode('', array_map(
-                $this->part1(...),
-                $noteList->notes,
-            ))
+            . $this->part2($noteList)
             . '<!--/t:b-->'
             . "</ul>\n";
     }
@@ -75,19 +83,19 @@ final readonly class NoteListTemplate
     /**
      * @param NoteList $noteList The component.
      *
-     * @return string Markup from NoteList.tpl.
+     * @return string Markup from NoteList.html.php.
      */
-    private function part3(NoteList $noteList): string
+    private function part4(NoteList $noteList): string
     {
         return '<h2>Notes '
             . '<!--t:c NoteList.1-->'
-            . (new Badge($noteList->size(), 'note-count'))->render()->markup()
+            . $noteList->count->render()->markup()
             . '<!--/t:c-->'
             . "</h2>\n"
             . '<!--t:b-->'
-            . ($noteList->isEmpty()
+            . ($noteList->links === []
                 ? $this->part0()
-                : $this->part2($noteList))
+                : $this->part3($noteList))
             . '<!--/t:b-->';
     }
 }

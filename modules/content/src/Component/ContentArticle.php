@@ -6,20 +6,21 @@ namespace App\Content\Component;
 
 use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Html;
-use App\Content\Entity\ContentPage;
 use Override;
 
 /**
- * A content page as an article, from ContentArticle.tpl: its title and its
- * paragraphs, escaped.
+ * A content page as an article, from ContentArticle.html.php: its title and
+ * its paragraphs, escaped.
  */
 final readonly class ContentArticle implements Component
 {
     /**
-     * @param ContentPage $contentPage The page.
+     * @param string       $title      The page's title.
+     * @param list<string> $paragraphs The page's paragraphs, in order.
      */
     public function __construct(
-        public ContentPage $contentPage,
+        public string $title,
+        public array $paragraphs,
     ) {
     }
 

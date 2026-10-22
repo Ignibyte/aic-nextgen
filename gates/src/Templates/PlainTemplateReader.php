@@ -1,0 +1,94 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Gates\Templates;
+
+use Gates\Domain\TemplateReader;
+use Gates\Domain\TemplateType;
+use Gates\Domain\TemplateTypeKind;
+use Gates\Domain\TemplateUnit;
+use Gates\Domain\TemplateViolation;
+use InvalidArgumentException;
+use Override;
+
+use function array_map;
+use function dirname;
+use function implode;
+use function lcfirst;
+use function preg_match;
+use function strrpos;
+use function substr;
+
+/**
+ * Reads a plain PHP template for the build (#97). It is validated first,
+ * with gate:25's own validator, so a template the gate refuses never
+ * compiles; then its typing line names the component, and its statements are
+ * lowered to nodes. The generated class goes beside the component's file.
+ */
+final readonly class PlainTemplateReader implements TemplateReader
+{
+    /**
+     * @param TemplateValidator  $templateValidator  gate:25's checks.
+     * @param TemplateSyntax     $templateSyntax     The parser.
+     * @param TemplateHead       $templateHead       The typing line.
+     * @param TemplateClassTypes $templateClassTypes The component's checks.
+     */
+    public function __construct(
+        private TemplateValidator $templateValidator = new TemplateValidator(),
+        private TemplateSyntax $templateSyntax = new TemplateSyntax(),
+        private TemplateHead $templateHead = new TemplateHead(),
+        private TemplateClassTypes $templateClassTypes = new TemplateClassTypes(),
+    ) {
+    }
+
+    /**
+     * @param string $path   The template, relative to the repo root.
+     * @param string $source Its source.
+     *
+     * @throws InvalidArgumentException When it breaks the grammar or a type rule: one `path:line: category: detail` line each.
+     *
+     * @return TemplateUnit The template read.
+     */
+    #[Override]
+    public function read(string $path, string $source): TemplateUnit
+    {
+        $violations = $this->templateValidator->violations($path, $source);
+
+        if ($violations !== []) {
+            throw new InvalidArgumentException(implode("\n", array_map(
+                static fn (TemplateViolation $templateViolation): string => $templateViolation->message(),
+                $violations,
+            )));
+        }
+
+        [$stmts] = $this->templateSyntax->parse($source);
+        $this->templateHead->component($path, $source, $stmts);
+        $component = $this->templateHead->componentClass($stmts);
+        $short = substr($component, (int) strrpos($component, '\\') + 1);
+
+        try {
+            $file = $this->templateClassTypes->component($component, $path);
+            $scope = [lcfirst($short) => new TemplateType([TemplateTypeKind::Object], $component)];
+            $nodes = (new TemplateLowering($short))->lower($stmts, $scope);
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            $message = $path . ':' . $this->located($invalidArgumentException->getMessage());
+
+            throw new InvalidArgumentException($message, 0, $invalidArgumentException);
+        }
+
+        return new TemplateUnit($component, dirname($file) . '/' . $short . 'Template.php', $nodes);
+    }
+
+    /**
+     * @param string $message A refusal: `line: category: detail`, or `category: detail` for the typing line.
+     *
+     * @return string It with a line: the typing line's is 1.
+     */
+    private function located(string $message): string
+    {
+        return preg_match('/^\\d+: /', $message) === 1
+            ? $message
+            : '1: ' . $message;
+    }
+}

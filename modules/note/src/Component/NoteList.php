@@ -6,22 +6,23 @@ namespace App\Note\Component;
 
 use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Html;
-use App\Note\Entity\Note;
+use AIC\Component\Domain\Badge;
+use AIC\Component\Domain\KeyedComponent;
 use Override;
-
-use function count;
 
 /**
  * The list of notes, each linking to its page, under a heading with their
- * count; from NoteList.tpl.
+ * count; from NoteList.html.php.
  */
 final readonly class NoteList implements Component
 {
     /**
-     * @param list<Note> $notes The notes, in order.
+     * @param Badge                $count The count of the notes, as a badge.
+     * @param list<KeyedComponent> $links A link to each note's page, keyed by its id, in order.
      */
     public function __construct(
-        public array $notes,
+        public Badge $count,
+        public array $links,
     ) {
     }
 
@@ -32,21 +33,5 @@ final readonly class NoteList implements Component
     public function render(): Html
     {
         return (new NoteListTemplate())->render($this);
-    }
-
-    /**
-     * @return bool Whether there are no notes.
-     */
-    public function isEmpty(): bool
-    {
-        return count($this->notes) === 0;
-    }
-
-    /**
-     * @return string How many notes there are.
-     */
-    public function size(): string
-    {
-        return (string) count($this->notes);
     }
 }

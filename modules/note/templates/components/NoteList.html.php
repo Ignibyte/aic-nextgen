@@ -1,0 +1,11 @@
+<?php /** @var \App\Note\Component\NoteList $noteList */ ?>
+<h2>Notes <?= $noteList->count ?></h2>
+<?php if ($noteList->links === []): ?>
+<p id="no-notes">No notes yet.</p>
+<?php else: ?>
+<ul id="notes">
+<?php foreach ($noteList->links as $keyedComponent): ?>
+<li><?= $keyedComponent ?></li>
+<?php endforeach ?>
+</ul>
+<?php endif ?>

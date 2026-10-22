@@ -78,7 +78,8 @@ composer run gate:21        # the native gate: every runtime class through eleph
 The gates are static analysis only: PHPStan level 10, Psalm with taint analysis, PHPMD, PHPCS,
 Pint, Rector, Deptrac and phpat for the architecture, semgrep, gitleaks and the composer checks.
 A component template (`*.html.php`) is plain PHP read only; gate:25 holds it to that grammar, and
-the class tools skip it.
+the class tools skip it. `composer run build` compiles it into a class beside its component, which
+every gate checks.
 The native gate compiles every runtime class with [elephc](https://github.com/illegalstudio/elephc),
 runs it and compares the output with PHP; it needs the compiler checkout at
 `/srv/stacks/elephc` (or `ELEPHC_BIN`).

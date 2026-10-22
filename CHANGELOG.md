@@ -6,12 +6,19 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Plain PHP templates compile** (#97, part 2 of #88). `composer run build` compiles each gate:25-valid `*.html.php` into the `XTemplate.php` beside its component, and the `.tpl` grammar, `TemplateParser` and `TemplateLines` are gone.
+  - **Static types:** the reader types every expression from the component's declarations, by reflection and the constructor's `@param list<T>` (through `phpstan/phpdoc-parser`, a new `require-dev`).
+  - **Escaping by type:** a string is escaped; a number is cast, then escaped; `Html` is written raw; a `Region` as it renders; a component between `Name.N` markers, keyed by its `Keyed` key inside a loop. A list, a bool or any other object is refused.
+  - **Real loops:** `foreach` and `for` compile to loops that append with `.=`, so `break` and `continue` mean what PHP means, and block markers stay balanced. `empty()` lowers by type, and a null test on a value that cannot be null is refused.
+  - **Refusals:** each is `path:line: category: detail` (class name, property, loop type, condition type, echo type, component key, component type, not compilable). A loop part that would pass PHPCS's length or complexity limit is refused too.
+  - **The four templates** (`NoteCard`, `NoteList`, `ContentArticle`, `AppLayout`) are now `.html.php`. Their components are data: promoted public props, built by `NoteViews::noteList()`, `ContentShowPage` and `HtmlLayout`. `Regions::region()` gives a layout its regions. The pages render the same bytes as before.
+
 - **gate:25, the plain PHP template grammar** (#96, part 1 of #88). `bin/gate-templates.php` parses every `*.html.php` under `modules/` and `templates/` with php-parser (now a direct `require-dev`) and refuses, with file and line, every construct outside Chad's grammar, deny by default.
   - **The grammar:** inline HTML, `<?= ?>` with one expression, the alternative control syntax for `if`, `switch`, `for` and `foreach`, `match`, the component variable its typing line names, and loop variables. Property and array reads, literals, comparisons, logic, `??`, `?:`, `isset()`, `empty()`, concatenation, arithmetic, enum cases and class constants.
   - **Refused:** no function at all (the allow-list starts empty), no method or static call, no `::class`, no `new`, no assignment but a `for` counter, no `while` or `do`/`while`, and everything else.
   - **Placement:** a template sits in a module's `templates/components/` or in `templates/layouts/`.
   - **The class tools skip templates.** PHPStan, Psalm, PHPCS, PHPMD, Pint, Rector, Deptrac, phpcpd, semgrep, the dynamic-require scan and the Stop hooks leave them to gate:25 (Chad, 2026-10-21).
-  - **The proof:** 38 planted templates each gave their one line. Two valid templates in the tree left all 27 gates green. gate:25 defers until #97 converts the `.tpl` templates.
+  - **The proof:** 38 planted templates each gave their one line. Two valid templates in the tree left all 27 gates green. gate:25 deferred until #97 converted the `.tpl` templates.
   - `FileLister` now lists files for both the asset orphans and the template finder.
 
 - **Module assets, bundled at build** (#95, part 4 of #90). The site theme moves from `theme/` to the top-level `assets/`, which holds CSS only, and each module may bring `modules/<name>/assets/`.

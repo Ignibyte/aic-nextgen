@@ -10,7 +10,7 @@ use App\Note\Entity\Note;
 use Override;
 
 /**
- * A note's article: its title, body and date, from NoteCard.tpl.
+ * A note's article: its title, body and date, from NoteCard.html.php.
  */
 final readonly class NoteCard implements Component
 {
