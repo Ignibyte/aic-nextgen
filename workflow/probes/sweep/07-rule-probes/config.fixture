@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+use AIC\Workflow\Domain\Guard\Enforcement;
+use AIC\Workflow\Domain\HouseRule;
+use AIC\Workflow\Domain\Mode;
+use AIC\Workflow\Domain\WorkflowSettings;
+
+return new WorkflowSettings(
+    tickets: 'tickets',
+    enforcement: Enforcement::Hard,
+    requireRun: Enforcement::Hard,
+    houseRules: [
+        new HouseRule('gate-suite', 'A run leaves the gate suite as it began.', 'vendor/aic/workflow/rules/gate-suite.php'),
+        new HouseRule('raw-html-grants', 'A run adds no RawHtml grant.', 'vendor/aic/workflow/rules/raw-html-grants.php'),
+        new HouseRule('exit3', 'Exits 3: it never runs to a verdict.', 'config/rules/exit3.php'),
+        new HouseRule('held4', 'Exits 4 on its held case: a deferral.', 'config/rules/held4.php'),
+        new HouseRule('missing', 'Names a file that is not there.', 'config/rules/missing.php'),
+        new HouseRule('slow', 'Sleeps past its timeout.', 'config/rules/slow.php', 2),
+        new HouseRule('never', 'Holds on everything: it never bites.', 'config/rules/never.php'),
+        new HouseRule('noprobe', 'Has no probe beside it.', 'config/rules/noprobe.php'),
+    ],
+    mode: Mode::Agentic,
+);

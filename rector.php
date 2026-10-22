@@ -18,4 +18,5 @@ return $rector(__DIR__, [
     'workflow/src',
     'workflow/bin',
     'workflow/rules',
+    'workflow/probes/sweep',
 ]);

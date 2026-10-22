@@ -86,6 +86,21 @@ final readonly class ProjectProfile
     ];
 
     /**
+     * The class tools' folders in AIC's own repository: the runtime, the gates, and the workflow with its rules and the
+     * probe sweep's scenarios (#119).
+     */
+    private const array AIC_CLASS_ROOTS = [
+        'framework/src',
+        'modules',
+        'generated',
+        'gates/src',
+        'gates/architecture',
+        'workflow/src',
+        'workflow/rules',
+        'workflow/probes/sweep',
+    ];
+
+    /**
      * @param string $root The project's root.
      *
      * @return GateProfile `Aic` when the tree holds aic/gates' own source; `App` otherwise.
@@ -114,7 +129,7 @@ final readonly class ProjectProfile
     {
         return $this->profile($root) === GateProfile::Aic
             ? new GateRoots(
-                ['framework/src', 'modules', 'generated', 'gates/src', 'gates/architecture', 'workflow/src', 'workflow/rules'],
+                self::AIC_CLASS_ROOTS,
                 ['framework/src', 'modules', 'generated', 'gates/src', 'gates/architecture', 'workflow/src'],
                 ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'generated']],
                 ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'generated']],

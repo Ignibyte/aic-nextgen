@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AIC\Workflow\Domain\Probe;
+
+/**
+ * The steps most scenarios share (#119): the run from ticket 1 through plan
+ * to code, with the scenario's `spec.md.fixture` and plan's lookups; the
+ * change the shared ticket asks for, the home page's uploads label; and
+ * code's first green exit, which asks for the seeker, with its ledger filed
+ * (the seeker reads only a tree that passed the gates).
+ */
+final readonly class ProbePlan
+{
+    /**
+     * @return list<ProbeStep> Begin, write the spec, look, leave plan.
+     */
+    public function toCode(): array
+    {
+        return [
+            new RunStep('blocked', ticket: 1),
+            new WriteStep('var/workflow/spec-1.md', 'spec.md.fixture'),
+            new LookStep(),
+            new RunStep('advanced', [new Expect('grounding', 'passed')]),
+        ];
+    }
+
+    /**
+     * @return list<ProbeStep> Code's exit on a green tree, inspection due, then the seeker's ledger filed.
+     */
+    public function inspected(): array
+    {
+        return [new RunStep('inspection-due', [new Expect('gate', 'passed'), new Expect('seeker', 'due')]), new SeekerStep()];
+    }
+
+    /**
+     * @return ReplaceStep The ticket's change: the uploads link's label.
+     */
+    public function label(): ReplaceStep
+    {
+        return new ReplaceStep(
+            'modules/site/src/Controller/HomePage.php',
+            "'/uploads' => 'Uploads (checked by content)',",
+            "'/uploads' => 'Uploads (each file checked by its content)',",
+        );
+    }
+}

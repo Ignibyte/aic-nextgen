@@ -6,6 +6,28 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **`bin/aic workflow:probe`, the probe sweep** (#119, split from #104). The engine's planted cases, replayed in throwaway apps so a workflow change is checked against every one of them, not re-proved by hand.
+  - **The scenarios:** `workflow/probes/sweep/<nn-name>/scenario.php`, each a `ProbeScenario` of steps:
+    - plants written, deleted or replaced as the operator (a text to replace that is not there once is a failure, so a stale plant never reads as a catch);
+    - commands; `workflow:run` calls held to their outcome and report rows;
+    - plan's lookups; the seeker's ledger filed through the guard's `returned` verb; guard calls with hook payloads;
+    - the app served for the rendered check.
+  - **What they replay:**
+    - 01: the declaration audit, house rules and the rule-file freeze, the stale gate verdict, the frozen criteria and a completed run;
+    - 02: composition and the retry budget;
+    - 03 to 05: deferral, rendered and the gate timeout;
+    - 06: four gates named by one code exit;
+    - 07: six untrustworthy house rules;
+    - 08: the guard;
+    - 09: plan's grounding.
+    
+    `x-absent-plant` runs only by name.
+  - **The answer:** one `PASS`, `FAIL` or `NOT RUN` line per expectation as it settles, each scenario's time, and `probe-summary: P passed, F failed, N not run.` It exits 0 only with none failed and none not run. With the database down, a scenario that needs it runs nothing and counts every expectation as not run. Each call's output stays in `var/probe/<scenario>/`.
+  - **Where it runs:** AIC's own repository only, one scenario and one app at a time, never beside a gate run. Each app is deleted pass or fail; `--keep` keeps a failing one. It is not a gate: run it in Code of any ticket that changes `workflow/`, the gate runner, the gate list or a tool config that names `workflow/`.
+  - **One app builder:** `workflow/probes/scratch-app.sh` (`make`, `look`) and `scratch-app.php strip`, shared with the seeker probe. Its `strip` is re-pinned to `ProjectProfile`, which holds the AIC roots since #130.
+- **Fixed: gate:31 in an app with an open run** (#122, found by #119). The guard judged gate:31's in-memory makes and refused them, and an open run would have recorded them. gate:31 now makes unwatched (`MakeKernel(watched: false)`), and a make records `code.made` only where the guard watches it.
+- **gitleaks allows the workflow's progress key** (#117, #119). `"key": "<xxh128>"` in each phase report and run event read as a generic API key wherever `var/workflow/` or `var/probe/` is scanned. Only that exact match is allowed; `var/` is not allow-listed.
+
 - **`bin/aic make:*`, scaffolds that pass every gate** (#122, part 2 of #109). An agent makes a class with one command instead of writing it by hand and finding the folder, the docblocks and the manifest call by trial against the gates.
   - **The eight:** `make:module`, `make:page` (a GET page with a view of its own or `--component=<C>`, or `--post`), `make:api` (with its body in `src/Service/`), `make:component` (one promoted `title` and its template; `--export`), `make:block` (`--region`, `--weight`, `--prefix`), `make:command`, `make:job` and `make:migration` (`--version`, else now in UTC). Each writes its files whole in the kind's folder and adds its call to the manifest in place, with its `use` line in sorted order. There is no `make:form` and no `make:service`. They are dev-only, in `aic/workflow`, and `command:list` shows them as `dev`.
   - **Refusals:** a bad name exits 2 (no kind suffix, a suffix gate:26 reads as another kind, a reserved or badly formed module, a bad command, job, table or path); a collision exits 1 (an existing module, a route, command or job a manifest declares, a framework or workflow command, a page or block in a module that does not require `site`, a missing `--component`, a file already there). Nothing is written in either case, and a make never writes over a file. A manifest that does not return its `ModuleManifest` chain is refused with its file and line; add the call by hand.

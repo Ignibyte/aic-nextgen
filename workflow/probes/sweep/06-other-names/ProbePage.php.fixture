@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Note\Entity;
+
+use AIC\Controller\Contracts\Page;
+use AIC\Controller\Contracts\PageResponse;
+use AIC\Controller\Domain\PageRedirect;
+use Override;
+use Psr\Http\Message\ServerRequestInterface;
+
+/**
+ * A Page in src/Entity/, which gate:26 refuses (#119).
+ */
+final readonly class ProbePage implements Page
+{
+    /**
+     * @param ServerRequestInterface $serverRequest The request.
+     *
+     * @return PageResponse Home.
+     */
+    #[Override]
+    public function page(ServerRequestInterface $serverRequest): PageResponse
+    {
+        return new PageRedirect('/');
+    }
+}

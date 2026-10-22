@@ -45,6 +45,7 @@
         <directory name="workflow/src"/>
         <directory name="workflow/bin"/>
         <directory name="workflow/rules"/>
+        <directory name="workflow/probes/sweep"/>
         <ignoreFiles>
             <!-- Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96). -->
             <directory name="modules/*/templates"/>
