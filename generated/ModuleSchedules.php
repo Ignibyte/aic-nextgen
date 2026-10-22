@@ -17,6 +17,6 @@ final readonly class ModuleSchedules
      */
     public function all(): array
     {
-        return (new JobSchedules())->all();
+        return (new SiteSchedules())->all();
     }
 }

@@ -17,6 +17,6 @@ final readonly class ModuleJobs
      */
     public function byName(): array
     {
-        return (new JobJobs())->byName();
+        return (new SiteJobs())->byName();
     }
 }

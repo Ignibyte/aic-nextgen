@@ -7,7 +7,7 @@ browser_testable: No
 
 | # | Target | Met |
 |---|---|---|
-| 1 | `bin/aic notes:stats` prints the number of notes and the number of content pages, a line each | [ ] |
+| 1 | `bin/aic notes:stats` prints the number of notes and the number of users, a line each | [ ] |
 | 2 | CHANGELOG.md has an entry for it | [ ] |
 
 ## Design

@@ -28,7 +28,6 @@ final readonly class SiteNavBlock implements Block
     private const array ENTRIES = [
         '/' => 'Home',
         '/notes' => 'Notes',
-        '/pages' => 'Pages',
         '/stock' => 'Stock',
     ];
 

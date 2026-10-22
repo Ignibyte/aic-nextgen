@@ -20,11 +20,9 @@ final readonly class ModuleMigrations
     public function all(): array
     {
         return array_merge(
-            (new AuthMigrations())->all(),
-            (new ContentMigrations())->all(),
-            (new JobMigrations())->all(),
+            (new SiteMigrations())->all(),
+            (new AccountMigrations())->all(),
             (new NoteMigrations())->all(),
-            (new StockMigrations())->all(),
         );
     }
 }

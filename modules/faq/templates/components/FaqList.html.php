@@ -1,2 +1,0 @@
-<?php /** @var \App\Faq\Component\FaqList $faqList */ ?>
-<section id="faq"><h2>Questions about modules</h2><dl><?php foreach ($faqList->entries as $faqEntry): ?><dt><?= $faqEntry->question ?></dt><dd><?= $faqEntry->answer ?></dd><?php endforeach ?></dl></section>

@@ -1,21 +1,21 @@
 diff --git i/CHANGELOG.md w/CHANGELOG.md
-index cc44902..fc99a66 100644
+index 471478a..f77a070 100644
 --- i/CHANGELOG.md
 +++ w/CHANGELOG.md
 @@ -4,6 +4,8 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
  
  ## Unreleased
  
-+- `bin/aic notes:stats` prints how many notes and content pages the demo holds.
++- `bin/aic notes:stats` prints how many notes and users the app holds.
 +
  ### Added
  
- - **The installer for new apps** (#105, part 6 of #91). `bin/aic workflow:init` installs the gated workflow in an app made from the demo, and a second run changes nothing.
+ - **The guard judges a write by where it really lands** (#125). Found in #118's proof, where an agent followed a symlinked `vendor/aic/*` into AIC's own repository. Every write the guard sees (an edit, an MCP tool's path, a shell redirect, `cp`, `tee`, `sed -i`) is resolved to its real path, through the deepest existing folder for a new file, and refused at every enforcement level, run or no run, when it lands outside the project or under `vendor/`. Only `/dev/` stays open, so `2>/dev/null` still works. Proved in a scratch app whose `vendor/aic/framework` links back to this repository.
 diff --git i/modules/note/note.module.php w/modules/note/note.module.php
-index d625cc5..b513f69 100644
+index 355ddfa..8cef39d 100644
 --- i/modules/note/note.module.php
 +++ w/modules/note/note.module.php
-@@ -10,6 +10,7 @@ declare(strict_types=1);
+@@ -11,6 +11,7 @@ declare(strict_types=1);
  use AIC\Module\Contracts\ModuleManifest;
  use AIC\Module\Contracts\RouteMethod;
  use App\Note\Block\NoteTipsBlock;
@@ -23,17 +23,17 @@ index d625cc5..b513f69 100644
  use App\Note\Controller\NoteCreatePost;
  use App\Note\Controller\NoteDeletePost;
  use App\Note\Controller\NoteListPage;
-@@ -26,6 +27,7 @@ return (new ModuleManifest('note'))
-     ->route(RouteMethod::Get, '/notes/{id:int}', NoteShowPage::class)
-     ->route(RouteMethod::Post, '/notes/{id:int}', NoteUpdatePost::class)
-     ->route(RouteMethod::Post, '/notes/{id:int}/delete', NoteDeletePost::class)
-+    ->command('notes:stats', NoteStats::class)
+@@ -35,6 +36,7 @@ return (new ModuleManifest('note'))
+     ->route(RouteMethod::Get, '/stock', StockPage::class)
+     ->route(RouteMethod::Post, '/stock', StockPost::class)
      ->block(NoteTipsBlock::class)
++    ->command('notes:stats', NoteStats::class)
      ->migration(CreateNotesTable::class)
      ->migration(CreateNoteTagsTable::class)
+     ->migration(IndexNotesByCreation::class)
 diff --git i/modules/note/src/Command/NoteStats.php w/modules/note/src/Command/NoteStats.php
 new file mode 100644
-index 0000000..0ca233a
+index 0000000..4d12b68
 --- /dev/null
 +++ w/modules/note/src/Command/NoteStats.php
 @@ -0,0 +1,43 @@
@@ -52,7 +52,7 @@ index 0000000..0ca233a
 +use Override;
 +
 +/**
-+ * `aic notes:stats`: how many notes and content pages the demo holds.
++ * `aic notes:stats`: how many notes and users the app holds.
 + */
 +final readonly class NoteStats implements Command
 +{
@@ -76,12 +76,12 @@ index 0000000..0ca233a
 +    {
 +        return new CommandResult([
 +            'notes: ' . $this->noteRepository->noteCount(),
-+            'content pages: ' . $this->noteRepository->contentPageCount(),
++            'users: ' . $this->noteRepository->userCount(),
 +        ], 0);
 +    }
 +}
 diff --git i/modules/note/src/Repository/NoteRepository.php w/modules/note/src/Repository/NoteRepository.php
-index 54f65a2..12e3ab4 100644
+index 54f65a2..5bfdc94 100644
 --- i/modules/note/src/Repository/NoteRepository.php
 +++ w/modules/note/src/Repository/NoteRepository.php
 @@ -14,6 +14,7 @@ use AIC\Entity\Domain\FieldType;
@@ -109,12 +109,12 @@ index 54f65a2..12e3ab4 100644
 +    /**
 +     * @throws QueryException When the query fails.
 +     *
-+     * @return int How many content pages there are.
++     * @return int How many users there are.
 +     */
-+    public function contentPageCount(): int
++    public function userCount(): int
 +    {
-+        return count($this->entityStore->query(new EntityType('content_pages', 'slug', [
-+            new Field('title', FieldType::Text),
++        return count($this->entityStore->query(new EntityType('users', 'login', [
++            new Field('created_at', FieldType::CreatedAt),
 +        ]))->rows());
 +    }
 +

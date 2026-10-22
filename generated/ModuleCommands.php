@@ -30,8 +30,7 @@ final readonly class ModuleCommands
     {
         return array_merge(
             (new SiteCommands($this->consoleContext))->byName(),
-            (new AuthCommands($this->consoleContext))->byName(),
-            (new GreetingCommands($this->consoleContext))->byName(),
+            (new AccountCommands($this->consoleContext))->byName(),
         );
     }
 }

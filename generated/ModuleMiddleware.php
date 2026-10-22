@@ -26,6 +26,6 @@ final readonly class ModuleMiddleware
      */
     public function afterSession(): array
     {
-        return (new AuthMiddleware($this->handlerContext))->afterSession();
+        return (new AccountMiddleware($this->handlerContext))->afterSession();
     }
 }

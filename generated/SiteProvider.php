@@ -9,6 +9,9 @@ use AIC\Container\Contracts\ServiceProvider;
 use AIC\Container\Contracts\ServiceRegistry;
 use App\Site\Block\PoweredByBlock;
 use App\Site\Block\SiteNavBlock;
+use App\Site\Service\EnglishGreeter;
+use App\Site\Service\Greeter;
+use App\Site\Service\SpanishGreeter;
 use Override;
 
 /**
@@ -27,5 +30,9 @@ final readonly class SiteProvider implements ServiceProvider
         $serviceRegistry->tag(Block::class, PoweredByBlock::class);
         $serviceRegistry->singleton(SiteNavBlock::class, static fn (): SiteNavBlock => new SiteNavBlock());
         $serviceRegistry->tag(Block::class, SiteNavBlock::class);
+        $serviceRegistry->singleton(EnglishGreeter::class, static fn (): EnglishGreeter => new EnglishGreeter());
+        $serviceRegistry->tag(Greeter::class, EnglishGreeter::class);
+        $serviceRegistry->singleton(SpanishGreeter::class, static fn (): SpanishGreeter => new SpanishGreeter());
+        $serviceRegistry->tag(Greeter::class, SpanishGreeter::class);
     }
 }

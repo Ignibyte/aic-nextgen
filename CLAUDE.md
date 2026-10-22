@@ -106,7 +106,8 @@ really lands and refuses, at every lever, one outside the project (symlinked `ve
 included) or under `vendor/`; only `/dev/` is open outside.
 #105: `bin/aic workflow:init` installs the workflow in an app (`workflow/pack/`); it refuses here.
 #103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist;
-#127 made it one advisory pass at code, on the diff plus one hop. #117: modes and holds (agentic or interactive, `workflow:ask` and the
+#127 made it one advisory pass at code, on the diff plus one hop. #126 (part A): the root is a
+three-module fixture app; a module's handlers build in parts that fit (`HandlerParts`). #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 
 ## Five kinds
@@ -136,8 +137,11 @@ Background work is a job; the HTTP server's processes are its workers.
 - One package, **`aic/framework`**, in `framework/`, namespace `AIC\` with one namespace per
   system (`AIC\Http`, `AIC\Routing`, `AIC\Entity`, ...). It reaches the root through a composer
   path repository and moves to its own repo when published.
-- The repo root is the demo app, `aic/app`: ten modules under `modules/` (`site`, `home`,
-  `greeting`, `note`, `session`, `auth`, `content`, `job`, `stock`, `faq`), each with its classes
+- The repo root is AIC's fixture app, `aic/app` (#126): three modules under `modules/`, cut
+  from the ten-module demo (the tag `demo-reference`; rebuilt in `Ignibyte/aic-demo` by #128 and
+  #129). `site` holds home, greeting and job; `note` holds stock; `account` holds auth and
+  session; content and faq were dropped. It is AIC's test bed, not a showcase: a feature the
+  gates need is added here with its framework change. Each module has its classes
   in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Component`, `Block`,
   `Form`, `Entity`, `Repository`, `Service`, `Command`, `Job`, `Migration`). There is no `app/`
   and no hand-written composition class (#93). Page layouts compile from `templates/layouts/`.

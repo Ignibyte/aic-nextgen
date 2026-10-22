@@ -1,6 +1,6 @@
 {
     "name": "aic/app",
-    "description": "Absolute Insanity, AI (AIAI): the demo app that runs aic/framework.",
+    "description": "Absolute Insanity, AI (AIAI): AIC's fixture app, the site that holds aic/framework's gates (the demo is the demo-reference tag).",
     "license": "MIT",
     "type": "project",
     "require": {
@@ -65,17 +65,10 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "App\\Auth\\": "modules/auth/src/",
-            "App\\Content\\": "modules/content/src/",
-            "App\\Faq\\": "modules/faq/src/",
+            "App\\Account\\": "modules/account/src/",
             "App\\Generated\\": "generated/",
-            "App\\Greeting\\": "modules/greeting/src/",
-            "App\\Home\\": "modules/home/src/",
-            "App\\Job\\": "modules/job/src/",
             "App\\Note\\": "modules/note/src/",
-            "App\\Session\\": "modules/session/src/",
-            "App\\Site\\": "modules/site/src/",
-            "App\\Stock\\": "modules/stock/src/"
+            "App\\Site\\": "modules/site/src/"
         }
     },
     "autoload-dev": {

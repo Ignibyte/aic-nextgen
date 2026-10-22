@@ -1,13 +1,13 @@
-diff --git i/modules/faq/src/Service/DemoFaqEntries.php w/modules/faq/src/Service/DemoFaqEntries.php
-index 86b149d..06296aa 100644
---- i/modules/faq/src/Service/DemoFaqEntries.php
-+++ w/modules/faq/src/Service/DemoFaqEntries.php
-@@ -21,7 +21,7 @@ final readonly class DemoFaqEntries implements FaqEntries
-     {
-         return [
-             new FaqEntry('What is a module?', 'A folder under modules/ with a manifest and its classes, wired by the build.'),
--            new FaqEntry('Who wires it?', 'bin/aic-build reads every manifest and writes the wiring under app/Generated/.'),
-+            new FaqEntry('Who wires it?', 'bin/aic-build reads every manifest and writes the wiring under generated/.'),
-             new FaqEntry('Is anything discovered at run time?', 'No. The manifests are read at build time, so the app compiles natively.'),
-         ];
-     }
+diff --git i/modules/site/src/Controller/HomePage.php w/modules/site/src/Controller/HomePage.php
+index 19f9aac..9832699 100644
+--- i/modules/site/src/Controller/HomePage.php
++++ w/modules/site/src/Controller/HomePage.php
+@@ -41,7 +41,7 @@ final readonly class HomePage implements Page
+         '/notifications' => 'Notifications (mail and database)',
+         '/stock' => 'Stock (date, numeric and boolean columns)',
+         '/ticks' => 'Live ticks (a Tessera stream)',
+-        '/uploads' => 'Uploads (checked by content)',
++        '/uploads' => 'Uploads (each file checked by its content)',
+         '/visits' => 'Visits (sessions)',
+     ];
+ 

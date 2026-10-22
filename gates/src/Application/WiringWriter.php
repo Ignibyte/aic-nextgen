@@ -9,6 +9,7 @@ use InvalidArgumentException;
 
 use function array_keys;
 use function array_map;
+use function preg_replace;
 use function substr;
 
 /**
@@ -53,7 +54,7 @@ final readonly class WiringWriter
             $studly = $wiredModule->module->studlyName();
 
             foreach ($own as $kind => $source) {
-                $members[$kind][] = $studly . $kind;
+                $members[preg_replace('/Part\\d+$/', '', $kind) ?? $kind][] = $studly . $kind;
                 $files[$studly . $kind . '.php'] = $source;
             }
 
