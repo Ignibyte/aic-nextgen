@@ -12,7 +12,7 @@
     "run_id": { "type": "string", "pattern": "^run-[0-9a-f]{12}$" },
     "ticket_id": { "type": "string", "minLength": 1 },
     "at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
-    "type": { "enum": ["run.started", "phase.began", "phase.attempted", "phase.ended", "ticket.moved", "run.completed", "run.reset", "run.held", "run.resumed"] },
+    "type": { "enum": ["run.started", "phase.began", "phase.attempted", "phase.ended", "ticket.moved", "run.completed", "run.reset", "run.held", "run.resumed", "code.queried"] },
     "payload": { "type": "object" }
   },
   "allOf": [
@@ -24,7 +24,8 @@
     { "if": { "properties": { "type": { "const": "run.completed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.completed" } } } },
     { "if": { "properties": { "type": { "const": "run.reset" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.reset" } } } },
     { "if": { "properties": { "type": { "const": "run.held" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.held" } } } },
-    { "if": { "properties": { "type": { "const": "run.resumed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.resumed" } } } }
+    { "if": { "properties": { "type": { "const": "run.resumed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.resumed" } } } },
+    { "if": { "properties": { "type": { "const": "code.queried" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/code.queried" } } } }
   ],
   "$defs": {
     "run.started": {
@@ -97,6 +98,20 @@
       "properties": {
         "kind": { "const": "operator" },
         "phase": { "enum": ["plan", "code", "check", "complete"] }
+      }
+    },
+    "code.queried": {
+      "description": "The agent asked the code index (#106): the command, its target, whether it answered, the indexed files the answer showed (500 at most) and the areas it outlined. Recorded only while a run is open.",
+      "type": "object",
+      "required": ["command", "target", "outcome", "phase", "files", "scopes", "truncated"],
+      "properties": {
+        "command": { "enum": ["code:tree", "code:search", "code:refs"] },
+        "target": { "type": "string" },
+        "outcome": { "enum": ["ok", "fail"] },
+        "phase": { "enum": ["plan", "code", "check", "complete"] },
+        "files": { "type": "array", "items": { "type": "string" }, "maxItems": 500 },
+        "scopes": { "type": "array", "items": { "type": "string" } },
+        "truncated": { "type": "boolean" }
       }
     },
     "run.reset": {

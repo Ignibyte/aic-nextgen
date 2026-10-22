@@ -72,10 +72,12 @@ final readonly class EvidenceSchema
         SQL;
 
     /**
-     * @param AtomicFile $atomicFile Makes the state directory.
+     * @param AtomicFile       $atomicFile       Makes the state directory.
+     * @param SqliteStatements $sqliteStatements Runs its statements.
      */
     public function __construct(
         private AtomicFile $atomicFile = new AtomicFile(),
+        private SqliteStatements $sqliteStatements = new SqliteStatements(),
     ) {
     }
 
@@ -124,12 +126,6 @@ final readonly class EvidenceSchema
      */
     public function statement(PDO $pdo, string $sql, array $parameters): PDOStatement
     {
-        $statement = $pdo->prepare($sql);
-
-        if (!$statement instanceof PDOStatement || !$statement->execute($parameters)) {
-            throw new PDOException('the statement failed: ' . $sql);
-        }
-
-        return $statement;
+        return $this->sqliteStatements->run($pdo, $sql, $parameters);
     }
 }
