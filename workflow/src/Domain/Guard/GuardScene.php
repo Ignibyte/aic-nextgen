@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Domain\Guard;
 
+use AIC\Workflow\Domain\Mode;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\RunState;
 use AIC\Workflow\Domain\WorkflowSettings;
@@ -45,5 +46,15 @@ final readonly class GuardScene
         return $this->runState instanceof RunState
             ? $this->runState->runStart->enforcement
             : $this->workflowSettings->enforcement;
+    }
+
+    /**
+     * @return Mode The open run's frozen mode (#117); the settings' when no run is open.
+     */
+    public function mode(): Mode
+    {
+        return $this->runState instanceof RunState
+            ? $this->runState->runStart->mode
+            : $this->workflowSettings->mode;
     }
 }

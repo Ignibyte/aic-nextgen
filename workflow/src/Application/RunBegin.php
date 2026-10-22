@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Workflow\Application;
 
 use AIC\Workflow\Domain\Guard\Enforcement;
+use AIC\Workflow\Domain\Mode;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\PhaseStatus;
 use AIC\Workflow\Domain\RunPhases;
@@ -22,13 +23,15 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 final readonly class RunBegin
 {
     /**
-     * @param RunStore     $runStore     The run's store.
-     * @param TicketSource $ticketSource The tickets.
-     * @param RunJournal   $runJournal   The events and the ticket's moves.
-     * @param RunHost      $runHost      The commit and the ids.
-     * @param UtcTime      $utcTime      The clock.
-     * @param Enforcement  $enforcement  The guard's enforcement, frozen into the run (#102).
-     * @param RuleFiles    $ruleFiles    The house rules' files, hashed into the run (#104).
+     * @param RunStore     $runStore      The run's store.
+     * @param TicketSource $ticketSource  The tickets.
+     * @param RunJournal   $runJournal    The events and the ticket's moves.
+     * @param RunHost      $runHost       The commit and the ids.
+     * @param UtcTime      $utcTime       The clock.
+     * @param Enforcement  $enforcement   The guard's enforcement, frozen into the run (#102).
+     * @param RuleFiles    $ruleFiles     The house rules' files, hashed into the run (#104).
+     * @param Mode         $mode          Agentic or interactive, frozen into the run (#117).
+     * @param bool         $humanComplete Whether the operator confirms complete, frozen into the run (#117).
      */
     public function __construct(
         private RunStore $runStore,
@@ -38,6 +41,8 @@ final readonly class RunBegin
         private UtcTime $utcTime,
         private Enforcement $enforcement,
         private RuleFiles $ruleFiles,
+        private Mode $mode = Mode::Agentic,
+        private bool $humanComplete = false,
     ) {
     }
 
@@ -84,6 +89,8 @@ final readonly class RunBegin
             'var/workflow/spec-' . $number . '.md',
             $this->enforcement,
             $this->ruleFiles->hashes(),
+            $this->mode,
+            $this->humanComplete,
         );
     }
 }

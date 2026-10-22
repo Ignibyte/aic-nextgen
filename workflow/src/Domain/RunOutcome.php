@@ -62,6 +62,7 @@ final readonly class RunOutcome
      *         phase: string,
      *         attempt: int,
      *         advance: bool,
+     *         key: string,
      *         rows: list<array{check: string, status: string, why: string, remedy: string}>
      *     },
      *     blocked: list<array{check: string, status: string, why: string, remedy: string}>,

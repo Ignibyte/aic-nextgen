@@ -17,6 +17,13 @@ starts one.
   failing on it, such as a ticket file it could not move.
 - A row whose status is `held` waits on the operator. Only they clear it, from a terminal: tell
   them what it says and stop.
+- `mode` is `agentic` or `interactive`, and `human_complete` says whether complete waits for the
+  operator; both are frozen when the run begins.
+- `awaiting` is null while you may work the run. Otherwise its `kind` says what the run waits on:
+  `operator` (held rows), `question` (yours, from `workflow:ask`), `conversation` or `complete`
+  (a phase exit the operator confirms). Each waits for the operator; tell them and stop.
+- `qa_history` lists every answered question in order. The last entry holds the operator's
+  latest answer: `answer`, and `option` (`advance` or `stay`) for a phase exit.
 
 The run's state lives in `var/workflow/`, which only the engine writes. Read it through this
 command, never by editing the files there. To go on, use the

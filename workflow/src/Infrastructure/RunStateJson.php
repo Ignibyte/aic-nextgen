@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
-use AIC\Workflow\Domain\Guard\Hold;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\PhaseReport;
 use AIC\Workflow\Domain\Phases;
@@ -20,6 +19,7 @@ use stdClass;
 use function array_map;
 use function json_decode;
 use function json_encode;
+use function ksort;
 
 use const JSON_PRETTY_PRINT;
 use const JSON_THROW_ON_ERROR;
@@ -56,13 +56,18 @@ final readonly class RunStateJson
         'enforcement',
         'awaiting',
         'rule_files',
+        'mode',
+        'human_complete',
+        'qa_history',
     ];
 
     /**
      * @param RunPartsJson $runPartsJson Reads the ticket, the reports and the notes.
+     * @param QuestionJson $questionJson Reads the hold, the mode and the answered questions (#117).
      */
     public function __construct(
         private RunPartsJson $runPartsJson = new RunPartsJson(),
+        private QuestionJson $questionJson = new QuestionJson(),
     ) {
     }
 
@@ -73,12 +78,10 @@ final readonly class RunStateJson
      */
     public function encode(RunState $runState): string
     {
-        $currentPhase = $runState->currentPhase;
         $document = [
             'attempts' => $runState->attempts === [] ? new stdClass() : $runState->attempts,
-            'awaiting' => $runState->awaiting instanceof Hold ? $runState->awaiting->toArray() : null,
             'base_commit' => $runState->runStart->baseCommit,
-            'current_phase' => $currentPhase instanceof Phase ? $currentPhase->value : null,
+            'current_phase' => $runState->currentPhase instanceof Phase ? $runState->currentPhase->value : null,
             'enforcement' => $runState->runStart->enforcement->value,
             'notes' => array_map(static fn (RunNote $runNote): array => $runNote->toArray(), $runState->notes),
             'phases' => $runState->runPhases->names(),
@@ -91,7 +94,9 @@ final readonly class RunStateJson
             'started_at' => $runState->runStart->startedAt,
             'ticket' => $runState->ticket->toArray(),
             'v' => self::VERSION,
+            ...$this->questionJson->encode($runState),
         ];
+        ksort($document);
 
         return json_encode($document, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
     }
@@ -138,25 +143,39 @@ final readonly class RunStateJson
      */
     private function run(JsonReader $jsonReader): RunState
     {
-        $runStart = new RunStart(
-            $jsonReader->string('run_id'),
-            $jsonReader->string('started_at'),
-            $jsonReader->nullableString('base_commit'),
-            $jsonReader->string('spec_path'),
-            $this->runPartsJson->enforcement($jsonReader),
-            $this->runPartsJson->ruleFiles($jsonReader),
-        );
         $currentPhase = $jsonReader->nullableString('current_phase');
 
         return new RunState(
-            $runStart,
+            $this->start($jsonReader),
             $this->runPartsJson->ticket($jsonReader->object('ticket')),
             $this->phases($jsonReader->object('phases')),
             $currentPhase === null ? null : $this->phase($currentPhase),
             $this->runPartsJson->attempts($jsonReader->object('attempts')),
             $this->runPartsJson->reports($jsonReader->object('reports')),
             $this->runPartsJson->notes($jsonReader->objects('notes')),
-            $this->runPartsJson->hold($jsonReader),
+            $this->questionJson->hold($jsonReader),
+            $this->questionJson->history($jsonReader),
+        );
+    }
+
+    /**
+     * @param JsonReader $jsonReader The document.
+     *
+     * @throws WorkflowRefusal When a value has the wrong type.
+     *
+     * @return RunStart What the run is from its start.
+     */
+    private function start(JsonReader $jsonReader): RunStart
+    {
+        return new RunStart(
+            $jsonReader->string('run_id'),
+            $jsonReader->string('started_at'),
+            $jsonReader->nullableString('base_commit'),
+            $jsonReader->string('spec_path'),
+            $this->runPartsJson->enforcement($jsonReader),
+            $this->runPartsJson->ruleFiles($jsonReader),
+            $this->questionJson->mode($jsonReader),
+            $this->questionJson->humanComplete($jsonReader),
         );
     }
 

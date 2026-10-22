@@ -44,7 +44,8 @@ final readonly class OperatorHold
     /**
      * @param RunState $runState The open run.
      *
-     * @throws WorkflowRefusal When it waits on the operator and the caller is no terminal, or it cannot be saved.
+     * @throws WorkflowRefusal When it waits for an answer (#117); when it waits on the operator and the caller is no terminal;
+     *                         or when it cannot be saved.
      *
      * @return array{RunState, list<string>} The run, free to work, and the resume's notes.
      */
@@ -54,6 +55,11 @@ final readonly class OperatorHold
 
         if (!$hold instanceof Hold) {
             return [$runState, []];
+        }
+
+        if ($hold->isQuestion()) {
+            throw new WorkflowRefusal('waiting for the operator to answer at ' . $hold->phase . ': ' . $hold->question
+                . ' The operator answers from a terminal with bin/aic workflow:answer; workflow:run waits until then.');
         }
 
         if (!$this->runHost->operatorTerminal()) {

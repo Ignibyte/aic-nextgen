@@ -30,6 +30,8 @@ final readonly class RunEngine
      * @param list<PhaseCheck> $phaseChecks    The checks, in the order they run.
      * @param OperatorHold     $operatorHold   Holds a phase for the operator, and resumes it from a terminal (#102).
      * @param ToolCallIngest   $toolCallIngest Moves the guard's ledger into the evidence store (#102).
+     * @param StalledRows      $stalledRows    Holds an unchanged repeat for the operator (#117).
+     * @param QuestionHold     $questionHold   Pauses a phase exit for the operator's confirmation (#117).
      */
     public function __construct(
         private RunStore $runStore,
@@ -38,6 +40,8 @@ final readonly class RunEngine
         private array $phaseChecks,
         private OperatorHold $operatorHold,
         private ToolCallIngest $toolCallIngest,
+        private StalledRows $stalledRows,
+        private QuestionHold $questionHold,
     ) {
     }
 
@@ -80,7 +84,8 @@ final readonly class RunEngine
     private function work(RunState $runState, array $notes): RunOutcome
     {
         $phase = $runState->currentPhase ?? Phase::Complete;
-        $phaseReport = new PhaseReport($phase, $runState->attempt($phase) + 1, $this->rows($runState, $phase));
+        $fresh = new PhaseReport($phase, $runState->attempt($phase) + 1, $this->rows($runState, $phase));
+        $phaseReport = $this->stalledRows->stamp($runState, $fresh);
         $runState = $runState->withReport($phaseReport);
         $next = $phase->next();
 
@@ -101,20 +106,24 @@ final readonly class RunEngine
      * @throws WorkflowRefusal When the run cannot be saved.
      *
      * @return RunOutcome Blocked; held for the operator when a row only the operator can clear holds it (#102);
-     *                    inspection-due when only the seeker's inspection holds it (#103).
+     *                    inspection-due when only the seeker's inspection holds it (#103); paused when only the
+     *                    operator's confirmation of the exit holds it (#117).
      */
     private function held(RunState $runState, PhaseReport $phaseReport, array $notes): RunOutcome
     {
         $outcome = match (true) {
             $phaseReport->held() !== [] => Outcome::Held,
             $phaseReport->inspectionOnly() => Outcome::InspectionDue,
+            $phaseReport->askedOnly() => Outcome::Paused,
             default => Outcome::Blocked,
         };
         $this->runStore->save($runState);
         $attempted = $this->runJournal->attempted($runState, $phaseReport, $outcome);
-        [$runState, $held] = $outcome === Outcome::Held
-            ? $this->operatorHold->hold($runState, $phaseReport)
-            : [$runState, []];
+        [$runState, $held] = match ($outcome) {
+            Outcome::Held => $this->operatorHold->hold($runState, $phaseReport),
+            Outcome::Paused => $this->questionHold->pause($runState, $phaseReport),
+            Outcome::Blocked, Outcome::InspectionDue => [$runState, []],
+        };
 
         return new RunOutcome($outcome, $runState, $phaseReport, [...$notes, ...$attempted, ...$held]);
     }

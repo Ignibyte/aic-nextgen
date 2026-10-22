@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 use AIC\Workflow\Domain\Guard\Enforcement;
 use AIC\Workflow\Domain\HouseRule;
+use AIC\Workflow\Domain\Mode;
 use AIC\Workflow\Domain\WorkflowSettings;
 
 return new WorkflowSettings(
@@ -41,4 +42,9 @@ return new WorkflowSettings(
             '{vendor}/aic/workflow/rules/raw-html-grants.php',
         ),
     ],
+    // Agentic runs plan to complete without asking; Interactive waits for the operator to confirm each phase exit
+    // (bin/aic workflow:answer advance|stay from a terminal). Frozen when a run begins.
+    mode: Mode::Agentic,
+    // Whether an agentic run also waits for the operator to confirm complete. Frozen when a run begins.
+    humanComplete: false,
 );

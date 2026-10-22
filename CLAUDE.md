@@ -90,7 +90,8 @@ beside the subject hash of the tree it judged. #102: the guard hook holds the ag
 #106: the code index (`bin/aic code:index|tree|search|refs`); the plan check reading it is #118.
 #105: `bin/aic workflow:init` installs the workflow in an app (`workflow/pack/`); it refuses here.
 #103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist
-at code and complete.
+at code and complete. #117: modes and holds (agentic or interactive, `workflow:ask` and the
+operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 
 ## Five kinds
 
@@ -134,7 +135,8 @@ Background work is a job; the HTTP server's processes are its workers.
   engine, a second package that is dev-only (`require-dev`, a path repository like the
   framework's; Chad, 2026-10-22). `bin/aic` lists its commands when it is installed:
   `workflow:run <ticket>` (one phase per call, plan → code → check → complete),
-  `workflow:status` and `workflow:reset` (the operator's, from a terminal only). An app opts in
+  `workflow:status`, `workflow:ask "<question>"` (the agent's, #117), and `workflow:reset` and
+  `workflow:answer advance|stay|"<answer>"` (the operator's, from a terminal only). An app opts in
   with `config/workflow.php`. The engine alone writes `var/workflow/` (gitignored): `run.json`,
   the append-only `events.jsonl` (`workflow/schema/run-event.v1.json`) and `history/`. phpat
   keeps runtime code off it and it off everything but the Command kind; gate:21 does not probe

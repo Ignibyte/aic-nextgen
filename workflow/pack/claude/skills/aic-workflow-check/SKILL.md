@@ -17,7 +17,8 @@ last green verdict), then two of its own:
   URL in a browser tool, do what it says, look, and tick the item with what you saw:
   `- [x] <URL> — <action> → <expected> — saw: <what showed>`. The check holds until every item
   is ticked and the hook has seen a browser tool call during check. A session with no browser
-  tool cannot pass it: say so to the operator and stop.
+  tool cannot pass it: ask the operator with `bin/aic workflow:ask "<question>"` and end your
+  turn.
 
 You may still change code at check; the manifest still bounds what you write. Then
 `bin/aic workflow:run`. When check passes, go to the

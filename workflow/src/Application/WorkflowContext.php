@@ -46,4 +46,11 @@ interface WorkflowContext
      * @return SeekerBrief The seeker's scope (#103).
      */
     public function seekerBrief(): SeekerBrief;
+
+    /**
+     * @throws WorkflowRefusal When the workflow is not installed in this project.
+     *
+     * @return QuestionHold The questions a run waits on (#117).
+     */
+    public function questionHold(): QuestionHold;
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
-use AIC\Workflow\Application\Guard\OperatorHold;
 use AIC\Workflow\Application\RunBegin;
 use AIC\Workflow\Application\RunEngine;
 use AIC\Workflow\Application\RunJournal;
@@ -34,27 +33,28 @@ final readonly class WorkflowParts
     public function engine(): RunEngine
     {
         $utcTime = new UtcTime(new SystemClock());
-
-        $localHost = $this->evidenceParts()->runHost();
         $runJournal = $this->journal($utcTime);
         $evidenceParts = $this->evidenceParts();
+        $holdParts = $this->holdParts();
 
         return new RunEngine(
             $this->runStore(),
-            new RunBegin(
-                $this->runStore(),
-                $this->tickets($utcTime),
-                $runJournal,
-                $localHost,
-                $utcTime,
-                $this->workflowSettings->enforcement,
-                $this->ruleParts($evidenceParts)->ruleFiles(),
-            ),
+            $this->runBegin($utcTime, $runJournal, $evidenceParts),
             $runJournal,
             $this->checks()->all($utcTime),
-            new OperatorHold($this->runStore(), $runJournal, $localHost, $utcTime),
+            $holdParts->operatorHold($runJournal),
             $evidenceParts->toolCallIngest(),
+            $holdParts->stalledRows(),
+            $holdParts->questionHold(),
         );
+    }
+
+    /**
+     * @return HoldParts The holds' parts (#117).
+     */
+    public function holdParts(): HoldParts
+    {
+        return new HoldParts($this->root, $this->evidenceParts(), $this->runStore(), new UtcTime(new SystemClock()));
     }
 
     /**
@@ -82,6 +82,28 @@ final readonly class WorkflowParts
     }
 
     /**
+     * @param UtcTime       $utcTime       The clock.
+     * @param RunJournal    $runJournal    The events and the ticket's moves.
+     * @param EvidenceParts $evidenceParts The host and the house rules' files.
+     *
+     * @return RunBegin Begins a run, its levers and mode frozen from the settings.
+     */
+    private function runBegin(UtcTime $utcTime, RunJournal $runJournal, EvidenceParts $evidenceParts): RunBegin
+    {
+        return new RunBegin(
+            $this->runStore(),
+            $this->tickets($utcTime),
+            $runJournal,
+            $evidenceParts->runHost(),
+            $utcTime,
+            $this->workflowSettings->enforcement,
+            $this->ruleParts($evidenceParts)->ruleFiles(),
+            $this->workflowSettings->mode,
+            $this->workflowSettings->humanComplete,
+        );
+    }
+
+    /**
      * @return EvidenceParts The services the checks share.
      */
     private function evidenceParts(): EvidenceParts
@@ -103,6 +125,7 @@ final readonly class WorkflowParts
             $this->workflowSettings->site,
             $this->ruleParts($evidenceParts),
             ['code' => $seekerParts->atCode(), 'complete' => $seekerParts->atComplete()],
+            $this->holdParts()->confirmChecks(),
         );
     }
 

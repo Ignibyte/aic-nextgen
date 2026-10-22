@@ -13,6 +13,7 @@ use function array_map;
 use function get_object_vars;
 use function in_array;
 use function is_array;
+use function is_bool;
 use function is_int;
 use function is_string;
 
@@ -81,6 +82,24 @@ final readonly class JsonReader
         }
 
         return $values[$key];
+    }
+
+    /**
+     * @param string $key A key.
+     *
+     * @throws WorkflowRefusal When it is missing or not a boolean.
+     *
+     * @return bool Its value.
+     */
+    public function bool(string $key): bool
+    {
+        $value = get_object_vars($this->object)[$key] ?? null;
+
+        if (!is_bool($value)) {
+            throw $this->wrong($key, 'a boolean');
+        }
+
+        return $value;
     }
 
     /**
