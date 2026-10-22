@@ -7,12 +7,16 @@ namespace AIC\Workflow\Infrastructure;
 use AIC\Workflow\Application\RunHost;
 use AIC\Workflow\Application\SurfaceSource;
 use AIC\Workflow\Domain\CodeModule;
+use AIC\Workflow\Domain\Console\SurfaceView;
 use AIC\Workflow\Domain\SurfaceEntry;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 use stdClass;
 
+use function array_any;
 use function file_get_contents;
+use function filemtime;
+use function glob;
 use function is_file;
 use function json_decode;
 
@@ -85,6 +89,31 @@ final readonly class SurfaceEntries implements SurfaceSource
         }
 
         return $modules;
+    }
+
+    /**
+     * @throws WorkflowRefusal When the file is there and is not a surface manifest of this version.
+     *
+     * @return SurfaceView|null The surface as the inspect commands read it (#109), stale when a module manifest is newer;
+     *                          null when there is no file.
+     */
+    #[Override]
+    public function view(): ?SurfaceView
+    {
+        $text = $this->now();
+
+        if ($text === null) {
+            return null;
+        }
+
+        $built = (int) filemtime($this->root . '/' . self::PATH);
+        $manifests = glob($this->root . '/modules/*/*.module.php');
+        $stale = array_any(
+            $manifests === false ? [] : $manifests,
+            static fn (string $manifest): bool => (int) filemtime($manifest) > $built,
+        );
+
+        return (new SurfaceViewJson())->view($this->manifestReader($text), $stale);
     }
 
     /**

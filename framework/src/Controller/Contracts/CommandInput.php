@@ -35,6 +35,14 @@ final readonly class CommandInput
     }
 
     /**
+     * @return list<string> Every argument, in order, for a command that reads flags (#109).
+     */
+    public function arguments(): array
+    {
+        return $this->arguments;
+    }
+
+    /**
      * @return bool Whether the command line has no arguments, for a command that takes none.
      */
     public function isEmpty(): bool

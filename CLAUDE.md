@@ -88,6 +88,12 @@ runs as #100 to #106; #100: the run engine and its state, the dev-only `aic/work
 beside the subject hash of the tree it judged. #102: the guard hook holds the agent to the open run.
 #104: house rules judge each run's change, frozen at begin; the probe sweep is #119.
 #106: the code index (`bin/aic code:index|tree|search|refs`); the plan check reading it is #118.
+#109 (part 1): the inspect commands, dev-only in `aic/workflow`: `bin/aic route:list`,
+`command:list`, `job:list`, `schedule:list`, `module:list`, `module:show <name>` and `kind:list`,
+answered from `build/surface.json` (now with each command's, job's and schedule's module, the
+modules' bindings, middleware, prefixes and factories, and a `kinds` table), text or `--json`
+(`aic.console/1`, `workflow/schema/console.v1.json`), each lookup recorded as `code.queried`;
+make:* is #122.
 #105: `bin/aic workflow:init` installs the workflow in an app (`workflow/pack/`); it refuses here.
 #103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist
 at code and complete. #117: modes and holds (agentic or interactive, `workflow:ask` and the
