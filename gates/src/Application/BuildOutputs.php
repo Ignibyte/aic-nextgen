@@ -52,12 +52,13 @@ final readonly class BuildOutputs
      *
      * @param string                $directory A directory the build generates, absolute.
      * @param array<string, string> $outputs   Each output's content by absolute path.
+     * @param string                $pattern   The files the build owns there, `*.php` or the wiki's `*.md` (#108).
      *
-     * @return list<string> The PHP files in the directory that are not outputs.
+     * @return list<string> The matching files in the directory that are not outputs.
      */
-    public function orphans(string $directory, array $outputs): array
+    public function orphans(string $directory, array $outputs, string $pattern = '*.php'): array
     {
-        $files = glob($directory . '/*.php');
+        $files = glob($directory . '/' . $pattern);
 
         return array_values(array_filter(
             $files === false ? [] : $files,

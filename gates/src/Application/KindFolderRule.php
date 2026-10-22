@@ -83,13 +83,14 @@ final readonly class KindFolderRule implements ModuleRule
         $parts = explode('/', $path);
         $entry = $parts[2] ?? '';
 
-        if ($entry === $name . '.module.php' && count($parts) === 3) {
+        // The manifest, and the module's hand-written notes beside it, which its code wiki page links (#108).
+        if (in_array($entry, [$name . '.module.php', 'README.md'], true) && count($parts) === 3) {
             return null;
         }
 
         if (!$this->inLayout($entry, $parts[3] ?? '')) {
             return new BoundaryViolation($path, sprintf(
-                '%s is outside the module layout; modules/%s/ holds only %s.module.php, %s.',
+                '%s is outside the module layout; modules/%s/ holds only %s.module.php, README.md, %s.',
                 $path,
                 $name,
                 $name,

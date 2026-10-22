@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Workflow\Infrastructure;
 
 use AIC\Workflow\Application\CodeLookup;
+use AIC\Workflow\Domain\CodeCrossing;
 use AIC\Workflow\Domain\CodeEdge;
 use AIC\Workflow\Domain\CodeSymbol;
 use AIC\Workflow\Exception\WorkflowRefusal;
@@ -32,6 +33,19 @@ final readonly class CodeIndexQueries implements CodeLookup
      * An edge row's columns.
      */
     private const string EDGE = 'SELECT source, target, kind, file FROM edge';
+
+    /**
+     * Each edge whose source file's area and whose class-like target's area differ, one end in the asked area (#108).
+     */
+    private const string CROSSING = <<<'SQL'
+        SELECT DISTINCT t.name AS target, f.area AS source_area, t.area AS target_area
+        FROM edge e
+        JOIN file f ON f.path = e.file
+        JOIN symbol t ON t.name = CASE WHEN instr(e.target, '::') > 0 THEN substr(e.target, 1, instr(e.target, '::') - 1) ELSE e.target END
+            AND t.kind IN ('class', 'interface', 'enum', 'trait')
+        WHERE f.area <> t.area AND (f.area = ? OR t.area = ?)
+        ORDER BY source_area, target_area, target
+        SQL;
 
     /**
      * @param string          $root            The project's root.
@@ -168,6 +182,26 @@ final readonly class CodeIndexQueries implements CodeLookup
             self::EDGE . " WHERE source = ? OR source LIKE ? ESCAPE '\\' ORDER BY kind, target",
             [$name, $this->like($name . '::', false)],
         );
+    }
+
+    /**
+     * @param string $area An area.
+     *
+     * @throws WorkflowRefusal When the index cannot be read.
+     *
+     * @return list<CodeCrossing> Each class-like named across the area's edge, once per naming area.
+     */
+    #[Override]
+    public function crossing(string $area): array
+    {
+        $crossings = [];
+
+        foreach ($this->rows(self::CROSSING, [$area, $area]) as $jsonReader) {
+            $target = $jsonReader->string('target');
+            $crossings[] = new CodeCrossing($target, $jsonReader->string('source_area'), $jsonReader->string('target_area'));
+        }
+
+        return $crossings;
     }
 
     /**

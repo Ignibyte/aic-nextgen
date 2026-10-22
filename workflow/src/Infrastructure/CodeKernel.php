@@ -44,6 +44,7 @@ final readonly class CodeKernel
             'code:refs' => new CodeRefsCommand($codeAsk, $codeTree),
             'code:search' => new CodeSearchCommand($codeAsk, $codeTree),
             'code:tree' => new CodeTreeCommand($codeAsk, $codeTree),
+            'code:wiki' => (new WikiKernel($this->root))->command($codeAsk),
             ...(new InspectKernel($this->root))->commands(),
         ];
     }

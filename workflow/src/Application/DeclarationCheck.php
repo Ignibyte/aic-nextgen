@@ -29,7 +29,7 @@ final readonly class DeclarationCheck implements PhaseCheck
     /**
      * What `composer run build` writes, and the engine's state.
      */
-    private const array EXEMPT = ['build/surface.json', 'generated/', 'public/assets/', 'var/workflow/'];
+    private const array EXEMPT = ['build/surface.json', 'generated/', 'public/assets/', 'var/workflow/', 'docs/wiki/'];
 
     /**
      * The undeclared paths a summary names at most (Droost's `SUMMARY_PATHS`).
