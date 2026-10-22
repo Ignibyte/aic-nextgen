@@ -120,6 +120,8 @@ final readonly class RunPartsJson
             $status = match ($row->string('status')) {
                 'passed' => CheckStatus::Passed,
                 'blocked' => CheckStatus::Blocked,
+                'failed' => CheckStatus::Failed,
+                'deferred' => CheckStatus::Deferred,
                 default => throw new WorkflowRefusal('a report row has an unknown status.'),
             };
             $rows[] = new CheckRow($row->string('check'), $status, $row->string('why'), $row->string('remedy'));

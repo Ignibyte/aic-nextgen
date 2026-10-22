@@ -69,8 +69,7 @@ but the shell). #95: module assets: the theme moves to `assets/`, each module's
 #96: gate:25 holds every `*.html.php` template to the plain PHP grammar (deny by default); the
 class tools skip `modules/*/templates/` and `templates/`.
 #97 to #99 (#87, #88): templates compile from plain PHP, one Renderer makes HTML, and gate:27 counts
-`RawHtml` against its grants. #91, the agent workflow, runs as #100 to #106; #100: the run engine
-and its state, the dev-only `aic/workflow` package. #97: `composer run build` compiles each
+`RawHtml` against its grants. #97: `composer run build` compiles each
 `*.html.php` into its `XTemplate.php`, escaping every `<?= ?>` by its static type; loops are real
 loops (`break`, `continue`) and `empty()` lowers by type; the old grammar is gone. A component
 is data: its constructor takes the ready values as promoted public props, computed by whoever
@@ -81,7 +80,10 @@ regions holding components (`HtmlLayout::content(list<Component>, int)`), never 
 template writes children through a `RenderPass` (`child()` with markers, `region()`, `inline()` in a
 layout), and a Tessera fragment is the same tree rendered by its path. The build generates the
 lookup (`generated/ModuleTemplates` and one `<M>Templates` per module), ending at the atoms'
-hand-written templates; a module component with no template is refused.
+hand-written templates; a module component with no template is refused. #91, the agent workflow,
+runs as #100 to #106; #100: the run engine and its state, the dev-only `aic/workflow` package.
+#101: the engine runs the gates itself and keeps each verdict in `var/workflow/evidence.sqlite`
+beside the subject hash of the tree it judged.
 
 ## Five kinds
 
@@ -130,6 +132,15 @@ Background work is a job; the HTTP server's processes are its workers.
   the append-only `events.jsonl` (`workflow/schema/run-event.v1.json`) and `history/`. phpat
   keeps runtime code off it and it off everything but the Command kind; gate:21 does not probe
   it, since it runs interpreted.
+  - **Its checks** (#101), each a `PhaseCheck` registered in `WorkflowChecks`: at plan the spec
+    must read as a contract and is frozen with the gate list; at code, check and complete the
+    engine runs `composer run gate`, the freeze, the declaration audit (exact paths from the
+    spec's `### File Manifest`) and the composition check (the spec's `## Entry Points` against
+    `build/surface.json`); check and complete add the rendered check against `site` in
+    `config/workflow.php`; complete adds the criteria, each `Met` cell citing a fresh green check.
+  - A verdict is fresh only on the tree it judged; a deferral is never a pass, and a deferred
+    gate:21 or gate:23 holds complete. `maxGateRetries` failures of one check at a phase leave
+    the phase to the operator.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 - **Modules** (#90, #92, #93): `modules/<name>/<name>.module.php` returns a fluent
   `AIC\Module\Contracts\ModuleManifest`, naming only what the module has:
@@ -202,7 +213,8 @@ or was split off, what to check by hand.
 ## Quality gates (binding)
 
 `composer run gate` runs every gate on the host (no DDEV), about 15 seconds, and ends with one
-`gate-summary:` line. **No baselines. No suppressions. Source fixes only.** The runner
+`gate-summary:` line, after one `gate-result: gate:N passed|deferred|failed` line per gate, which
+the workflow engine reads (#101). AIC's own tickets still run the suite in Phase 3. **No baselines. No suppressions. Source fixes only.** The runner
 (`bin/gate-runner.sh`) runs each `gate:N` script in `composer.json` and keeps going after a
 failure, so one run names every failing gate. A gate that cannot run in full yet *defers* and
 says why; the summary names each deferral, and a deferral is not coverage.

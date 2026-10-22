@@ -7,7 +7,6 @@ namespace AIC\Workflow\Infrastructure;
 use AIC\Workflow\Application\RunEngine;
 use AIC\Workflow\Application\RunJournal;
 use AIC\Workflow\Application\RunReset;
-use AIC\Workflow\Application\SpecPresentCheck;
 use AIC\Workflow\Application\UtcTime;
 use AIC\Workflow\Domain\WorkflowSettings;
 
@@ -28,7 +27,7 @@ final readonly class WorkflowParts
     }
 
     /**
-     * @return RunEngine The engine, with #100's one check.
+     * @return RunEngine The engine, with its checks (#100, #101).
      */
     public function engine(): RunEngine
     {
@@ -40,7 +39,7 @@ final readonly class WorkflowParts
             $this->journal($utcTime),
             new LocalHost($this->root),
             $utcTime,
-            [new SpecPresentCheck($this->root)],
+            $this->checks()->all($utcTime),
         );
     }
 
@@ -58,6 +57,14 @@ final readonly class WorkflowParts
     public function runStore(): RunStateFile
     {
         return new RunStateFile($this->root);
+    }
+
+    /**
+     * @return WorkflowChecks The engine's checks for this project.
+     */
+    private function checks(): WorkflowChecks
+    {
+        return new WorkflowChecks($this->root, new EvidenceParts($this->root, $this->workflowSettings), $this->workflowSettings->site);
     }
 
     /**
