@@ -148,6 +148,18 @@ final readonly class JsonReader
     }
 
     /**
+     * @param string $key A key.
+     *
+     * @return bool Whether it holds null there.
+     */
+    public function isNull(string $key): bool
+    {
+        $values = get_object_vars($this->object);
+
+        return array_key_exists($key, $values) && $values[$key] === null;
+    }
+
+    /**
      * @return list<string> Its keys, in order.
      */
     public function keys(): array

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Domain;
 
+use AIC\Workflow\Domain\Guard\Hold;
 use LogicException;
 
 /**
@@ -21,6 +22,7 @@ final readonly class RunState
      * @param array<string, int>         $attempts     Attempts per phase, by name.
      * @param array<string, PhaseReport> $reports      The last report per phase, by name.
      * @param list<RunNote>              $notes        What it recorded without failing on it.
+     * @param Hold|null                  $awaiting     What it waits on (#102); null while the agent may work it.
      */
     public function __construct(
         public RunStart $runStart,
@@ -30,6 +32,7 @@ final readonly class RunState
         public array $attempts,
         public array $reports,
         public array $notes,
+        public ?Hold $awaiting = null,
     ) {
     }
 
@@ -53,7 +56,16 @@ final readonly class RunState
         $attempts = [...$this->attempts, $phaseReport->phase->value => $phaseReport->attempt];
         $reports = [...$this->reports, $phaseReport->phase->value => $phaseReport];
 
-        return new self($this->runStart, $this->ticket, $this->runPhases, $this->currentPhase, $attempts, $reports, $this->notes);
+        return new self(
+            $this->runStart,
+            $this->ticket,
+            $this->runPhases,
+            $this->currentPhase,
+            $attempts,
+            $reports,
+            $this->notes,
+            $this->awaiting,
+        );
     }
 
     /**
@@ -76,7 +88,7 @@ final readonly class RunState
 
         $runPhases = $this->passed($this->currentPhase)->with($phase, PhaseStatus::Active);
 
-        return new self($this->runStart, $this->ticket, $runPhases, $phase, $this->attempts, $this->reports, $this->notes);
+        return new self($this->runStart, $this->ticket, $runPhases, $phase, $this->attempts, $this->reports, $this->notes, $this->awaiting);
     }
 
     /**
@@ -92,7 +104,7 @@ final readonly class RunState
 
         $runPhases = $this->passed(Phase::Complete);
 
-        return new self($this->runStart, $this->ticket, $runPhases, null, $this->attempts, $this->reports, $this->notes);
+        return new self($this->runStart, $this->ticket, $runPhases, null, $this->attempts, $this->reports, $this->notes, $this->awaiting);
     }
 
     /**
@@ -102,7 +114,51 @@ final readonly class RunState
      */
     public function withTicket(Ticket $ticket): self
     {
-        return new self($this->runStart, $ticket, $this->runPhases, $this->currentPhase, $this->attempts, $this->reports, $this->notes);
+        return new self(
+            $this->runStart,
+            $ticket,
+            $this->runPhases,
+            $this->currentPhase,
+            $this->attempts,
+            $this->reports,
+            $this->notes,
+            $this->awaiting,
+        );
+    }
+
+    /**
+     * @param Hold $hold What it now waits on.
+     *
+     * @return self The run, held.
+     */
+    public function held(Hold $hold): self
+    {
+        return new self(
+            $this->runStart,
+            $this->ticket,
+            $this->runPhases,
+            $this->currentPhase,
+            $this->attempts,
+            $this->reports,
+            $this->notes,
+            $hold,
+        );
+    }
+
+    /**
+     * @return self The run, its hold cleared.
+     */
+    public function resumed(): self
+    {
+        return new self(
+            $this->runStart,
+            $this->ticket,
+            $this->runPhases,
+            $this->currentPhase,
+            $this->attempts,
+            $this->reports,
+            $this->notes,
+        );
     }
 
     /**
@@ -114,7 +170,16 @@ final readonly class RunState
     {
         $notes = [...$this->notes, $runNote];
 
-        return new self($this->runStart, $this->ticket, $this->runPhases, $this->currentPhase, $this->attempts, $this->reports, $notes);
+        return new self(
+            $this->runStart,
+            $this->ticket,
+            $this->runPhases,
+            $this->currentPhase,
+            $this->attempts,
+            $this->reports,
+            $notes,
+            $this->awaiting,
+        );
     }
 
     /**

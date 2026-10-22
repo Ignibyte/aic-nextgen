@@ -1,0 +1,23 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|mcp__.*",
+        "hooks": [{ "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/vendor/aic/workflow/bin/aic-guard.sh edit", "timeout": 30 }]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/vendor/aic/workflow/bin/aic-guard.sh shell", "timeout": 30 }]
+      },
+      {
+        "matcher": "*",
+        "hooks": [{ "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/vendor/aic/workflow/bin/aic-guard.sh record", "timeout": 30 }]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [{ "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/vendor/aic/workflow/bin/aic-guard.sh stop", "timeout": 30 }]
+      }
+    ]
+  }
+}

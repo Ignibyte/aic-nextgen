@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The workflow's guard hook** (#102, part 3 of #91). A Claude Code hook holds the agent to the open run between `workflow:run` calls.
+  - **The hook:** `workflow/bin/aic-guard.sh` (a shim) runs a PHP entry over `Guard/` classes; `workflow/pack/hooks.json` wires `edit` (Write, Edit, MultiEdit, NotebookEdit and any `mcp__*` tool), `shell` (Bash), `record` (every other tool) and `stop`. A crash refuses; `record` allows.
+  - **The walls:** writes go only where the phase allows: no run, the ticket directory; plan, the spec; code, check and complete, the spec and the File Manifest; never the build's outputs. The run's state, the opt-in, the hook wiring, the package and Claude Code's global settings are refused at every phase, through an editor, an MCP path field or the shell. The operator's verbs (`workflow:reset`, a workflow command under a pseudo-terminal or a variable, `composer … --no-dev`) are refused in the agent's shell; a heredoc body is data.
+  - **The Stop hold:** a turn does not end mid-phase. A check only the operator can clear is now `Held`: the run waits on the operator (`awaiting`, `run.held`), the agent's `workflow:run` is refused, and the operator's, from a terminal, resumes it (`run.resumed`).
+  - **The ledger:** one line per hook call in `var/workflow/guard-calls.jsonl`; `workflow:run` ingests it into `tool_call` (evidence schema v2), so `BrowserCheck` now holds a browser-testable check with no browser call.
+  - **Levers:** `enforcement` (frozen into the run) and `requireRun`, each hard (the default), soft (nudge once) or off.
+  - **The proof:** probes in a scratch project hit every wall, the hold and the ingest, and a live Claude Code session was refused at plan and held at Stop. 28 gates green.
+
 - **Engine-run gates and evidence** (#101, part 2 of #91). A workflow phase advances only on verdicts the engine measured itself. Each verdict is stored beside the subject hash of the tree it judged, so any later edit makes it stale.
   - **Plan:** the spec must read as a contract: criteria, a `### File Manifest`, and the new `## Entry Points` section of the pipeline template. It is then frozen with the project's gate list.
   - **Code, check and complete** run `composer run gate`, the spec freeze (a rewritten frozen row is a breach), the declaration audit (every changed path, exact, in the manifest) and the composition check (declared entry points against `build/surface.json` and its base-commit version, once gate:24 passed on the tree). Check and complete add the rendered check against the `site` in `config/workflow.php`; check reuses a gate verdict only while it is fresh; complete holds a deferred gate:21 or gate:23 and verifies each criterion's cited checks.

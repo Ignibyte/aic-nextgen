@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application;
 
+use AIC\Workflow\Application\Guard\OperatorHold;
+use AIC\Workflow\Application\Guard\ToolCallIngest;
 use AIC\Workflow\Domain\CheckRow;
 use AIC\Workflow\Domain\Outcome;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\PhaseReport;
-use AIC\Workflow\Domain\PhaseStatus;
 use AIC\Workflow\Domain\RunOutcome;
-use AIC\Workflow\Domain\RunPhases;
-use AIC\Workflow\Domain\RunStart;
 use AIC\Workflow\Domain\RunState;
 use AIC\Workflow\Domain\TicketStatus;
 use AIC\Workflow\Exception\WorkflowRefusal;
@@ -25,20 +24,20 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 final readonly class RunEngine
 {
     /**
-     * @param RunStore         $runStore     The run's store.
-     * @param TicketSource     $ticketSource The tickets.
-     * @param RunJournal       $runJournal   The events and the ticket's moves.
-     * @param RunHost          $runHost      The commit and the ids.
-     * @param UtcTime          $utcTime      The clock.
-     * @param list<PhaseCheck> $phaseChecks  The checks, in the order they run.
+     * @param RunStore         $runStore       The run's store.
+     * @param RunBegin         $runBegin       Begins a run on a ticket.
+     * @param RunJournal       $runJournal     The events and the ticket's moves.
+     * @param list<PhaseCheck> $phaseChecks    The checks, in the order they run.
+     * @param OperatorHold     $operatorHold   Holds a phase for the operator, and resumes it from a terminal (#102).
+     * @param ToolCallIngest   $toolCallIngest Moves the guard's ledger into the evidence store (#102).
      */
     public function __construct(
         private RunStore $runStore,
-        private TicketSource $ticketSource,
+        private RunBegin $runBegin,
         private RunJournal $runJournal,
-        private RunHost $runHost,
-        private UtcTime $utcTime,
         private array $phaseChecks,
+        private OperatorHold $operatorHold,
+        private ToolCallIngest $toolCallIngest,
     ) {
     }
 
@@ -54,7 +53,7 @@ final readonly class RunEngine
         $runState = $this->runStore->load();
 
         if (!$runState instanceof RunState) {
-            [$runState, $notes] = $this->begin($ticketId);
+            [$runState, $notes] = $this->runBegin->begin($ticketId);
 
             return $this->work($runState, $notes);
         }
@@ -64,41 +63,10 @@ final readonly class RunEngine
                 . '; finish it, or have the operator run bin/aic workflow:reset.');
         }
 
-        return $this->work($runState, []);
-    }
+        $ingested = $this->toolCallIngest->ingest($runState);
+        [$runState, $resumed] = $this->operatorHold->resume($runState);
 
-    /**
-     * @param string $ticketId The ticket.
-     *
-     * @throws WorkflowRefusal When there is no ticket, or it is finished.
-     *
-     * @return array{RunState, list<string>} The run, begun and saved, and its notes.
-     */
-    private function begin(string $ticketId): array
-    {
-        if ($ticketId === '') {
-            throw new WorkflowRefusal('no run is open; begin one on a ticket: bin/aic workflow:run <ticket>.');
-        }
-
-        $ticket = $this->ticketSource->get($ticketId);
-
-        if ($ticket->status->isTerminal()) {
-            throw new WorkflowRefusal('ticket ' . $ticket->id . ' is ' . $ticket->status->value . '; a run works an open ticket.');
-        }
-
-        $runStart = new RunStart(
-            $this->runHost->newId('run', 6),
-            $this->utcTime->now(),
-            $this->runHost->baseCommit(),
-            'var/workflow/spec-' . $ticket->number . '.md',
-        );
-        $runState = new RunState($runStart, $ticket, new RunPhases([Phase::Plan->value => PhaseStatus::Active]), Phase::Plan, [], [], []);
-        $this->runStore->save($runState);
-        $notes = $this->runJournal->started($runState);
-        [$runState, $moved] = $this->runJournal->ticket($runState, TicketStatus::InProgress, Phase::Plan->ticketPhase());
-        $this->runStore->save($runState);
-
-        return [$runState, [...$notes, ...$moved]];
+        return $this->work($runState, [...$ingested, ...$resumed]);
     }
 
     /**
@@ -117,16 +85,35 @@ final readonly class RunEngine
         $next = $phase->next();
 
         if (!$phaseReport->advance()) {
-            $this->runStore->save($runState);
-
-            $attempted = $this->runJournal->attempted($runState, $phaseReport, Outcome::Blocked);
-
-            return new RunOutcome(Outcome::Blocked, $runState, $phaseReport, [...$notes, ...$attempted]);
+            return $this->held($runState, $phaseReport, $notes);
         }
 
         return $next instanceof Phase
             ? $this->advance($runState, $phaseReport, $next, $notes)
             : $this->complete($runState, $phaseReport, $notes);
+    }
+
+    /**
+     * @param RunState     $runState    The run, its attempt recorded and held by at least one row.
+     * @param PhaseReport  $phaseReport The attempt.
+     * @param list<string> $notes       Notes so far.
+     *
+     * @throws WorkflowRefusal When the run cannot be saved.
+     *
+     * @return RunOutcome Blocked; held for the operator when a row only the operator can clear holds it (#102).
+     */
+    private function held(RunState $runState, PhaseReport $phaseReport, array $notes): RunOutcome
+    {
+        $outcome = $phaseReport->held() === []
+            ? Outcome::Blocked
+            : Outcome::Held;
+        $this->runStore->save($runState);
+        $attempted = $this->runJournal->attempted($runState, $phaseReport, $outcome);
+        [$runState, $held] = $outcome === Outcome::Held
+            ? $this->operatorHold->hold($runState, $phaseReport)
+            : [$runState, []];
+
+        return new RunOutcome($outcome, $runState, $phaseReport, [...$notes, ...$attempted, ...$held]);
     }
 
     /**

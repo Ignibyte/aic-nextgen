@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Domain;
 
+use AIC\Workflow\Domain\Guard\Enforcement;
+
 /**
  * What an app's `config/workflow.php` returns (#100): its opt-in to the
- * workflow and its gates' settings (#101). #105's installer writes the
+ * workflow, its gates' settings (#101) and the guard's levers (#102). #105's installer writes the
  * file; #102 adds the levers.
  *
  * @api
@@ -21,6 +23,8 @@ final readonly class WorkflowSettings
      * @param int          $gateTimeout    Seconds a gate run may take before it is stopped (#101).
      * @param list<string> $toolchain      Files outside the diff whose change stales every verdict, such as the compiler
      *                                     binary (#101); each is keyed by its stat.
+     * @param Enforcement  $enforcement    How hard the guard holds a run to its phase's scope (#102); frozen at begin.
+     * @param Enforcement  $requireRun     How hard the guard refuses a write with no run open (#102).
      */
     public function __construct(
         public string $tickets,
@@ -28,6 +32,8 @@ final readonly class WorkflowSettings
         public int $maxGateRetries = 3,
         public int $gateTimeout = 3_600,
         public array $toolchain = [],
+        public Enforcement $enforcement = Enforcement::Hard,
+        public Enforcement $requireRun = Enforcement::Hard,
     ) {
     }
 }

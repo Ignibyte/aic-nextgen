@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
+use AIC\Workflow\Domain\Guard\Hold;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\PhaseReport;
 use AIC\Workflow\Domain\Phases;
@@ -52,6 +53,8 @@ final readonly class RunStateJson
         'attempts',
         'reports',
         'notes',
+        'enforcement',
+        'awaiting',
     ];
 
     /**
@@ -72,8 +75,10 @@ final readonly class RunStateJson
         $currentPhase = $runState->currentPhase;
         $document = [
             'attempts' => $runState->attempts === [] ? new stdClass() : $runState->attempts,
+            'awaiting' => $runState->awaiting instanceof Hold ? $runState->awaiting->toArray() : null,
             'base_commit' => $runState->runStart->baseCommit,
             'current_phase' => $currentPhase instanceof Phase ? $currentPhase->value : null,
+            'enforcement' => $runState->runStart->enforcement->value,
             'notes' => array_map(static fn (RunNote $runNote): array => $runNote->toArray(), $runState->notes),
             'phases' => $runState->runPhases->names(),
             'reports' => $runState->reports === []
@@ -136,6 +141,7 @@ final readonly class RunStateJson
             $jsonReader->string('started_at'),
             $jsonReader->nullableString('base_commit'),
             $jsonReader->string('spec_path'),
+            $this->runPartsJson->enforcement($jsonReader),
         );
         $currentPhase = $jsonReader->nullableString('current_phase');
 
@@ -147,6 +153,7 @@ final readonly class RunStateJson
             $this->runPartsJson->attempts($jsonReader->object('attempts')),
             $this->runPartsJson->reports($jsonReader->object('reports')),
             $this->runPartsJson->notes($jsonReader->objects('notes')),
+            $this->runPartsJson->hold($jsonReader),
         );
     }
 

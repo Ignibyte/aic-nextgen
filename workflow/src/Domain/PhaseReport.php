@@ -46,6 +46,17 @@ final readonly class PhaseReport
     }
 
     /**
+     * @return list<CheckRow> The rows only the operator can clear.
+     */
+    public function held(): array
+    {
+        return array_values(array_filter(
+            $this->rows,
+            static fn (CheckRow $checkRow): bool => $checkRow->checkStatus === CheckStatus::Held,
+        ));
+    }
+
+    /**
      * @return array{
      *     phase: string,
      *     attempt: int,

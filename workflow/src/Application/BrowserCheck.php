@@ -4,24 +4,27 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application;
 
-use AIC\Workflow\Domain\CheckRecord;
 use AIC\Workflow\Domain\CheckRow;
-use AIC\Workflow\Domain\CheckState;
 use AIC\Workflow\Domain\CheckStatus;
-use AIC\Workflow\Domain\Fault;
+use AIC\Workflow\Domain\Findings;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\RunState;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 /**
- * Browser evidence at check (#101): the agent's ticks on the spec's browser
- * items, and the ledger of browser tool calls at the phase. Until #102's
- * guard writes that ledger the calls read not measured, so the row is
- * recorded and never holds the phase.
+ * Browser evidence at check (#101, #102): when the spec says
+ * `browser_testable: Yes`, the check holds until every browser item is
+ * ticked and the guard's ledger holds at least one browser tool call it let
+ * through at check. Work that is not browser-testable passes.
  */
 final readonly class BrowserCheck implements PhaseCheck
 {
+    /**
+     * What to do when the browser evidence falls short.
+     */
+    private const string REMEDY = 'open each page in a browser on this box, do the action, look, and tick its item with what you saw.';
+
     /**
      * @param SpecFile         $specFile         The browser items.
      * @param EvidenceLog      $evidenceLog      The ledger.
@@ -48,7 +51,7 @@ final readonly class BrowserCheck implements PhaseCheck
     /**
      * @param RunState $runState The run, at check.
      *
-     * @return CheckRow Passed when the work is not browser-testable; deferred, with the ticks and the calls, otherwise.
+     * @return CheckRow Passed when the work is not browser-testable, or its evidence is there; failed otherwise.
      */
     #[Override]
     public function check(RunState $runState): CheckRow
@@ -63,32 +66,35 @@ final readonly class BrowserCheck implements PhaseCheck
         }
 
         try {
-            $summary = $this->summary($specContract, $runState->runStart->runId);
+            $failures = $this->failures($specContract, $runState->runStart->runId);
         } catch (WorkflowRefusal $workflowRefusal) {
             return $this->evidenceRecorder->unrecorded('browser', $workflowRefusal);
         }
 
-        $checkRecord = new CheckRecord('browser', CheckState::Skipped, Fault::None, $summary, $this->runSubject->hash($runState));
+        $passed = 'every browser item is ticked, and the ledger holds the browser calls.';
+        $findings = new Findings('browser', $failures, $passed, $this->runSubject->hash($runState));
 
-        return $this->evidenceRecorder->row($runState, Phase::Check, $checkRecord, '');
+        return $this->evidenceRecorder->row($runState, Phase::Check, $findings->record(), self::REMEDY);
     }
 
     /**
-     * @param SpecContract $specContract The spec.
+     * @param SpecContract $specContract The spec, browser-testable.
      * @param string       $runId        The run.
      *
      * @throws WorkflowRefusal When the ledger cannot be read.
      *
-     * @return string The ticks and the calls.
+     * @return list<string> What the browser evidence lacks: a browser call in the ledger, an unticked item.
      */
-    private function summary(SpecContract $specContract, string $runId): string
+    private function failures(SpecContract $specContract, string $runId): array
     {
         $calls = $this->evidenceLog->browserCalls($runId, Phase::Check);
         [$ticked, $items] = $specContract->browserTicks();
-        $ledger = $calls === 0
-            ? "browser tool calls not measured until #102's guard"
-            : $calls . ' browser tool call(s) in the ledger';
+        $failures = $calls === 0
+            ? ['the guard recorded no browser tool call at check.']
+            : [];
 
-        return $ticked . ' of ' . $items . ' browser item(s) ticked; ' . $ledger . '.';
+        return $ticked < $items
+            ? [...$failures, $ticked . ' of ' . $items . ' browser item(s) ticked.']
+            : $failures;
     }
 }

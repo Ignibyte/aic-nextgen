@@ -6,12 +6,16 @@ namespace AIC\Workflow\Infrastructure;
 
 use AIC\Workflow\Domain\CheckRow;
 use AIC\Workflow\Domain\CheckStatus;
+use AIC\Workflow\Domain\Guard\Enforcement;
+use AIC\Workflow\Domain\Guard\Hold;
 use AIC\Workflow\Domain\PhaseReport;
 use AIC\Workflow\Domain\Phases;
 use AIC\Workflow\Domain\RunNote;
 use AIC\Workflow\Domain\Ticket;
 use AIC\Workflow\Domain\TicketStatuses;
 use AIC\Workflow\Exception\WorkflowRefusal;
+
+use function in_array;
 
 /**
  * The parts of `run.json` that are objects of their own (#100): the ticket,
@@ -79,6 +83,50 @@ final readonly class RunPartsJson
     }
 
     /**
+     * @param JsonReader $jsonReader The run; `enforcement` is absent from a run.json #100 or #101 wrote.
+     *
+     * @throws WorkflowRefusal When it is not a lever's value.
+     *
+     * @return Enforcement The run's frozen enforcement; hard when absent.
+     */
+    public function enforcement(JsonReader $jsonReader): Enforcement
+    {
+        if (!in_array('enforcement', $jsonReader->keys(), true)) {
+            return Enforcement::Hard;
+        }
+
+        return match ($jsonReader->string('enforcement')) {
+            'hard' => Enforcement::Hard,
+            'soft' => Enforcement::Soft,
+            'off' => Enforcement::Off,
+            default => throw new WorkflowRefusal("the run's enforcement is neither hard, soft nor off."),
+        };
+    }
+
+    /**
+     * @param JsonReader $jsonReader The run; `awaiting` is absent from a run.json #100 or #101 wrote.
+     *
+     * @throws WorkflowRefusal When it is not a hold's shape.
+     *
+     * @return Hold|null What it waits on; null when it is absent or null.
+     */
+    public function hold(JsonReader $jsonReader): ?Hold
+    {
+        if (!in_array('awaiting', $jsonReader->keys(), true) || $jsonReader->isNull('awaiting')) {
+            return null;
+        }
+
+        $awaiting = $jsonReader->object('awaiting');
+        $awaiting->only(['kind', 'phase', 'why', 'at']);
+
+        if ($awaiting->string('kind') !== 'operator') {
+            throw new WorkflowRefusal('the run waits on an unknown kind of hold.');
+        }
+
+        return new Hold('operator', $awaiting->string('phase'), $awaiting->string('why'), $awaiting->string('at'));
+    }
+
+    /**
      * @param list<JsonReader> $jsonReaders The `notes` list's objects.
      *
      * @throws WorkflowRefusal When a note is not a note's shape.
@@ -122,6 +170,7 @@ final readonly class RunPartsJson
                 'blocked' => CheckStatus::Blocked,
                 'failed' => CheckStatus::Failed,
                 'deferred' => CheckStatus::Deferred,
+                'held' => CheckStatus::Held,
                 default => throw new WorkflowRefusal('a report row has an unknown status.'),
             };
             $rows[] = new CheckRow($row->string('check'), $status, $row->string('why'), $row->string('remedy'));

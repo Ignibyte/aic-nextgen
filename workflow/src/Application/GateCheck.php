@@ -40,7 +40,7 @@ final readonly class GateCheck implements PhaseCheck
     /**
      * What to do when the environment kept the gate from a verdict.
      */
-    private const string ENVIRONMENT = 'bring up what the gate needs (tools, compiler, database), then run bin/aic workflow:run again.';
+    private const string ENVIRONMENT = 'the operator brings up what the gate needs (tools, compiler, database), then runs workflow:run.';
 
     /**
      * What to do when the gate could not start yet.
@@ -169,7 +169,7 @@ final readonly class GateCheck implements PhaseCheck
             $spent !== '' => $this->spentRow($spent),
             $gates === [] => new CheckRow(
                 'gate',
-                CheckStatus::Failed,
+                CheckStatus::Held,
                 'planning froze no gate list.',
                 'the operator resets the run with bin/aic workflow:reset.',
             ),
@@ -208,7 +208,7 @@ final readonly class GateCheck implements PhaseCheck
     {
         return new CheckRow(
             'gate',
-            CheckStatus::Failed,
+            CheckStatus::Held,
             'max_gate_retries (' . $this->maxGateRetries . ') is spent at ' . $this->phase->value . ': ' . $spent
                 . ' failed; the gate does not run again.',
             'the operator decides: fix it by hand, or run bin/aic workflow:reset from a terminal.',
@@ -236,7 +236,7 @@ final readonly class GateCheck implements PhaseCheck
             ),
             GateStatus::ErrorToolMissing, GateStatus::ErrorToolFailed => new CheckRow(
                 'gate',
-                CheckStatus::Failed,
+                CheckStatus::Held,
                 $summary,
                 self::ENVIRONMENT,
             ),
@@ -256,7 +256,7 @@ final readonly class GateCheck implements PhaseCheck
         return $this->phase === Phase::Complete && $native !== []
             ? new CheckRow(
                 'gate',
-                CheckStatus::Failed,
+                CheckStatus::Held,
                 implode(', ', $native) . ' deferred, and complete needs the native gates: ' . $summary,
                 self::ENVIRONMENT,
             )
