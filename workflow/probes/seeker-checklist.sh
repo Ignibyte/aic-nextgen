@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
 # =============================================================================
-# workflow/probes/seeker-checklist.sh <scratch-dir> [runs]: the seeker probe (#103)
+# workflow/probes/seeker-checklist.sh <scratch-dir> [runs]: the seeker probe (#103, #127)
 # =============================================================================
 #
 # Counts what the aic-seeker catches. For each planted item under
 # workflow/probes/seeker/<item>/ (ticket.md, spec.md, change.patch) and the
 # clean control, it makes an app from this repository in <scratch-dir>/<item>,
 # the package required by path from a copy, installs the workflow, takes the
-# ticket's run through plan, applies the change and builds, and runs code once:
+# ticket's run through plan (with plan's code lookups, #118), applies the change
+# (two lines of context, so a newer CHANGELOG still takes it) and builds, and
+# runs code once:
 # the answer must be inspection-due, which shows every gate green. Then it runs
 # the seeker headless <runs> times (3; 2 for the control) and reads each ledger
 # with the workflow's own parser. A run with no ledger is invalid, never a miss.
 # It prints, per item, how many runs caught it (an open finding citing it) and
-# held it (CRITICAL or HIGH). Each read costs a Claude Code session.
+# how many rated it CRITICAL or HIGH (`high`; since #127 no finding holds the
+# run, so this is the ledger's severity only). Each read costs a Claude Code
+# session.
 #
 # The seeker runs as the session's main agent, defined from the installed agent
 # file through --agents, with no project settings and so no hooks
@@ -41,7 +45,7 @@ make_app() {
     (
         cd "${app}"
         git rm -rq --cached workflow .claude CLAUDE.md CONSTITUTION.md bin/gate-house-rules.php
-        rm -rf workflow .claude CLAUDE.md CONSTITUTION.md docs bin/gate-house-rules.php
+        rm -rf workflow .claude CLAUDE.md CONSTITUTION.md bin/gate-house-rules.php
         cp -a "${repo}/vendor" "${repo}/tools" .
         ln -sfn "${scratch}/pkg/workflow" vendor/aic/workflow
         php "${probes}/probe.php" strip "${scratch}/pkg"
@@ -56,6 +60,26 @@ make_app() {
     )
 }
 
+# look <spec>: plan's lookups (#118's grounding): the overview, each manifest row and its module, a
+# search for each PHP row's class, and the refs of each class the spec names.
+look() {
+    local path module class
+    php bin/aic code:tree < /dev/null > /dev/null
+    while IFS= read -r path; do
+        module="$(sed -nE 's#^modules/([^/]+)/.*#\1#p' <<< "${path}")"
+        if [ -n "${module}" ]; then
+            php bin/aic code:tree "${module}" < /dev/null > /dev/null
+        fi
+        php bin/aic code:tree "${path}" < /dev/null > /dev/null || true
+        if [ "${path%.php}" != "${path}" ]; then
+            php bin/aic code:search "$(basename "${path}" .php)" < /dev/null > /dev/null || true
+        fi
+    done < <(sed -nE "s/^\\| \`([^\`]+)\`.*/\\1/p" "$1")
+    while IFS= read -r class; do
+        php bin/aic code:refs "${class}" < /dev/null > /dev/null || true
+    done < <(grep -oE 'App\\[A-Za-z\\]+' "$1" | sort -u)
+}
+
 # plant <item>: the item's ticket through plan, its change applied and built; prints the code answer's outcome.
 plant() {
     local item="$1" app="${scratch}/$1"
@@ -67,8 +91,9 @@ plant() {
         git commit -qm "the ticket" --no-verify > /dev/null
         php bin/aic workflow:run 1 < /dev/null > /dev/null || true
         cp "${probes}/${item}/spec.md" var/workflow/spec-1.md
+        look "${probes}/${item}/spec.md"
         php bin/aic workflow:run < /dev/null > /dev/null || true
-        git apply "${probes}/${item}/change.patch"
+        git apply -C2 "${probes}/${item}/change.patch"
         composer run build > /dev/null 2>&1
         php bin/aic workflow:run < /dev/null > "${scratch}/${item}.code.json" || true
         php "${probes}/probe.php" field "${scratch}/${item}.code.json" outcome
@@ -88,14 +113,14 @@ read_once() {
     php "${probes}/probe.php" field "${scratch}/${item}.read${n}.json" result > "${scratch}/${item}.ledger${n}.md"
 }
 
-# score <item> <n>: caught, held or invalid, from the workflow's own parser.
+# score <item> <n>: high, caught, missed or invalid, from the workflow's own parser.
 score() {
     local item="$1" n="$2" target
     target="$(cat "${probes}/${item}/item")"
     (cd "${scratch}/${item}" && php "${probes}/probe.php" score "${scratch}/${item}.ledger${n}.md" "${target}")
 }
 
-printf '%-8s %-6s %-5s %-6s %-5s %s\n' item plant runs caught held invalid
+printf '%-8s %-6s %-5s %-6s %-5s %s\n' item plant runs caught high invalid
 for dir in "${probes}"/*/; do
     item="$(basename "${dir}")"
     outcome="$(plant "${item}")"
@@ -108,16 +133,16 @@ for dir in "${probes}"/*/; do
         continue
     fi
     caught=0
-    held=0
+    high=0
     invalid=0
     for n in $(seq 1 "${count}"); do
         read_once "${item}" "${n}"
         case "$(score "${item}" "${n}")" in
-            held) caught=$((caught + 1)); held=$((held + 1)) ;;
+            high) caught=$((caught + 1)); high=$((high + 1)) ;;
             caught) caught=$((caught + 1)) ;;
             invalid) invalid=$((invalid + 1)) ;;
             *) ;;
         esac
     done
-    printf '%-8s %-6s %-5s %-6s %-5s %s\n' "${item}" yes "${count}" "${caught}" "${held}" "${invalid}"
+    printf '%-8s %-6s %-5s %-6s %-5s %s\n' "${item}" yes "${count}" "${caught}" "${high}" "${invalid}"
 done

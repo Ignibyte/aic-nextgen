@@ -13,7 +13,7 @@ use Override;
 
 /**
  * `bin/aic workflow:seeker-brief` (#103): the seeker's scope, as JSON, from
- * the engine. It writes nothing.
+ * the engine. It writes nothing but the code index's refresh (#127).
  */
 final readonly class WorkflowSeekerBriefCommand implements Command
 {

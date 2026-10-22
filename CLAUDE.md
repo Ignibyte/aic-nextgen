@@ -105,8 +105,8 @@ a module's notes go in `modules/<m>/README.md`. After any change under `modules/
 really lands and refuses, at every lever, one outside the project (symlinked `vendor/aic/*`
 included) or under `vendor/`; only `/dev/` is open outside.
 #105: `bin/aic workflow:init` installs the workflow in an app (`workflow/pack/`); it refuses here.
-#103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist
-at code and complete. #117: modes and holds (agentic or interactive, `workflow:ask` and the
+#103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist;
+#127 made it one advisory pass at code, on the diff plus one hop. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 
 ## Five kinds
@@ -193,17 +193,19 @@ Background work is a job; the HTTP server's processes are its workers.
     `config/workflow.php`. While a run is open, each lookup appends `code.queried` (the files and
     scopes it showed) to the run's event log, which the guard walls. gate:2 admits
     `nikic/php-parser` for `workflow/composer.json` only.
-  - **The seeker** (#103): with every other row green, code and complete answer
-    `inspection-due` (`CheckStatus::Due`, exit 1, no retry budget spent). The coding agent
-    dispatches the `aic-seeker` subagent (`workflow/pack/claude/agents/aic-seeker.md`); it reads
-    `bin/aic workflow:seeker-brief`, the diff and `workflow/pack/seeker/checklist.md`, and returns
+  - **The seeker** (#103, one advisory pass since #127): with every other row green, code answers
+    `inspection-due` (`CheckStatus::Due`, exit 1, no retry budget spent) until one counted ledger
+    is filed; complete runs no seeker. The coding agent dispatches the `aic-seeker` subagent
+    (`workflow/pack/claude/agents/aic-seeker.md`); it reads `bin/aic workflow:seeker-brief` (the
+    spec, the changed paths and `one_hop`, the files one code-index edge from each), the diff and
+    `workflow/pack/seeker/checklist.md`, and answers each item `pass` or `fail <file>:<line>` before
     a ledger the agent pipes to `bin/aic workflow:seeker-report`. The ledger names the subject it
     read and cites a checklist id per finding; it counts only when the guard's `returned` row
-    (PostToolUse `Agent`) holds its digest, and only an open CRITICAL or HIGH holds. Code needs a
-    counted inspection; complete needs one on the delivered tree. `seeker_inspection` and
-    `seeker_finding` (evidence schema v3) and `seeker.filed` keep the record. The guard refuses
-    every write made inside an `aic-seeker`. `workflow/probes/seeker-checklist.sh` counts what the
-    seeker catches per item.
+    (PostToolUse `Agent`) holds its digest. No finding holds the run at any severity: the row
+    passes and names each open one, and `workflow:status` shows it. `seeker-report` opens at code
+    only and refuses a second counted ledger. `seeker_inspection` and `seeker_finding` (evidence
+    schema v3) and `seeker.filed` keep the record. The guard refuses every write made inside an
+    `aic-seeker`. `workflow/probes/seeker-checklist.sh` counts what the seeker catches per item.
   - **The installer** (#105): `bin/aic workflow:init [--force[=<path>,...]]` needs no config and
     refuses in this repo (the package's own source). `PackManifest` is the one list of what it
     writes from `workflow/pack/` (`claude/` stands for `.claude/`, since gate:19 skips `.claude`):

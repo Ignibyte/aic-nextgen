@@ -7,12 +7,12 @@ namespace AIC\Workflow\Infrastructure;
 use AIC\Workflow\Application\SeekerBrief;
 use AIC\Workflow\Application\SeekerCheck;
 use AIC\Workflow\Application\SeekerFiling;
+use AIC\Workflow\Application\SeekerReach;
 use AIC\Workflow\Application\SeekerRun;
-use AIC\Workflow\Domain\Phase;
 
 /**
- * The seeker's composition (#103): its check at code and at complete, the
- * brief behind `workflow:seeker-brief`, and the filing behind
+ * The seeker's composition (#103): its check at code (#127), the brief
+ * behind `workflow:seeker-brief` with its one hop, and the filing behind
  * `workflow:seeker-report`, whose wiring is `SeekerFilingParts`.
  */
 final readonly class SeekerParts
@@ -35,17 +35,9 @@ final readonly class SeekerParts
     /**
      * @return SeekerCheck The seeker's row at code.
      */
-    public function atCode(): SeekerCheck
+    public function seekerCheck(): SeekerCheck
     {
-        return new SeekerCheck(Phase::Code, $this->seekerLog(), $this->evidenceParts->runSubject());
-    }
-
-    /**
-     * @return SeekerCheck The seeker's row at complete.
-     */
-    public function atComplete(): SeekerCheck
-    {
-        return new SeekerCheck(Phase::Complete, $this->seekerLog(), $this->evidenceParts->runSubject());
+        return new SeekerCheck($this->seekerLog());
     }
 
     /**
@@ -65,8 +57,8 @@ final readonly class SeekerParts
             $this->seekerRun(),
             $this->evidenceParts->runSubject(),
             $this->evidenceParts->runHost(),
-            $this->seekerLog(),
             $this->checklist(),
+            $this->seekerReach(),
         );
     }
 
@@ -92,5 +84,15 @@ final readonly class SeekerParts
     public function checklist(): SeekerChecklistFile
     {
         return new SeekerChecklistFile($this->root, self::PACKAGE, (new ComposerManifest($this->root, self::PACKAGE))->vendorDir());
+    }
+
+    /**
+     * @return SeekerReach The files one hop from the change.
+     */
+    private function seekerReach(): SeekerReach
+    {
+        $codeParts = new CodeParts($this->root);
+
+        return new SeekerReach($codeParts->codeIndex(), $codeParts->codeLookup());
     }
 }

@@ -13,10 +13,10 @@ use function trim;
 /**
  * `workflow:seeker-report`'s work (#103, Droost's `recordSeeker`): the
  * ledger from standard input, refused at the first failure, in order: no
- * input, no run at code, check or complete, the parse, a `Subject:` other
- * than the tree, no passing gate verdict on the tree, the dispatch. Then the
- * inspection and its findings are stored and `seeker.filed` is logged. It
- * never advances the run.
+ * input, no run at code, a counted inspection already filed (one pass, #127),
+ * the parse, a `Subject:` other than the tree, no passing gate verdict on the
+ * tree, the dispatch. Then the inspection and its findings are stored and
+ * `seeker.filed` is logged. It never advances the run.
  */
 final readonly class SeekerFiling
 {
@@ -51,17 +51,12 @@ final readonly class SeekerFiling
      */
     public function file(): array
     {
-        $text = $this->runHost->standardInput()
-            ?? throw new WorkflowRefusal('standard input is a terminal: pipe the seeker\'s "## Seeker Inspection" section in.');
-
-        if (trim($text) === '') {
-            throw new WorkflowRefusal('nothing was piped in: pipe the seeker\'s "## Seeker Inspection" section in.');
-        }
-
+        $text = $this->text();
         [$runState, $phase] = $this->seekerRun->open();
+        $runId = $runState->runStart->runId;
+        $this->once($runId);
         $seekerLedger = $this->seekerLedgerParser->parse($text);
         $this->seekerTree->check($runState, $seekerLedger);
-        $runId = $runState->runStart->runId;
         $digest = $this->seekerDigest->digest($text);
         $seekerInspection = new SeekerInspection(
             $this->seekerLog->nextRound($runId),
@@ -77,6 +72,39 @@ final readonly class SeekerFiling
     }
 
     /**
+     * @throws WorkflowRefusal When standard input is a terminal or holds nothing.
+     *
+     * @return string What was piped in.
+     */
+    private function text(): string
+    {
+        $text = $this->runHost->standardInput()
+            ?? throw new WorkflowRefusal('standard input is a terminal: pipe the seeker\'s "## Seeker Inspection" section in.');
+
+        if (trim($text) === '') {
+            throw new WorkflowRefusal('nothing was piped in: pipe the seeker\'s "## Seeker Inspection" section in.');
+        }
+
+        return $text;
+    }
+
+    /**
+     * @param string $runId The run.
+     *
+     * @throws WorkflowRefusal When a counted inspection is already filed for it, or the store cannot be read.
+     */
+    private function once(string $runId): void
+    {
+        $seekerInspection = $this->seekerLog->latestCounted($runId);
+
+        if ($seekerInspection instanceof SeekerInspection) {
+            throw new WorkflowRefusal(
+                'round ' . $seekerInspection->round . ' is counted already: a run has one seeker pass, so run bin/aic workflow:run.',
+            );
+        }
+    }
+
+    /**
      * @param SeekerInspection $seekerInspection The filed inspection.
      *
      * @return string What was filed.
@@ -88,6 +116,6 @@ final readonly class SeekerFiling
         return 'seeker-report — round ' . $seekerInspection->round . ' at ' . $seekerInspection->phase->value . ': '
             . $seekerLedger->seekerInspector->value . ', ' . $seekerInspection->seekerDispatch->value . ', '
             . ($seekerInspection->counted() ? 'counted' : 'not counted') . '; ' . count($seekerLedger->findings) . ' finding(s), '
-            . count($seekerLedger->holding()) . ' holding. Run bin/aic workflow:run next.';
+            . count($seekerLedger->holding()) . ' CRITICAL or HIGH, advisory. Run bin/aic workflow:run next.';
     }
 }
