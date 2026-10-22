@@ -9,6 +9,8 @@ use Gates\Domain\ModuleDefinition;
 use InvalidArgumentException;
 
 use function array_key_exists;
+use function array_search;
+use function array_slice;
 use function implode;
 use function in_array;
 
@@ -60,7 +62,8 @@ final readonly class ModuleGraph
         }
 
         if (in_array($moduleDefinition->name, $path, true)) {
-            $cycle = implode(' -> ', [...$path, $moduleDefinition->name]);
+            $start = (int) array_search($moduleDefinition->name, $path, true);
+            $cycle = implode(' -> ', [...array_slice($path, $start), $moduleDefinition->name]);
 
             throw new InvalidArgumentException('modules require each other in a cycle: ' . $cycle . '.');
         }

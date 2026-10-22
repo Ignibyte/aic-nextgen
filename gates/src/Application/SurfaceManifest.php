@@ -4,21 +4,18 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
-use AIC\Controller\Contracts\Page;
-use AIC\Controller\Contracts\Stream;
 use AIC\Module\Contracts\ModuleRoute;
 use AIC\Module\Contracts\ModuleSection;
 use AIC\Module\Contracts\PluginTag;
 use AIC\Routing\Domain\Route;
 use AIC\Schedule\Domain\Schedule;
+use Gates\Domain\ClassKinds;
 use Gates\Domain\ModuleDefinition;
 use JsonException;
 
 use function array_map;
-use function is_a;
 use function json_encode;
 
 use const JSON_PRETTY_PRINT;
@@ -37,15 +34,12 @@ use const JSON_UNESCAPED_UNICODE;
 final readonly class SurfaceManifest
 {
     /**
-     * The kinds, by interface.
+     * @param ClassKinds $classKinds Reads each entry point's kind.
      */
-    private const array KINDS = [
-        Api::class => 'Api',
-        Command::class => 'Command',
-        Job::class => 'Job',
-        Page::class => 'Page',
-        Stream::class => 'Stream',
-    ];
+    public function __construct(
+        private ClassKinds $classKinds = new ClassKinds(),
+    ) {
+    }
 
     /**
      * @param list<Route>            $routes    The routes, as declared.
@@ -83,7 +77,7 @@ final readonly class SurfaceManifest
         $rows = [];
 
         foreach ($entryPoints as $name => $entryPoint) {
-            $rows[] = ['class' => $entryPoint::class, 'kind' => self::kind($entryPoint::class), 'name' => $name];
+            $rows[] = ['class' => $entryPoint::class, 'kind' => $this->classKinds->entryKind($entryPoint::class), 'name' => $name];
         }
 
         return $rows;
@@ -105,9 +99,9 @@ final readonly class SurfaceManifest
             }
         }
 
-        return array_map(static fn (Route $route): array => [
+        return array_map(fn (Route $route): array => [
             'handler' => $route->handler,
-            'kind' => self::kind($route->handler),
+            'kind' => $this->classKinds->entryKind($route->handler),
             'method' => $route->method->value,
             'module' => $moduleOf[$route->handler] ?? '',
             'path' => $route->path,
@@ -136,21 +130,5 @@ final readonly class SurfaceManifest
             'plugins' => $plugins,
             'requires' => $moduleDefinition->entries(ModuleSection::Requires),
         ];
-    }
-
-    /**
-     * @param string $class An entry point's class.
-     *
-     * @return string Its kind; `none` when it implements none (the kinds guards forbid that for an app entry point).
-     */
-    private static function kind(string $class): string
-    {
-        foreach (self::KINDS as $interface => $kind) {
-            if (is_a($class, $interface, true)) {
-                return $kind;
-            }
-        }
-
-        return 'none';
     }
 }
