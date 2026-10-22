@@ -36,11 +36,16 @@ another file, add its row to the manifest first; the run records it as declared 
 
 ## What never changes
 
-The gates and the tools' configuration, `gates/`, baselines and suppressions; and what the hook
+The gates and the tools' configuration (the root files aic/gates ships, which the operator restores
+with `vendor/bin/aic-gate init` between runs), baselines and suppressions; and what the hook
 walls whatever the manifest says: `config/workflow.php`, `var/workflow/` (but the spec), `var/index/` (the code index),
 `.claude/settings.json`, the workflow's skills, commands and lock in `.claude/`, `AGENTS.md` and
 `CLAUDE.md`. Nothing outside the project and nothing under `vendor/` is written either, even through a
 symlink: the hook judges where a write really lands. A gate that fails is fixed in the code. A house rule holds each run to this too.
+
+One gate runs alone with `composer run gate:<N>`; `vendor/bin/aic-gate --list` names them. A new
+route gets its step in `config/native-site.json`, the requests gate:23 sends to both sites: add a
+line, never change or remove one.
 
 ## Leaving code
 

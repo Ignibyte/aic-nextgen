@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Gates\Rendering;
 
 use Gates\Application\FileLister;
+use Gates\Application\ProjectProfile;
 use Gates\Application\QuietFileReader;
+use Gates\Domain\GateProfile;
 use Gates\Domain\RawHtmlUse;
 use PhpParser\Error;
 use PhpParser\NodeTraverser;
@@ -33,11 +35,13 @@ final readonly class RawHtmlScan
      * @param FileLister      $fileLister      Lists each root's files.
      * @param QuietFileReader $quietFileReader Reads each file.
      * @param ParserFactory   $parserFactory   Makes the parser.
+     * @param ProjectProfile  $projectProfile  Whether the framework's source is the project's (#130).
      */
     public function __construct(
         private FileLister $fileLister = new FileLister(),
         private QuietFileReader $quietFileReader = new QuietFileReader(),
         private ParserFactory $parserFactory = new ParserFactory(),
+        private ProjectProfile $projectProfile = new ProjectProfile(),
     ) {
     }
 
@@ -74,7 +78,10 @@ final readonly class RawHtmlScan
     private function files(string $root): array
     {
         $modules = glob($root . '/modules/*/src', GLOB_ONLYDIR);
-        $roots = [$root . '/framework/src', ...($modules === false ? [] : $modules), $root . '/generated'];
+        $framework = $this->projectProfile->profile($root) === GateProfile::Aic
+            ? [$root . '/framework/src']
+            : [];
+        $roots = [...$framework, ...($modules === false ? [] : $modules), $root . '/generated'];
         $files = [];
 
         foreach ($roots as $directory) {

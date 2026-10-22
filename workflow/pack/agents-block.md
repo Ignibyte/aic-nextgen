@@ -11,7 +11,9 @@ the run's spec and the paths its file manifest declares.
    step. Each call works the current phase (plan, code, check, complete) and prints a JSON
    envelope; its `blocked` rows say what holds the phase and what to do about it.
 3. The engine runs the gates, and its verdict is the only one that counts. Never change a gate or
-   a tool's configuration, never add a baseline, never suppress a finding: fix the code.
+   a tool's configuration, never add a baseline, never suppress a finding: fix the code. One gate
+   runs alone with `composer run gate:<N>`; upgrading the suite (`vendor/bin/aic-gate init`) is
+   the operator's, between runs.
 4. Read `{vendor}/aic/framework/docs/README.md` before you plan, then the pages it lists for
    the area the ticket touches: the kinds, the modules and their manifests, the systems, the
    conventions and the gates.

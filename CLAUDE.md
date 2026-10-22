@@ -108,7 +108,8 @@ included) or under `vendor/`; only `/dev/` is open outside.
 #103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist;
 #127 made it one advisory pass at code, on the diff plus one hop. #126 (part A): the root is a
 three-module fixture app; a module's handlers build in parts that fit (`HandlerParts`). #116 (part 1):
-the gate suite is the dev package `aic/gates`, run by `vendor/bin/aic-gate`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
+the gate suite is the dev package `aic/gates`, run by `vendor/bin/aic-gate`. #130: the app side,
+profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 
 ## Five kinds
@@ -323,6 +324,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | | | 27 | raw html: every RawHtml use listed and held to its grant |
 | | | 28 | house rules: every shipped rule bites on its probe |
 | | | 29 | architecture docs: `framework/docs/` states what the code has |
+| | | 30 | suite files: the root configs are aic/gates' stubs, composer.json's suite lines as shipped |
 
 - The gate code is the dev-only package `aic/gates` in `gates/` (#116; namespace `Gates\`,
   outside `AIC\` and `App\`), required by path like `aic/workflow`; a phpat rule keeps runtime
@@ -331,8 +333,18 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   base configs (`config/`) and the elephc pins (`native/`). AIC's root `phpstan.neon`,
   `phpstan-architecture.neon`, `psalm.xml`, `deptrac.yaml`, `phpcs.xml.dist` and `rector.php`
   include their bases and name AIC's paths; `pint.json` and `captainhook.json` stay whole at the
-  root (CaptainHook resolves paths against its config's directory). App profiles, stubs,
-  `aic-gate init` and gate:30 are #130.
+  root (CaptainHook resolves paths against its config's directory).
+- **Profiles** (#130): `ProjectProfile` decides `Aic` when `gates/composer.json` names
+  `aic/gates`, `App` otherwise, and gives `GateRoots` (class, source, runtime and site roots, the
+  manifests, the script folders, gate:26's shell). An app runs every gate but 22, 28 and 29;
+  gate:21 probes its `modules/` and `generated/`, and gate:23 compiles them with the framework from
+  `vendor/`. gate:23's steps are `config/native-site.json` (`aic.native-site/1`, one step a
+  line; with none the gate defers).
+- **An app's suite files** (#130): `gates/stubs/` holds the eight root files an app keeps.
+  `vendor/bin/aic-gate init` writes each that is missing or differs (`phpcs.xml.dist` with one
+  root per module), appends the ignore lines, prints composer.json's lines and never writes it;
+  it refuses here. gate:30 (`SuiteFilesGate`) holds the stubs and composer.json's suite lines; in
+  AIC it holds `pint.json`, `captainhook.json` and the `gate:N` aliases.
 - phpat runs only rule classes registered with the `phpat.test` tag in
   `phpstan-architecture.neon`; a rule class that is not listed never runs. AIC's own PHPStan rules
   live in `gates/src/PhpStan` and are listed under `rules:` in `phpstan.neon`.

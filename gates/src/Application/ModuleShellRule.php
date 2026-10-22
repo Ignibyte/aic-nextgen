@@ -18,76 +18,20 @@ use function str_starts_with;
 
 /**
  * R5 of gate:26 (#94): the app's code lives in `modules/`; outside it sits only
- * the shell below. Every path git lists falls under the shell, every `App\`
- * PSR-4 prefix maps a module's namespace to its `src/` (or the generated
- * wiring to `generated/`), and no PHP file outside `modules/` and `generated/`
- * declares an `App\` class.
+ * the shell, by the project's profile (`ProjectProfile`, #130). Every path git
+ * lists falls under the shell, every `App\` PSR-4 prefix maps a module's
+ * namespace to its `src/` (or the generated wiring to `generated/`), and no
+ * PHP file outside `modules/` and `generated/` declares an `App\` class.
  */
 final readonly class ModuleShellRule implements ModuleRule
 {
     /**
-     * What may sit outside `modules/`, as `fnmatch` patterns over repo-relative paths.
-     */
-    private const array SHELL = [
-        // The app's own shell.
-        // The wiring the build writes from the manifests (#93).
-        'generated/*',
-        // The code wiki the build writes from the surface and the code index (#108).
-        'docs/wiki/*',
-        // The app's settings.
-        'config/*',
-        // serve.php, the one request the compiled site and php-fpm serve.
-        'bootstrap/*',
-        // index.php, and the built assets (#39, #70).
-        'public/*',
-        // The page layouts' templates (#93).
-        'templates/layouts/*',
-        // The project theme; assets/ from #95.
-        // The site theme's CSS, bundled last into public/assets/aic.css (#95).
-        'assets/*',
-        // surface.json, the build's manifest (#26).
-        'build/*',
-        // The console.
-        'bin/aic',
-        // aic/framework, in this repo; an app requires it as a package.
-        'framework/*',
-        // aic/workflow, the dev-only workflow (#100), in this repo; an app requires it for development.
-        'workflow/*',
-        // aic/gates, the gate suite, its entries, the build and the base configs (#116), in this repo.
-        'gates/*',
-        // The ticket script.
-        'bin/*.sh',
-        // The agent's commands, skills and hooks, and the workflow's pack and lock (#105).
-        '.claude/*',
-        // The tickets a run works, in an app with the workflow installed (#105).
-        'tickets/*',
-        // DDEV, the interpreted reference and Postgres.
-        '.ddev/*',
-        // The root's own files, by exact name, so a stray file at the root fails. AGENTS.md holds the
-        // workflow's block in an app (#105).
-        'AGENTS.md',
-        'captainhook.json',
-        'CHANGELOG.md',
-        'CLAUDE.md',
-        'composer.json',
-        'composer.lock',
-        'CONSTITUTION.md',
-        'deptrac.yaml',
-        '.gitignore',
-        'phpcs.xml.dist',
-        'phpstan-architecture.neon',
-        'phpstan.neon',
-        'pint.json',
-        'psalm.xml',
-        'README.md',
-        'rector.php',
-    ];
-
-    /**
-     * @param ClassKinds $classKinds Names the folder a stray class belongs in.
+     * @param ClassKinds     $classKinds     Names the folder a stray class belongs in.
+     * @param ProjectProfile $projectProfile The shell, by the project's profile (#130).
      */
     public function __construct(
         private ClassKinds $classKinds = new ClassKinds(),
+        private ProjectProfile $projectProfile = new ProjectProfile(),
     ) {
     }
 
@@ -100,9 +44,10 @@ final readonly class ModuleShellRule implements ModuleRule
     public function check(ModuleTree $moduleTree): array
     {
         $violations = [];
+        $shell = $this->projectProfile->roots($moduleTree->root)->shell;
 
         foreach ($moduleTree->paths as $path) {
-            $violation = $this->pathViolation($path, $moduleTree->declared($path));
+            $violation = $this->pathViolation($path, $moduleTree->declared($path), $shell);
 
             if (!($violation instanceof BoundaryViolation)) {
                 continue;
@@ -115,13 +60,14 @@ final readonly class ModuleShellRule implements ModuleRule
     }
 
     /**
-     * @param string      $path  A path git lists.
-     * @param string|null $class The class the file declares, if any.
+     * @param string       $path  A path git lists.
+     * @param string|null  $class The class the file declares, if any.
+     * @param list<string> $shell What may sit outside `modules/`, as `fnmatch` patterns.
      *
      * @return BoundaryViolation|null The breach, if the path outside `modules/` and `generated/` declares an `App\`
      *                                class or falls outside the shell.
      */
-    private function pathViolation(string $path, ?string $class): ?BoundaryViolation
+    private function pathViolation(string $path, ?string $class, array $shell): ?BoundaryViolation
     {
         if (str_starts_with($path, 'modules/') || str_starts_with($path, 'generated/')) {
             return null;
@@ -136,7 +82,7 @@ final readonly class ModuleShellRule implements ModuleRule
             ));
         }
 
-        return $this->inShell($path)
+        return array_any($shell, static fn (string $pattern): bool => fnmatch($pattern, $path))
             ? null
             : new BoundaryViolation($path, sprintf(
                 '%s is outside modules/ and the shell; move it into modules/<name>/ (a page layout goes in templates/layouts/).',
@@ -172,16 +118,6 @@ final readonly class ModuleShellRule implements ModuleRule
         }
 
         return $violations;
-    }
-
-    /**
-     * @param string $path A path outside `modules/` and `generated/`.
-     *
-     * @return bool Whether the shell allows it.
-     */
-    private function inShell(string $path): bool
-    {
-        return array_any(self::SHELL, static fn (string $pattern): bool => fnmatch($pattern, $path));
     }
 
     /**

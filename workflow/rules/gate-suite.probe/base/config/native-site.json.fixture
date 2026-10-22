@@ -1,0 +1,6 @@
+{
+    "schema": "aic.native-site/1",
+    "steps": [
+        {"name":"home","method":"GET","path":"/","form":"","header":"","status":200,"captures":false}
+    ]
+}

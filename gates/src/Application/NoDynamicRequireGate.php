@@ -53,15 +53,15 @@ final readonly class NoDynamicRequireGate
     /**
      * The runtime roots, relative to the repo root: everything elephc compiles.
      */
-    private const array RUNTIME_ROOTS = ['framework/src', 'modules', 'generated'];
-
     /**
      * Wire the gate to its operand classifier.
      *
      * @param PhpRequireStatementScanner $phpRequireStatementScanner Token-level include classifier.
+     * @param ProjectProfile             $projectProfile             The runtime roots, by the project's profile (#130).
      */
     public function __construct(
         private PhpRequireStatementScanner $phpRequireStatementScanner = new PhpRequireStatementScanner(),
+        private ProjectProfile $projectProfile = new ProjectProfile(),
     ) {
     }
 
@@ -174,7 +174,7 @@ final readonly class NoDynamicRequireGate
     {
         $files = [];
 
-        foreach (self::RUNTIME_ROOTS as $sourceDir) {
+        foreach ($this->projectProfile->roots($root)->runtimeFolders() as $sourceDir) {
             $files = [
                 ...$files,
                 ...$this->collectPhpFiles($root . '/' . $sourceDir),

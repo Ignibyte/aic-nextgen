@@ -23,17 +23,14 @@ use function sort;
 final readonly class RuntimeClassFinder
 {
     /**
-     * The runtime roots, as PSR-4 prefix => directories relative to the repo root.
-     */
-    private const array RUNTIME_ROOTS = ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'generated']];
-
-    /**
      * @param ClassReferenceScanner $classReferenceScanner Reads what each file declares.
      * @param PhpSourceCollector    $phpSourceCollector    Lists the `*.php` files under the runtime roots.
+     * @param ProjectProfile        $projectProfile        The runtime roots, by the project's profile (#130).
      */
     public function __construct(
         private ClassReferenceScanner $classReferenceScanner = new ClassReferenceScanner(),
         private PhpSourceCollector $phpSourceCollector = new PhpSourceCollector(),
+        private ProjectProfile $projectProfile = new ProjectProfile(),
     ) {
     }
 
@@ -48,9 +45,37 @@ final readonly class RuntimeClassFinder
      */
     public function find(string $root): array
     {
+        return $this->classes($root, $this->projectProfile->roots($root)->runtimeRoots);
+    }
+
+    /**
+     * Every class gate:23 compiles with the site's entry: the runtime, and in an app the framework under vendor/ (#130),
+     * since bootstrap/serve.php names framework classes no app class reaches.
+     *
+     * @param string $root Repo-root absolute path.
+     *
+     * @throws RuntimeException When a file cannot be read.
+     *
+     * @return list<string> Their FQCNs, sorted.
+     */
+    public function forSite(string $root): array
+    {
+        return $this->classes($root, $this->projectProfile->roots($root)->siteRoots);
+    }
+
+    /**
+     * @param string                             $root  Repo-root absolute path.
+     * @param array<string, string|list<string>> $roots PSR-4 prefixes and their folders.
+     *
+     * @throws RuntimeException When a file cannot be read.
+     *
+     * @return list<string> The class-likes declared under them, sorted.
+     */
+    private function classes(string $root, array $roots): array
+    {
         $classes = [];
 
-        foreach ($this->phpSourceCollector->collect($root, self::RUNTIME_ROOTS) as $file) {
+        foreach ($this->phpSourceCollector->collect($root, $roots) as $file) {
             $declared = $this->declaredIn($file);
 
             if ($declared === null) {

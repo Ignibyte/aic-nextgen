@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\GateProfile;
 use Gates\Domain\SuiteGate;
 
+use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_slice;
-use function str_replace;
+use function array_values;
+use function implode;
+use function strtr;
 
 use const PHP_BINARY;
 
@@ -18,9 +22,11 @@ use const PHP_BINARY;
  * The gate suite (#116): the one list of every gate, its description, where it
  * runs and its command. `aic-gate` runs a row; the runner lists the rows. An
  * entry (`php`) is a script in this package's `bin/`, a tool (`bin`) is the
- * project's `vendor/bin/<tool>`, and `{config}` in an argument names this
- * package's `config/`, where the base configs are. AIC's own repository runs
- * every row; `aic` rows (22, 28, 29) hold AIC's own docs and rules.
+ * project's `vendor/bin/<tool>`; `{config}` in an argument names this
+ * package's `config/`, where the base configs are, and `{classRoots}` the
+ * profile's class roots (#130). AIC's own repository runs every row; an app
+ * runs the `app` rows, since the `aic` rows (22, 28, 29) hold AIC's own docs
+ * and rules.
  */
 final readonly class GateSuite
 {
@@ -84,7 +90,7 @@ final readonly class GateSuite
             [
                 'bin',
                 'phpmd',
-                'framework/src,modules,generated,gates/src,gates/architecture,workflow/src,workflow/rules',
+                '{classRoots}',
                 'text',
                 '{config}/phpmd.xml',
                 '--strict',
@@ -190,15 +196,23 @@ final readonly class GateSuite
             'aic',
             ['php', 'gate-architecture-docs.php'],
         ],
+        30 => [
+            "Suite files: the tools' root configs are aic/gates' stubs (phpcs.xml.dist with one root per module), and "
+                . "composer.json carries the suite's scripts and plugins as shipped; aic-gate init restores the files.",
+            'app',
+            ['php', 'gate-suite-files.php'],
+        ],
     ];
 
     /**
-     * @param string $root    The project's root.
-     * @param string $package This package's directory.
+     * @param string         $root           The project's root.
+     * @param string         $package        This package's directory.
+     * @param ProjectProfile $projectProfile Which rows run here, and gate:10's paths (#130).
      */
     public function __construct(
         private string $root,
         private string $package,
+        private ProjectProfile $projectProfile = new ProjectProfile(),
     ) {
     }
 
@@ -207,7 +221,7 @@ final readonly class GateSuite
      */
     public function gates(): array
     {
-        return array_map($this->gate(...), array_keys(self::GATES));
+        return array_values(array_filter(array_map($this->gate(...), array_keys(self::GATES)), $this->runsHere(...)));
     }
 
     /**
@@ -217,9 +231,23 @@ final readonly class GateSuite
      */
     public function find(int $number): ?SuiteGate
     {
-        return array_key_exists($number, self::GATES)
+        $suiteGate = array_key_exists($number, self::GATES)
             ? $this->gate($number)
             : null;
+
+        return $suiteGate instanceof SuiteGate && $this->runsHere($suiteGate)
+            ? $suiteGate
+            : null;
+    }
+
+    /**
+     * @param SuiteGate $suiteGate A gate.
+     *
+     * @return bool Whether it runs in this project: every gate in AIC's repository, an `app` gate in an app.
+     */
+    private function runsHere(SuiteGate $suiteGate): bool
+    {
+        return $suiteGate->scope === 'app' || $this->projectProfile->profile($this->root) === GateProfile::Aic;
     }
 
     /**
@@ -236,7 +264,11 @@ final readonly class GateSuite
         $head = $kind === 'php'
             ? [PHP_BINARY, $this->package . '/bin/' . $program]
             : [$this->root . '/vendor/bin/' . $program];
-        $tail = array_map(fn (string $argument): string => str_replace('{config}', $this->package . '/config', $argument), $arguments);
+        $replace = [
+            '{classRoots}' => implode(',', $this->projectProfile->roots($this->root)->classRoots),
+            '{config}' => $this->package . '/config',
+        ];
+        $tail = array_map(static fn (string $argument): string => strtr($argument, $replace), $arguments);
 
         return new SuiteGate($number, $description, $scope, [...$head, ...$tail]);
     }

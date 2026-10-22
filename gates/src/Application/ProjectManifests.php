@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use function array_map;
+
 /**
  * The composer manifests the composer gates check: the root and the framework.
  *
@@ -15,6 +17,14 @@ namespace Gates\Application;
 final readonly class ProjectManifests
 {
     /**
+     * @param ProjectProfile $projectProfile The manifests, by the project's profile (#130).
+     */
+    public function __construct(
+        private ProjectProfile $projectProfile = new ProjectProfile(),
+    ) {
+    }
+
+    /**
      * List the manifest paths, root first.
      *
      * @param string $root Repo-root absolute path.
@@ -23,10 +33,6 @@ final readonly class ProjectManifests
      */
     public function paths(string $root): array
     {
-        return [
-            $root . '/composer.json',
-            $root . '/framework/composer.json',
-            $root . '/workflow/composer.json',
-        ];
+        return array_map(static fn (string $manifest): string => $root . '/' . $manifest, $this->projectProfile->roots($root)->manifests);
     }
 }
