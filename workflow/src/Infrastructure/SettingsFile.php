@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
+use AIC\Workflow\Domain\HouseRule;
 use AIC\Workflow\Domain\WorkflowSettings;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
+use function in_array;
 use function is_file;
 
 /**
@@ -37,6 +39,26 @@ final readonly class SettingsFile
             throw new WorkflowRefusal('config/workflow.php returns ' . WorkflowSettings::class . ', and here it does not.');
         }
 
+        $this->houseRules($workflowSettings->houseRules);
+
         return $workflowSettings;
+    }
+
+    /**
+     * @param list<HouseRule> $houseRules The rules config/workflow.php names (#104).
+     *
+     * @throws WorkflowRefusal When two share an id.
+     */
+    private function houseRules(array $houseRules): void
+    {
+        $ids = [];
+
+        foreach ($houseRules as $houseRule) {
+            if (in_array($houseRule->id, $ids, true)) {
+                throw new WorkflowRefusal('config/workflow.php names house rule ' . $houseRule->id . ' twice.');
+            }
+
+            $ids[] = $houseRule->id;
+        }
     }
 }

@@ -27,6 +27,7 @@ parameters:
         - gates/src
         - workflow/src
         - workflow/bin
+        - workflow/rules
     # PHPCS loads its classes with its own autoloader, not composer's, and
     # defines its token constants (T_SEMICOLON, ...) in Util/Tokens.php; the
     # sniffs under gates/src/Sniffs (gate:11, #56) use both.

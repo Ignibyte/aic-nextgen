@@ -19,15 +19,16 @@ use function preg_match_all;
  * Criteria verification at complete (#101, Droost's `CriteriaVerification`
  * without tests): each criterion's `Met` cell is ticked and cites a check
  * the store holds green and fresh on the tree as it is: `gate`, `gate:N`,
- * `composition`, `declaration`, `freeze`, `rendered GET /path` or
- * `browser`. A tick that cites nothing is the agent's word, and it holds.
+ * `composition`, `declaration`, `freeze`, `rendered GET /path`, `browser`,
+ * `rules` or `rule:<id>` (#104). A tick that cites nothing is the agent's word, and it holds.
  */
 final readonly class CriteriaCheck implements PhaseCheck
 {
     /**
      * What a `Met` cell may cite.
      */
-    private const string CITATION = '/gate:\\d+|\\b(?:gate|composition|declaration|freeze|browser)\\b|rendered GET [^\\s,;]+/';
+    private const string CITATION = '/gate:\\d+|rule:[a-z0-9-]+|rendered GET [^\\s,;]+'
+        . '|\\b(?:gate|composition|declaration|freeze|browser|rules)\\b/';
 
     /**
      * What to do about a criterion not shown.

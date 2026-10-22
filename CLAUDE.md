@@ -84,6 +84,7 @@ hand-written templates; a module component with no template is refused. #91, the
 runs as #100 to #106; #100: the run engine and its state, the dev-only `aic/workflow` package.
 #101: the engine runs the gates itself and keeps each verdict in `var/workflow/evidence.sqlite`
 beside the subject hash of the tree it judged. #102: the guard hook holds the agent to the open run.
+#104: house rules judge each run's change, frozen at begin; the probe sweep is #119.
 
 ## Five kinds
 
@@ -150,6 +151,14 @@ Background work is a job; the HTTP server's processes are its workers.
     run `awaiting` the operator, whose `workflow:run` from a terminal resumes it. Every call is a
     line in `var/workflow/guard-calls.jsonl`, which `workflow:run` ingests into `tool_call`.
     Levers: `enforcement` (frozen at begin) and `requireRun`, each hard, soft or off.
+  - **House rules** (#104): `WorkflowSettings::$houseRules` names `HouseRule`s, PHP files run as
+    their own process on the run's change (JSON on stdin; exit 0 holds, 1 breaks, 4 defers, any
+    other did not run). The engine hands a rule base copies (`var/workflow/rule-base/<path>.base`),
+    so a rule runs no git. `rule_files` (config/workflow.php, each rule, each `<rule>.probe/`) is
+    frozen by sha256 at begin and walled by the guard; a change holds the run (`rules`). Plan runs
+    every rule's probe (`probes`; held for the operator when one does not bite); code, check and
+    complete run `rules` and one `rule:<id>` each. AIC ships `gate-suite` and `raw-html-grants`
+    in `workflow/rules/`; gate:28 runs their probes.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 - **Modules** (#90, #92, #93): `modules/<name>/<name>.module.php` returns a fluent
   `AIC\Module\Contracts\ModuleManifest`, naming only what the module has:
@@ -249,6 +258,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | | | 25 | templates: the plain PHP grammar, deny by default |
 | | | 26 | module boundaries: kind folders, the 15-file cap, exports and requires, the shell |
 | | | 27 | raw html: every RawHtml use listed and held to its grant |
+| | | 28 | house rules: every shipped rule bites on its probe |
 
 - The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
   `App\`; a phpat rule keeps runtime code from depending on it.
@@ -297,6 +307,8 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   each module class to its grant in `config/raw-html.php` (`RawHtmlGrant`: class, exact uses,
   reason). `RawHtml::` may appear only in `Renderer` and `RenderPass`. `GATE_RAW_HTML_ROOT`
   takes a plant root.
+- gate:28 (`bin/gate-house-rules.php`, #104) runs every `workflow/rules/*.php` rule on its
+  `.probe/` cases in a temporary directory: each `held-*` must exit 0, each `broken-*` 1.
 - gate:21 caches (#110): a class whose closure files, compiler, bridge libraries, PHP, pinned
   packages and probe program are unchanged since its last green probe reports `CACHED`
   (`.native-gate/cache.txt`); a change reprobes only the classes whose closure holds it. Probes

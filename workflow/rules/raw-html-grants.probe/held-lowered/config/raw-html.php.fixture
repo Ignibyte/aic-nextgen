@@ -1,0 +1,9 @@
+<?php
+
+declare(strict_types=1);
+
+use AIC\Component\Contracts\RawHtmlGrant;
+
+return [
+    new RawHtmlGrant('App\\Content\\Service\\PageBody', 1, 'the body is sanitized by the editor.'),
+];

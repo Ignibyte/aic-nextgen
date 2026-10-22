@@ -15,7 +15,8 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
  * Begins a run on a ticket (#100; out of RunEngine in #102): a fresh id, the
- * base commit, the spec's path and the guard's enforcement frozen, plan
+ * base commit, the spec's path, the guard's enforcement and the house rules'
+ * files frozen, plan
  * active, the run saved and logged, the ticket moved to in-progress.
  */
 final readonly class RunBegin
@@ -27,6 +28,7 @@ final readonly class RunBegin
      * @param RunHost      $runHost      The commit and the ids.
      * @param UtcTime      $utcTime      The clock.
      * @param Enforcement  $enforcement  The guard's enforcement, frozen into the run (#102).
+     * @param RuleFiles    $ruleFiles    The house rules' files, hashed into the run (#104).
      */
     public function __construct(
         private RunStore $runStore,
@@ -35,6 +37,7 @@ final readonly class RunBegin
         private RunHost $runHost,
         private UtcTime $utcTime,
         private Enforcement $enforcement,
+        private RuleFiles $ruleFiles,
     ) {
     }
 
@@ -57,19 +60,30 @@ final readonly class RunBegin
             throw new WorkflowRefusal('ticket ' . $ticket->id . ' is ' . $ticket->status->value . '; a run works an open ticket.');
         }
 
-        $runStart = new RunStart(
-            $this->runHost->newId('run', 6),
-            $this->utcTime->now(),
-            $this->runHost->baseCommit(),
-            'var/workflow/spec-' . $ticket->number . '.md',
-            $this->enforcement,
-        );
-        $runState = new RunState($runStart, $ticket, new RunPhases([Phase::Plan->value => PhaseStatus::Active]), Phase::Plan, [], [], []);
+        $runPhases = new RunPhases([Phase::Plan->value => PhaseStatus::Active]);
+        $runState = new RunState($this->start($ticket->number), $ticket, $runPhases, Phase::Plan, [], [], []);
         $this->runStore->save($runState);
         $notes = $this->runJournal->started($runState);
         [$runState, $moved] = $this->runJournal->ticket($runState, TicketStatus::InProgress, Phase::Plan->ticketPhase());
         $this->runStore->save($runState);
 
         return [$runState, [...$notes, ...$moved]];
+    }
+
+    /**
+     * @param int $number The ticket's number.
+     *
+     * @return RunStart The run's start: a fresh id, now, the base commit, the spec's path and what it freezes.
+     */
+    private function start(int $number): RunStart
+    {
+        return new RunStart(
+            $this->runHost->newId('run', 6),
+            $this->utcTime->now(),
+            $this->runHost->baseCommit(),
+            'var/workflow/spec-' . $number . '.md',
+            $this->enforcement,
+            $this->ruleFiles->hashes(),
+        );
     }
 }

@@ -77,7 +77,7 @@ final readonly class ShellWall
      */
     private function invocation(Invocation $invocation, string $cwd, GuardScene $guardScene): GuardVerdict
     {
-        $why = $this->protectedWhy($invocation, $cwd, $this->protectedPaths->spec($guardScene));
+        $why = $this->protectedWhy($invocation, $cwd, $guardScene);
 
         if ($why !== '') {
             return new GuardVerdict('refuse', 'protected', $why);
@@ -97,23 +97,23 @@ final readonly class ShellWall
     /**
      * @param Invocation $invocation A command.
      * @param string     $cwd        Where its paths resolve.
-     * @param string     $spec       The open run's spec, absolute.
+     * @param GuardScene $guardScene The run.
      *
      * @return string Why it reaches a protected path; empty when it does not.
      */
-    private function protectedWhy(Invocation $invocation, string $cwd, string $spec): string
+    private function protectedWhy(Invocation $invocation, string $cwd, GuardScene $guardScene): string
     {
         if ($this->shellWrites->cleansIgnored($invocation)) {
             return "git clean -x removes what git ignores, the run's state among it.";
         }
 
-        $why = $this->landing($this->shellWrites->targets($invocation), $cwd, $spec, false);
+        $why = $this->landing($this->shellWrites->targets($invocation), $cwd, $guardScene, false);
 
         if ($why !== '' || $this->shellWrites->reads($invocation)) {
             return $why;
         }
 
-        $why = $this->landing($this->shellWrites->paths($invocation), $cwd, $spec, $this->shellWrites->destroys($invocation));
+        $why = $this->landing($this->shellWrites->paths($invocation), $cwd, $guardScene, $this->shellWrites->destroys($invocation));
 
         return $why !== ''
             ? $why
@@ -121,17 +121,17 @@ final readonly class ShellWall
     }
 
     /**
-     * @param list<string> $words    Paths as written.
-     * @param string       $cwd      Where they resolve.
-     * @param string       $spec     The open run's spec, absolute.
-     * @param bool         $destroys Whether the command reaches into the directories it names.
+     * @param list<string> $words      Paths as written.
+     * @param string       $cwd        Where they resolve.
+     * @param GuardScene   $guardScene The run.
+     * @param bool         $destroys   Whether the command reaches into the directories it names.
      *
      * @return string Why one of them lands on a protected path; empty when none does.
      */
-    private function landing(array $words, string $cwd, string $spec, bool $destroys): string
+    private function landing(array $words, string $cwd, GuardScene $guardScene, bool $destroys): string
     {
         foreach ($words as $word) {
-            $why = $this->wordLands($word, $cwd, $spec, $destroys);
+            $why = $this->wordLands($word, $cwd, $guardScene, $destroys);
 
             if ($why !== '') {
                 return $why;
@@ -142,17 +142,17 @@ final readonly class ShellWall
     }
 
     /**
-     * @param string $word     A path as written, perhaps a glob.
-     * @param string $cwd      Where it resolves.
-     * @param string $spec     The open run's spec, absolute.
-     * @param bool   $destroys Whether the command reaches into the directories it names.
+     * @param string     $word       A path as written, perhaps a glob.
+     * @param string     $cwd        Where it resolves.
+     * @param GuardScene $guardScene The run.
+     * @param bool       $destroys   Whether the command reaches into the directories it names.
      *
      * @return string Why one of its matches lands on a protected path; empty when none does.
      */
-    private function wordLands(string $word, string $cwd, string $spec, bool $destroys): string
+    private function wordLands(string $word, string $cwd, GuardScene $guardScene, bool $destroys): string
     {
         foreach ($this->pathResolver->expand($word, $cwd) as $absolute) {
-            $why = $this->lands($word, $absolute, $spec, $destroys);
+            $why = $this->lands($word, $absolute, $guardScene, $destroys);
 
             if ($why !== '') {
                 return $why;
@@ -163,16 +163,16 @@ final readonly class ShellWall
     }
 
     /**
-     * @param string $word     A path as written.
-     * @param string $absolute One place it resolves to.
-     * @param string $spec     The open run's spec, absolute.
-     * @param bool   $destroys Whether the command reaches into the directories it names.
+     * @param string     $word       A path as written.
+     * @param string     $absolute   One place it resolves to.
+     * @param GuardScene $guardScene The run.
+     * @param bool       $destroys   Whether the command reaches into the directories it names.
      *
      * @return string Why it lands on a protected path, or holds one the command would reach; empty otherwise.
      */
-    private function lands(string $word, string $absolute, string $spec, bool $destroys): string
+    private function lands(string $word, string $absolute, GuardScene $guardScene, bool $destroys): string
     {
-        $why = $this->protectedPaths->reason($absolute, $spec);
+        $why = $this->protectedPaths->reason($absolute, $guardScene);
 
         return $why === '' && $destroys && $this->protectedPaths->holds($absolute)
             ? $word . " holds the run's state or wiring; it is not removed, moved or re-owned whole."

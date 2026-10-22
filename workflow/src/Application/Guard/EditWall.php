@@ -64,7 +64,7 @@ final readonly class EditWall
     private function path(string $path, string $cwd, GuardScene $guardScene): GuardVerdict
     {
         $absolute = $this->pathResolver->absolute($path, $cwd);
-        $why = $this->protectedPaths->reason($absolute, $this->protectedPaths->spec($guardScene));
+        $why = $this->protectedPaths->reason($absolute, $guardScene);
 
         return $why === ''
             ? $this->writeScope->verdict($absolute, $guardScene)

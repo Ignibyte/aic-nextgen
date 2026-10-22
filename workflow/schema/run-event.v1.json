@@ -35,7 +35,12 @@
         "ticket": { "type": "string" },
         "spec": { "type": "string" },
         "base_commit": { "type": ["string", "null"] },
-        "phases": { "type": "array", "items": { "type": "string" } }
+        "phases": { "type": "array", "items": { "type": "string" } },
+        "rule_files": {
+          "description": "The house rules' files and config/workflow.php by path, each with its sha256 at begin, or null when missing (#104).",
+          "type": "object",
+          "additionalProperties": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+        }
       }
     },
     "phase": {

@@ -1,0 +1,19 @@
+{
+    "name": "aic/app",
+    "require": {
+        "php": "^8.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\Site\\": "modules/site/src/",
+            "App\\Shop\\": "modules/shop/src/"
+        }
+    },
+    "scripts": {
+        "gate": "bash bin/gate-runner.sh",
+        "gate:8": "vendor/bin/phpstan analyse"
+    },
+    "scripts-descriptions": {
+        "gate:8": "PHPStan level 10."
+    }
+}

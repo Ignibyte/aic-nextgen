@@ -15,6 +15,7 @@ use AIC\Workflow\Domain\RunOutcome;
 use AIC\Workflow\Domain\RunState;
 use AIC\Workflow\Domain\TicketStatus;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use stdClass;
 
 use function array_filter;
 use function array_map;
@@ -56,6 +57,7 @@ final readonly class RunJournal
             $this->event($runState, EventType::RunStarted, [
                 'base_commit' => $runState->runStart->baseCommit,
                 'phases' => array_map(static fn (Phase $phase): string => $phase->value, (new Phases())->all()),
+                'rule_files' => $runState->runStart->ruleFiles === [] ? new stdClass() : $runState->runStart->ruleFiles,
                 'spec' => $runState->runStart->specPath,
                 'ticket' => $runState->ticket->id,
             ]),
@@ -180,9 +182,9 @@ final readonly class RunJournal
     }
 
     /**
-     * @param RunState                                $runState  The run.
-     * @param EventType                               $eventType What happened.
-     * @param array<string, scalar|list<string>|null> $payload   The payload.
+     * @param RunState                                                                    $runState  The run.
+     * @param EventType                                                                   $eventType What happened.
+     * @param array<string, scalar|list<string>|array<string, string|null>|stdClass|null> $payload   The payload.
      *
      * @return string Empty when the event was logged; a note otherwise.
      */
@@ -192,7 +194,7 @@ final readonly class RunJournal
     }
 
     /**
-     * @param array<array-key, scalar|array<array-key, scalar|array<string, string>|null>|null> $value A payload or a report.
+     * @param array<array-key, scalar|array<array-key, scalar|array<string, string>|null>|stdClass|null> $value A payload or a report.
      *
      * @return string It as a JSON object.
      */

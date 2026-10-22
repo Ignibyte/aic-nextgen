@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **House rules** (#104, part 5 of #91). The workflow engine holds every run to the project's house rules: PHP files that judge the run's change, base against head, where the gate suite judges the tree.
+  - **Declared** in `config/workflow.php` as `HouseRule`s. Each runs as its own process: `aic.house-rule/1` JSON on stdin, with base copies the engine writes so the rule runs no git. Exit 0 holds, 1 breaks, 4 defers (never a pass); a timeout, a missing file or any other exit did not run.
+  - **Frozen:** `rule_files` (config/workflow.php, each rule and its probe directory, by sha256) is set at begin in run.json and `run.started`, and walled by the guard. A change holds the run (`rules`).
+  - **Probed:** plan runs each rule on its `held-*` and `broken-*` cases (`probes`). A rule that does not bite holds plan for the operator. Code, check and complete run one `rule:<id>` per rule, and criteria may cite them.
+  - **Shipped:** `gate-suite` (the gate runner, the gates' code and the tools' configs stay as they began; a module's PSR-4 line and PHPCS root are free) and `raw-html-grants` (no RawHtml grant added, raised or reworded). gate:28 runs their probes in AIC's own suite.
+  - **The proof:** a scratch project showed the freeze, both rules failing on their plants, a deferral that holds nothing and cannot be cited, and six broken rules holding plan. gate:28 failed on a planted fixture. 29 gates green.
+  - **Split:** `bin/aic workflow:probe`, the sweep that replays #101's planted cases, is #119.
+
 - **The workflow's guard hook** (#102, part 3 of #91). A Claude Code hook holds the agent to the open run between `workflow:run` calls.
   - **The hook:** `workflow/bin/aic-guard.sh` (a shim) runs a PHP entry over `Guard/` classes; `workflow/pack/hooks.json` wires `edit` (Write, Edit, MultiEdit, NotebookEdit and any `mcp__*` tool), `shell` (Bash), `record` (every other tool) and `stop`. A crash refuses; `record` allows.
   - **The walls:** writes go only where the phase allows: no run, the ticket directory; plan, the spec; code, check and complete, the spec and the File Manifest; never the build's outputs. The run's state, the opt-in, the hook wiring, the package and Claude Code's global settings are refused at every phase, through an editor, an MCP path field or the shell. The operator's verbs (`workflow:reset`, a workflow command under a pseudo-terminal or a variable, `composer … --no-dev`) are refused in the agent's shell; a heredoc body is data.
