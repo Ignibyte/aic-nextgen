@@ -20,4 +20,6 @@ enum EventType: string
     case RunResumed = 'run.resumed';
     case CodeQueried = 'code.queried';
     case SeekerFiled = 'seeker.filed';
+    case QuestionAsked = 'question.asked';
+    case QuestionAnswered = 'question.answered';
 }

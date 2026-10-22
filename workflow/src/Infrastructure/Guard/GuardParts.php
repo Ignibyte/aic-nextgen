@@ -6,11 +6,9 @@ namespace AIC\Workflow\Infrastructure\Guard;
 
 use AIC\Workflow\Application\Guard\EditWall;
 use AIC\Workflow\Application\Guard\GuardHook;
-use AIC\Workflow\Application\Guard\OperatorVerbs;
+use AIC\Workflow\Application\Guard\PhpWall;
 use AIC\Workflow\Application\Guard\ProtectedPaths;
 use AIC\Workflow\Application\Guard\ShellWall;
-use AIC\Workflow\Application\Guard\ShellWords;
-use AIC\Workflow\Application\Guard\ShellWrites;
 use AIC\Workflow\Application\Guard\StopHold;
 use AIC\Workflow\Application\Guard\WriteScope;
 use AIC\Workflow\Application\SpecFile;
@@ -45,12 +43,12 @@ final readonly class GuardParts
         $guardLedgerFile = new GuardLedgerFile($this->root);
         $protectedPaths = new ProtectedPaths($this->root, $this->home, $this->package, $diskPaths, (new PackManifest())->guarded());
         $writeScope = new WriteScope($this->root, new SpecFile($this->root), $guardLedgerFile, $diskPaths);
-        $shellWall = new ShellWall(new ShellWords(), new OperatorVerbs(), new ShellWrites(), $protectedPaths, $writeScope, $diskPaths);
+        $phpWall = new PhpWall($this->root, $this->package, $diskPaths);
 
         return new GuardHook(
             new EditWall($protectedPaths, $writeScope, $diskPaths),
-            $shellWall,
-            new StopHold(),
+            new ShellWall($protectedPaths, $writeScope, $diskPaths, $phpWall),
+            new StopHold($guardLedgerFile),
             $guardLedgerFile,
             new UtcTime(new SystemClock()),
         );

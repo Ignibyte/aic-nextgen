@@ -9,7 +9,7 @@ use AIC\Workflow\Domain\Guard\Enforcement;
 /**
  * What an app's `config/workflow.php` returns (#100): its opt-in to the
  * workflow, its gates' settings (#101), the guard's levers (#102) and the
- * house rules (#104). #105's installer writes the
+ * house rules (#104), and the mode (#117). #105's installer writes the
  * file; #102 adds the levers.
  *
  * @api
@@ -27,6 +27,8 @@ final readonly class WorkflowSettings
      * @param Enforcement     $enforcement    How hard the guard holds a run to its phase's scope (#102); frozen at begin.
      * @param Enforcement     $requireRun     How hard the guard refuses a write with no run open (#102).
      * @param list<HouseRule> $houseRules     The house rules every run is held to (#104).
+     * @param Mode            $mode           Agentic or interactive (#117); frozen at begin.
+     * @param bool            $humanComplete  Whether the operator confirms complete in an agentic run too (#117); frozen at begin.
      */
     public function __construct(
         public string $tickets,
@@ -37,6 +39,8 @@ final readonly class WorkflowSettings
         public Enforcement $enforcement = Enforcement::Hard,
         public Enforcement $requireRun = Enforcement::Hard,
         public array $houseRules = [],
+        public Mode $mode = Mode::Agentic,
+        public bool $humanComplete = false,
     ) {
     }
 }

@@ -23,6 +23,7 @@ final readonly class RunState
      * @param array<string, PhaseReport> $reports      The last report per phase, by name.
      * @param list<RunNote>              $notes        What it recorded without failing on it.
      * @param Hold|null                  $awaiting     What it waits on (#102); null while the agent may work it.
+     * @param list<QuestionAnswer>       $qaHistory    Every question answered, in order (#117); appended to, never rewritten.
      */
     public function __construct(
         public RunStart $runStart,
@@ -33,6 +34,7 @@ final readonly class RunState
         public array $reports,
         public array $notes,
         public ?Hold $awaiting = null,
+        public array $qaHistory = [],
     ) {
     }
 
@@ -65,6 +67,7 @@ final readonly class RunState
             $reports,
             $this->notes,
             $this->awaiting,
+            $this->qaHistory,
         );
     }
 
@@ -88,7 +91,17 @@ final readonly class RunState
 
         $runPhases = $this->passed($this->currentPhase)->with($phase, PhaseStatus::Active);
 
-        return new self($this->runStart, $this->ticket, $runPhases, $phase, $this->attempts, $this->reports, $this->notes, $this->awaiting);
+        return new self(
+            $this->runStart,
+            $this->ticket,
+            $runPhases,
+            $phase,
+            $this->attempts,
+            $this->reports,
+            $this->notes,
+            $this->awaiting,
+            $this->qaHistory,
+        );
     }
 
     /**
@@ -104,7 +117,17 @@ final readonly class RunState
 
         $runPhases = $this->passed(Phase::Complete);
 
-        return new self($this->runStart, $this->ticket, $runPhases, null, $this->attempts, $this->reports, $this->notes, $this->awaiting);
+        return new self(
+            $this->runStart,
+            $this->ticket,
+            $runPhases,
+            null,
+            $this->attempts,
+            $this->reports,
+            $this->notes,
+            $this->awaiting,
+            $this->qaHistory,
+        );
     }
 
     /**
@@ -123,6 +146,7 @@ final readonly class RunState
             $this->reports,
             $this->notes,
             $this->awaiting,
+            $this->qaHistory,
         );
     }
 
@@ -142,6 +166,7 @@ final readonly class RunState
             $this->reports,
             $this->notes,
             $hold,
+            $this->qaHistory,
         );
     }
 
@@ -158,6 +183,28 @@ final readonly class RunState
             $this->attempts,
             $this->reports,
             $this->notes,
+            null,
+            $this->qaHistory,
+        );
+    }
+
+    /**
+     * @param QuestionAnswer $questionAnswer The operator's answer to what the run waits on (#117).
+     *
+     * @return self The run with the answer appended and its hold cleared.
+     */
+    public function answered(QuestionAnswer $questionAnswer): self
+    {
+        return new self(
+            $this->runStart,
+            $this->ticket,
+            $this->runPhases,
+            $this->currentPhase,
+            $this->attempts,
+            $this->reports,
+            $this->notes,
+            null,
+            [...$this->qaHistory, $questionAnswer],
         );
     }
 
@@ -179,6 +226,7 @@ final readonly class RunState
             $this->reports,
             $notes,
             $this->awaiting,
+            $this->qaHistory,
         );
     }
 

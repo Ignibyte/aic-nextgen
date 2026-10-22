@@ -8,6 +8,7 @@ use AIC\Workflow\Application\SpecFile;
 use AIC\Workflow\Domain\Guard\Enforcement;
 use AIC\Workflow\Domain\Guard\GuardScene;
 use AIC\Workflow\Domain\Guard\GuardVerdict;
+use AIC\Workflow\Domain\Guard\Hold;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\RunState;
 
@@ -24,7 +25,8 @@ use function substr;
  * Plan: the run's spec only. Code, check and complete: the spec and each
  * path of its `### File Manifest`, never the build's outputs. Outside the
  * project is always open. Hard refuses, soft nudges once per run, phase and
- * rule, off stands the wall down.
+ * rule, off stands the wall down. While a question waits for the operator,
+ * every write in the project is refused at any level (#117).
  */
 final readonly class WriteScope
 {
@@ -66,6 +68,12 @@ final readonly class WriteScope
 
         if ($relative === null) {
             return new GuardVerdict();
+        }
+
+        $waits = self::waits($runState);
+
+        if ($waits !== '') {
+            return new GuardVerdict('refuse', 'question-waits', $waits);
         }
 
         if (!$runState instanceof RunState || !$phase instanceof Phase) {
@@ -194,5 +202,21 @@ final readonly class WriteScope
         }
 
         return null;
+    }
+
+    /**
+     * @param RunState|null $runState The open run.
+     *
+     * @return string Why nothing is written while it waits for an answer (#117); empty when it does not.
+     */
+    private static function waits(?RunState $runState): string
+    {
+        $hold = $runState instanceof RunState
+            ? $runState->awaiting
+            : null;
+
+        return $hold instanceof Hold && $hold->isQuestion()
+            ? 'the run waits for the operator to answer at ' . $hold->phase . ', so nothing is written until then: ' . $hold->question
+            : '';
     }
 }

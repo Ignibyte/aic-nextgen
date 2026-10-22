@@ -16,8 +16,9 @@ use function str_starts_with;
 
 /**
  * The wall on Bash (#102, Droost's `operator-commands` verb, order kept):
- * the operator's verbs first, then the protected paths a command writes or
- * names, then each write target through the phase's scope. A `cd` moves
+ * the operator's verbs first, then php that reaches the workflow (#117), then
+ * the protected paths a command writes or names, then each write target
+ * through the phase's scope. A `cd` moves
  * where the next command's paths resolve.
  */
 final readonly class ShellWall
@@ -28,20 +29,22 @@ final readonly class ShellWall
     private const array INTERPRETERS = ['php', 'python', 'python3', 'node', 'perl', 'ruby', 'sqlite3', 'bash', 'sh', 'zsh'];
 
     /**
-     * @param ShellWords     $shellWords     Reads the line.
-     * @param OperatorVerbs  $operatorVerbs  The operator's verbs.
-     * @param ShellWrites    $shellWrites    What each command writes and names.
      * @param ProtectedPaths $protectedPaths What is never written.
      * @param WriteScope     $writeScope     Where the phase writes.
      * @param PathResolver   $pathResolver   Where a path lands.
+     * @param PhpWall        $phpWall        php that reaches the workflow (#117).
+     * @param ShellWords     $shellWords     Reads the line.
+     * @param OperatorVerbs  $operatorVerbs  The operator's verbs.
+     * @param ShellWrites    $shellWrites    What each command writes and names.
      */
     public function __construct(
-        private ShellWords $shellWords,
-        private OperatorVerbs $operatorVerbs,
-        private ShellWrites $shellWrites,
         private ProtectedPaths $protectedPaths,
         private WriteScope $writeScope,
         private PathResolver $pathResolver,
+        private PhpWall $phpWall,
+        private ShellWords $shellWords = new ShellWords(),
+        private OperatorVerbs $operatorVerbs = new OperatorVerbs(),
+        private ShellWrites $shellWrites = new ShellWrites(),
     ) {
     }
 
@@ -94,6 +97,12 @@ final readonly class ShellWall
      */
     private function invocation(Invocation $invocation, string $cwd, GuardScene $guardScene): GuardVerdict
     {
+        $php = $this->phpWall->why($invocation, $cwd);
+
+        if ($php !== '') {
+            return new GuardVerdict('refuse', 'php-workflow', $php);
+        }
+
         $why = $this->protectedWhy($invocation, $cwd, $guardScene);
 
         if ($why !== '') {

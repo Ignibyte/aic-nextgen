@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Workflow\Infrastructure;
 
 use AIC\Controller\Contracts\Command;
+use AIC\Workflow\Application\QuestionHold;
 use AIC\Workflow\Application\RunEngine;
 use AIC\Workflow\Application\RunReset;
 use AIC\Workflow\Application\RunStore;
@@ -12,9 +13,7 @@ use AIC\Workflow\Application\SeekerBrief;
 use AIC\Workflow\Application\SeekerFiling;
 use AIC\Workflow\Application\WorkflowContext;
 use AIC\Workflow\Application\WorkflowInitCommand;
-use AIC\Workflow\Application\WorkflowResetCommand;
 use AIC\Workflow\Application\WorkflowRunCommand;
-use AIC\Workflow\Application\WorkflowStatusCommand;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
@@ -42,11 +41,10 @@ final readonly class WorkflowKernel implements WorkflowContext
     public function commands(): array
     {
         return [
+            ...(new HoldKernel($this))->commands(),
             'workflow:init' => new WorkflowInitCommand(new InstallParts($this->root)),
-            'workflow:reset' => new WorkflowResetCommand($this),
             'workflow:run' => new WorkflowRunCommand($this),
             ...(new SeekerKernel($this))->commands(),
-            'workflow:status' => new WorkflowStatusCommand($this),
             ...(new CodeKernel($this->root))->commands(),
         ];
     }
@@ -104,6 +102,17 @@ final readonly class WorkflowKernel implements WorkflowContext
     public function seekerBrief(): SeekerBrief
     {
         return $this->parts()->seekerParts()->seekerBrief();
+    }
+
+    /**
+     * @throws WorkflowRefusal When the workflow is not installed in this project.
+     *
+     * @return QuestionHold The questions a run waits on (#117).
+     */
+    #[Override]
+    public function questionHold(): QuestionHold
+    {
+        return $this->parts()->holdParts()->questionHold();
     }
 
     /**

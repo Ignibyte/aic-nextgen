@@ -7,9 +7,12 @@ namespace AIC\Workflow\Application\Guard;
 use AIC\Workflow\Domain\Guard\Invocation;
 
 use function array_any;
+use function array_filter;
 use function array_slice;
+use function array_values;
 use function count;
 use function in_array;
+use function preg_match;
 use function str_contains;
 use function str_starts_with;
 use function substr;
@@ -30,7 +33,26 @@ final readonly class ShellWrites
         'cat', 'less', 'more', 'head', 'tail', 'grep', 'egrep', 'fgrep', 'rg', 'ag', 'ls', 'wc', 'stat', 'file', 'diff', 'cmp',
         'md5sum', 'sha1sum', 'sha256sum', 'jq', 'sort', 'uniq', 'cut', 'tree', 'du', 'df', 'readlink', 'realpath', 'basename',
         'dirname', 'echo', 'printf', 'test', '[', 'true', 'false', 'pwd', 'which', 'type', 'cd', 'nl', 'od', 'xxd', 'hexdump',
+        ':', 'ack', 'md5', 'shasum',
     ];
+
+    /**
+     * The git subcommands that only read (#117, Droost's `isReader` without `add` and `commit`).
+     */
+    private const array GIT_READS = [
+        'status', 'diff', 'log', 'show', 'blame', 'grep', 'check-ignore', 'check-attr', 'ls-files', 'ls-tree', 'rev-parse', 'cat-file',
+        'describe', 'rev-list', 'merge-base',
+    ];
+
+    /**
+     * The git options before the subcommand that change nothing it writes; `-C` takes the next word.
+     */
+    private const array GIT_GLOBALS = ['--no-pager', '-P', '--no-optional-locks'];
+
+    /**
+     * A sed script that only prints a line or a range: `1p`, `1,20p`, `$p`.
+     */
+    private const string SED_PRINT = '/^(\\d+|\\$)(,(\\d+|\\$))?p$/';
 
     /**
      * Programs whose every named path is a write target.
@@ -56,7 +78,12 @@ final readonly class ShellWrites
     {
         $program = $invocation->program();
 
-        return in_array($program, self::READERS, true) || ($program === 'find' && !$this->findWrites($invocation));
+        return match ($program) {
+            'find' => !$this->findWrites($invocation),
+            'git' => $this->gitReads($invocation),
+            'sed' => $this->sedPrints($invocation),
+            default => in_array($program, self::READERS, true),
+        };
     }
 
     /**
@@ -135,8 +162,44 @@ final readonly class ShellWrites
      */
     private function findWrites(Invocation $invocation): bool
     {
-        return in_array('-delete', $invocation->words, true) || in_array('-exec', $invocation->words, true)
-            || in_array('-execdir', $invocation->words, true) || in_array('-ok', $invocation->words, true);
+        return array_any(
+            ['-delete', '-exec', '-execdir', '-ok', '-okdir', '-fprint', '-fprint0', '-fprintf', '-fls'],
+            static fn (string $action): bool => in_array($action, $invocation->words, true),
+        );
+    }
+
+    /**
+     * @param Invocation $invocation A `git`.
+     *
+     * @return bool Whether its subcommand only reads, with no `-c`, no unknown option before it and no output file or pager.
+     */
+    private function gitReads(Invocation $invocation): bool
+    {
+        $words = $invocation->arguments();
+        $index = 0;
+
+        while (in_array($words[$index] ?? '', [...self::GIT_GLOBALS, '-C'], true)) {
+            $index += $words[$index] === '-C'
+                ? 2
+                : 1;
+        }
+
+        return in_array($words[$index] ?? '', self::GIT_READS, true)
+            && !array_any($words, static fn (string $word): bool => str_starts_with($word, '--output')
+                || $word === '-O' || str_starts_with($word, '--open-files-in-pager'));
+    }
+
+    /**
+     * @param Invocation $invocation A `sed`.
+     *
+     * @return bool Whether it is the print form, `sed -n <line or range>p [files]`, which writes nothing.
+     */
+    private function sedPrints(Invocation $invocation): bool
+    {
+        $options = array_values(array_filter($invocation->arguments(), static fn (string $word): bool => str_starts_with($word, '-')));
+        $script = $this->paths($invocation)[0] ?? '';
+
+        return $options === ['-n'] && preg_match(self::SED_PRINT, $script) === 1;
     }
 
     /**

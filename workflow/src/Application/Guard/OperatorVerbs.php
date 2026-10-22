@@ -15,7 +15,7 @@ use function str_starts_with;
 
 /**
  * The operator's verbs, refused in the agent's shell run or no run (#102,
- * Droost's `operator_commands_guard`): `workflow:reset` anywhere a command
+ * Droost's `operator_commands_guard`): `workflow:reset` and `workflow:answer` (#117) anywhere a command
  * names it; any `workflow:*` under a pseudo-terminal, which would fake the
  * operator's terminal; an `aic` command the shell fills in at run time; and
  * the composer verbs that remove the workflow. A heredoc fed to a program
@@ -27,7 +27,7 @@ final readonly class OperatorVerbs
     /**
      * The workflow commands only the operator runs.
      */
-    public const array VERBS = ['workflow:reset'];
+    public const array VERBS = ['workflow:reset', 'workflow:answer'];
 
     /**
      * Programs that give what they run a pseudo-terminal.
@@ -62,7 +62,9 @@ final readonly class OperatorVerbs
         $workflow = $this->names($invocation, ['workflow:']);
 
         return match (true) {
-            $this->names($invocation, self::VERBS) => "workflow:reset is the operator's: only they abandon a run, from a terminal.",
+            $this->names($invocation, self::VERBS) => $this->names($invocation, ['workflow:answer'])
+                ? "workflow:answer is the operator's: only they answer a run's question, from a terminal."
+                : "workflow:reset is the operator's: only they abandon a run, from a terminal.",
             $this->pty($invocation) && $workflow => "a workflow command under a pseudo-terminal fakes the operator's terminal.",
             $this->aic($invocation) && $invocation->anyDynamic() => 'an aic command the shell fills in cannot be judged; write it out.',
             ($invocation->dynamic[0] ?? false) && $workflow => 'a workflow command run through a variable cannot be judged; write it out.',

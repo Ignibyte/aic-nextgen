@@ -35,6 +35,7 @@ final readonly class WorkflowChecks
      * @param string                    $site          The rendered check's site.
      * @param RuleParts                 $ruleParts     The house rules' checks (#104).
      * @param array<string, PhaseCheck> $seekerChecks  The seeker's row at code and at complete, by phase (#103).
+     * @param list<PhaseCheck>          $confirmChecks The phase-exit confirmation at every phase, registered last (#117).
      */
     public function __construct(
         private string $root,
@@ -42,6 +43,7 @@ final readonly class WorkflowChecks
         private string $site,
         private RuleParts $ruleParts,
         private array $seekerChecks,
+        private array $confirmChecks = [],
     ) {
     }
 
@@ -67,7 +69,7 @@ final readonly class WorkflowChecks
         $checks[] = new BrowserCheck($specFile, $parts->evidenceLog(), $parts->evidenceRecorder(), $parts->runSubject());
         $checks[] = new CriteriaCheck($specFile, $parts->evidenceLog(), $parts->evidenceRecorder(), $parts->runSubject());
 
-        return [...$checks, ...$this->seeker(Phase::Complete)];
+        return [...$checks, ...$this->seeker(Phase::Complete), ...$this->confirmChecks];
     }
 
     /**
