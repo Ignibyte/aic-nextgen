@@ -1,0 +1,45 @@
+diff --git i/CHANGELOG.md w/CHANGELOG.md
+index cc44902..c7dd36c 100644
+--- i/CHANGELOG.md
++++ w/CHANGELOG.md
+@@ -4,6 +4,8 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
+ 
+ ## Unreleased
+ 
++- The notes list shows the newest note first.
++
+ ### Added
+ 
+ - **The installer for new apps** (#105, part 6 of #91). `bin/aic workflow:init` installs the gated workflow in an app made from the demo, and a second run changes nothing.
+diff --git i/modules/note/src/Repository/NoteRepository.php w/modules/note/src/Repository/NoteRepository.php
+index 54f65a2..a44fcf0 100644
+--- i/modules/note/src/Repository/NoteRepository.php
++++ w/modules/note/src/Repository/NoteRepository.php
+@@ -14,10 +14,12 @@ use AIC\Entity\Domain\FieldType;
+ use App\Note\Entity\Note;
+ 
+ use function array_map;
++use function array_reverse;
+ 
+ /**
+  * The notes: the `notes` entity type over the entity store, its rows mapped to
+- * Notes.
++ * Notes. It is the only class in the note module that queries the database:
++ * the note controllers never do.
+  */
+ final readonly class NoteRepository
+ {
+@@ -42,11 +44,11 @@ final readonly class NoteRepository
+     /**
+      * @throws QueryException When the query fails.
+      *
+-     * @return list<Note> Every note, oldest first.
++     * @return list<Note> Every note, newest first.
+      */
+     public function all(): array
+     {
+-        return array_map(self::note(...), $this->entityStore->query($this->entityType)->orderBy('id')->rows());
++        return array_reverse(array_map(self::note(...), $this->entityStore->query($this->entityType)->orderBy('id')->rows()));
+     }
+ 
+     /**

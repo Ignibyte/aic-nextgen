@@ -201,6 +201,7 @@ final readonly class RunPartsJson
                 'failed' => CheckStatus::Failed,
                 'deferred' => CheckStatus::Deferred,
                 'held' => CheckStatus::Held,
+                'due' => CheckStatus::Due,
                 default => throw new WorkflowRefusal('a report row has an unknown status.'),
             };
             $rows[] = new CheckRow($row->string('check'), $status, $row->string('why'), $row->string('remedy'));

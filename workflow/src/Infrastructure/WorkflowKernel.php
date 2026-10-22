@@ -8,6 +8,8 @@ use AIC\Controller\Contracts\Command;
 use AIC\Workflow\Application\RunEngine;
 use AIC\Workflow\Application\RunReset;
 use AIC\Workflow\Application\RunStore;
+use AIC\Workflow\Application\SeekerBrief;
+use AIC\Workflow\Application\SeekerFiling;
 use AIC\Workflow\Application\WorkflowContext;
 use AIC\Workflow\Application\WorkflowInitCommand;
 use AIC\Workflow\Application\WorkflowResetCommand;
@@ -43,6 +45,7 @@ final readonly class WorkflowKernel implements WorkflowContext
             'workflow:init' => new WorkflowInitCommand(new InstallParts($this->root)),
             'workflow:reset' => new WorkflowResetCommand($this),
             'workflow:run' => new WorkflowRunCommand($this),
+            ...(new SeekerKernel($this))->commands(),
             'workflow:status' => new WorkflowStatusCommand($this),
             ...(new CodeKernel($this->root))->commands(),
         ];
@@ -79,6 +82,28 @@ final readonly class WorkflowKernel implements WorkflowContext
     public function runStore(): RunStore
     {
         return $this->parts()->runStore();
+    }
+
+    /**
+     * @throws WorkflowRefusal When the workflow is not installed in this project.
+     *
+     * @return SeekerFiling Files a seeker's ledger.
+     */
+    #[Override]
+    public function seekerFiling(): SeekerFiling
+    {
+        return $this->parts()->seekerParts()->seekerFiling();
+    }
+
+    /**
+     * @throws WorkflowRefusal When the workflow is not installed in this project.
+     *
+     * @return SeekerBrief The seeker's scope.
+     */
+    #[Override]
+    public function seekerBrief(): SeekerBrief
+    {
+        return $this->parts()->seekerParts()->seekerBrief();
     }
 
     /**

@@ -100,7 +100,7 @@ final readonly class ClaudeSettingsFile implements HookWiring
 
         return [
             $tally['added'] + $tally['upgraded'] === 0
-                ? new InstallLine(InstallAction::Current, PackManifest::SETTINGS, "the guard's four hooks are wired")
+                ? new InstallLine(InstallAction::Current, PackManifest::SETTINGS, "the guard's hooks are wired")
                 : new InstallLine(InstallAction::Wrote, PackManifest::SETTINGS, $why),
             $installLine,
         ];

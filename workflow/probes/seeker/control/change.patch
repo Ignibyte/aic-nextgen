@@ -1,0 +1,13 @@
+diff --git i/modules/faq/src/Service/DemoFaqEntries.php w/modules/faq/src/Service/DemoFaqEntries.php
+index 86b149d..06296aa 100644
+--- i/modules/faq/src/Service/DemoFaqEntries.php
++++ w/modules/faq/src/Service/DemoFaqEntries.php
+@@ -21,7 +21,7 @@ final readonly class DemoFaqEntries implements FaqEntries
+     {
+         return [
+             new FaqEntry('What is a module?', 'A folder under modules/ with a manifest and its classes, wired by the build.'),
+-            new FaqEntry('Who wires it?', 'bin/aic-build reads every manifest and writes the wiring under app/Generated/.'),
++            new FaqEntry('Who wires it?', 'bin/aic-build reads every manifest and writes the wiring under generated/.'),
+             new FaqEntry('Is anything discovered at run time?', 'No. The manifests are read at build time, so the app compiles natively.'),
+         ];
+     }

@@ -87,6 +87,8 @@ beside the subject hash of the tree it judged. #102: the guard hook holds the ag
 #104: house rules judge each run's change, frozen at begin; the probe sweep is #119.
 #106: the code index (`bin/aic code:index|tree|search|refs`); the plan check reading it is #118.
 #105: `bin/aic workflow:init` installs the workflow in an app (`workflow/pack/`); it refuses here.
+#103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist
+at code and complete.
 
 ## Five kinds
 
@@ -145,7 +147,7 @@ Background work is a job; the HTTP server's processes are its workers.
   - A verdict is fresh only on the tree it judged; a deferral is never a pass, and a deferred
     gate:21 or gate:23 holds complete. `maxGateRetries` failures of one check at a phase leave
     the phase to the operator.
-  - **The guard** (#102): `workflow/bin/aic-guard.sh <edit|shell|record|stop>`, wired by
+  - **The guard** (#102): `workflow/bin/aic-guard.sh <edit|shell|record|stop|returned>`, wired by
     `workflow/pack/hooks.json` (#105 installs it into an app); the shim hands the guard the
     project's autoloader, which a path-repository link hides from `__DIR__`. It refuses writes outside the
     phase's scope (no run: the ticket directory; plan: the spec; code, check and complete: the
@@ -171,6 +173,17 @@ Background work is a job; the HTTP server's processes are its workers.
     `config/workflow.php`. While a run is open, each lookup appends `code.queried` (the files and
     scopes it showed) to the run's event log, which the guard walls. gate:2 admits
     `nikic/php-parser` for `workflow/composer.json` only.
+  - **The seeker** (#103): with every other row green, code and complete answer
+    `inspection-due` (`CheckStatus::Due`, exit 1, no retry budget spent). The coding agent
+    dispatches the `aic-seeker` subagent (`workflow/pack/claude/agents/aic-seeker.md`); it reads
+    `bin/aic workflow:seeker-brief`, the diff and `workflow/pack/seeker/checklist.md`, and returns
+    a ledger the agent pipes to `bin/aic workflow:seeker-report`. The ledger names the subject it
+    read and cites a checklist id per finding; it counts only when the guard's `returned` row
+    (PostToolUse `Agent`) holds its digest, and only an open CRITICAL or HIGH holds. Code needs a
+    counted inspection; complete needs one on the delivered tree. `seeker_inspection` and
+    `seeker_finding` (evidence schema v3) and `seeker.filed` keep the record. The guard refuses
+    every write made inside an `aic-seeker`. `workflow/probes/seeker-checklist.sh` counts what the
+    seeker catches per item.
   - **The installer** (#105): `bin/aic workflow:init [--force[=<path>,...]]` needs no config and
     refuses in this repo (the package's own source). `PackManifest` is the one list of what it
     writes from `workflow/pack/` (`claude/` stands for `.claude/`, since gate:19 skips `.claude`):

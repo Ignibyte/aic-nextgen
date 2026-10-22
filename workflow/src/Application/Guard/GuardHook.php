@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Guard;
 
+use AIC\Workflow\Application\SeekerDigest;
 use AIC\Workflow\Application\UtcTime;
 use AIC\Workflow\Domain\Guard\GuardRow;
 use AIC\Workflow\Domain\Guard\GuardScene;
@@ -15,11 +16,13 @@ use function in_array;
 use function str_starts_with;
 
 /**
- * The guard's four verbs (#102): `edit` (the editors and MCP tools with a
- * path), `shell` (Bash), `record` (every other tool) and `stop`. A state it
- * cannot read refuses; an input it cannot read is allowed, as AIC's hooks
- * are without a transcript. Every call leaves one ledger row: `record`
- * leaves none for the tools the other verbs own.
+ * The guard's verbs (#102): `edit` (the editors and MCP tools with a path),
+ * `shell` (Bash), `record` (every other tool) and `stop`; and `returned`
+ * (#103, PostToolUse `Agent`), whose row names the subagent that returned and
+ * the digest of the ledger it returned. A state it cannot read refuses; an
+ * input it cannot read is allowed, as AIC's hooks are without a transcript.
+ * Every call leaves one ledger row: `record` leaves none for the tools the
+ * other verbs own.
  */
 final readonly class GuardHook
 {
@@ -29,11 +32,12 @@ final readonly class GuardHook
     private const array WALLED = ['Write', 'Edit', 'MultiEdit', 'NotebookEdit', 'Bash'];
 
     /**
-     * @param EditWall    $editWall    The editors' wall.
-     * @param ShellWall   $shellWall   The shell's wall.
-     * @param StopHold    $stopHold    The Stop hold.
-     * @param GuardLedger $guardLedger The ledger.
-     * @param UtcTime     $utcTime     The clock.
+     * @param EditWall     $editWall     The editors' wall.
+     * @param ShellWall    $shellWall    The shell's wall.
+     * @param StopHold     $stopHold     The Stop hold.
+     * @param GuardLedger  $guardLedger  The ledger.
+     * @param UtcTime      $utcTime      The clock.
+     * @param SeekerDigest $seekerDigest Digests a returned ledger (#103).
      */
     public function __construct(
         private EditWall $editWall,
@@ -41,6 +45,7 @@ final readonly class GuardHook
         private StopHold $stopHold,
         private GuardLedger $guardLedger,
         private UtcTime $utcTime,
+        private SeekerDigest $seekerDigest = new SeekerDigest(),
     ) {
     }
 
@@ -62,7 +67,7 @@ final readonly class GuardHook
         }
 
         $guardVerdict = $this->judge($verb, $hookCall, $guardScene);
-        $this->ledger($verb, $tool, $guardVerdict, $guardScene, $hookCall instanceof HookCall ? $hookCall->agent : '');
+        $this->ledger($verb, $guardVerdict, $guardScene, $hookCall ?? new HookCall($tool, [], '', '', ''));
 
         return $guardVerdict;
     }
@@ -94,18 +99,12 @@ final readonly class GuardHook
 
     /**
      * @param string       $verb         The verb.
-     * @param string       $tool         The tool.
      * @param GuardVerdict $guardVerdict The verdict.
      * @param GuardScene   $guardScene   The run.
-     * @param string       $agent        The session.
+     * @param HookCall     $hookCall     The call: its tool, its session, and a returned subagent.
      */
-    private function ledger(
-        string $verb,
-        string $tool,
-        GuardVerdict $guardVerdict,
-        GuardScene $guardScene,
-        string $agent,
-    ): void {
+    private function ledger(string $verb, GuardVerdict $guardVerdict, GuardScene $guardScene, HookCall $hookCall): void
+    {
         $runState = $guardScene->runState;
         $run = $runState instanceof RunState
             ? $runState->runStart->runId
@@ -117,10 +116,12 @@ final readonly class GuardHook
             $run,
             $phase->value ?? '',
             $verb,
-            $tool,
+            $hookCall->tool,
             $guardVerdict->verdict,
             $guardVerdict->rule,
-            $agent,
+            $hookCall->agent,
+            $hookCall->returned,
+            $hookCall->returned === '' ? '' : $this->seekerDigest->digest($hookCall->text),
         ));
     }
 }

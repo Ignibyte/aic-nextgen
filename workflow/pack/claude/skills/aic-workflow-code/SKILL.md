@@ -46,4 +46,20 @@ walls whatever the manifest says: `config/workflow.php`, `var/workflow/` (but th
 `bin/aic workflow:run`. Code's exit runs the gate suite and checks that every changed path is in
 the manifest, the spec's frozen rows are still there, every declared entry point is built as
 declared (and nothing undeclared was added), and the house rules hold. Fix each blocked row and
-run again. When code passes, go to the [check skill](../aic-workflow-check/SKILL.md).
+run again.
+
+When everything else passes, code answers `inspection-due`: an independent reader must look at
+the change before it leaves code.
+
+1. Dispatch the `aic-seeker` agent with the Agent tool, in the foreground (not a fork, not in the
+   background), with the prompt `Inspect the open run.` and nothing else. It takes its scope
+   from `bin/aic workflow:seeker-brief`, not from you.
+2. Pipe the `## Seeker Inspection` section it returns, unchanged, into
+   `bin/aic workflow:seeker-report` (a heredoc is fine). Never write a ledger yourself and never
+   edit what it returned: the hook recorded what it returned, and a ledger that differs is
+   refused. A self-reviewed ledger counts as no inspection.
+3. `bin/aic workflow:run`. An open CRITICAL or HIGH finding holds code; the row names each one.
+   Fix them, then dispatch the seeker again; it marks the fixed rows `resolved`. MEDIUM and LOW
+   are shown and do not hold.
+
+When code passes, go to the [check skill](../aic-workflow-check/SKILL.md).

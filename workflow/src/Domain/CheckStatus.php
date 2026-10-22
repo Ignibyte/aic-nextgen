@@ -10,7 +10,8 @@ use function in_array;
  * What one check found (#100, #101): passed; blocked, holding the phase for
  * something not yet there; failed, a measured fault that holds it too; or
  * deferred, recorded without holding it and never a pass; or held, which
- * only the operator can clear (#102).
+ * only the operator can clear (#102); or due, an inspection the seeker
+ * owes the run, which holds too (#103).
  */
 enum CheckStatus: string
 {
@@ -19,12 +20,13 @@ enum CheckStatus: string
     case Failed = 'failed';
     case Deferred = 'deferred';
     case Held = 'held';
+    case Due = 'due';
 
     /**
      * @return bool Whether it holds the phase.
      */
     public function holds(): bool
     {
-        return in_array($this, [self::Blocked, self::Failed, self::Held], true);
+        return in_array($this, [self::Blocked, self::Failed, self::Held, self::Due], true);
     }
 }

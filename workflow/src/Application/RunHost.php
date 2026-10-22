@@ -24,6 +24,11 @@ interface RunHost
     public function operatorTerminal(): bool;
 
     /**
+     * @return string|null Standard input, read whole; null when it is a terminal, where nothing was piped in (#103).
+     */
+    public function standardInput(): ?string;
+
+    /**
      * @param string $prefix `run` or `evt`.
      * @param int    $bytes  How many random bytes, written as twice as many hex digits.
      *

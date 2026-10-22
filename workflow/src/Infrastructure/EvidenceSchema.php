@@ -11,9 +11,9 @@ use PDOStatement;
 
 /**
  * The evidence store's file and schema (#101): `var/workflow/evidence.sqlite`
- * at version 2 (#102 added the guard's columns), forward-only. A store from a
- * newer engine is refused rather than read wrong; #103 adds its tables by
- * migrating it. Its statements are prepared and executed here, failing
+ * at version 3 (#102 added the guard's columns, #103 the seeker's tables),
+ * forward-only. A store from a newer engine is refused rather than read
+ * wrong. Its statements are prepared and executed here, failing
  * loudly.
  */
 final readonly class EvidenceSchema
@@ -21,7 +21,7 @@ final readonly class EvidenceSchema
     /**
      * The version this engine writes and reads.
      */
-    private const int VERSION = 2;
+    private const int VERSION = 3;
 
     /**
      * Version 1: what planning froze, each verdict, each verdict's output, and the guard's ledger.
@@ -72,6 +72,44 @@ final readonly class EvidenceSchema
         SQL;
 
     /**
+     * Version 3 (#103): each filed seeker ledger, and its findings.
+     */
+    private const string SEEKER_TABLES = <<<'SQL'
+        CREATE TABLE IF NOT EXISTS seeker_inspection (
+            run_id TEXT NOT NULL,
+            round INTEGER NOT NULL,
+            phase TEXT NOT NULL,
+            inspector TEXT NOT NULL,
+            dispatch TEXT NOT NULL,
+            counted INTEGER NOT NULL,
+            subject_hash TEXT NOT NULL,
+            digest TEXT NOT NULL,
+            critical INTEGER NOT NULL,
+            high INTEGER NOT NULL,
+            medium INTEGER NOT NULL,
+            low INTEGER NOT NULL,
+            holding INTEGER NOT NULL,
+            observations INTEGER NOT NULL,
+            filed_at TEXT NOT NULL,
+            ledger TEXT NOT NULL,
+            PRIMARY KEY (run_id, round)
+        );
+        CREATE TABLE IF NOT EXISTS seeker_finding (
+            run_id TEXT NOT NULL,
+            round INTEGER NOT NULL,
+            ref TEXT NOT NULL,
+            severity TEXT NOT NULL,
+            item TEXT NOT NULL,
+            location TEXT NOT NULL,
+            finding TEXT NOT NULL,
+            status TEXT NOT NULL,
+            reason TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS seeker_finding_by_round ON seeker_finding (run_id, round);
+        PRAGMA user_version = 3;
+        SQL;
+
+    /**
      * @param AtomicFile       $atomicFile       Makes the state directory.
      * @param SqliteStatements $sqliteStatements Runs its statements.
      */
@@ -86,7 +124,7 @@ final readonly class EvidenceSchema
      *
      * @throws WorkflowRefusal When the store cannot be opened, or a newer engine wrote it.
      *
-     * @return PDO The store, at version 2.
+     * @return PDO The store, at version 3.
      */
     public function open(string $directory): PDO
     {
@@ -101,12 +139,8 @@ final readonly class EvidenceSchema
                 throw new WorkflowRefusal('var/workflow/evidence.sqlite is at version ' . $version . ", past this engine's.");
             }
 
-            if ($version < 1) {
-                $pdo->exec(self::TABLES);
-            }
-
-            if ($version < 2) {
-                $pdo->exec(self::GUARD_COLUMNS);
+            foreach ([1 => self::TABLES, 2 => self::GUARD_COLUMNS, 3 => self::SEEKER_TABLES] as $step => $sql) {
+                $this->migrate($pdo, $version, $step, $sql);
             }
         } catch (PDOException $pdoException) {
             throw new WorkflowRefusal('var/workflow/evidence.sqlite could not be opened: ' . $pdoException->getMessage(), 0, $pdoException);
@@ -127,5 +161,22 @@ final readonly class EvidenceSchema
     public function statement(PDO $pdo, string $sql, array $parameters): PDOStatement
     {
         return $this->sqliteStatements->run($pdo, $sql, $parameters);
+    }
+
+    /**
+     * @param PDO    $pdo     The store.
+     * @param int    $version Its version when opened.
+     * @param int    $step    A version this engine knows.
+     * @param string $sql     The statements that bring the store to it.
+     *
+     * @throws PDOException When they fail.
+     */
+    private function migrate(PDO $pdo, int $version, int $step, string $sql): void
+    {
+        if ($version >= $step) {
+            return;
+        }
+
+        $pdo->exec($sql);
     }
 }

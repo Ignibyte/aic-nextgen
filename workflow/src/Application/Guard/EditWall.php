@@ -7,6 +7,7 @@ namespace AIC\Workflow\Application\Guard;
 use AIC\Workflow\Domain\Guard\GuardScene;
 use AIC\Workflow\Domain\Guard\GuardVerdict;
 use AIC\Workflow\Domain\Guard\HookCall;
+use AIC\Workflow\Domain\SeekerInspection;
 
 /**
  * The wall on the editors (#102): Write, Edit, MultiEdit and NotebookEdit,
@@ -36,6 +37,19 @@ final readonly class EditWall
      * @return GuardVerdict Refused at the first path that hits a wall; nudged or allowed otherwise.
      */
     public function check(HookCall $hookCall, GuardScene $guardScene): GuardVerdict
+    {
+        return $hookCall->caller === SeekerInspection::AGENT
+            ? new GuardVerdict('refuse', 'seeker-reads', SeekerInspection::AGENT . ' reads the run and writes nothing (#103).')
+            : $this->paths($hookCall, $guardScene);
+    }
+
+    /**
+     * @param HookCall   $hookCall   The call.
+     * @param GuardScene $guardScene The run and the levers.
+     *
+     * @return GuardVerdict Refused at the first path that hits a wall; nudged or allowed otherwise.
+     */
+    private function paths(HookCall $hookCall, GuardScene $guardScene): GuardVerdict
     {
         $verdict = new GuardVerdict();
 
