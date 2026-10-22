@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Workflow\Application;
 
 use AIC\Workflow\Domain\CheckRow;
+use AIC\Workflow\Domain\CheckStatus;
 use AIC\Workflow\Domain\DeclaredEntry;
 use AIC\Workflow\Domain\Findings;
 use AIC\Workflow\Domain\Phase;
@@ -12,6 +13,7 @@ use AIC\Workflow\Domain\RenderedAnswer;
 use AIC\Workflow\Domain\RunState;
 use Override;
 
+use function array_any;
 use function rtrim;
 use function str_contains;
 use function str_starts_with;
@@ -31,7 +33,18 @@ final readonly class RenderedCheck implements PhaseCheck
     private const array TYPES = ['Api' => 'application/json', 'Page' => 'text/html'];
 
     /**
-     * What to do about a failure.
+     * Why routes cannot be requested: no site is set.
+     */
+    private const string NO_SITE = 'the spec declares GET routes, and config/workflow.php sets no site to request them from.';
+
+    /**
+     * What the operator does about it: the site is theirs, so the agent waits.
+     */
+    private const string SET_SITE = "the operator sets site in config/workflow.php to the app's URL, "
+        . 'then runs bin/aic workflow:run from a terminal.';
+
+    /**
+     * What to do about a route that did not answer as declared.
      */
     private const string REMEDY = 'make each route answer as its ## Entry Points row declares, then run bin/aic workflow:run again.';
 
@@ -65,16 +78,25 @@ final readonly class RenderedCheck implements PhaseCheck
     /**
      * @param RunState $runState The run.
      *
-     * @return CheckRow Passed when every declared GET route answered as declared; failed, naming each that did not.
+     * @return CheckRow Passed when every declared GET route answered as declared; failed, naming each that did not; held
+     *                  for the operator when routes are declared and no site is set (#105).
      */
     #[Override]
     public function check(RunState $runState): CheckRow
     {
+        $entries = $this->specFile->entries($runState->runStart->specPath);
+
+        $routes = array_any($entries, static fn (DeclaredEntry $declaredEntry): bool => $declaredEntry->method === 'GET');
+
+        if ($this->site === '' && $routes) {
+            return new CheckRow('rendered', CheckStatus::Held, self::NO_SITE, self::SET_SITE);
+        }
+
         $subjectHash = $this->runSubject->hash($runState);
         $failures = [];
 
-        foreach ($this->specFile->entries($runState->runStart->specPath) as $declaredEntry) {
-            $failures = [...$failures, ...$this->route($runState, $declaredEntry, $subjectHash)];
+        foreach ($entries as $entry) {
+            $failures = [...$failures, ...$this->route($runState, $entry, $subjectHash)];
         }
 
         $findings = new Findings('rendered', $failures, 'every declared GET route answered as declared.', $subjectHash);
@@ -120,10 +142,8 @@ final readonly class RenderedCheck implements PhaseCheck
      */
     private function problem(DeclaredEntry $declaredEntry, string $path): string
     {
-        if ($this->site === '' || str_contains($path, '{')) {
-            return $this->site === ''
-                ? 'no site in config/workflow.php to request it from.'
-                : 'its row has no Example path.';
+        if (str_contains($path, '{')) {
+            return 'its row has no Example path.';
         }
 
         $renderedAnswer = $this->siteProbe->get(rtrim($this->site, '/') . $path);

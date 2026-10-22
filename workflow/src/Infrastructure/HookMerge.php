@@ -1,0 +1,211 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AIC\Workflow\Infrastructure;
+
+use stdClass;
+
+use function array_keys;
+use function get_object_vars;
+use function is_array;
+use function is_string;
+use function json_encode;
+use function preg_match;
+use function str_contains;
+
+use const JSON_THROW_ON_ERROR;
+
+/**
+ * The guard's hooks merged into decoded settings (#105, Droost's merge): a
+ * hook is the guard's when its command names `aic-guard.sh` and ends with
+ * the guard's verb. Absent, its group is appended to the event's list; there
+ * with another command or matcher, it is replaced in place; the same, it is
+ * left. Nothing else in the settings is touched, other hooks in a group
+ * included.
+ */
+final readonly class HookMerge
+{
+    /**
+     * @param stdClass $settings The project's settings, checked by ClaudeSettingsFile; changed in place.
+     * @param stdClass $shipped  The package's `hooks.json`.
+     *
+     * @return array{added: int, upgraded: int} How many of the guard's hooks were added and replaced.
+     */
+    public function merge(stdClass $settings, stdClass $shipped): array
+    {
+        $hooks = $this->object($settings, 'hooks');
+        $shippedHooks = $this->object($shipped, 'hooks');
+        $tally = ['added' => 0, 'upgraded' => 0, 'same' => 0];
+
+        foreach (array_keys(get_object_vars($shippedHooks)) as $key) {
+            $tally = $this->event($hooks, $this->list($shippedHooks, (string) $key), (string) $key, $tally);
+        }
+
+        $settings->hooks = $hooks;
+
+        return ['added' => $tally['added'], 'upgraded' => $tally['upgraded']];
+    }
+
+    /**
+     * @param stdClass $object An object.
+     * @param string   $key    One of its keys.
+     *
+     * @return stdClass The object under it; a new empty one when there is none.
+     */
+    public function object(stdClass $object, string $key): stdClass
+    {
+        $member = get_object_vars($object)[$key] ?? null;
+
+        return $member instanceof stdClass
+            ? $member
+            : new stdClass();
+    }
+
+    /**
+     * @param stdClass $object An object.
+     * @param string   $key    One of its keys, holding a list of objects.
+     *
+     * @return list<stdClass> The objects in it; empty when it is not a list.
+     */
+    public function list(stdClass $object, string $key): array
+    {
+        $member = get_object_vars($object)[$key] ?? null;
+
+        $objects = [];
+
+        foreach (is_array($member) ? $member : [] as $item) {
+            if (!($item instanceof stdClass)) {
+                continue;
+            }
+
+            $objects[] = $item;
+        }
+
+        return $objects;
+    }
+
+    /**
+     * @param stdClass                                    $hooks  The settings' hooks; the event's list is set on it.
+     * @param list<stdClass>                              $groups The groups the package ships for the event.
+     * @param string                                      $event  The event.
+     * @param array{added: int, upgraded: int, same: int} $tally  The count so far.
+     *
+     * @return array{added: int, upgraded: int, same: int} The count after the event.
+     */
+    private function event(stdClass $hooks, array $groups, string $event, array $tally): array
+    {
+        $list = $this->list($hooks, $event);
+
+        foreach ($groups as $group) {
+            $what = $this->place($list, $group);
+            $list = $what === 'added'
+                ? [...$list, $group]
+                : $list;
+            $tally[$what] += 1;
+        }
+
+        $hooks->{$event} = $list;
+
+        return $tally;
+    }
+
+    /**
+     * @param list<stdClass> $list  An event's groups in the settings; the guard's group in it is replaced in place.
+     * @param stdClass       $group A group the package ships, its one hook the guard's.
+     *
+     * @return 'added'|'upgraded'|'same' `added` when the list does not hold the guard's hook for its verb (the caller appends it),
+     *                                   `upgraded` when it was replaced, `same` when it was already the shipped one.
+     */
+    private function place(array $list, stdClass $group): string
+    {
+        $shippedHook = $this->list($group, 'hooks')[0] ?? new stdClass();
+        $verb = $this->verb($shippedHook);
+
+        foreach ($list as $existing) {
+            $what = $verb === ''
+                ? ''
+                : $this->replace($existing, $group, $shippedHook, $verb);
+
+            if ($what !== '') {
+                return $what;
+            }
+        }
+
+        return 'added';
+    }
+
+    /**
+     * @param stdClass $existing    A group in the settings.
+     * @param stdClass $group       The shipped group.
+     * @param stdClass $shippedHook Its hook.
+     * @param string   $verb        The guard's verb in it.
+     *
+     * @return ''|'upgraded'|'same' `upgraded` or `same` when the group held the guard's hook for the verb; empty otherwise.
+     */
+    private function replace(stdClass $existing, stdClass $group, stdClass $shippedHook, string $verb): string
+    {
+        $hooks = $this->list($existing, 'hooks');
+        $index = $this->guardIndex($hooks, $verb);
+
+        if ($index === null) {
+            return '';
+        }
+
+        $before = json_encode($existing, JSON_THROW_ON_ERROR);
+        $hooks[$index] = $shippedHook;
+        $existing->hooks = $hooks;
+        $this->matcher($existing, $group);
+
+        return $before === json_encode($existing, JSON_THROW_ON_ERROR)
+            ? 'same'
+            : 'upgraded';
+    }
+
+    /**
+     * @param list<stdClass> $hooks A group's hooks.
+     * @param string         $verb  The guard's verb.
+     *
+     * @return int|null Where the guard's hook for the verb is among them; null when it is not.
+     */
+    private function guardIndex(array $hooks, string $verb): ?int
+    {
+        foreach ($hooks as $index => $hook) {
+            if ($this->verb($hook) === $verb) {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param stdClass $existing A group in the settings; it takes the shipped group's matcher, when that has one.
+     * @param stdClass $group    The shipped group.
+     */
+    private function matcher(stdClass $existing, stdClass $group): void
+    {
+        $matcher = get_object_vars($group)['matcher'] ?? null;
+
+        if (!is_string($matcher)) {
+            return;
+        }
+
+        $existing->matcher = $matcher;
+    }
+
+    /**
+     * @param stdClass $hook A hook.
+     *
+     * @return string The guard's verb when its command is the guard's; empty otherwise.
+     */
+    private function verb(stdClass $hook): string
+    {
+        $command = get_object_vars($hook)['command'] ?? null;
+        $guard = is_string($command) && str_contains($command, 'aic-guard.sh');
+
+        return $guard && preg_match('/\\s(edit|shell|record|stop)\\s*$/', $command, $match) === 1
+            ? $match[1]
+            : '';
+    }
+}

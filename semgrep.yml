@@ -199,3 +199,26 @@ rules:
         - "/.claude/hooks/*.sh"
         - "/bin/*.sh"
     severity: ERROR
+
+  # The workflow's pack (#105) is installed into apps: it speaks to an app's agent
+  # about the app and the workflow, never about how AIC itself is developed.
+  - id: aic-pack-app-only
+    pattern-regex: '/pipeline:|docs/planning|CONSTITUTION\.md|bin/ticket\.sh|elephc-carry'
+    message: "The workflow's pack names AIC's own process; an app has none of it. Point the app's agent at bin/aic and its own files (#105)."
+    languages: [generic]
+    paths:
+      include:
+        - "/workflow/pack/**"
+    severity: ERROR
+
+  # A pack link that names claude/ resolves in the package and is dead once
+  # installed, where the folder is .claude/ (#105). gate:19 checks the rest of
+  # the pack's links at the source, which mirrors the app.
+  - id: aic-pack-link-names-claude
+    pattern-regex: '\]\((?![a-z]+:)(?:[^)]*/)?claude/'
+    message: "A pack link that names claude/ is dead once installed, where the folder is .claude/: link within claude/ by relative path, or name the file in inline code (#105)."
+    languages: [generic]
+    paths:
+      include:
+        - "/workflow/pack/**"
+    severity: ERROR

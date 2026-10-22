@@ -49,10 +49,9 @@ final readonly class ModuleShellRule implements ModuleRule
         'bin/aic',
         // The build.
         'bin/aic-build',
-        // This repo's framework and tooling, which an app made by workflow:init (#105) will not hold.
-        // aic/framework.
+        // aic/framework, in this repo; an app requires it as a package.
         'framework/*',
-        // aic/workflow, the dev-only workflow (#100).
+        // aic/workflow, the dev-only workflow (#100), in this repo; an app requires it for development.
         'workflow/*',
         // The gates' code.
         'gates/*',
@@ -60,11 +59,15 @@ final readonly class ModuleShellRule implements ModuleRule
         'bin/gate-*.php',
         // The gate runner, the tool installer, the ticket script.
         'bin/*.sh',
-        // The workflow's commands, skills and hooks.
+        // The agent's commands, skills and hooks, and the workflow's pack and lock (#105).
         '.claude/*',
+        // The tickets a run works, in an app with the workflow installed (#105).
+        'tickets/*',
         // DDEV, the interpreted reference and Postgres.
         '.ddev/*',
-        // The root's own files, by exact name, so a stray file at the root fails.
+        // The root's own files, by exact name, so a stray file at the root fails. AGENTS.md holds the
+        // workflow's block in an app (#105).
+        'AGENTS.md',
         'captainhook.json',
         'CHANGELOG.md',
         'CLAUDE.md',

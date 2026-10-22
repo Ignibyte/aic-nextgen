@@ -25,7 +25,7 @@ compiled binary serves it, and PHP serves the same app as the reference.
 | `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
 | `bin/aic-build` | The build step (`composer run build`): reads the manifests, writes `generated/`, the compiled templates and `build/surface.json`; `--check` is gate:24 |
 | `build/surface.json` | The app's surface: every route (method, path, handler, kind) and console command (name, class, kind) |
-| `workflow/` | `aic/workflow`, the agent workflow's engine (`AIC\Workflow\`): a dev-only package. `bin/aic workflow:run <ticket>` runs one phase of a ticket per call; `workflow:status` shows the run; `workflow:reset` is the operator's, from a terminal. At each phase exit the engine runs the gates and the spec's audits itself (#101) and keeps the verdicts in `var/workflow/evidence.sqlite`. `workflow/bin/aic-guard.sh`, wired by `workflow/pack/hooks.json`, is the Claude Code hook that holds the agent to the open run (#102). House rules (`workflow/rules/`, #104) judge each run's change from files frozen at begin; gate:28 holds them to their probes. `bin/aic code:tree`, `code:search`, `code:refs` and `code:index` answer from the code index in `var/index/code.sqlite` (#106). Its state is `var/workflow/` (gitignored) |
+| `workflow/` | `aic/workflow`, the agent workflow's engine (`AIC\Workflow\`): a dev-only package. `bin/aic workflow:run <ticket>` runs one phase of a ticket per call; `workflow:status` shows the run; `workflow:reset` is the operator's, from a terminal. At each phase exit the engine runs the gates and the spec's audits itself (#101) and keeps the verdicts in `var/workflow/evidence.sqlite`. `workflow/bin/aic-guard.sh`, wired by `workflow/pack/hooks.json`, is the Claude Code hook that holds the agent to the open run (#102). House rules (`workflow/rules/`, #104) judge each run's change from files frozen at begin; gate:28 holds them to their probes. `bin/aic code:tree`, `code:search`, `code:refs` and `code:index` answer from the code index in `var/index/code.sqlite` (#106). `bin/aic workflow:init` installs it in an app (#105; `workflow/pack/`). Its state is `var/workflow/` (gitignored) |
 | `.ddev/` | DDEV: nginx-fpm serving the interpreted reference, and Postgres 17 |
 
 ## Bring it up
@@ -88,6 +88,27 @@ runs it and compares the output with PHP; it needs the compiler checkout at
 There are no baselines and no suppressions. The gate code lives in `gates/` and never ships with
 the framework. `composer install` also installs the git hooks, which hold commit subjects to
 Conventional Commits.
+
+## The workflow in an app
+
+An app made from the demo gets the gated workflow with one command, once `aic/workflow` is in its
+`require-dev` (`composer require --dev aic/workflow:0.1.x-dev`):
+
+```bash
+bin/aic workflow:init
+```
+
+It writes the agent's skills and commands into `.claude/` (`aic-workflow-*`,
+`/aic:workflow:start`), `config/workflow.php` (once; every setting written out with its comment),
+`tickets/README.md` (the ticket format), a block in `AGENTS.md` and an `@AGENTS.md` import in
+`CLAUDE.md`, and the guard's hooks with the Stop cap in `.claude/settings.json`. It ends with the
+settings as the engine reads them. Commit what it wrote, `.claude/aic-workflow.lock` included:
+the lock is how the next init tells your edits from its own writes. Run it again after upgrading
+the package: unedited files are upgraded, edited ones kept, and only the operator's
+`--force[=<path>]` from a terminal takes the shipped bytes back. Then set `site` to the app's URL,
+write a ticket and start it with `bin/aic workflow:run <number>`.
+
+This repository holds the package's own source, so init refuses to run here.
 
 ## Working on AIC
 
