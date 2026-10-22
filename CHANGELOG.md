@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The workflow's run engine** (#100, part 1 of #91). `aic/workflow`, a dev-only package in `workflow/`, runs one ticket through plan, code, check and complete, one phase per `bin/aic workflow:run <ticket>` call, and only the engine writes the run's state.
+  - **State:** `var/workflow/run.json` (schema v1, read strictly: bad JSON or an unknown key is refused by name and left as it is), the append-only `events.jsonl` in `aic.run-event/1` (`workflow/schema/run-event.v1.json`; a torn last line is skipped) and `history/` with each finished run and its spec.
+  - **The ticket** moves with the run (`in-progress` with its phase, then `in-review` at `docs`), written the way `bin/ticket.sh` writes it. The plan phase's one check is that the spec exists; the engine-run gates and the rest of #91 arrive with #101 to #106.
+  - **Commands:** `workflow:run`, `workflow:status`, and `workflow:reset`, which runs only from a terminal. An app opts in with `config/workflow.php`; without it every command refuses.
+  - **Boundaries:** two phpat rules keep runtime code off the workflow and the workflow off everything but the Command kind; each failed on its plant. Every class tool reads `workflow/src`; gate:21 does not, since the package runs interpreted (430 classes, unchanged).
+  - **The proof:** a scratch project ran a ticket to `completed` in four calls with 20 events, and every refusal exited 2 and wrote nothing. 28 gates green.
+
 - **Components only, and RawHtml counted** (#99, part 2 of #87). No code path but the Renderer can make HTML, and the one sanctioned way round it is granted per class and counted.
   - **gate:8 rules:**
     - `aic.htmlConstruction`: `new Html` only in the Renderer, aliases and class-strings included.

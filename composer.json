@@ -11,6 +11,7 @@
         "psr/http-server-handler": "^1.0"
     },
     "require-dev": {
+        "aic/workflow": "0.1.x-dev",
         "captainhook/captainhook": "^5.24",
         "captainhook/hook-installer": "^1.0",
         "deptrac/deptrac": "^4.6",
@@ -46,6 +47,16 @@
                 "symlink": true,
                 "versions": {
                     "aic/framework": "0.1.x-dev"
+                }
+            }
+        },
+        {
+            "type": "path",
+            "url": "workflow",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "aic/workflow": "0.1.x-dev"
                 }
             }
         }
@@ -94,7 +105,7 @@
         "gate": "bash bin/gate-runner.sh",
         "gate:0": "@php bin/gate-composer-audit.php",
         "gate:1": "@php bin/gate-normalize-all.php",
-        "gate:10": "vendor/bin/phpmd framework/src,modules,generated,gates text phpmd.xml --strict --exclude '*/modules/*/templates/*'",
+        "gate:10": "vendor/bin/phpmd framework/src,modules,generated,gates,workflow/src text phpmd.xml --strict --exclude '*/modules/*/templates/*'",
         "gate:11": "vendor/bin/phpcs --standard=phpcs.xml.dist",
         "gate:12": "vendor/bin/deptrac analyse --no-progress --fail-on-uncovered",
         "gate:13": "vendor/bin/psalm --no-progress --show-info=true --no-cache --no-diff",

@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AIC\Workflow\Domain;
+
+use function array_map;
+use function explode;
+use function json_encode;
+
+use const JSON_PRETTY_PRINT;
+use const JSON_THROW_ON_ERROR;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
+
+/**
+ * `workflow:status`'s view of a run (#100): the open run, or the last one
+ * archived, as the record says.
+ */
+final readonly class RunSummary
+{
+    /**
+     * @param RunState $runState The run.
+     * @param bool     $open     Whether it is the open run, not an archived one.
+     */
+    public function __construct(
+        private RunState $runState,
+        private bool $open,
+    ) {
+    }
+
+    /**
+     * @return list<string> The summary, pretty JSON, one output line per JSON line.
+     */
+    public function lines(): array
+    {
+        $currentPhase = $this->runState->currentPhase;
+        $summary = [
+            'attempts' => $this->runState->attempts,
+            'current_phase' => $currentPhase instanceof Phase ? $currentPhase->value : null,
+            'notes' => array_map(static fn (RunNote $runNote): array => $runNote->toArray(), $this->runState->notes),
+            'phases' => $this->runState->runPhases->names(),
+            'reports' => array_map(static fn (PhaseReport $phaseReport): array => $phaseReport->toArray(), $this->runState->reports),
+            'run' => $this->open ? 'open' : 'archived',
+            'run_id' => $this->runState->runStart->runId,
+            'ticket' => $this->runState->ticket->toArray(),
+        ];
+
+        $flags = JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
+
+        return explode("\n", json_encode($summary, $flags));
+    }
+}

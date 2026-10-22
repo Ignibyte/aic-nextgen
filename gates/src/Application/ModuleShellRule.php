@@ -49,9 +49,11 @@ final readonly class ModuleShellRule implements ModuleRule
         'bin/aic',
         // The build.
         'bin/aic-build',
-        // This repo's framework and tooling, which an app made by workflow:init (#100) will not hold.
+        // This repo's framework and tooling, which an app made by workflow:init (#105) will not hold.
         // aic/framework.
         'framework/*',
+        // aic/workflow, the dev-only workflow (#100).
+        'workflow/*',
         // The gates' code.
         'gates/*',
         // The gates' entry points.

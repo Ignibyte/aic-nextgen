@@ -67,7 +67,10 @@ decides its `src/` folder, 15 files per folder, exports and requires, nothing ou
 but the shell). #95: module assets: the theme moves to `assets/`, each module's
 `assets/` joins the build, and the site module's nav styles and favicon live in `modules/site/assets/`.
 #96: gate:25 holds every `*.html.php` template to the plain PHP grammar (deny by default); the
-class tools skip `modules/*/templates/` and `templates/`. #97: `composer run build` compiles each
+class tools skip `modules/*/templates/` and `templates/`.
+#97 to #99 (#87, #88): templates compile from plain PHP, one Renderer makes HTML, and gate:27 counts
+`RawHtml` against its grants. #91, the agent workflow, runs as #100 to #106; #100: the run engine
+and its state, the dev-only `aic/workflow` package. #97: `composer run build` compiles each
 `*.html.php` into its `XTemplate.php`, escaping every `<?= ?>` by its static type; loops are real
 loops (`break`, `continue`) and `empty()` lowers by type; the old grammar is gone. A component
 is data: its constructor takes the ready values as promoted public props, computed by whoever
@@ -118,6 +121,15 @@ Background work is a job; the HTTP server's processes are its workers.
   to `public/assets/<module>/`. Nothing links a module script; a component that needs one declares
   it from #55 (Chad, 2026-10-21). The build owns `public/assets/`: gate:24 calls an orphan there
   stale.
+- **`aic/workflow`** (#100), in `workflow/`, namespace `AIC\Workflow\`: the agent workflow's
+  engine, a second package that is dev-only (`require-dev`, a path repository like the
+  framework's; Chad, 2026-10-22). `bin/aic` lists its commands when it is installed:
+  `workflow:run <ticket>` (one phase per call, plan → code → check → complete),
+  `workflow:status` and `workflow:reset` (the operator's, from a terminal only). An app opts in
+  with `config/workflow.php`. The engine alone writes `var/workflow/` (gitignored): `run.json`,
+  the append-only `events.jsonl` (`workflow/schema/run-event.v1.json`) and `history/`. phpat
+  keeps runtime code off it and it off everything but the Command kind; gate:21 does not probe
+  it, since it runs interpreted.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 - **Modules** (#90, #92, #93): `modules/<name>/<name>.module.php` returns a fluent
   `AIC\Module\Contracts\ModuleManifest`, naming only what the module has:

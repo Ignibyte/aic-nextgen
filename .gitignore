@@ -35,6 +35,9 @@ core.*
 /.deptrac.cache
 /.php-cs-fixer.cache
 
+# The dev-only workflow's run state (aic/workflow, #100)
+/var/
+
 # storage runtime
 /storage/logs/*
 /storage/framework/cache/*
