@@ -8,7 +8,6 @@ use AIC\Component\Contracts\Html;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
-use App\Note\Component\NoteList;
 use App\Note\Form\NoteForms;
 use App\Note\Repository\NoteRepository;
 use App\Note\Service\NoteViews;
@@ -45,7 +44,7 @@ final readonly class NoteListPage implements Page
     {
         return $this->noteViews->page(
             [
-                new NoteList($this->noteRepository->all()),
+                $this->noteViews->noteList($this->noteRepository->all()),
                 new Html('<h2>New note</h2>'),
                 $this->noteForms->form($serverRequest, $serverRequest->getUri()->getPath(), '', '', ''),
             ],

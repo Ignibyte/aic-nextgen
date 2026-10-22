@@ -19,7 +19,6 @@ use function preg_split;
 use function str_contains;
 use function str_ends_with;
 use function str_starts_with;
-use function strrpos;
 use function substr;
 use function substr_count;
 
@@ -69,9 +68,11 @@ final readonly class TemplateCompiler
 
     /**
      * @param TemplateImports $templateImports Writes the generated file's opening and imports.
+     * @param TemplateLoops   $templateLoops   Writes the parts that run a template's loops.
      */
     public function __construct(
         private TemplateImports $templateImports = new TemplateImports(),
+        private TemplateLoops $templateLoops = new TemplateLoops(),
     ) {
     }
 
@@ -87,13 +88,13 @@ final readonly class TemplateCompiler
     public function compile(array $nodes, string $namespace, string $component): string
     {
         $variable = lcfirst($component);
-        $templateMethods = new TemplateMethods($component . '.tpl', $variable);
+        $templateMethods = new TemplateMethods($component . '.html.php', $variable);
         $first = $this->sequence($nodes, [$component . ' $' . $variable], $templateMethods);
         $parts = $templateMethods->source();
         $parameter = $component . ' $' . $variable;
         $class = $this->templateImports->head($nodes, $namespace, $parts)
             . "/**\n * " . $component . "'s markup, compiled from " . $component
-            . ".tpl by bin/aic-build (#36):\n * edit the template and run composer run build, never this file.\n */\n"
+            . ".html.php by bin/aic-build (#97):\n * edit the template and run composer run build, never this file.\n */\n"
             . 'final readonly class ' . $component . "Template\n{\n"
             . (str_contains($parts, 'self::text(') ? "    use RendersMarkup;\n\n" : '')
             . "    /**\n     * @param " . $parameter . " The component.\n     *\n     * @return Html Its markup.\n     */\n"
@@ -101,8 +102,8 @@ final readonly class TemplateCompiler
             . '        return new Html(' . $templateMethods->call($first) . ");\n    }\n\n" . $parts . "}\n";
 
         if ($templateMethods->count() > self::PARTS || substr_count($class, "\n") > self::CLASS_LINES) {
-            throw new InvalidArgumentException($component . '.tpl is too big for one class (' . $templateMethods->count()
-                . ' part methods, ' . substr_count($class, "\n") . ' lines): move some of it into components.');
+            throw new InvalidArgumentException('too big for one class (' . $templateMethods->count()
+                . ' part methods, ' . substr_count($class, "\n") . ' lines): move some of it into components');
         }
 
         return $class;
@@ -113,9 +114,9 @@ final readonly class TemplateCompiler
      * @param list<string>       $scope           The variables in scope, `Type $var`, outermost first.
      * @param TemplateMethods    $templateMethods The class's part methods.
      *
-     * @return int The number of the part method that renders the run.
+     * @return int The number of the part method that renders the run; public for the loop parts' runs.
      */
-    private function sequence(array $nodes, array $scope, TemplateMethods $templateMethods): int
+    public function sequence(array $nodes, array $scope, TemplateMethods $templateMethods): int
     {
         $pieces = [];
 
@@ -159,8 +160,13 @@ final readonly class TemplateCompiler
             TemplateNodeKind::Raw => [$this->wrapped($templateNode->code) . '->markup()'],
             TemplateNodeKind::Component => $this->component($templateNode),
             TemplateNodeKind::Condition => ["'<!--t:b-->'", $this->condition($templateNode, $scope, $templateMethods), self::BLOCK_END],
-            TemplateNodeKind::Loop => ["'<!--t:b-->'", $this->loop($templateNode, $scope, $templateMethods), self::BLOCK_END],
-            TemplateNodeKind::Import => [],
+            TemplateNodeKind::ElseIf => [$this->condition($templateNode, $scope, $templateMethods)],
+            TemplateNodeKind::Loop, TemplateNodeKind::Counter => [
+                "'<!--t:b-->'",
+                $this->templateLoops->loop($templateNode, $scope, $templateMethods, $this),
+                self::BLOCK_END,
+            ],
+            TemplateNodeKind::Import, TemplateNodeKind::Break, TemplateNodeKind::Continue => [],
         };
     }
 
@@ -181,7 +187,7 @@ final readonly class TemplateCompiler
     }
 
     /**
-     * @param TemplateNode    $templateNode    An `@if` node.
+     * @param TemplateNode    $templateNode    A condition, or an `elseif` inside one.
      * @param list<string>    $scope           The variables in scope.
      * @param TemplateMethods $templateMethods The class's part methods.
      *
@@ -195,26 +201,6 @@ final readonly class TemplateCompiler
             : $templateMethods->call($this->sequence($templateNode->otherwise, $scope, $templateMethods));
 
         return '(' . $templateNode->code . "\n    ? " . $then . "\n    : " . $otherwise . ')';
-    }
-
-    /**
-     * @param TemplateNode    $templateNode    A `@foreach` node.
-     * @param list<string>    $scope           The variables in scope.
-     * @param TemplateMethods $templateMethods The class's part methods.
-     *
-     * @return string Its items mapped through the part of its body, joined; the part itself
-     *                when it takes only the item, an arrow function otherwise.
-     */
-    private function loop(TemplateNode $templateNode, array $scope, TemplateMethods $templateMethods): string
-    {
-        $index = $this->sequence($templateNode->children, [...$scope, $templateNode->binding], $templateMethods);
-        $call = $templateMethods->call($index);
-        $item = substr($templateNode->binding, (int) strrpos($templateNode->binding, '$'));
-        $mapper = $call === '$this->part' . $index . '(' . $item . ')'
-            ? '$this->part' . $index . '(...)'
-            : 'fn (' . $templateNode->binding . '): string => ' . $call;
-
-        return "implode('', array_map(\n    " . $mapper . ",\n    " . $templateNode->code . ",\n))";
     }
 
     /**

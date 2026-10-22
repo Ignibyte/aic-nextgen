@@ -67,7 +67,13 @@ deptrac:
     - name: PhpstanVendor
       collectors:
         - type: classLike
-          value: '^PHPStan\\'
+          value: '^PHPStan\\(?!PhpDocParser\\)'
+    # phpstan/phpdoc-parser, which the template build (#97) reads list element
+    # types with.
+    - name: PhpDocParserVendor
+      collectors:
+        - type: classLike
+          value: '^PHPStan\\PhpDocParser\\'
     # php-parser, which gate:25's template validator (#96) and AIC's PHPStan
     # rules read.
     - name: PhpParserVendor
@@ -143,9 +149,11 @@ deptrac:
     # gate:25's validator (#96) walks php-parser's tree and reports with
     # Gates' Domain values, reading files through Application.
     TemplateGrammar:
+      - Contracts
       - Domain
       - Application
       - PhpParserVendor
+      - PhpDocParserVendor
     # The PHPMD rules and PHPCS sniffs wrap their tool's stock rule and ask
     # Gates' Domain which methods are kind methods (#56).
     PhpmdRules:

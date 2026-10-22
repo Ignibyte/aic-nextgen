@@ -7,11 +7,8 @@ namespace App\Content\Component;
 use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\RendersMarkup;
 
-use function array_map;
-use function implode;
-
 /**
- * ContentArticle's markup, compiled from ContentArticle.tpl by bin/aic-build (#36):
+ * ContentArticle's markup, compiled from ContentArticle.html.php by bin/aic-build (#97):
  * edit the template and run composer run build, never this file.
  */
 final readonly class ContentArticleTemplate
@@ -25,13 +22,13 @@ final readonly class ContentArticleTemplate
      */
     public function render(ContentArticle $contentArticle): Html
     {
-        return new Html($this->part1($contentArticle));
+        return new Html($this->part2($contentArticle));
     }
 
     /**
-     * @param string $paragraph A loop's item.
+     * @param string $paragraph A loop's variable.
      *
-     * @return string Markup from ContentArticle.tpl.
+     * @return string Markup from ContentArticle.html.php.
      */
     private function part0(string $paragraph): string
     {
@@ -43,18 +40,31 @@ final readonly class ContentArticleTemplate
     /**
      * @param ContentArticle $contentArticle The component.
      *
-     * @return string Markup from ContentArticle.tpl.
+     * @return string Markup from ContentArticle.html.php.
      */
     private function part1(ContentArticle $contentArticle): string
     {
+        $markup = '';
+
+        foreach ($contentArticle->paragraphs as $paragraph) {
+            $markup .= $this->part0($paragraph);
+        }
+
+        return $markup;
+    }
+
+    /**
+     * @param ContentArticle $contentArticle The component.
+     *
+     * @return string Markup from ContentArticle.html.php.
+     */
+    private function part2(ContentArticle $contentArticle): string
+    {
         return '<article id="content-page"><h2 id="content-title">'
-            . self::text($contentArticle->contentPage->title)
+            . self::text($contentArticle->title)
             . "</h2>\n"
             . '<!--t:b-->'
-            . implode('', array_map(
-                $this->part0(...),
-                $contentArticle->contentPage->paragraphs(),
-            ))
+            . $this->part1($contentArticle)
             . '<!--/t:b-->'
             . "</article>\n";
     }

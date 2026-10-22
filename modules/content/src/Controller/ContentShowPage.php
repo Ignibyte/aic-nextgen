@@ -52,6 +52,6 @@ final readonly class ContentShowPage implements Page
             return $this->htmlLayout->content('<p id="not-found">There is no page here.</p>', 404);
         }
 
-        return $this->htmlLayout->content((new ContentArticle($contentPage))->render()->markup(), 200);
+        return $this->htmlLayout->content((new ContentArticle($contentPage->title, $contentPage->paragraphs()))->render()->markup(), 200);
     }
 }

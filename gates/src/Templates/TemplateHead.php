@@ -60,6 +60,20 @@ final readonly class TemplateHead
     }
 
     /**
+     * @param list<Stmt> $stmts A template's statements, its typing line checked by `component()`.
+     *
+     * @return string The class the typing line names, fully qualified; empty when there is none.
+     */
+    public function componentClass(array $stmts): string
+    {
+        $first = $stmts[0] ?? null;
+
+        return $first instanceof Nop && preg_match(self::DOC, $this->doc($first), $match) === 1
+            ? $match[1]
+            : '';
+    }
+
+    /**
      * @param Nop $nop The first statement.
      *
      * @return string Its one docblock's text; empty when it has another comment, or none.

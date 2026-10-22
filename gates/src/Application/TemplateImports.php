@@ -18,6 +18,8 @@ use function implode;
 use function sort;
 use function str_contains;
 use function str_starts_with;
+use function strrpos;
+use function substr;
 
 use const SORT_FLAG_CASE;
 use const SORT_STRING;
@@ -55,7 +57,10 @@ final readonly class TemplateImports
         }
 
         $functions = array_filter($imports, static fn (string $import): bool => str_starts_with($import, 'function '));
-        $classes = array_diff($imports, $functions);
+        $classes = array_filter(
+            array_diff($imports, $functions),
+            static fn (string $import): bool => substr($import, 0, (int) strrpos($import, '\\')) !== $namespace,
+        );
 
         return "<?php\n\ndeclare(strict_types=1);\n\nnamespace " . $namespace . ";\n\n" . $this->uses($classes) . $this->uses($functions);
     }
@@ -63,7 +68,7 @@ final readonly class TemplateImports
     /**
      * @param list<TemplateNode> $nodes The template's nodes.
      *
-     * @return list<string> The names its `@use` lines import.
+     * @return list<string> The classes it imports: those its generated code names.
      */
     private function imported(array $nodes): array
     {

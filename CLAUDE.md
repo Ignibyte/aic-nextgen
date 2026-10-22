@@ -32,7 +32,7 @@ M0, M1 and M2 are done (2026-10-19).
 build`; gate:24 keeps it fresh. #25: byte ranges (206/416) on downloads and Server-Sent Events
 (`EventStream` pulling from an `EventSource`, streamed natively). #7 (M3) runs as #35 to #39;
 #35: `AIC\Component` (`Component::render(): Html`, the catalog atoms with a caller). #36: a
-component's `X.tpl` compiles to `XTemplate.php` beside it (`composer run build`, kept fresh by
+component's template compiles to `XTemplate.php` beside it (`composer run build`, kept fresh by
 gate:24); the generated class passes every gate unexcluded. #37: a Page returns
 `PageDocument(Layout)`; regions render as `data-region` elements, components and blocks between
 `<!--aic:...-->` markers. #38: blocks (`AIC\Block`) place themselves in a region by weight and
@@ -67,7 +67,11 @@ decides its `src/` folder, 15 files per folder, exports and requires, nothing ou
 but the shell). #95: module assets: the theme moves to `assets/`, each module's
 `assets/` joins the build, and the site module's nav styles and favicon live in `modules/site/assets/`.
 #96: gate:25 holds every `*.html.php` template to the plain PHP grammar (deny by default); the
-class tools skip `modules/*/templates/` and `templates/`.
+class tools skip `modules/*/templates/` and `templates/`. #97: `composer run build` compiles each
+`*.html.php` into its `XTemplate.php`, escaping every `<?= ?>` by its static type; loops are real
+loops (`break`, `continue`) and `empty()` lowers by type; the old grammar is gone. A component
+is data: its constructor takes the ready values as promoted public props, computed by whoever
+builds it, and a class-typed loop variable is named for its class (`$keyedComponent`).
 
 ## Five kinds
 

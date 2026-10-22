@@ -20,8 +20,8 @@ use const STDOUT;
 /**
  * Gate #25: the plain PHP template grammar (#96, part 1 of #88). Every
  * `*.html.php` under the grammar's roots is validated; each refused construct
- * is one line, sorted by path and line. It defers, named, while no template
- * exists (until #97 converts the `.tpl` templates).
+ * is one line, sorted by path and line. It defers, named, when no template
+ * exists.
  */
 final readonly class TemplateGrammarGate
 {

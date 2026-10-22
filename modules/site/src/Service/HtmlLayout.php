@@ -35,7 +35,13 @@ final readonly class HtmlLayout
      */
     public function page(Regions $regions, int $status): PageDocument
     {
-        return new PageDocument(new AppLayout($this->appConfig->name, $regions, $this->appConfig->tessera), $status);
+        $html = new Html('<link rel="stylesheet" href="/assets/aic.css" data-track>'
+            . '<script defer src="' . $this->appConfig->tessera->scriptPath() . '" data-track></script>');
+
+        return new PageDocument(
+            new AppLayout($this->appConfig->name, $html, $regions, $regions->region('content'), $regions->region('nav')),
+            $status,
+        );
     }
 
     /**
