@@ -41,18 +41,11 @@ final readonly class SiteTemplates implements ComponentTemplates
     #[Override]
     public function compose(Component $component, RenderPass $renderPass): string
     {
-        if ($component instanceof SiteNav) {
-            return (new SiteNavTemplate())->render($component, $renderPass);
-        }
-
-        if ($component instanceof Ticks) {
-            return (new TicksTemplate())->render($component);
-        }
-
-        if ($component instanceof AppLayout) {
-            return (new AppLayoutTemplate())->render($component, $renderPass);
-        }
-
-        return $this->componentTemplates->compose($component, $renderPass);
+        return match (true) {
+            $component instanceof SiteNav => (new SiteNavTemplate())->render($component, $renderPass),
+            $component instanceof Ticks => (new TicksTemplate())->render($component),
+            $component instanceof AppLayout => (new AppLayoutTemplate())->render($component, $renderPass),
+            default => $this->componentTemplates->compose($component, $renderPass),
+        };
     }
 }

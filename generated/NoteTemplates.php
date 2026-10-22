@@ -39,14 +39,10 @@ final readonly class NoteTemplates implements ComponentTemplates
     #[Override]
     public function compose(Component $component, RenderPass $renderPass): string
     {
-        if ($component instanceof NoteCard) {
-            return (new NoteCardTemplate())->render($component);
-        }
-
-        if ($component instanceof NoteList) {
-            return (new NoteListTemplate())->render($component, $renderPass);
-        }
-
-        return $this->componentTemplates->compose($component, $renderPass);
+        return match (true) {
+            $component instanceof NoteCard => (new NoteCardTemplate())->render($component),
+            $component instanceof NoteList => (new NoteListTemplate())->render($component, $renderPass),
+            default => $this->componentTemplates->compose($component, $renderPass),
+        };
     }
 }

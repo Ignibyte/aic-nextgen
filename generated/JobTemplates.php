@@ -37,10 +37,9 @@ final readonly class JobTemplates implements ComponentTemplates
     #[Override]
     public function compose(Component $component, RenderPass $renderPass): string
     {
-        if ($component instanceof LineList) {
-            return (new LineListTemplate())->render($component);
-        }
-
-        return $this->componentTemplates->compose($component, $renderPass);
+        return match (true) {
+            $component instanceof LineList => (new LineListTemplate())->render($component),
+            default => $this->componentTemplates->compose($component, $renderPass),
+        };
     }
 }

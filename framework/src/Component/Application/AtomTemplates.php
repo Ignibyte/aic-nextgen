@@ -43,27 +43,14 @@ final readonly class AtomTemplates implements ComponentTemplates
     #[Override]
     public function compose(Component $component, RenderPass $renderPass): string
     {
-        if ($component instanceof Link) {
-            return $this->link($component);
-        }
-
-        if ($component instanceof Badge) {
-            return $this->badge($component);
-        }
-
-        if ($component instanceof Heading) {
-            return '<h2>' . self::text($component->text) . '</h2>';
-        }
-
-        if ($component instanceof Paragraph) {
-            return $this->paragraph($component);
-        }
-
-        if ($component instanceof TrackedAssets) {
-            return $this->trackedAssets($component);
-        }
-
-        return $this->componentTemplates->compose($component, $renderPass);
+        return match (true) {
+            $component instanceof Link => $this->link($component),
+            $component instanceof Badge => $this->badge($component),
+            $component instanceof Heading => '<h2>' . self::text($component->text) . '</h2>',
+            $component instanceof Paragraph => $this->paragraph($component),
+            $component instanceof TrackedAssets => $this->trackedAssets($component),
+            default => $this->componentTemplates->compose($component, $renderPass),
+        };
     }
 
     /**

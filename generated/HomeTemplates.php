@@ -37,10 +37,9 @@ final readonly class HomeTemplates implements ComponentTemplates
     #[Override]
     public function compose(Component $component, RenderPass $renderPass): string
     {
-        if ($component instanceof Home) {
-            return (new HomeTemplate())->render($component, $renderPass);
-        }
-
-        return $this->componentTemplates->compose($component, $renderPass);
+        return match (true) {
+            $component instanceof Home => (new HomeTemplate())->render($component, $renderPass),
+            default => $this->componentTemplates->compose($component, $renderPass),
+        };
     }
 }

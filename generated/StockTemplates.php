@@ -40,14 +40,10 @@ final readonly class StockTemplates implements ComponentTemplates
     #[Override]
     public function compose(Component $component, RenderPass $renderPass): string
     {
-        if ($component instanceof StockLinks) {
-            return (new StockLinksTemplate())->render($component, $renderPass);
-        }
-
-        if ($component instanceof StockListing) {
-            return (new StockListingTemplate())->render($component);
-        }
-
-        return $this->componentTemplates->compose($component, $renderPass);
+        return match (true) {
+            $component instanceof StockLinks => (new StockLinksTemplate())->render($component, $renderPass),
+            $component instanceof StockListing => (new StockListingTemplate())->render($component),
+            default => $this->componentTemplates->compose($component, $renderPass),
+        };
     }
 }

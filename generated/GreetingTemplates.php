@@ -37,10 +37,9 @@ final readonly class GreetingTemplates implements ComponentTemplates
     #[Override]
     public function compose(Component $component, RenderPass $renderPass): string
     {
-        if ($component instanceof Greetings) {
-            return (new GreetingsTemplate())->render($component);
-        }
-
-        return $this->componentTemplates->compose($component, $renderPass);
+        return match (true) {
+            $component instanceof Greetings => (new GreetingsTemplate())->render($component),
+            default => $this->componentTemplates->compose($component, $renderPass),
+        };
     }
 }
