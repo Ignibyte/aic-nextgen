@@ -8,7 +8,7 @@ use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\KeyedComponent;
 
 /**
- * SiteNav's markup, compiled from SiteNav.html.php by bin/aic-build (#97, #98):
+ * SiteNav's markup, compiled from SiteNav.html.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class SiteNavTemplate

@@ -1,0 +1,26 @@
+# gate:9's base config (aic/gates, #116): the phpat settings and the rule
+# classes, on top of gate:8's. phpat runs only the rule classes registered here
+# with the `phpat.test` tag; a rule class that is not listed never runs. A
+# project's phpstan-architecture.neon includes its phpstan.neon and this file.
+parameters:
+    phpat:
+        # Count dependencies on built-in classes: PHPStan's bundled extension
+        # stubs make Swoole\ a built-in, and with built-ins ignored the
+        # no-Swoole rule could never fail. The vendor rule already allows PHP's
+        # standard classes explicitly (Selector::isStandardClass()).
+        ignore_built_in_classes: false
+        show_rule_names: true
+
+services:
+    -
+        class: Gates\Architecture\CoreArchitectureTest
+        tags:
+            - phpat.test
+    -
+        class: Gates\Architecture\KindsArchitectureTest
+        tags:
+            - phpat.test
+    -
+        class: Gates\Architecture\RenderingArchitectureTest
+        tags:
+            - phpat.test

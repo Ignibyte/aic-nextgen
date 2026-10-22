@@ -8,29 +8,22 @@ use AIC\Workflow\Application\GateExecutor;
 use AIC\Workflow\Application\ProcessRunner;
 use AIC\Workflow\Domain\ProcessResult;
 use Override;
-use stdClass;
 
 use function array_any;
-use function array_keys;
 use function explode;
-use function file_get_contents;
-use function get_object_vars;
-use function is_file;
-use function json_decode;
 use function preg_match;
 use function readlink;
 use function realpath;
 use function restore_error_handler;
 use function set_error_handler;
-use function substr;
 use function trim;
-use function usort;
 
 /**
- * The project's gate suite (#101): `composer run gate`, which AIC's
- * `bin/gate-runner.sh` answers, with the composer timeout off and the run's
- * own timeout from `config/workflow.php`. `pgrep` finds a run already live
- * in the project, since two gate runs there corrupt each other's caches.
+ * The project's gate suite (#101): `composer run gate`, which aic/gates'
+ * runner answers (#116), with the composer timeout off and the run's own
+ * timeout from `config/workflow.php`; the gates' names come from
+ * `vendor/bin/aic-gate --numbers`. `pgrep` finds a run already live in the
+ * project, since two gate runs there corrupt each other's caches.
  */
 final readonly class ComposerGateExecutor implements GateExecutor
 {
@@ -47,34 +40,34 @@ final readonly class ComposerGateExecutor implements GateExecutor
     }
 
     /**
-     * @return list<string> The `gate:N` scripts in the project's composer.json, by N.
+     * @return list<string> The suite's gates, `gate:N` by N, as `vendor/bin/aic-gate --numbers` names them (#116); none
+     *                      when aic/gates is not installed or does not answer.
      */
     #[Override]
     public function names(): array
     {
+        $processResult = $this->processRunner->run([$this->root . '/vendor/bin/aic-gate', '--numbers'], 60);
         $names = [];
 
-        foreach ($this->scripts() as $name) {
-            if (preg_match('/^gate:\\d+$/', $name) !== 1) {
+        foreach ($processResult->exitCode === 0 ? explode("\n", $processResult->output) : [] as $line) {
+            if (preg_match('/^gate:\\d+$/', trim($line)) !== 1) {
                 continue;
             }
 
-            $names[] = $name;
+            $names[] = trim($line);
         }
-
-        usort($names, static fn (string $left, string $right): int => (int) substr($left, 5) <=> (int) substr($right, 5));
 
         return $names;
     }
 
     /**
-     * @return bool Whether `pgrep` finds a `bin/gate-runner.sh` running in this project; another project's (Lotline runs
-     *              its own on the same machine) shares no cache with it.
+     * @return bool Whether `pgrep` finds aic/gates' `gate-runner.sh` running in this project, from wherever the package
+     *              is installed (#116); another project's (Lotline runs its own on the same machine) shares no cache with it.
      */
     #[Override]
     public function busy(): bool
     {
-        $pids = $this->processRunner->run(['pgrep', '-f', '^\\S*sh \\S*bin/gate-runner\\.sh$'], 10)->output;
+        $pids = $this->processRunner->run(['pgrep', '-f', '^\\S*sh \\S*/gate-runner\\.sh$'], 10)->output;
         $root = realpath($this->root);
 
         return $root !== false && array_any(
@@ -106,26 +99,5 @@ final readonly class ComposerGateExecutor implements GateExecutor
         } finally {
             restore_error_handler();
         }
-    }
-
-    /**
-     * @return list<string> The script names in the project's composer.json.
-     */
-    private function scripts(): array
-    {
-        $path = $this->root . '/composer.json';
-        $composer = is_file($path)
-            ? json_decode((string) file_get_contents($path))
-            : null;
-        $scripts = $composer instanceof stdClass
-            ? $composer->scripts ?? null
-            : null;
-        $names = [];
-
-        foreach ($scripts instanceof stdClass ? array_keys(get_object_vars($scripts)) : [] as $name) {
-            $names[] = (string) $name;
-        }
-
-        return $names;
     }
 }

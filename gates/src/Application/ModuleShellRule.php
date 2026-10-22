@@ -30,9 +30,9 @@ final readonly class ModuleShellRule implements ModuleRule
      */
     private const array SHELL = [
         // The app's own shell.
-        // The wiring bin/aic-build writes from the manifests (#93).
+        // The wiring the build writes from the manifests (#93).
         'generated/*',
-        // The code wiki bin/aic-build writes from the surface and the code index (#108).
+        // The code wiki the build writes from the surface and the code index (#108).
         'docs/wiki/*',
         // The app's settings.
         'config/*',
@@ -49,17 +49,13 @@ final readonly class ModuleShellRule implements ModuleRule
         'build/*',
         // The console.
         'bin/aic',
-        // The build.
-        'bin/aic-build',
         // aic/framework, in this repo; an app requires it as a package.
         'framework/*',
         // aic/workflow, the dev-only workflow (#100), in this repo; an app requires it for development.
         'workflow/*',
-        // The gates' code.
+        // aic/gates, the gate suite, its entries, the build and the base configs (#116), in this repo.
         'gates/*',
-        // The gates' entry points.
-        'bin/gate-*.php',
-        // The gate runner, the tool installer, the ticket script.
+        // The ticket script.
         'bin/*.sh',
         // The agent's commands, skills and hooks, and the workflow's pack and lock (#105).
         '.claude/*',
@@ -75,20 +71,16 @@ final readonly class ModuleShellRule implements ModuleRule
         'CLAUDE.md',
         'composer.json',
         'composer.lock',
-        'composer-unused.php',
         'CONSTITUTION.md',
         'deptrac.yaml',
         '.gitignore',
-        '.gitleaks.toml',
         'phpcs.xml.dist',
-        'phpmd.xml',
         'phpstan-architecture.neon',
         'phpstan.neon',
         'pint.json',
         'psalm.xml',
         'README.md',
         'rector.php',
-        'semgrep.yml',
     ];
 
     /**

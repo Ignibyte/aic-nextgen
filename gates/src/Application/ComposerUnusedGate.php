@@ -32,10 +32,12 @@ final readonly class ComposerUnusedGate
 
     /**
      * @param ProcessRunner $processRunner Seam wrapping `proc_open`.
+     * @param string        $package       aic/gates' directory: its base configs and elephc pins (#116).
      * @param PhpFileFinder $phpFileFinder Recursive `*.php` directory predicate.
      */
     public function __construct(
         private ProcessRunner $processRunner,
+        private string $package,
         private PhpFileFinder $phpFileFinder = new PhpFileFinder(),
     ) {
     }
@@ -65,7 +67,7 @@ final readonly class ComposerUnusedGate
             return 1;
         }
 
-        $command = [$bin, '--no-progress'];
+        $command = [$bin, '--no-progress', '--configuration=' . $this->package . '/config/composer-unused.php'];
         $processResult = $this->processRunner->run($command);
         fwrite($stdout, sprintf('gate:4 — %s%s%s', implode(' ', $command), PHP_EOL, $processResult->stdout));
         fwrite($stderr, $processResult->stderr);

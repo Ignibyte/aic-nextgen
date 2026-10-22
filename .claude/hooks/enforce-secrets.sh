@@ -4,10 +4,10 @@
 # =============================================================================
 #
 # Blocks Stop when gitleaks finds a secret in the working tree (`--no-git`,
-# .gitleaks.toml), whenever files changed since the last commit. Runs in
+# aic/gates' config/gitleaks.toml, #116), whenever files changed since the last commit. Runs in
 # every session, pipeline or not. gate:17 scans the git history.
 #
-# The scanner: tools/gitleaks (pinned by bin/install-tools.sh), else gitleaks
+# The scanner: tools/gitleaks (pinned by vendor/bin/aic-gate tools), else gitleaks
 # on the PATH, else the Docker image. No usable scanner, or a gitleaks error
 # (exit code other than 0 or 1), blocks: a secrets check never passes on
 # missing tooling.
@@ -49,7 +49,7 @@ block() {
         echo ""
         if [ "$PASS_COUNT" -ge 3 ]; then
             echo "BLOCKED — enforce-secrets.sh has blocked ${PASS_COUNT} times in a row this session."
-            echo "If it is a false positive, allow-list it in .gitleaks.toml with the reason; then: rm -f $GUARD_FILE"
+            echo "If it is a false positive, allow-list it in gates/config/gitleaks.toml with the reason; then: rm -f $GUARD_FILE"
             echo ""
         fi
         echo "$1"
@@ -64,7 +64,7 @@ if [ -z "$(printf '%s%s' "$CHANGED" "$UNTRACKED" | tr -d '[:space:]')" ]; then
     clean_pass_exit
 fi
 
-ARGS=(detect --config .gitleaks.toml --no-git --redact --no-banner --exit-code 1)
+ARGS=(detect --config vendor/aic/gates/config/gitleaks.toml --no-git --redact --no-banner --exit-code 1)
 OUTPUT=""
 STATUS=0
 
@@ -76,7 +76,7 @@ elif command -v docker &>/dev/null && docker info >/dev/null 2>&1; then
     OUTPUT=$(docker run --rm -v "${PROJECT_ROOT}:/path" -w /path zricethezav/gitleaks:latest \
         "${ARGS[@]}" --source /path 2>&1) || STATUS=$?
 else
-    block "STOP BLOCKED — enforce-secrets.sh: no gitleaks (tools/gitleaks, PATH or Docker). Run bin/install-tools.sh."
+    block "STOP BLOCKED — enforce-secrets.sh: no gitleaks (tools/gitleaks, PATH or Docker). Run vendor/bin/aic-gate tools."
 fi
 
 if [ "$STATUS" -eq 1 ]; then
@@ -88,7 +88,7 @@ Secrets are never committed: rotate the credential and remove it before stopping
 fi
 
 if [ "$STATUS" -ne 0 ]; then
-    block "STOP BLOCKED — gitleaks exited with code ${STATUS}; this is a tooling or .gitleaks.toml error, not a pass:
+    block "STOP BLOCKED — gitleaks exited with code ${STATUS}; this is a tooling or gitleaks.toml error, not a pass:
 
 $OUTPUT"
 fi

@@ -10,7 +10,7 @@ use App\Site\Entity\HomeDemo;
 use App\Site\Entity\HomeFact;
 
 /**
- * Home's markup, compiled from Home.html.php by bin/aic-build (#97, #98):
+ * Home's markup, compiled from Home.html.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class HomeTemplate

@@ -150,6 +150,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **The gate suite is the dev package `aic/gates`** (#116, part 1). An app on AIC copied `gates/` and every tool config by hand, and nothing kept the copy current. `gates/` is now a package, required by path like `aic/workflow`, that holds every gate.
+  - **One command:** `vendor/bin/aic-gate` runs the suite, `aic-gate N` runs one gate, `--numbers` and `--list` name them, `tools` installs gitleaks, semgrep and shellcheck, and `serve` serves the compiled site. The list is `Gates\Application\GateSuite`: each gate's description, scope (`aic` for 22, 28 and 29) and command.
+  - **Same commands as before:** `composer run gate` and `build` call the package, and each `composer run gate:N` is the one-line alias `aic-gate N`. The runner's output is unchanged byte for byte, so the engine reads the same lines, and it names the gates from `aic-gate --numbers`.
+  - **Moved into the package:** every `gate-*.php` entry, the runner, the tool installer and `aic-build`, each rooted at the working directory. With them went `phpmd.xml`, `semgrep.yml`, `gitleaks.toml`, `composer-unused.php` and the elephc pins. The tools left the root's require-dev for the package's require. The build writes the wiki only when `aic/workflow` is installed.
+  - **Bases and stubs:** `phpstan.neon`, `phpstan-architecture.neon`, `psalm.xml`, `deptrac.yaml`, `phpcs.xml.dist` and `rector.php` at the root now include a base in `gates/config/` and name only AIC's paths. Each include form was checked first against a planted violation. `captainhook.json` stays whole at the root.
+  - **Plants that bite:** a lowered PHPMD limit in the base fails gate:10, a `bin/gate-x.php` at the root fails gate:26, and an edit to a base config breaks the `gate-suite` house rule, which now also walls composer.json's allowed plugins and the `aic/gates` constraint.
+
 - **The root is AIC's fixture app** (#126, part A). The ten-module demo becomes three modules with every URL unchanged: `site` takes home, greeting and job; `note` takes stock; the new `account` takes auth and session. Content and faq are gone, so the surface has 29 routes, and gate:23 runs 69 steps where it ran 73.
   - **The reference:** the tag `demo-reference` (0fae488) keeps the ten-module demo. Its rebuild as an app of its own is #128 and #129.
   - **The build splits a module's handlers into parts:** `<M>Handlers` had to fit one 20-line method and a coupling of 15, so a module with this many controllers did not build. `HandlerParts` now writes `<M>Handlers`, then `<M>HandlersPart2` and on, each as large as fits, and `ModuleHandlers` merges them all.

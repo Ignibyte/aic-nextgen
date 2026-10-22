@@ -27,7 +27,7 @@ final readonly class AssetBundle
      * The stylesheet's first line. It never quotes a glob such as `modules/<star>/assets`: a star
      * then a slash would end the comment.
      */
-    private const string HEADER = "/* Built by bin/aic-build (#95) from each module's assets/ CSS, then the site theme's assets/ CSS: "
+    private const string HEADER = "/* Built by composer run build (#95) from each module's assets/ CSS, then the site theme's assets/ CSS: "
         . 'edit those and run composer run build, never this file. */';
 
     /**

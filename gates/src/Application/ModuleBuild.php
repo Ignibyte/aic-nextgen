@@ -12,7 +12,7 @@ use Gates\Domain\ModuleDefinition;
 use InvalidArgumentException;
 
 /**
- * The module build `bin/aic-build` runs (#92, #93): read every manifest, check
+ * The module build `aic-build` runs (#92, #93): read every manifest, check
  * it and the set, order the modules by what they require, wire every
  * declaration, and give back the generated files under `generated/` and the
  * routes on the app's collector.

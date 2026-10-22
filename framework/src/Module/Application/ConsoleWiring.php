@@ -9,7 +9,7 @@ use AIC\Schema\Contracts\Migration;
 
 /**
  * What the console kernel always takes from the generated wiring (#93): the
- * modules' migrations and schedules. `bin/aic-build` writes the one
+ * modules' migrations and schedules. `aic-build` writes the one
  * implementation, `App\Generated\ConsoleModules`, which also implements
  * `PluginWiring`, `CommandWiring` and `JobWiring` when some module has
  * plugins, commands or jobs.

@@ -7,7 +7,7 @@ namespace App\Site\Component;
 use AIC\Component\Domain\RendersMarkup;
 
 /**
- * Ticks's markup, compiled from Ticks.html.php by bin/aic-build (#97, #98):
+ * Ticks's markup, compiled from Ticks.html.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class TicksTemplate

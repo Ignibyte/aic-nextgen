@@ -30,7 +30,7 @@ They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs
 | `bootstrap/serve.php` | Serves one request: the wiring, the request in, the response out; compiled into the site or run under PHP |
 | `public/index.php` | The interpreted entry (php-fpm in DDEV, `php -S`): the autoloader, then `serve.php` |
 | `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
-| `bin/aic-build` | The build step (`composer run build`): reads the manifests, writes `generated/`, the compiled templates and `build/surface.json`; `--check` is gate:24 |
+| `gates/` | `aic/gates`, the gate suite (#116): a dev-only package with every gate's code and entry, the runner, the build (`vendor/bin/aic-build`, behind `composer run build`; `--check` is gate:24) and each tool's base config. `vendor/bin/aic-gate --list` names the gates and `aic-gate N` runs one |
 | `build/surface.json` | The app's surface: every route (method, path, handler, kind) and console command (name, class, kind) |
 | `workflow/` | `aic/workflow`, the agent workflow's engine (`AIC\Workflow\`): a dev-only package. `bin/aic workflow:run <ticket>` runs one phase of a ticket per call; `workflow:status` shows the run; `workflow:reset` is the operator's, from a terminal. At each phase exit the engine runs the gates and the spec's audits itself (#101) and keeps the verdicts in `var/workflow/evidence.sqlite`. `workflow/bin/aic-guard.sh`, wired by `workflow/pack/hooks.json`, is the Claude Code hook that holds the agent to the open run (#102). House rules (`workflow/rules/`, #104) judge each run's change from files frozen at begin; gate:28 holds them to their probes. `bin/aic code:tree`, `code:search`, `code:refs` and `code:index` answer from the code index in `var/index/code.sqlite` (#106). Plan cannot pass until its grounding check finds every declared path and class real and the run's own lookups show the agent looked (#118). `bin/aic route:list`, `command:list`, `job:list`, `schedule:list`, `module:list`, `module:show <name>` and `kind:list` answer what the app declares from `build/surface.json`, as text or with `--json` (#109). `bin/aic workflow:init` installs it in an app (#105; `workflow/pack/`). Once per run, at code, an independent `aic-seeker` subagent checks the run's change against the AIC checklist; `bin/aic workflow:seeker-brief` gives it its scope (the diff plus one hop) and `bin/aic workflow:seeker-report` files its ledger, whose findings are advisory (#103, #127). Its state is `var/workflow/` (gitignored) |
 | `.ddev/` | DDEV: nginx-fpm serving the interpreted reference, and Postgres 17 |
@@ -77,7 +77,7 @@ forwards the rest. Without a proxy, the app's `/assets/{file}` route answers the
 ## Quality gates
 
 ```bash
-bash bin/install-tools.sh   # once: gitleaks (pinned, into tools/), semgrep, shellcheck
+vendor/bin/aic-gate tools   # once: gitleaks (pinned, into tools/), semgrep, shellcheck
 composer run gate           # every gate, on the host; ends with one gate-summary line
 composer run gate:8         # one gate alone (gate:0 to gate:27)
 composer run gate:21        # the native gate: every runtime class through elephc

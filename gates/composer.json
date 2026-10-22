@@ -1,0 +1,48 @@
+{
+    "name": "aic/gates",
+    "description": "AIC's gate suite (#116): every gate, the build, the runner and the tools' base configs, for AIC and for an app on it. Dev-only.",
+    "license": "MIT",
+    "type": "library",
+    "require": {
+        "php": "^8.5",
+        "aic/framework": "0.1.x-dev",
+        "composer-runtime-api": "^2.2",
+        "captainhook/captainhook": "^5.24",
+        "captainhook/hook-installer": "^1.0",
+        "deptrac/deptrac": "^4.6",
+        "ergebnis/composer-normalize": "^2.45",
+        "ergebnis/phpstan-rules": "^2.13",
+        "icanhazstring/composer-unused": "^0.9",
+        "laravel/pint": "^1.18",
+        "nikic/php-parser": "^5.9",
+        "phpat/phpat": "^0.12.0",
+        "phpmd/phpmd": "^2.15",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpdoc-parser": "^2.3",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "rector/rector": "^2.0",
+        "shipmonk/dead-code-detector": "^1.4",
+        "shipmonk/phpstan-rules": "^4.0",
+        "slevomat/coding-standard": "^8.15",
+        "spaze/phpstan-disallowed-calls": "^4.11",
+        "squizlabs/php_codesniffer": "^3.10",
+        "systemsdk/phpcpd": "^9.0",
+        "tomasvotruba/cognitive-complexity": "^1.0",
+        "tomasvotruba/type-coverage": "^2.0",
+        "vimeo/psalm": "^6.0"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Gates\\": "src/",
+            "Gates\\Architecture\\": "architecture/"
+        }
+    },
+    "bin": [
+        "bin/aic-build",
+        "bin/aic-gate"
+    ]
+}

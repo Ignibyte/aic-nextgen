@@ -8,8 +8,10 @@ declare(strict_types=1);
  * - `probe.php strip <package-copy>`: the app's composer.json requires
  *   aic/workflow by path from the copy; PHPStan reads the package from the
  *   copy (the framework methods only it calls stay used); the other tool
- *   configs lose the package's own source, which the app does not hold; and
- *   gate:28 and gate:29 go, as they hold AIC's own rules and docs.
+ *   configs and gate:10's paths in aic/gates' suite lose the package's own
+ *   source, which the app does not hold; and gate:28 and gate:29 go from the
+ *   suite and their aliases from composer.json, as they hold AIC's own rules
+ *   and docs (#116; #130 gives an app its own profile).
  * - `probe.php agent <agent-file>`: the agent file as `--agents` JSON, so the
  *   seeker runs headless with no project settings and no hooks.
  * - `probe.php field <json-file> <key>`: one string field of a JSON object.
@@ -40,7 +42,9 @@ if ($verb === 'strip') {
     }
 
     file_put_contents('phpstan.neon', str_replace('@package@', $package . '/workflow', (string) file_get_contents('phpstan.neon')));
-    $composer = str_replace(['"url": "workflow"', ',workflow/src,workflow/rules'], ['"url": "' . $package . '/workflow"', ''], (string) file_get_contents('composer.json'));
+    $suite = str_replace(',workflow/src,workflow/rules', '', (string) file_get_contents('gates/src/Application/GateSuite.php'));
+    file_put_contents('gates/src/Application/GateSuite.php', (string) preg_replace('/^        (28|29) => \\[\\n.*?^        \\],\\n/ms', '', $suite));
+    $composer = str_replace('"url": "workflow"', '"url": "' . $package . '/workflow"', (string) file_get_contents('composer.json'));
     $lines = array_filter(explode("\n", $composer), static fn (string $line): bool => !str_contains($line, '"gate:28"') && !str_contains($line, '"gate:29"'));
     file_put_contents('composer.json', implode("\n", $lines));
 

@@ -1,36 +1,15 @@
-# gate:9 — phpat architecture rules, on top of the gate:8 configuration.
-#
-# phpat runs only the rule classes registered here with the `phpat.test`
-# tag; a rule class that is not listed never runs. gates/architecture is
-# analysed here, not in phpstan.neon: only this config registers the rule
-# classes, so only here does the dead-code detector see their methods as used.
-# Every gate:8 rule still applies to them through the include.
+# gate:9 — phpat architecture rules, AIC's own config (#116), on top of the
+# gate:8 configuration. The base in aic/gates registers the rule classes.
+# gates/architecture is analysed here, not in phpstan.neon: only this config
+# registers the rule classes, so only here does the dead-code detector see
+# their methods as used. Every gate:8 rule still applies to them through the
+# include.
 includes:
     - phpstan.neon
+    - vendor/aic/gates/config/phpstan-architecture.neon
 
 parameters:
     # Its own cache beside gate:8's (#74): the two configs analyse different paths.
     tmpDir: .phpstan-cache/architecture
     paths:
         - gates/architecture
-    phpat:
-        # Count dependencies on built-in classes: PHPStan's bundled extension
-        # stubs make Swoole\ a built-in, and with built-ins ignored the
-        # no-Swoole rule could never fail. The vendor rule already allows PHP's
-        # standard classes explicitly (Selector::isStandardClass()).
-        ignore_built_in_classes: false
-        show_rule_names: true
-
-services:
-    -
-        class: Gates\Architecture\CoreArchitectureTest
-        tags:
-            - phpat.test
-    -
-        class: Gates\Architecture\KindsArchitectureTest
-        tags:
-            - phpat.test
-    -
-        class: Gates\Architecture\RenderingArchitectureTest
-        tags:
-            - phpat.test

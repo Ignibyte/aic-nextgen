@@ -18,7 +18,7 @@ use function ksort;
  * The app's console side, composed from the generated wiring (#93): the
  * framework's commands and jobs with the modules', the framework's migrations
  * before the modules', and every schedule. `bin/aic` runs its commands;
- * `bin/aic-build` lists them in `build/surface.json`.
+ * `aic-build` lists them in `build/surface.json`.
  */
 final readonly class ConsoleKernel
 {

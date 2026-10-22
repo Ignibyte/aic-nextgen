@@ -8,7 +8,7 @@ use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\KeyedComponent;
 
 /**
- * NoteList's markup, compiled from NoteList.html.php by bin/aic-build (#97, #98):
+ * NoteList's markup, compiled from NoteList.html.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class NoteListTemplate

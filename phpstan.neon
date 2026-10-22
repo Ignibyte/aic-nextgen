@@ -1,19 +1,14 @@
-# gate:8 — PHPStan level 10 with bleeding edge.
-#
-# phpstan-strict-rules, phpstan-deprecation-rules, phpat, shipmonk-rules,
-# shipmonk/dead-code-detector, ergebnis/phpstan-rules, spaze/phpstan-disallowed-calls,
-# tomasvotruba/cognitive-complexity and tomasvotruba/type-coverage load through
-# phpstan/extension-installer from composer's require-dev. The custom rules of later
-# systems (blocks, layouts, forms, plugins) arrive with the tickets that port them.
+# gate:8 — PHPStan, AIC's own config (#116): the base in aic/gates holds every
+# setting and rule; this file names AIC's paths, its cache, its excludes, and
+# the two classes only gates/ extends.
 includes:
-    - phar://phpstan.phar/conf/bleedingEdge.neon
+    - vendor/aic/gates/config/phpstan.neon
 
 parameters:
     # A cache of this repo's own: the default under the system temp directory is
     # shared with every project on the box, and another project's run clearing it
     # mid-run lost the dead-code detector's files (#74).
     tmpDir: .phpstan-cache/main
-    level: 10
     paths:
         - framework/src
         - modules
@@ -23,8 +18,10 @@ parameters:
         - config
         - bin
         - bin/aic
-        - bin/aic-build
         - gates/src
+        - gates/bin
+        - gates/bin/aic-build
+        - gates/bin/aic-gate
         - workflow/src
         - workflow/bin
         - workflow/rules
@@ -42,95 +39,9 @@ parameters:
         - tools (?)
         - .psalm-cache (?)
         - .rector-cache (?)
-    treatPhpDocTypesAsCertain: true
-    reportUnmatchedIgnoredErrors: true
-    checkTooWideReturnTypesInProtectedAndPublicMethods: true
-    checkUninitializedProperties: true
-    checkBenevolentUnionTypes: true
-    checkDynamicProperties: true
-    checkExplicitMixed: true
-    checkImplicitMixed: true
-    checkMissingCallableSignature: true
-    checkMissingOverrideMethodAttribute: true
-    rememberPossiblyImpureFunctionValues: false
-    tipsOfTheDay: false
-    parallel:
-        maximumNumberOfProcesses: 8
-    type_coverage:
-        return_type: 100
-        param_type: 100
-        property_type: 100
-        constant_type: 100
-    cognitive_complexity:
-        class: 50
-        function: 8
-    # shipmonk/dead-code-detector (#15, replacing the abandoned tomasvotruba/unused-public):
-    # dead methods, constants, enum cases and properties never read or never written,
-    # dead cycles and transitively dead methods, across the whole codebase. phpat rule
-    # methods count as used (the phpat.test tag). A call over an unknown type does not
-    # mark members used: the codebase has no `mixed`, so such a call is a type gap to fix,
-    # not evidence of use.
-    shipmonkDeadCode:
-        detect:
-            deadMethods: true
-            deadConstants: true
-            deadEnumCases: true
-            deadProperties:
-                neverRead: true
-                neverWritten: true
-        usageExcluders:
-            usageOverMixed:
-                enabled: true
-    shipmonkRules:
-        enableAllRules: true
-        # Container::bind/singleton/instance store factory callables that
-        # are invoked later in get(). Every legitimate factory throws PSR-11
-        # ContainerExceptionInterface (e.g. dependent get() calls), so this
-        # rule fires on every factory that can fail. The signal value (catching un-handled exceptions in callables
-        # called by frameworks the user doesn't see) doesn't apply when the
-        # framework itself is what does the calling — the container's get()
-        # is the call site and propagates exceptions explicitly.
-        forbidCheckedExceptionInCallable:
-            enabled: false
-    # ergebnis/phpstan-rules — `allRules: true` (default) enables all 22 rules; opt-outs below.
-    # noNamedArgument fights the modern-PHP convention of named arguments; disabled. Other ergebnis rules are kept on so they enforce: final/finalInAbstractClass,
-    # noEval, noErrorSuppression, noPhpstanIgnore, noIsset (forbids isset on variables — null
-    # comparison is clearer), noCompact, noSwitch (match-only), noNamedArgument (off), etc.
     ergebnis:
-        # The PHPUnit TestCase-suffix rule reflects PHPUnit\Framework\TestCase on
-        # every class; AIC ships no tests and no PHPUnit, so the rule has nothing
-        # to check and would fail on the missing class.
-        testCaseWithSuffix:
-            enabled: false
-        noNamedArgument:
-            enabled: false
-        # PSR-7 (Psr\Http\Message\*) surfaces require nullable types and
-        # default values throughout: UriInterface::getPort(): ?int,
-        # UriInterface::withPort(?int $port), UploadedFileInterface::getSize(): ?int,
-        # PSR-17 createUri(string $uri = ''), createUploadedFile(StreamInterface $stream,
-        # ?int $size = null, int $error = UPLOAD_ERR_OK, ?string $clientFilename = null,
-        # ?string $clientMediaType = null) etc. PSR-7 contravariance forbids narrowing.
-        # The four ergebnis rules below cannot be satisfied by any conforming PSR-7
-        # implementation; disabling them is a scope adjustment (the rules were not
-        # designed for boundary classes), not a baseline.
-        noConstructorParameterWithDefaultValue:
-            enabled: false
-        noParameterWithNullableTypeDeclaration:
-            enabled: false
-        noParameterWithNullDefaultValue:
-            enabled: false
-        noNullableReturnTypeDeclaration:
-            enabled: false
         noExtends:
             classesAllowedToBeExtended:
-                # Exceptions extend the SPL roots; InvalidArgumentException is
-                # the one PSR-7 names for bad input (MalformedInputException).
-                - RuntimeException
-                - LogicException
-                - InvalidArgumentException
-                # The PSR-7 message base: ServerRequest and Response share its
-                # eleven MessageInterface methods (abstract base, final subclasses).
-                - AIC\Http\Domain\Message
                 # PHPMD's extension point is a rule class: gate:10's
                 # kind-aware rule is the stock rule with one early return (#56).
                 - PHPMD\Rule\UnusedFormalParameter
@@ -138,75 +49,3 @@ parameters:
                 # walk (#96) overrides enterNode and leaveNode; the base's no-op
                 # hooks spare it two parameters it would never read.
                 - PhpParser\NodeVisitorAbstract
-        final:
-            allowAbstractClasses: true
-        noParameterWithContainerTypeDeclaration:
-            interfacesImplementedByContainers:
-                - Psr\Container\ContainerInterface
-            methodsAllowedToUseContainerTypeDeclarations:
-                # __invoke covers ServiceFactoryInterface implementations
-                # (the canonical "factory closure as object" shape).
-                - __invoke
-                # register covers ServiceProviderInterface implementations:
-                # each system ships a register(Container) method by design.
-                # Service providers are the ONLY place where injecting the
-                # container itself is correct (boot-time wiring); everywhere
-                # else, ergebnis's rule still forbids it.
-                - register
-    # spaze/phpstan-disallowed-calls — compile-time enforcement of what semgrep also catches
-    # at gate:15, from the CLAUDE.md code conventions: env() outside config, getenv(), eval,
-    # var_dump/dd/dump, $GLOBALS, etc.
-    disallowedFunctionCalls:
-        -
-            function: 'env()'
-            message: 'CLAUDE.md conventions — env() must only be read in config/. Inject the resolved value.'
-            allowIn:
-                - config/*.php
-        -
-            function: 'getenv()'
-            message: 'CLAUDE.md conventions — read environment in config/, never in business logic.'
-            allowIn:
-                - config/*.php
-                - bin/gate-*.php
-        -
-            function: 'var_dump()'
-            message: 'CLAUDE.md conventions — debug helpers must not ship.'
-        -
-            function: 'print_r()'
-            message: 'CLAUDE.md conventions — debug helpers must not ship.'
-            allowParamsAnywhere:
-                - position: 2
-                  value: true
-        -
-            function: 'dump()'
-            message: 'CLAUDE.md conventions — debug helpers must not ship.'
-        -
-            function: 'dd()'
-            message: 'CLAUDE.md conventions — debug helpers must not ship.'
-        -
-            function: 'eval()'
-            message: 'CLAUDE.md conventions — eval is forbidden everywhere.'
-    disallowedSuperglobals:
-        -
-            superglobal: '$GLOBALS'
-            message: 'CLAUDE.md conventions — no globals; the DI container wires state.'
-        -
-            superglobal: '$_ENV'
-            message: 'CLAUDE.md conventions — env access lives in config/.'
-            allowIn:
-                - config/*.php
-                - bin/gate-*.php
-
-# AIC's own rules (gate:8), each seen to fail on a planted violation.
-rules:
-    # A plugin implements its type: tag(Type::class, Service::class) (#5).
-    - Gates\PhpStan\TaggedServiceTypeRule
-    # Components only (#99): the Renderer alone makes an Html, the writer alone
-    # reads one, a controller carries no markup and returns only its kind's
-    # response, and the render tree takes data, never markup.
-    - Gates\PhpStan\HtmlConstructionRule
-    - Gates\PhpStan\HtmlMarkupReadRule
-    - Gates\PhpStan\HtmlMarkupCallableRule
-    - Gates\PhpStan\ControllerMarkupLiteralRule
-    - Gates\PhpStan\ControllerReturnTypeRule
-    - Gates\PhpStan\RenderTreeInputRule

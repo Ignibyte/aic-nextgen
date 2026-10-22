@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * The note module's manifest (#93; stock's pages and table joined it in #126):
  * CRUD on notes, their tips block, the stock page, and the notes and stock
- * tables. bin/aic-build reads it; nothing reads it at run time.
+ * tables. The build reads it; nothing reads it at run time.
  */
 
 use AIC\Module\Contracts\ModuleManifest;

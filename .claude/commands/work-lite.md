@@ -16,7 +16,7 @@ If the change involves any of these, stop and say: "This needs the full pipeline
 
 - A new system under `framework/src/<System>/`, or a new entry-point kind
 - A new or changed PSR seam, or a new `Contracts` interface
-- A new gate (`bin/gate-*.php` and its `composer.json` script) or a new phpat, PHPStan or semgrep rule
+- A new gate (`gates/bin/gate-*.php`, its row in `GateSuite` and its `composer.json` alias) or a new phpat, PHPStan or semgrep rule
 - Container wiring, kernel boot, or the build-time manifests
 - More than 5 files
 - New domain or application logic, or a refactor across systems

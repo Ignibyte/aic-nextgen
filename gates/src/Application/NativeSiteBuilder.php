@@ -29,12 +29,14 @@ final readonly class NativeSiteBuilder
 {
     /**
      * @param NativeToolchain    $nativeToolchain    The compiler.
+     * @param string             $package            aic/gates' directory: its base configs and elephc pins (#116).
      * @param RuntimeClassFinder $runtimeClassFinder Finds the runtime classes.
      * @param ComposerPsr4Loader $composerPsr4Loader Reads the PSR-4 map.
      * @param ClosureBundler     $closureBundler     Orders each class's closure.
      */
     public function __construct(
         private NativeToolchain $nativeToolchain,
+        private string $package,
         private RuntimeClassFinder $runtimeClassFinder = new RuntimeClassFinder(),
         private ComposerPsr4Loader $composerPsr4Loader = new ComposerPsr4Loader(),
         private ClosureBundler $closureBundler = new ClosureBundler(),
@@ -86,8 +88,8 @@ final readonly class NativeSiteBuilder
             . 'require ' . var_export($root . '/bootstrap/serve.php', true) . ';' . PHP_EOL;
         $written = file_put_contents($workDir . '/_bundle.php', implode(PHP_EOL, $lines) . PHP_EOL) !== false
             && file_put_contents($workDir . '/main.php', $main) !== false
-            && copy($root . '/gates/native/elephc.toml', $workDir . '/elephc.toml')
-            && copy($root . '/gates/native/elephc.lock', $workDir . '/elephc.lock');
+            && copy($this->package . '/native/elephc.toml', $workDir . '/elephc.toml')
+            && copy($this->package . '/native/elephc.lock', $workDir . '/elephc.lock');
 
         if (!$written) {
             throw new RuntimeException('native site — cannot write the program in ' . $workDir);

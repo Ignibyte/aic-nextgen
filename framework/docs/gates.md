@@ -5,6 +5,16 @@ one run names every failing gate. Each gate prints one `gate-result: gate:N pass
 line, and the run ends with one `gate-summary:` line. One gate runs alone by its number:
 `composer run gate:21` runs the native gate.
 
+## Where the gates come from
+
+The suite is the dev package `aic/gates`: every gate's code, its entry scripts, the runner, the
+build (`aic-build`) and each tool's base config. `vendor/bin/aic-gate --list` names every gate
+with its scope and description, and `vendor/bin/aic-gate 21` runs one, as `composer run gate:21`
+does. A tool's config in the project (`phpstan.neon`, `phpcs.xml.dist`, `deptrac.yaml`,
+`psalm.xml`, `rector.php`) includes the base and names only the project's paths, so a change to
+a base reaches the project on `composer update`. Run every gate from the project's root, where
+composer runs scripts.
+
 ## The rules every gate shares
 
 - **No baselines and no suppressions.** A finding is fixed in the source. No baseline file, no

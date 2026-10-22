@@ -47,6 +47,7 @@ final readonly class NativeCompileGate
 
     /**
      * @param NativeToolchain    $nativeToolchain    The compiler, its environment and the PHP oracle.
+     * @param string             $package            aic/gates' directory: its base configs and elephc pins (#116).
      * @param NativeProbe        $nativeProbe        Probes one runtime class.
      * @param RuntimeClassFinder $runtimeClassFinder Lists the runtime corpus.
      * @param ClosureBundler     $closureBundler     Collects a class's closure.
@@ -56,6 +57,7 @@ final readonly class NativeCompileGate
      */
     public function __construct(
         private NativeToolchain $nativeToolchain,
+        private string $package,
         private NativeProbe $nativeProbe,
         private RuntimeClassFinder $runtimeClassFinder = new RuntimeClassFinder(),
         private ClosureBundler $closureBundler = new ClosureBundler(),
@@ -177,7 +179,7 @@ final readonly class NativeCompileGate
     private function keys(array $classes, string $root): array
     {
         $psr4Map = $this->composerPsr4Loader->load($root);
-        $packageFiles = array_map(static fn (string $file): string => $root . '/gates/native/' . $file, self::PACKAGE_FILES);
+        $packageFiles = array_map(fn (string $file): string => $this->package . '/native/' . $file, self::PACKAGE_FILES);
         $toolchain = $this->closureFingerprint->toolchain($this->nativeToolchain->identity(), $packageFiles, NativeProbe::MAIN);
         $keys = [];
 
@@ -207,7 +209,7 @@ final readonly class NativeCompileGate
             throw new RuntimeException('gate:21 — cannot create ' . $workDir);
         }
 
-        $this->copyPackageFiles($root, $workDir);
+        $this->copyPackageFiles($workDir);
         $processResult = $this->nativeToolchain->installPackages($workDir);
 
         if ($processResult->exitCode !== 0) {
@@ -223,16 +225,15 @@ final readonly class NativeCompileGate
     /**
      * Copy `elephc.toml` and `elephc.lock` into the work directory, where elephc finds them.
      *
-     * @param string $root    Repo-root absolute path.
      * @param string $workDir The gate's work directory.
      *
      * @throws RuntimeException When a file cannot be copied.
      */
-    private function copyPackageFiles(string $root, string $workDir): void
+    private function copyPackageFiles(string $workDir): void
     {
         foreach (self::PACKAGE_FILES as $file) {
-            if (!copy($root . '/gates/native/' . $file, $workDir . '/' . $file)) {
-                throw new RuntimeException('gate:21 — cannot copy gates/native/' . $file);
+            if (!copy($this->package . '/native/' . $file, $workDir . '/' . $file)) {
+                throw new RuntimeException('gate:21 — cannot copy aic/gates native/' . $file);
             }
         }
     }

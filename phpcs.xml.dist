@@ -2,14 +2,10 @@
 <ruleset name="AIC"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
-    <description>AIC strict (gate:11): PSR-12 plus the full Slevomat coding standard.</description>
+    <description>AIC strict (gate:11), AIC's own ruleset (#116): the rules are aic/gates' base; this file names AIC's files, cache and root namespaces.</description>
 
     <arg name="basepath" value="."/>
-    <arg name="extensions" value="php"/>
     <arg name="cache" value=".phpcs-cache"/>
-    <arg name="colors"/>
-    <arg name="parallel" value="8"/>
-    <arg value="np"/>
 
     <file>framework/src</file>
     <file>modules</file>
@@ -18,6 +14,7 @@
     <file>bootstrap</file>
     <file>config</file>
     <file>bin</file>
+    <file>gates/bin</file>
     <file>gates/src</file>
     <file>gates/architecture</file>
     <file>workflow/src</file>
@@ -31,271 +28,7 @@
     <exclude-pattern>.rector-cache/*</exclude-pattern>
     <exclude-pattern>.psalm-cache/*</exclude-pattern>
 
-    <rule ref="PSR12"/>
-
-    <rule ref="PEAR.Commenting.ClassComment">
-        <exclude name="PEAR.Commenting.ClassComment.MissingCategoryTag"/>
-        <exclude name="PEAR.Commenting.ClassComment.MissingPackageTag"/>
-        <exclude name="PEAR.Commenting.ClassComment.MissingAuthorTag"/>
-        <exclude name="PEAR.Commenting.ClassComment.MissingLicenseTag"/>
-        <exclude name="PEAR.Commenting.ClassComment.MissingLinkTag"/>
-    </rule>
-
-    <rule ref="PEAR.Commenting.FunctionComment">
-        <exclude name="PEAR.Commenting.FunctionComment.MissingParamComment"/>
-        <exclude name="PEAR.Commenting.FunctionComment.MissingReturn"/>
-        <exclude name="PEAR.Commenting.FunctionComment.SpacingAfterParamType"/>
-        <exclude name="PEAR.Commenting.FunctionComment.SpacingAfterParamName"/>
-        <exclude name="PEAR.Commenting.FunctionComment.SpacingAfter"/>
-    </rule>
-
-    <!--
-        File length 600 and class length 350, old AIC's values. Classes are
-        held tighter by PHPMD's ExcessiveClassLength (<= 300, gate:10).
-    -->
-    <rule ref="SlevomatCodingStandard.Files.FileLength">
-        <properties>
-            <property name="maxLinesLength" value="600"/>
-        </properties>
-    </rule>
-    <rule ref="SlevomatCodingStandard.Classes.ClassLength">
-        <properties>
-            <property name="maxLinesLength" value="350"/>
-        </properties>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard">
-        <exclude name="SlevomatCodingStandard.Functions.DisallowNamedArguments"/>
-        <exclude name="SlevomatCodingStandard.Functions.RequireSingleLineCall"/>
-        <exclude name="SlevomatCodingStandard.Functions.RequireMultiLineCall"/>
-        <exclude name="SlevomatCodingStandard.Functions.DisallowTrailingCommaInCall"/>
-        <exclude name="SlevomatCodingStandard.Functions.DisallowTrailingCommaInDeclaration"/>
-        <exclude name="SlevomatCodingStandard.Functions.DisallowTrailingCommaInClosureUse"/>
-        <exclude name="SlevomatCodingStandard.ControlStructures.JumpStatementsSpacing"/>
-        <exclude name="SlevomatCodingStandard.Commenting.DisallowOneLinePropertyDocComment"/>
-        <exclude name="SlevomatCodingStandard.Commenting.RequireOneLineDocComment"/>
-        <exclude name="SlevomatCodingStandard.Commenting.RequireOneLinePropertyDocComment"/>
-        <exclude name="SlevomatCodingStandard.Classes.DisallowConstructorPropertyPromotion"/>
-        <exclude name="SlevomatCodingStandard.Classes.EmptyLinesAroundClassBraces"/>
-        <exclude name="SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming"/>
-        <!--
-            Functions.UnusedParameter runs as Gates.Functions.KindAwareUnusedParameter
-            (#56, below): the stock sniff, except on a kind method.
-        -->
-        <exclude name="SlevomatCodingStandard.Functions.UnusedParameter"/>
-        <!--
-            SuperfluousExceptionNaming objects to `class FooException extends
-            Throwable` because the `extends` already says it's an exception.
-            We keep the suffix because PSR-11 itself names its interfaces
-            ContainerExceptionInterface / NotFoundExceptionInterface — our
-            implementations are intentionally aligned with the PSR shape.
-        -->
-        <exclude name="SlevomatCodingStandard.Classes.SuperfluousExceptionNaming"/>
-        <exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions"/>
-        <exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalConstants"/>
-        <exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedClassNameInAnnotation"/>
-        <exclude name="SlevomatCodingStandard.Whitespaces.DuplicateSpaces"/>
-        <exclude name="SlevomatCodingStandard.TypeHints.UnionTypeHintFormat"/>
-        <exclude name="SlevomatCodingStandard.ControlStructures.NewWithoutParentheses"/>
-        <!--
-            FullyQualifiedExceptions and ReferenceUsedNamesOnly both
-            target `Exception::class` references with opposite verdicts:
-            the former demands FQN, the latter demands import. We pick
-            ReferenceUsedNamesOnly (project-wide "import everything" PSR
-            convention; matches Pint `global_namespace_import.import_classes=true`
-            and PHPMD MissingImport). Throws and catches still use the
-            short imported name — there is no FQN-only exception convention.
-        -->
-        <exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedExceptions"/>
-        <!--
-            DisallowNumericLiteralSeparator and RequireNumericLiteralSeparator
-            are mutually contradictory; we keep the readability-positive
-            Require sniff (separators on long literals) and drop the Disallow.
-        -->
-        <exclude name="SlevomatCodingStandard.Numbers.DisallowNumericLiteralSeparator"/>
-        <!--
-            DisallowYodaComparison is enabled explicitly below; the matching
-            RequireYodaComparison sniff inherited from SlevomatCodingStandard
-            contradicts it. Keep the Disallow side (Pint already
-            sets `yoda_style: false`).
-        -->
-        <exclude name="SlevomatCodingStandard.ControlStructures.RequireYodaComparison"/>
-        <!--
-            Arrow functions are an idiomatic PHP 7.4+ feature and Rector's
-            ForeachToArrayAllRector emits them when collapsing a single-
-            condition foreach into `array_all(...)`. Slevomat's blanket
-            DisallowArrowFunctions contradicts the Rector rule; we keep
-            Rector's modernization and drop the disallow.
-        -->
-        <exclude name="SlevomatCodingStandard.Functions.DisallowArrowFunction"/>
-        <!--
-            RequireArrowFunction is the contradictory sister of
-            DisallowArrowFunction. Both Slevomat sniffs ship enabled by
-            default and target the same construct. We need closures (not
-            arrow functions) for any callable that throws PSR-11 checked
-            exceptions — arrow functions cannot carry @throws annotations.
-            Disabling Require lets us choose between the two forms; Rector
-            also disables ClosureToArrowFunctionRector for the same reason.
-        -->
-        <exclude name="SlevomatCodingStandard.Functions.RequireArrowFunction"/>
-        <!--
-            DisallowNonCapturingCatch forbids `catch (Exception)` (no $e),
-            which is the cleanest way to swallow an expected exception in
-            a test — naming the variable just to silence the sniff makes
-            "I am intentionally ignoring this" less explicit, not more.
-        -->
-        <exclude name="SlevomatCodingStandard.Exceptions.DisallowNonCapturingCatch"/>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard.TypeHints.DNFTypeHintFormat"/>
-
-    <!-- LineLength at a 140-column ceiling: wider than PSR-12's 120, tight enough to flag runaway lines. -->
-    <rule ref="SlevomatCodingStandard.Files.LineLength">
-        <properties>
-            <property name="lineLengthLimit" value="140"/>
-            <property name="ignoreComments" value="false"/>
-            <property name="ignoreImports" value="true"/>
-        </properties>
-    </rule>
-
-    <!-- The Yoda-comparison ban, the PHPCS side of Pint's `yoda_style: false`. -->
-    <rule ref="SlevomatCodingStandard.ControlStructures.DisallowYodaComparison"/>
-
-    <rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit"/>
-
-    <!--
-        No superglobals (CLAUDE.md conventions); semgrep's aic-no-superglobals
-        is the gate:15 side. The SAPI boundary is the one place that reads
-        them: bootstrap/serve.php snapshots the request, and the bin/gate-*.php
-        entry scripts read HOME for the tool lookup.
-    -->
-    <rule ref="SlevomatCodingStandard.Variables.DisallowSuperGlobalVariable">
-        <exclude-pattern>bootstrap/serve.php</exclude-pattern>
-        <exclude-pattern>bin/gate-*.php</exclude-pattern>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard.Classes.RequireConstructorPropertyPromotion"/>
-
-    <rule ref="SlevomatCodingStandard.Namespaces.UseSpacing">
-        <properties>
-            <property name="linesCountBetweenUseTypes" value="1"/>
-        </properties>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard.Classes.TraitUseSpacing">
-        <properties>
-            <property name="linesCountBeforeFirstUse" value="0"/>
-            <property name="linesCountBeforeFirstUseWhenFirstInClass" value="0"/>
-            <property name="linesCountAfterLastUse" value="1"/>
-            <property name="linesCountAfterLastUseWhenLastInClass" value="0"/>
-        </properties>
-    </rule>
-
-    <!--
-        UnusedUses must scan PHPDoc annotations as well as code, otherwise
-        imports referenced only from `@throws \RuntimeException` style
-        annotations (the kind Pint normalizes via `global_namespace_import`)
-        are flagged as unused even though the docblock genuinely needs them.
-    -->
-    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses">
-        <properties>
-            <property name="searchAnnotations" value="true"/>
-        </properties>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard.Commenting.DocCommentSpacing">
-        <properties>
-            <property name="linesCountBetweenDifferentAnnotationsTypes" value="1"/>
-        </properties>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard.Attributes.AttributesOrder">
-        <properties>
-            <property name="orderAlphabetically" value="true"/>
-        </properties>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes">
-        <properties>
-            <property name="declareOnFirstLine" value="false"/>
-            <property name="linesCountBeforeDeclare" value="1"/>
-            <property name="spacesCountAroundEqualsSign" value="0"/>
-        </properties>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard.Commenting.ForbiddenAnnotations">
-        <properties>
-            <property name="forbiddenAnnotations" type="array">
-                <element value="@phpstan-ignore"/>
-                <element value="@phpstan-ignore-line"/>
-                <element value="@phpstan-ignore-next-line"/>
-                <element value="@psalm-suppress"/>
-                <element value="@phpcs:ignore"/>
-                <element value="@phpcs:disable"/>
-                <element value="@phpmd:ignore"/>
-                <element value="@phpmd-ignore"/>
-                <element value="@suppress"/>
-                <element value="@noinspection"/>
-            </property>
-        </properties>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint">
-        <properties>
-            <property name="enableNativeTypeHint" value="true"/>
-        </properties>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard.Classes.ClassStructure">
-        <properties>
-            <property name="groups" type="array">
-                <element value="uses"/>
-                <element value="enum cases"/>
-                <element value="public constants, protected constants, private constants"/>
-                <element value="public static properties, protected static properties, private static properties"/>
-                <element value="public properties, protected properties, private properties"/>
-                <element value="constructor"/>
-                <element value="destructor"/>
-                <element value="magic methods"/>
-                <element value="public final methods, public abstract methods, public methods, protected final methods, protected abstract methods, protected methods, private methods"/>
-                <element value="public static final methods, public static abstract methods, public static methods, protected static final methods, protected static abstract methods, protected static methods, private static methods"/>
-                <element value="static constructors"/>
-            </property>
-        </properties>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard.Classes.RequireSingleLineMethodSignature">
-        <severity>0</severity>
-    </rule>
-
-    <rule ref="SlevomatCodingStandard.TypeHints.DisallowMixedTypeHint"/>
-    <rule ref="SlevomatCodingStandard.Functions.StaticClosure"/>
-    <rule ref="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly"/>
-    <rule ref="SlevomatCodingStandard.TypeHints.UnionTypeHintFormat"/>
-    <rule ref="SlevomatCodingStandard.TypeHints.NullableTypeForNullDefaultValue"/>
-    <rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInCall"/>
-    <rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInDeclaration"/>
-
-    <rule ref="SlevomatCodingStandard.Namespaces.UseOnlyWhitelistedNamespaces">
-        <properties>
-            <property name="namespacesRequiredToUse" type="array">
-                <element value="AIC"/>
-                <element value="App"/>
-                <element value="Gates"/>
-                <element value="Psr"/>
-                <element value="PHPat"/>
-                <element value="PHPStan"/>
-                <element value="PhpParser"/>
-                <element value="Random"/>
-                <element value="Composer"/>
-                <element value="PHPMD"/>
-                <element value="PDepend"/>
-                <element value="PHP_CodeSniffer"/>
-                <element value="SlevomatCodingStandard"/>
-            </property>
-            <property name="allowUseFromRootNamespace" value="true"/>
-        </properties>
-    </rule>
+    <rule ref="./vendor/aic/gates/config/phpcs.xml"/>
 
     <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
         <properties>
@@ -311,10 +44,4 @@
             </property>
         </properties>
     </rule>
-    <!--
-        Slevomat's Functions.UnusedParameter, except on a Page, Api, Stream,
-        Command or Job method or a Block's component(), whose one parameter its
-        interface dictates (#56, #58).
-    -->
-    <rule ref="./gates/src/Sniffs/Functions/KindAwareUnusedParameterSniff.php"/>
 </ruleset>

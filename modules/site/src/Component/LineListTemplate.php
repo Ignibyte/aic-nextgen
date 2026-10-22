@@ -7,7 +7,7 @@ namespace App\Site\Component;
 use AIC\Component\Domain\RendersMarkup;
 
 /**
- * LineList's markup, compiled from LineList.html.php by bin/aic-build (#97, #98):
+ * LineList's markup, compiled from LineList.html.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class LineListTemplate

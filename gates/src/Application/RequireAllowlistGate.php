@@ -48,10 +48,12 @@ final readonly class RequireAllowlistGate
 
     /**
      * Patterns allowed in `workflow/composer.json` only (#106): `aic/workflow` is
-     * dev-only and never runs in production, and its code index parses PHP with
-     * php-parser. The runtime allow-list above is unchanged.
+     * dev-only and never runs in production, its code index parses PHP with
+     * php-parser, and its engine runs the gate suite of aic/gates (#116). The
+     * runtime allow-list above is unchanged.
      */
     private const array WORKFLOW_PATTERNS = [
+        '/^aic\\/gates$/',
         '/^nikic\\/php-parser$/',
     ];
 

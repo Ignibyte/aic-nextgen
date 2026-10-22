@@ -6,7 +6,7 @@ declare(strict_types=1);
  * The account module's manifest (#126, from #93's auth and session): sign-in
  * and sign-out, the account page, the sign-in middleware guarding /account,
  * the users table and user:add, the visit counter, and the uploads page with
- * its rules as a factory. bin/aic-build reads it; nothing reads it at run
+ * its rules as a factory. The build reads it; nothing reads it at run
  * time.
  */
 

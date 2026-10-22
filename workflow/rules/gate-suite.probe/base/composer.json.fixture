@@ -9,10 +9,15 @@
         }
     },
     "scripts": {
-        "gate": "bash bin/gate-runner.sh",
-        "gate:8": "vendor/bin/phpstan analyse"
+        "gate": "aic-gate",
+        "gate:8": "aic-gate 8"
     },
     "scripts-descriptions": {
-        "gate:8": "PHPStan level 10."
+        "gate": "Run every quality gate."
+    },
+    "config": {
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
     }
 }
