@@ -215,6 +215,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | | | 24 | build manifests: `build/surface.json` is fresh |
 | | | 25 | templates: the plain PHP grammar, deny by default |
 | | | 26 | module boundaries: kind folders, the 15-file cap, exports and requires, the shell |
+| | | 27 | raw html: every RawHtml use listed and held to its grant |
 
 - The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
   `App\`; a phpat rule keeps runtime code from depending on it.
@@ -251,6 +252,18 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   `Migration/`, `Repository/` and `Form/` by name suffix. A plain class goes in `Entity/`,
   `Service/` or `Form/`. Its message names the folder, the `->export(...)` or the
   `->requires(...)` to add; the shell list is a constant in `ModuleShellRule`.
+- Components only (#99), as gate:8 rules (`gates/src/PhpStan`) and a gate:9 phpat test:
+  - `aic.htmlConstruction`: only `Renderer` makes an `Html`.
+  - `aic.htmlMarkupRead`: only `Psr7ResponseWriter` reads one, a first-class callable included.
+  - In a module's `src/Controller/`: `aic.controllerMarkupLiteral` refuses any string holding
+    `<`, and `aic.controllerReturnType` refuses a method returning anything but its kind's
+    response, so helpers go to `src/Service/`.
+  - `aic.renderTreeInput` and `RenderingArchitectureTest`: `Region`, `Regions` and every
+    `Layout` take components, blocks, regions, enums and scalars, never `Html`.
+- gate:27 (`bin/gate-raw-html.php`, `Gates\Rendering`, #99) lists every `new RawHtml` and holds
+  each module class to its grant in `config/raw-html.php` (`RawHtmlGrant`: class, exact uses,
+  reason). `RawHtml::` may appear only in `Renderer` and `RenderPass`. `GATE_RAW_HTML_ROOT`
+  takes a plant root.
 - gate:21 caches (#110): a class whose closure files, compiler, bridge libraries, PHP, pinned
   packages and probe program are unchanged since its last green probe reports `CACHED`
   (`.native-gate/cache.txt`); a change reprobes only the classes whose closure holds it. Probes

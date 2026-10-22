@@ -85,6 +85,11 @@ deptrac:
       collectors:
         - type: classLike
           value: '^Gates\\Templates\\'
+    # gate:27, the RawHtml count (#99).
+    - name: RawHtmlGate
+      collectors:
+        - type: classLike
+          value: '^Gates\\Rendering\\'
     # AIC's PHPMD rules (gate:10) and PHPCS sniffs (gate:11), and the tools'
     # own classes they extend or call (#56).
     - name: PhpmdRules
@@ -141,9 +146,11 @@ deptrac:
     Architecture:
       - PhpatVendor
     # AIC's own PHPStan rules (gate:8) read the contracts they police and
-    # PHPStan's API; nothing else.
+    # PHPStan's API, and name the one Application class each guard allows: the
+    # Renderer makes an Html, Psr7ResponseWriter reads one (#99).
     PhpStanRules:
       - Contracts
+      - Application
       - PhpstanVendor
       - PhpParserVendor
     # gate:25's validator (#96) walks php-parser's tree and reports with
@@ -154,6 +161,11 @@ deptrac:
       - Application
       - PhpParserVendor
       - PhpDocParserVendor
+    RawHtmlGate:
+      - Contracts
+      - Domain
+      - Application
+      - PhpParserVendor
     # The PHPMD rules and PHPCS sniffs wrap their tool's stock rule and ask
     # Gates' Domain which methods are kind methods (#56).
     PhpmdRules:

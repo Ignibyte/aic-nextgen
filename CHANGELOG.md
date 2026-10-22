@@ -6,6 +6,18 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Components only, and RawHtml counted** (#99, part 2 of #87). No code path but the Renderer can make HTML, and the one sanctioned way round it is granted per class and counted.
+  - **gate:8 rules:**
+    - `aic.htmlConstruction`: `new Html` only in the Renderer, aliases and class-strings included.
+    - `aic.htmlMarkupRead`: `->markup()` only in `Psr7ResponseWriter`, nullsafe and first-class callables included.
+    - `aic.controllerMarkupLiteral`: no string holding `<` in a module's `src/Controller/`.
+    - `aic.controllerReturnType`: a controller's methods return its kind's response only, so `JobsPage`'s line helper moved to `ScheduleLines`.
+    - `aic.renderTreeInput`: `Region`, `Regions` and layouts take no markup.
+  - **gate:9:** `RenderingArchitectureTest` keeps the render tree off `Html` entirely.
+  - **`RawHtml`:** trusted markup written as it is, for a sanitized CMS body. There is no `HtmlResponse` kind (Chad).
+  - **gate:27:** `bin/gate-raw-html.php` lists every `new RawHtml` with its place and reason and holds each module class to its `RawHtmlGrant` in `config/raw-html.php`: an exact count and a reason. It refuses `RawHtml::` outside the Renderer. The demo grants nothing.
+  - **The proof:** every rule fired at its planted line and its controls passed, and gate:27 failed on each of its violation kinds. A granted page served byte-identical markup natively and under PHP. 28 gates green.
+
 - **One Renderer makes HTML** (#98, part 1 of #87). Components are data: `Component` declares no method, a component is its public props and its template, and no controller, service, form or block builds markup.
   - **The Renderer:** `AIC\Component\Application\Renderer` is the only code that makes an `Html`, and `Psr7ResponseWriter` the only code that reads one. It writes a page's layout, regions, components and blocks through a `RenderPass`, which keeps Tessera's `<!--t:c-->` markers, keys and props tokens exactly as #37 and #70 spell them.
   - **Fragments by path:** a Tessera fragment is the same tree rendered by its path (`content/c0/NoteList.1`), so `ComponentRuns`, `Marker` and `Run` are gone. gate:23 gains that step (73).
