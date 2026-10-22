@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Component\Application\AtomTemplates;
 use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
@@ -12,6 +13,10 @@ use App\Note\Component\NoteCard;
 use App\Note\Component\NoteCardTemplate;
 use App\Note\Component\NoteList;
 use App\Note\Component\NoteListTemplate;
+use App\Note\Component\StockLinks;
+use App\Note\Component\StockLinksTemplate;
+use App\Note\Component\StockListing;
+use App\Note\Component\StockListingTemplate;
 use Override;
 
 /**
@@ -24,7 +29,7 @@ final readonly class NoteTemplates implements ComponentTemplates
      * @param ComponentTemplates $componentTemplates The templates after these.
      */
     public function __construct(
-        private ComponentTemplates $componentTemplates = new StockTemplates(),
+        private ComponentTemplates $componentTemplates = new AtomTemplates(),
     ) {
     }
 
@@ -42,6 +47,8 @@ final readonly class NoteTemplates implements ComponentTemplates
         return match (true) {
             $component instanceof NoteCard => (new NoteCardTemplate())->render($component),
             $component instanceof NoteList => (new NoteListTemplate())->render($component, $renderPass),
+            $component instanceof StockLinks => (new StockLinksTemplate())->render($component, $renderPass),
+            $component instanceof StockListing => (new StockListingTemplate())->render($component),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }

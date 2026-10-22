@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Schema\Contracts\Migration;
+use App\Note\Migration\AddStockCost;
+use App\Note\Migration\ConvertStockCost;
 use App\Note\Migration\CreateNotesTable;
 use App\Note\Migration\CreateNoteTagsTable;
+use App\Note\Migration\CreateStockItemsTable;
 use App\Note\Migration\IndexNotesByCreation;
 
 /**
@@ -24,6 +27,9 @@ final readonly class NoteMigrations
             new CreateNotesTable(),
             new CreateNoteTagsTable(),
             new IndexNotesByCreation(),
+            new CreateStockItemsTable(),
+            new AddStockCost(),
+            new ConvertStockCost(),
         ];
     }
 }

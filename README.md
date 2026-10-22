@@ -6,11 +6,13 @@ package with a namespace per system. It is being
 built by porting what earns its place from old AIC (`Ignibyte/aic`) and will replace it at
 cutover.
 
-The demo app shows every system at work as ten modules under `modules/`: a home page that
-links every demo, notes with CRUD, templates and signed forms, sessions, uploads, sign-in, jobs,
-schedules and notifications, content pages, stock items with a date, a price and a flag,
-Server-Sent Events, downloads, `/api/status` and `/health`. The
-compiled binary serves it, and PHP serves the same app as the reference.
+The root is AIC's fixture app, the site every gate holds to code: three modules under
+`modules/`. `site` has the home page, greetings, jobs, schedules and notifications,
+Server-Sent Events, downloads, `/api/status` and `/health`. `note` has notes with CRUD,
+templates and signed forms, and stock items with a date, a price and a flag. `account` has
+sign-in, sessions and uploads. The compiled binary serves it, and PHP serves the same app as the
+reference. The ten-module demo it was cut from is the tag `demo-reference`; it is rebuilt as an
+app of its own in `Ignibyte/aic-demo` (#128, #129).
 
 **Architecture:** [framework/docs/README.md](framework/docs/README.md), the pages an app's agent
 reads before building on AIC (the kinds, the modules, the systems, the conventions, the gates).
@@ -21,7 +23,7 @@ They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs
 | Path | Holds |
 |---|---|
 | `framework/` | `aic/framework`, namespace `AIC\` under `framework/src/`, its architecture pages in `framework/docs/`, pulled in through a composer path repository |
-| `modules/` | The demo app, `aic/app`: one module per feature, `modules/<name>/<name>.module.php` (its manifest) and `src/` (`App\<Name>\`) |
+| `modules/` | The fixture app, `aic/app`: three modules, `modules/<name>/<name>.module.php` (its manifest) and `src/` (`App\<Name>\`) |
 | `generated/` | The wiring `composer run build` writes from the manifests (`App\Generated\`); never edited by hand |
 | `docs/wiki/` | The code wiki `composer run build` writes from the surface and the code index: an index and a page per module; never edited by hand (notes go in `modules/<m>/README.md`) |
 | `templates/layouts/` | The page layouts' templates |
@@ -96,7 +98,7 @@ Conventional Commits.
 
 ## The workflow in an app
 
-An app made from the demo gets the gated workflow with one command, once `aic/workflow` is in its
+An app built on aic/framework gets the gated workflow with one command, once `aic/workflow` is in its
 `require-dev` (`composer require --dev aic/workflow:0.1.x-dev`):
 
 ```bash

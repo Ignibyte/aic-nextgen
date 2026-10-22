@@ -7,7 +7,14 @@ namespace App\Generated;
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use App\Site\Controller\AssetFile;
+use App\Site\Controller\GreetingPage;
+use App\Site\Controller\GreetingPost;
 use App\Site\Controller\HealthApi;
+use App\Site\Controller\HomePage;
+use App\Site\Controller\JobsPage;
+use App\Site\Controller\JobsPost;
+use App\Site\Controller\NotificationsPage;
+use App\Site\Controller\NotificationsPost;
 use App\Site\Controller\ResourceDownload;
 use App\Site\Controller\StatusApi;
 use App\Site\Controller\TickEvents;
@@ -35,6 +42,13 @@ final readonly class SiteRoutes
             ->get('/assets/{file}', AssetFile::class)
             ->get('/assets/{dir}/{file}', AssetFile::class)
             ->get('/events', TickEvents::class)
-            ->get('/ticks', TicksPage::class);
+            ->get('/ticks', TicksPage::class)
+            ->get('/', HomePage::class)
+            ->get('/hello/{name}', GreetingPage::class)
+            ->post('/hello', GreetingPost::class)
+            ->get('/jobs', JobsPage::class)
+            ->post('/jobs', JobsPost::class)
+            ->get('/notifications', NotificationsPage::class)
+            ->post('/notifications', NotificationsPost::class);
     }
 }

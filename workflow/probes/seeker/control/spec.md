@@ -7,21 +7,21 @@ browser_testable: No
 
 | # | Target | Met |
 |---|---|---|
-| 1 | The FAQ's second answer names generated/ as where the build writes the wiring | [ ] |
+| 1 | The home page's uploads link says each file is checked by its content | [ ] |
 
 ## Design
 
-One string in the demo FAQ entries changes; the page and the API read it as before.
+One label in the home page's list of pages changes; the page reads it as before.
 
 ### File Manifest
 
 | File | Change | Purpose |
 |---|---|---|
-| `modules/faq/src/Service/DemoFaqEntries.php` | modify | The answer names generated/ |
+| `modules/site/src/Controller/HomePage.php` | modify | The label |
 
 ### Locked-In Decisions
 
-1. Only the answer's text changes.
+1. Only the label's text changes.
 
 ## Entry Points
 

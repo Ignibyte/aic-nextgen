@@ -7,26 +7,26 @@ browser_testable: No
 
 | # | Target | Met |
 |---|---|---|
-| 1 | The FAQ page says how many questions it answers, above them | [ ] |
+| 1 | The greeting page says how many greetings it shows, above them | [ ] |
 | 2 | CHANGELOG.md has an entry for it | [ ] |
 
 ## Design
 
-The FAQ page counts the entries it already reads and shows the count above the list.
+The greeting page counts the greetings it already builds and shows the count above them.
 
 ### File Manifest
 
 | File | Change | Purpose |
 |---|---|---|
-| `modules/faq/src/Component/FaqCount.php` | create | The count |
-| `modules/faq/src/Component/FaqCountTemplate.php` | create | Its compiled template |
-| `modules/faq/templates/components/FaqCount.html.php` | create | Its template |
-| `modules/faq/src/Controller/FaqPage.php` | modify | Shows the count |
+| `modules/site/src/Component/GreetingCount.php` | create | The count |
+| `modules/site/src/Component/GreetingCountTemplate.php` | create | Its compiled template |
+| `modules/site/templates/components/GreetingCount.html.php` | create | Its template |
+| `modules/site/src/Controller/GreetingPage.php` | modify | Shows the count |
 | `CHANGELOG.md` | modify | The entry |
 
 ### Locked-In Decisions
 
-1. The count comes from the entries the page already reads.
+1. The count comes from the greetings the page already builds.
 
 ## Entry Points
 

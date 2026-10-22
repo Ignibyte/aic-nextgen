@@ -42,8 +42,6 @@ final readonly class NativeSiteScript
             new NativeSiteStep('greeting', 'GET', '/hello/Ada', '', '', 200, false),
             new NativeSiteStep('status', 'GET', '/api/status', '', '', 200, false),
             new NativeSiteStep('health', 'GET', '/health', '', '', 200, false),
-            new NativeSiteStep('faq', 'GET', '/faq', '', '', 200, false),
-            new NativeSiteStep('faq api', 'GET', '/api/faq', '', '', 200, false),
             new NativeSiteStep('download', 'GET', '/download/hello.txt', '', '', 200, false),
             new NativeSiteStep('missing file', 'GET', '/download/nope.txt', '', '', 404, false),
             new NativeSiteStep('asset', 'GET', '/assets/aic.css', '', '', 200, false),
@@ -170,8 +168,6 @@ final readonly class NativeSiteScript
         $update = 'title=Gate+edited&body=y&aic_csrf={csrf}&aic_envelope={envelope}';
 
         return [
-            new NativeSiteStep('content pages', 'GET', '/pages', '', '', 200, false),
-            new NativeSiteStep('content page, none', 'GET', '/pages/no-such-page', '', '', 404, false),
             new NativeSiteStep('notes', 'GET', '/notes', '', '', 200, false),
             new NativeSiteStep('note blank', 'POST', '/notes', 'title=&aic_csrf={csrf}', '', 422, false),
             new NativeSiteStep('note create', 'POST', '/notes', 'title=Gate&body=x&aic_csrf={csrf}', '', 303, true),

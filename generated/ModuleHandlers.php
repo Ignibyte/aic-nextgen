@@ -30,15 +30,12 @@ final readonly class ModuleHandlers
     {
         return array_merge(
             (new SiteHandlers($this->handlerContext))->byId(),
-            (new AuthHandlers($this->handlerContext))->byId(),
-            (new ContentHandlers($this->handlerContext))->byId(),
-            (new FaqHandlers($this->handlerContext))->byId(),
-            (new GreetingHandlers($this->handlerContext))->byId(),
-            (new HomeHandlers($this->handlerContext))->byId(),
-            (new JobHandlers($this->handlerContext))->byId(),
+            (new SiteHandlersPart2($this->handlerContext))->byId(),
+            (new SiteHandlersPart3($this->handlerContext))->byId(),
+            (new AccountHandlers($this->handlerContext))->byId(),
+            (new AccountHandlersPart2($this->handlerContext))->byId(),
             (new NoteHandlers($this->handlerContext))->byId(),
-            (new SessionHandlers($this->handlerContext))->byId(),
-            (new StockHandlers($this->handlerContext))->byId(),
+            (new NoteHandlersPart2($this->handlerContext))->byId(),
         );
     }
 }

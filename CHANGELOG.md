@@ -150,6 +150,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **The root is AIC's fixture app** (#126, part A). The ten-module demo becomes three modules with every URL unchanged: `site` takes home, greeting and job; `note` takes stock; the new `account` takes auth and session. Content and faq are gone, so the surface has 29 routes, and gate:23 runs 69 steps where it ran 73.
+  - **The reference:** the tag `demo-reference` (0fae488) keeps the ten-module demo. Its rebuild as an app of its own is #128 and #129.
+  - **The build splits a module's handlers into parts:** `<M>Handlers` had to fit one 20-line method and a coupling of 15, so a module with this many controllers did not build. `HandlerParts` now writes `<M>Handlers`, then `<M>HandlersPart2` and on, each as large as fits, and `ModuleHandlers` merges them all.
+  - **No framework code went dead:** a clone without content and faq ran gate:8 and gate:9 clean, and `framework/src` keeps its 17 `@api` tags.
+  - **The seeker probe runs on the fixture:** a1 counts the greeting page's greetings, a3's `notes:stats` reads account's users, and the control fixes a home-page label. `make_app` now drops the files the working tree deleted. Result: a1, a3 and a7 caught 3/3 each, the control clean 2/2.
+
 - **The seeker is one advisory pass at code** (#127). Chad wanted one seeker that checks the work and blocks nothing.
   - **One pass:** code answers `inspection-due` until one counted ledger is filed. The row then passes and names every open finding with its severity, CRITICAL included, and `workflow:status` shows it in the code report. Complete runs no seeker. `workflow:seeker-report` opens at code only and refuses a second counted ledger.
   - **The scope:** `workflow:seeker-brief` adds `one_hop`, the files one edge from each changed file in the code index (the classes it uses and the ones that use it), and drops `previous`.

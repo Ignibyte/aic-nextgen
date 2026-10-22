@@ -23,15 +23,8 @@ final readonly class ModuleRoutes
     public function add(RouteCollector $routeCollector): RouteCollector
     {
         $routeCollector = (new SiteRoutes())->add($routeCollector);
-        $routeCollector = (new AuthRoutes())->add($routeCollector);
-        $routeCollector = (new ContentRoutes())->add($routeCollector);
-        $routeCollector = (new FaqRoutes())->add($routeCollector);
-        $routeCollector = (new GreetingRoutes())->add($routeCollector);
-        $routeCollector = (new HomeRoutes())->add($routeCollector);
-        $routeCollector = (new JobRoutes())->add($routeCollector);
-        $routeCollector = (new NoteRoutes())->add($routeCollector);
-        $routeCollector = (new SessionRoutes())->add($routeCollector);
+        $routeCollector = (new AccountRoutes())->add($routeCollector);
 
-        return (new StockRoutes())->add($routeCollector);
+        return (new NoteRoutes())->add($routeCollector);
     }
 }

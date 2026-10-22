@@ -14,7 +14,6 @@ use Gates\Domain\WiredModule;
 use Gates\Domain\WiredObject;
 use InvalidArgumentException;
 use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 use function array_filter;
 use function array_keys;
@@ -26,7 +25,8 @@ use function var_export;
 /**
  * Writes one module's own generated classes that are built from a context
  * (#92, #93), each only when the module has something for it: by kind suffix,
- * `Routes` with `Handlers`, `Middleware`, `Commands` and `Jobs`.
+ * `Routes` with `Handlers` (and `HandlersPart2` on, #126), `Middleware`,
+ * `Commands` and `Jobs`.
  */
 final readonly class ModuleClassSource
 {
@@ -34,11 +34,13 @@ final readonly class ModuleClassSource
      * @param ContextClassSource $contextClassSource The classes built from a context.
      * @param RoutesSource       $routesSource       The routes.
      * @param WiringContexts     $wiringContexts     The two sides' roots.
+     * @param HandlerParts       $handlerParts       The handlers, split to fit (#126).
      */
     public function __construct(
         private ContextClassSource $contextClassSource = new ContextClassSource(),
         private RoutesSource $routesSource = new RoutesSource(),
         private WiringContexts $wiringContexts = new WiringContexts(),
+        private HandlerParts $handlerParts = new HandlerParts(),
     ) {
     }
 
@@ -94,26 +96,13 @@ final readonly class ModuleClassSource
     /**
      * @param WiredModule $wiredModule A module, wired.
      *
-     * @return array<string, ContextClass> Its handlers, when it has routes.
+     * @return array<string, ContextClass> Its handlers, in as many parts as they need, when it has routes.
      */
     private function handlers(WiredModule $wiredModule): array
     {
-        if ($wiredModule->controllers === []) {
-            return [];
-        }
-
-        $entries = array_map($this->controllerEntry(...), $wiredModule->controllers);
-        $contextClass = new ContextClass(
-            $wiredModule->module->studlyName() . 'Handlers',
-            $this->wiringContexts->web(),
-            'byId',
-            'array<string, RequestHandlerInterface>',
-            "The module's handlers by id.",
-            [RequestHandlerInterface::class],
-            $entries,
-        );
-
-        return ['Handlers' => $contextClass];
+        return $wiredModule->controllers === []
+            ? []
+            : $this->handlerParts->parts($wiredModule, array_map($this->controllerEntry(...), $wiredModule->controllers));
     }
 
     /**

@@ -5,7 +5,8 @@
 #
 # Counts what the aic-seeker catches. For each planted item under
 # workflow/probes/seeker/<item>/ (ticket.md, spec.md, change.patch) and the
-# clean control, it makes an app from this repository in <scratch-dir>/<item>,
+# clean control, it makes an app from this repository's working tree (files it
+# deleted stay deleted) in <scratch-dir>/<item>,
 # the package required by path from a copy, installs the workflow, takes the
 # ticket's run through plan (with plan's code lookups, #118), applies the change
 # (two lines of context, so a newer CHANGELOG still takes it) and builds, and
@@ -42,6 +43,9 @@ make_app() {
     rsync -a --delete "${repo}/workflow/" "${scratch}/pkg/workflow/"
     git clone -q "${repo}" "${app}"
     (cd "${repo}" && git ls-files -co --exclude-standard -z) | rsync -a --from0 --files-from=- "${repo}/" "${app}/"
+    comm -23 <(git -C "${app}" ls-files | sort) <(cd "${repo}" && git ls-files -co --exclude-standard | sort) \
+        | (cd "${app}" && xargs -r -d '\n' rm -f --)
+    find "${app}" -mindepth 1 -depth -type d -empty -not -path "${app}/.git/*" -delete
     (
         cd "${app}"
         git rm -rq --cached workflow .claude CLAUDE.md CONSTITUTION.md bin/gate-house-rules.php

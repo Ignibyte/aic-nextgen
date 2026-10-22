@@ -1,0 +1,2 @@
+<?php /** @var \App\Site\Component\LineList $lineList */ ?>
+<?php if ($lineList->lines === []): ?><p id="<?= $lineList->id ?>"><?= $lineList->none ?></p><?php else: ?><ul id="<?= $lineList->id ?>"><?php foreach ($lineList->lines as $line): ?><li><?= $line ?></li><?php endforeach ?></ul><?php endif ?>

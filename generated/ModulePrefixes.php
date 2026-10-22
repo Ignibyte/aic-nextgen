@@ -15,6 +15,6 @@ final readonly class ModulePrefixes
      */
     public function all(): array
     {
-        return (new AuthPrefixes())->all();
+        return (new AccountPrefixes())->all();
     }
 }
