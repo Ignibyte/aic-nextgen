@@ -8,6 +8,7 @@
         "ext-pdo": "*",
         "ext-pdo_sqlite": "*",
         "aic/framework": "0.1.x-dev",
+        "nikic/php-parser": "^5.9",
         "psr/clock": "^1.0"
     },
     "minimum-stability": "stable",

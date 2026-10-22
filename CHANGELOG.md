@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The code index** (#106, part 7 of #91, first half). An agent asks AIC's own code before it plans, and the run keeps a record of what it asked.
+  - **The index:** php-parser over every file git lists (and an app's installed framework), plus the build's surface (routes with their kinds, commands, jobs, modules with their requires and exports), in `var/index/code.sqlite`. A refresh re-parses only what changed; this repository indexes in under a second.
+  - **The commands:** `bin/aic code:index [--full]`, `code:tree` (systems with their layers, modules with their requires, dependents and routes, or one module, system or path outlined), `code:search <text>` and `code:refs <name>` (what refers to a symbol and what it refers to, or the candidates for a short name). They need no `config/workflow.php`, and every query refreshes the index first.
+  - **The log:** while a run is open, each lookup appends a `code.queried` event (the files and scopes it showed) to the run's event log, which #102's guard walls. #118's plan check reads them.
+  - **Boundaries:** `AIC\Workflow\Parsing\` is the only Deptrac layer that may reach php-parser. gate:2 admits `nikic/php-parser` for `workflow/composer.json` alone. Both were seen to fail on plants.
+
 - **House rules** (#104, part 5 of #91). The workflow engine holds every run to the project's house rules: PHP files that judge the run's change, base against head, where the gate suite judges the tree.
   - **Declared** in `config/workflow.php` as `HouseRule`s. Each runs as its own process: `aic.house-rule/1` JSON on stdin, with base copies the engine writes so the rule runs no git. Exit 0 holds, 1 breaks, 4 defers (never a pass); a timeout, a missing file or any other exit did not run.
   - **Frozen:** `rule_files` (config/workflow.php, each rule and its probe directory, by sha256) is set at begin in run.json and `run.started`, and walled by the guard. A change holds the run (`rules`).

@@ -17,6 +17,7 @@ use function preg_match;
 use function restore_error_handler;
 use function set_error_handler;
 use function sprintf;
+use function str_ends_with;
 
 use const JSON_THROW_ON_ERROR;
 use const PHP_EOL;
@@ -43,6 +44,15 @@ final readonly class RequireAllowlistGate
         '/^psr\\//',
         '/^ext-/',
         '/^php$/',
+    ];
+
+    /**
+     * Patterns allowed in `workflow/composer.json` only (#106): `aic/workflow` is
+     * dev-only and never runs in production, and its code index parses PHP with
+     * php-parser. The runtime allow-list above is unchanged.
+     */
+    private const array WORKFLOW_PATTERNS = [
+        '/^nikic\\/php-parser$/',
     ];
 
     /**
@@ -112,7 +122,7 @@ final readonly class RequireAllowlistGate
         $violations = [];
 
         foreach (array_keys($require) as $package) {
-            if ($this->isAllowed($package)) {
+            if ($this->permitted($manifest, $package)) {
                 continue;
             }
 
@@ -120,6 +130,18 @@ final readonly class RequireAllowlistGate
         }
 
         return $violations;
+    }
+
+    /**
+     * @param string $manifest A manifest's path.
+     * @param string $package  A package it requires.
+     *
+     * @return bool Whether the allow-list admits it: the runtime list for every manifest, the workflow's for its own (#106).
+     */
+    private function permitted(string $manifest, string $package): bool
+    {
+        return $this->isAllowed($package)
+            || (str_ends_with($manifest, '/workflow/composer.json') && $this->matches($package, self::WORKFLOW_PATTERNS));
     }
 
     /**
@@ -162,10 +184,18 @@ final readonly class RequireAllowlistGate
      */
     private function isAllowed(string $package): bool
     {
-        return array_any(
-            self::ALLOWED_PATTERNS,
-            static fn (string $pattern): bool => preg_match($pattern, $package) === 1,
-        );
+        return $this->matches($package, self::ALLOWED_PATTERNS);
+    }
+
+    /**
+     * @param string       $package  A required package.
+     * @param list<string> $patterns Patterns it may match.
+     *
+     * @return bool Whether it matches one.
+     */
+    private function matches(string $package, array $patterns): bool
+    {
+        return array_any($patterns, static fn (string $pattern): bool => preg_match($pattern, $package) === 1);
     }
 
     /**

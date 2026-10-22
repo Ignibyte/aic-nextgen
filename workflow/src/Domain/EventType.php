@@ -18,4 +18,5 @@ enum EventType: string
     case RunReset = 'run.reset';
     case RunHeld = 'run.held';
     case RunResumed = 'run.resumed';
+    case CodeQueried = 'code.queried';
 }

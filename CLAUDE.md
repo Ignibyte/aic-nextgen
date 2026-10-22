@@ -85,6 +85,7 @@ runs as #100 to #106; #100: the run engine and its state, the dev-only `aic/work
 #101: the engine runs the gates itself and keeps each verdict in `var/workflow/evidence.sqlite`
 beside the subject hash of the tree it judged. #102: the guard hook holds the agent to the open run.
 #104: house rules judge each run's change, frozen at begin; the probe sweep is #119.
+#106: the code index (`bin/aic code:index|tree|search|refs`); the plan check reading it is #118.
 
 ## Five kinds
 
@@ -159,6 +160,14 @@ Background work is a job; the HTTP server's processes are its workers.
     every rule's probe (`probes`; held for the operator when one does not bite); code, check and
     complete run `rules` and one `rule:<id>` each. AIC ships `gate-suite` and `raw-html-grants`
     in `workflow/rules/`; gate:28 runs their probes.
+  - **The code index** (#106): php-parser (in `AIC\Workflow\Parsing\`, the only Deptrac layer
+    that reaches it) over every file git lists (and an app's `vendor/aic/framework/src`), plus the
+    build's surface (routes, commands, jobs, modules), in `var/index/code.sqlite`. A refresh
+    re-parses only what changed, and every query refreshes first. `bin/aic code:index [--full]`,
+    `code:tree [<module|System|path>]`, `code:search <text>` and `code:refs <name>` need no
+    `config/workflow.php`. While a run is open, each lookup appends `code.queried` (the files and
+    scopes it showed) to the run's event log, which the guard walls. gate:2 admits
+    `nikic/php-parser` for `workflow/composer.json` only.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 - **Modules** (#90, #92, #93): `modules/<name>/<name>.module.php` returns a fluent
   `AIC\Module\Contracts\ModuleManifest`, naming only what the module has:

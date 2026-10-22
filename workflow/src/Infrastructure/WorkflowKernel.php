@@ -33,7 +33,7 @@ final readonly class WorkflowKernel implements WorkflowContext
     }
 
     /**
-     * @return array<string, Command> The workflow's commands, by name.
+     * @return array<string, Command> The workflow's commands, by name, the code index's among them (#106).
      */
     public function commands(): array
     {
@@ -41,6 +41,7 @@ final readonly class WorkflowKernel implements WorkflowContext
             'workflow:reset' => new WorkflowResetCommand($this),
             'workflow:run' => new WorkflowRunCommand($this),
             'workflow:status' => new WorkflowStatusCommand($this),
+            ...(new CodeKernel($this->root))->commands(),
         ];
     }
 

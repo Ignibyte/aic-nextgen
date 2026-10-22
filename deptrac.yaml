@@ -86,6 +86,12 @@ deptrac:
       collectors:
         - type: classLike
           value: '^Gates\\Templates\\'
+    # The workflow's code index reads PHP with php-parser (#106); only this
+    # layer reaches it.
+    - name: WorkflowParsing
+      collectors:
+        - type: classLike
+          value: '^AIC\\Workflow\\Parsing\\'
     # gate:27, the RawHtml count (#99).
     - name: RawHtmlGate
       collectors:
@@ -136,6 +142,7 @@ deptrac:
       - Attribute
       - Application
       - PsrVendor
+      - WorkflowParsing
     # The app builds on the framework's seams, never on its Infrastructure.
     App:
       - Contracts
@@ -162,6 +169,11 @@ deptrac:
       - Application
       - PhpParserVendor
       - PhpDocParserVendor
+    WorkflowParsing:
+      - Domain
+      - Exception
+      - PsrVendor
+      - PhpParserVendor
     RawHtmlGate:
       - Contracts
       - Domain

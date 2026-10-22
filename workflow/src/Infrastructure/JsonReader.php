@@ -160,6 +160,31 @@ final readonly class JsonReader
     }
 
     /**
+     * @param string $key A key.
+     *
+     * @throws WorkflowRefusal When it is missing or not a list of strings.
+     *
+     * @return list<string> Its value.
+     */
+    public function strings(string $key): array
+    {
+        $value = get_object_vars($this->object)[$key] ?? null;
+        $strings = [];
+
+        if (!is_array($value)) {
+            throw $this->wrong($key, 'a list of strings');
+        }
+
+        foreach ($value as $item) {
+            $strings[] = is_string($item)
+                ? $item
+                : throw $this->wrong($key, 'a list of strings');
+        }
+
+        return $strings;
+    }
+
+    /**
      * @return list<string> Its keys, in order.
      */
     public function keys(): array

@@ -6,6 +6,7 @@ namespace AIC\Workflow\Infrastructure;
 
 use AIC\Workflow\Application\RunHost;
 use AIC\Workflow\Application\SurfaceSource;
+use AIC\Workflow\Domain\CodeModule;
 use AIC\Workflow\Domain\SurfaceEntry;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
@@ -62,6 +63,44 @@ final readonly class SurfaceEntries implements SurfaceSource
         }
 
         return $this->read(new JsonReader($document, self::PATH));
+    }
+
+    /**
+     * @throws WorkflowRefusal When the file is there and is not a surface manifest.
+     *
+     * @return list<CodeModule> Its modules as the last build wrote them (#106); none when there is no file.
+     */
+    public function modules(): array
+    {
+        $text = $this->now();
+        $modules = [];
+
+        foreach ($text === null ? [] : $this->manifestReader($text)->objects('modules') as $module) {
+            $modules[] = new CodeModule(
+                $module->string('name'),
+                $module->string('namespace'),
+                $module->strings('requires'),
+                $module->strings('exports'),
+            );
+        }
+
+        return $modules;
+    }
+
+    /**
+     * @param string $text The manifest's text.
+     *
+     * @throws WorkflowRefusal When it is not a JSON object.
+     *
+     * @return JsonReader A reader over it.
+     */
+    private function manifestReader(string $text): JsonReader
+    {
+        $document = json_decode($text);
+
+        return $document instanceof stdClass
+            ? new JsonReader($document, self::PATH)
+            : throw new WorkflowRefusal(self::PATH . ' is not a JSON object.');
     }
 
     /**
