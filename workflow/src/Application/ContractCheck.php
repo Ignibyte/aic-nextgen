@@ -114,7 +114,7 @@ final readonly class ContractCheck implements PhaseCheck
             : $this->specFile->contract($text)->problems();
 
         return $gates === []
-            ? [...$problems, 'the project has no gate:N scripts in composer.json.']
+            ? [...$problems, 'vendor/bin/aic-gate --numbers names no gate: require aic/gates for development (#116).']
             : $problems;
     }
 }

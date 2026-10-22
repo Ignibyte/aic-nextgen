@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<!-- gate:13's issue handlers (aic/gates, #116), XIncluded by a project's psalm.xml. -->
+<issueHandlers xmlns="https://getpsalm.org/schema/config">
+    <ForbiddenCode errorLevel="error"/>
+</issueHandlers>

@@ -11,33 +11,9 @@
         "psr/http-server-handler": "^1.0"
     },
     "require-dev": {
+        "aic/gates": "0.1.x-dev",
         "aic/workflow": "0.1.x-dev",
-        "captainhook/captainhook": "^5.24",
-        "captainhook/hook-installer": "^1.0",
-        "deptrac/deptrac": "^4.6",
-        "ergebnis/composer-normalize": "^2.45",
-        "ergebnis/phpstan-rules": "^2.13",
-        "icanhazstring/composer-unused": "^0.9",
-        "laravel/pint": "^1.18",
-        "nikic/php-parser": "^5.9",
-        "phpat/phpat": "^0.12.0",
-        "phpmd/phpmd": "^2.15",
-        "phpstan/extension-installer": "^1.4",
-        "phpstan/phpdoc-parser": "^2.3",
-        "phpstan/phpstan": "^2.1",
-        "phpstan/phpstan-deprecation-rules": "^2.0",
-        "phpstan/phpstan-strict-rules": "^2.0",
-        "rector/rector": "^2.0",
-        "roave/security-advisories": "dev-latest",
-        "shipmonk/dead-code-detector": "^1.4",
-        "shipmonk/phpstan-rules": "^4.0",
-        "slevomat/coding-standard": "^8.15",
-        "spaze/phpstan-disallowed-calls": "^4.11",
-        "squizlabs/php_codesniffer": "^3.10",
-        "systemsdk/phpcpd": "^9.0",
-        "tomasvotruba/cognitive-complexity": "^1.0",
-        "tomasvotruba/type-coverage": "^2.0",
-        "vimeo/psalm": "^6.0"
+        "roave/security-advisories": "dev-latest"
     },
     "repositories": [
         {
@@ -47,6 +23,16 @@
                 "symlink": true,
                 "versions": {
                     "aic/framework": "0.1.x-dev"
+                }
+            }
+        },
+        {
+            "type": "path",
+            "url": "gates",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "aic/gates": "0.1.x-dev"
                 }
             }
         },
@@ -71,12 +57,6 @@
             "App\\Site\\": "modules/site/src/"
         }
     },
-    "autoload-dev": {
-        "psr-4": {
-            "Gates\\": "gates/src/",
-            "Gates\\Architecture\\": "gates/architecture/"
-        }
-    },
     "config": {
         "allow-plugins": {
             "captainhook/hook-installer": true,
@@ -94,76 +74,49 @@
         }
     },
     "scripts": {
-        "build": "@php bin/aic-build",
-        "gate": "bash bin/gate-runner.sh",
-        "gate:0": "@php bin/gate-composer-audit.php",
-        "gate:1": "@php bin/gate-normalize-all.php",
-        "gate:10": "vendor/bin/phpmd framework/src,modules,generated,gates,workflow/src,workflow/rules text phpmd.xml --strict --exclude '*/modules/*/templates/*'",
-        "gate:11": "vendor/bin/phpcs --standard=phpcs.xml.dist",
-        "gate:12": "vendor/bin/deptrac analyse --no-progress --fail-on-uncovered",
-        "gate:13": "vendor/bin/psalm --no-progress --show-info=true --no-cache --no-diff",
-        "gate:14": "@php bin/gate-deduplicator.php",
-        "gate:15": "@php bin/gate-semgrep.php",
-        "gate:16": "@php bin/gate-no-dynamic-require.php",
-        "gate:17": "@php bin/gate-gitleaks.php",
-        "gate:18": "@php bin/gate-shellcheck.php",
-        "gate:19": "@php bin/gate-doc-todos.php",
-        "gate:2": "@php bin/gate-require-allowlist.php",
-        "gate:20": "@php bin/gate-captainhook.php",
-        "gate:21": "@php bin/gate-native.php",
-        "gate:22": "@php bin/gate-pipeline-spec-sync.php",
-        "gate:23": "@php bin/gate-native-site.php",
-        "gate:24": "@php bin/aic-build --check",
-        "gate:25": "@php bin/gate-templates.php",
-        "gate:26": "@php bin/gate-modules.php",
-        "gate:27": "@php bin/gate-raw-html.php",
-        "gate:28": "@php bin/gate-house-rules.php",
-        "gate:29": "@php bin/gate-architecture-docs.php",
-        "gate:3": "@php bin/gate-require-checker.php",
-        "gate:4": "@php bin/gate-composer-unused.php",
-        "gate:5": "@php bin/gate-no-baselines.php",
-        "gate:6": "vendor/bin/pint --test --config=pint.json",
-        "gate:7": "vendor/bin/rector process --dry-run --no-progress-bar",
-        "gate:8": "vendor/bin/phpstan analyse --no-progress --memory-limit=2G --configuration=phpstan.neon",
-        "gate:9": "vendor/bin/phpstan analyse --no-progress --memory-limit=2G --configuration=phpstan-architecture.neon",
+        "build": "aic-build",
+        "gate": [
+            "Composer\\Config::disableProcessTimeout",
+            "aic-gate"
+        ],
+        "gate:0": "aic-gate 0",
+        "gate:1": "aic-gate 1",
+        "gate:10": "aic-gate 10",
+        "gate:11": "aic-gate 11",
+        "gate:12": "aic-gate 12",
+        "gate:13": "aic-gate 13",
+        "gate:14": "aic-gate 14",
+        "gate:15": "aic-gate 15",
+        "gate:16": "aic-gate 16",
+        "gate:17": "aic-gate 17",
+        "gate:18": "aic-gate 18",
+        "gate:19": "aic-gate 19",
+        "gate:2": "aic-gate 2",
+        "gate:20": "aic-gate 20",
+        "gate:21": "aic-gate 21",
+        "gate:22": "aic-gate 22",
+        "gate:23": "aic-gate 23",
+        "gate:24": "aic-gate 24",
+        "gate:25": "aic-gate 25",
+        "gate:26": "aic-gate 26",
+        "gate:27": "aic-gate 27",
+        "gate:28": "aic-gate 28",
+        "gate:29": "aic-gate 29",
+        "gate:3": "aic-gate 3",
+        "gate:4": "aic-gate 4",
+        "gate:5": "aic-gate 5",
+        "gate:6": "aic-gate 6",
+        "gate:7": "aic-gate 7",
+        "gate:8": "aic-gate 8",
+        "gate:9": "aic-gate 9",
         "native:serve": [
             "Composer\\Config::disableProcessTimeout",
-            "@php bin/gate-native-site.php serve"
+            "aic-gate serve"
         ]
     },
     "scripts-descriptions": {
         "build": "Write the build-time outputs: the generated wiring, build/surface.json, each component template's class, public/assets/ (the modules' CSS and the theme in aic.css, the modules' other assets copied), and the code wiki in docs/wiki/.",
-        "gate": "Run every quality gate and print one gate-summary line (bin/gate-runner.sh).",
-        "gate:0": "composer audit: no known security advisories in the locked dependencies.",
-        "gate:1": "composer-normalize: the root and framework manifests are in canonical order.",
-        "gate:10": "PHPMD: every ruleset, at the limits in phpmd.xml.",
-        "gate:11": "PHPCS: PSR-12 plus slevomat.",
-        "gate:12": "Deptrac: the layer ladder inside each system.",
-        "gate:13": "Psalm level 1 with taint analysis.",
-        "gate:14": "phpcpd: no copy-paste (min 4 lines, 50 tokens).",
-        "gate:15": "semgrep: the AIC ruleset in semgrep.yml.",
-        "gate:16": "No runtime-dynamic require or include in runtime code.",
-        "gate:17": "gitleaks: no secrets in the history.",
-        "gate:18": "shellcheck: every shell script, at warning level.",
-        "gate:19": "Documentation: no TODO markers, no dead relative links.",
-        "gate:2": "Runtime require allow-list: php, ext-*, psr/* and aic/framework only.",
-        "gate:20": "captainhook: the git hooks are installed.",
-        "gate:21": "Native: every runtime class compiles, links, runs and matches PHP under elephc.",
-        "gate:22": "Pipeline docs: frontmatter, line caps and internal links of the pipeline docs and phase commands.",
-        "gate:23": "Native site: the app compiled with elephc --web answers every step as the interpreted app does.",
-        "gate:24": "Build outputs: the generated wiring, build/surface.json, the template classes, public/assets/ and the code wiki in docs/wiki/ match what composer run build writes; an orphan there is stale.",
-        "gate:25": "Templates: every component template (*.html.php) uses only the plain PHP template grammar; deny by default.",
-        "gate:26": "Module boundaries: kind folders, the 15-file cap, exports and requires, no require cycles, nothing outside modules/ but the shell.",
-        "gate:27": "RawHtml, counted: every use listed and held to its grant in config/raw-html.php; RawHtml:: only in the Renderer.",
-        "gate:28": "House rules: every rule the workflow ships bites on its own probe, its held cases passing and its broken ones failing.",
-        "gate:29": "Architecture docs: framework/docs/ states the gates, kinds, folders, namespaces, declarations and names the code has, its anchors resolve, and its prose passes no-ai-slop's mechanical check.",
-        "gate:3": "Require-checker: every symbol the runtime code uses comes from a declared require.",
-        "gate:4": "composer-unused: no required package goes unused.",
-        "gate:5": "No baselines, no suppressions.",
-        "gate:6": "Pint: code style.",
-        "gate:7": "Rector: no pending PHP 8.5 refactors (dry run).",
-        "gate:8": "PHPStan level 10, bleeding edge, with the strict rule sets.",
-        "gate:9": "phpat: the architecture rules in gates/architecture.",
+        "gate": "Run every quality gate (aic/gates, vendor/bin/aic-gate) and print one gate-summary line; aic-gate --list names each, and composer run gate:N or aic-gate N runs one.",
         "native:serve": "Build the compiled site and serve it on 127.0.0.1:8090 (or the given port) until interrupted."
     }
 }

@@ -24,10 +24,12 @@ final readonly class GitleaksGate
 {
     /**
      * @param ExternalTool $externalTool Locates and runs the tool binary.
+     * @param string       $package      aic/gates' directory: its base configs and elephc pins (#116).
      * @param string       $home         Resolved HOME-env value (read at the wrapper boundary, never inside the class).
      */
     public function __construct(
         private ExternalTool $externalTool,
+        private string $package,
         private string $home = '',
     ) {
     }
@@ -66,7 +68,7 @@ final readonly class GitleaksGate
             $bin,
             'detect',
             '--source=' . $root,
-            '--config=' . $root . '/.gitleaks.toml',
+            '--config=' . $this->package . '/config/gitleaks.toml',
             '--redact',
             '--no-banner',
             '--exit-code=1',
@@ -79,7 +81,7 @@ final readonly class GitleaksGate
     private function renderMissingBinary(): string
     {
         return sprintf(
-            'gate:17 — gitleaks binary not found.%sInstall via: bin/install-tools.sh, or pin a version under ./tools/gitleaks%s',
+            'gate:17 — gitleaks binary not found.%sInstall via: vendor/bin/aic-gate tools, or pin a version under ./tools/gitleaks%s',
             PHP_EOL,
             PHP_EOL,
         );

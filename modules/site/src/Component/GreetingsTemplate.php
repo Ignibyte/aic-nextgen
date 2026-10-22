@@ -7,7 +7,7 @@ namespace App\Site\Component;
 use AIC\Component\Domain\RendersMarkup;
 
 /**
- * Greetings's markup, compiled from Greetings.html.php by bin/aic-build (#97, #98):
+ * Greetings's markup, compiled from Greetings.html.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class GreetingsTemplate

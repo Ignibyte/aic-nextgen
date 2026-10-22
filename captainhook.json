@@ -23,7 +23,7 @@
     "post-merge": {
         "enabled": true,
         "actions": [
-            { "action": "bash bin/install-tools.sh" }
+            { "action": "vendor/bin/aic-gate tools" }
         ]
     }
 }

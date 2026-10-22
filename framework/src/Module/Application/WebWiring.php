@@ -11,7 +11,7 @@ use AIC\Schedule\Domain\Schedule;
 
 /**
  * What the app kernel always takes from the generated wiring (#93): the
- * modules' routes, schedules and protected prefixes. `bin/aic-build` writes the
+ * modules' routes, schedules and protected prefixes. `aic-build` writes the
  * one implementation, `App\Generated\WebModules`, which also implements
  * `PluginWiring`, `HandlerWiring` and `MiddlewareWiring` when some module has
  * plugins, routes or middleware.

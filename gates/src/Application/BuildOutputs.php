@@ -18,7 +18,7 @@ use function substr;
 use const ARRAY_FILTER_USE_BOTH;
 
 /**
- * Compares the build's outputs with the committed files (`bin/aic-build`,
+ * Compares the build's outputs with the committed files (`aic-build`,
  * gate:24): which differ, which a generated directory holds that no output
  * writes, and how to name them in a message.
  */

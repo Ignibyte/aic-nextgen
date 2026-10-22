@@ -5,10 +5,10 @@
 #
 # In a pipeline session, blocks Stop while the changed code fails:
 #
-#   1. PHPMD (phpmd.xml) on the changed PHP files under framework/src, app, gates
+#   1. PHPMD (aic/gates' config/phpmd.xml, #116) on the changed PHP files under framework/src, app, gates
 #   2. Deptrac over the whole tree, when PHP changed
 #   3. composer-unused (gate:4, deferring while modules/ holds no PHP file), when composer.json changed
-#   4. semgrep (semgrep.yml), when PHP changed
+#   4. semgrep (aic/gates' config/semgrep.yml), when PHP changed
 #   5. dangerous patterns in changed runtime code (framework/src, app, public):
 #      shell execution, eval, unserialize without allowed_classes, hardcoded
 #      credentials. The gate tooling under gates/ shells out by design.
@@ -76,7 +76,7 @@ if [ ${#PHP_FILES[@]} -gt 0 ]; then
         esac
     done
     if [ -x vendor/bin/phpmd ] && [ ${#PHPMD_FILES[@]} -gt 0 ]; then
-        PHPMD_OUTPUT=$(vendor/bin/phpmd "$(IFS=,; echo "${PHPMD_FILES[*]}")" text phpmd.xml 2>&1) || \
+        PHPMD_OUTPUT=$(vendor/bin/phpmd "$(IFS=,; echo "${PHPMD_FILES[*]}")" text vendor/aic/gates/config/phpmd.xml 2>&1) || \
             VIOLATIONS+=("PHPMD:
 $PHPMD_OUTPUT")
     fi
@@ -92,12 +92,12 @@ $(echo "$DEPTRAC_OUTPUT" | tail -20)")
     # The repo root is the target and each changed file an --include: a rule's
     # anchored paths ("/bin/**") match only relative to the scan root, so
     # passing the files as targets ignored them and reported what gate:15 does not.
-    if command -v semgrep &>/dev/null && [ -f semgrep.yml ]; then
+    if command -v semgrep &>/dev/null && [ -f vendor/aic/gates/config/semgrep.yml ]; then
         SEMGREP_INCLUDES=()
         for file in "${PHP_FILES[@]}"; do
             SEMGREP_INCLUDES+=("--include=${file}")
         done
-        SEMGREP_OUTPUT=$(semgrep scan --config semgrep.yml --quiet --error --metrics=off "${SEMGREP_INCLUDES[@]}" . 2>&1) || \
+        SEMGREP_OUTPUT=$(semgrep scan --config vendor/aic/gates/config/semgrep.yml --quiet --error --metrics=off "${SEMGREP_INCLUDES[@]}" . 2>&1) || \
             VIOLATIONS+=("SEMGREP:
 $SEMGREP_OUTPUT")
     fi
@@ -130,8 +130,8 @@ $PHPCPD_OUTPUT")
 fi
 
 # --- 3. composer-unused ---
-if [ -n "$COMPOSER_CHANGED" ] && [ -f bin/gate-composer-unused.php ]; then
-    UNUSED_OUTPUT=$(php bin/gate-composer-unused.php 2>&1) || \
+if [ -n "$COMPOSER_CHANGED" ] && [ -x vendor/bin/aic-gate ]; then
+    UNUSED_OUTPUT=$(vendor/bin/aic-gate 4 2>&1) || \
         VIOLATIONS+=("COMPOSER-UNUSED:
 $UNUSED_OUTPUT")
 fi

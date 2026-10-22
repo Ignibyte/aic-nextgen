@@ -7,7 +7,7 @@ namespace App\Note\Component;
 use AIC\Component\Application\RenderPass;
 
 /**
- * StockLinks's markup, compiled from StockLinks.html.php by bin/aic-build (#97, #98):
+ * StockLinks's markup, compiled from StockLinks.html.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class StockLinksTemplate

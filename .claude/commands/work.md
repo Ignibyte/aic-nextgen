@@ -37,7 +37,7 @@ jq -r '.hooks | to_entries[] | .key + ": " + ([.value[].hooks[].command | sub(".
 curl -s -o /dev/null -w '%{http_code}\n' https://aic-nextgen.ddev.site:8843/
 ```
 
-Missing `docs/planning`: STOP. The pipeline docs and tickets live there; clone `Ignibyte/aic-planning` into it. Missing PHP tools: `composer install`. Missing external tools: `bash bin/install-tools.sh`. Missing `.mcp.json`: ask Chad; never write it.
+Missing `docs/planning`: STOP. The pipeline docs and tickets live there; clone `Ignibyte/aic-planning` into it. Missing PHP tools: `composer install`. Missing external tools: `vendor/bin/aic-gate tools`. Missing `.mcp.json`: ask Chad; never write it.
 
 ## Step 4: Active pipeline
 

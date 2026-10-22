@@ -1,0 +1,24 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+ * vendor/bin/aic-gate (#116): the gate suite of aic/gates. With no argument it
+ * runs every gate and ends with one gate-summary line; `aic-gate <N>` runs one
+ * gate; `--numbers` and `--list` name them; `tools` installs gitleaks, semgrep
+ * and shellcheck; `serve [port]` serves the compiled site. Run it in the
+ * project's root, as composer's scripts do.
+ */
+
+use Gates\Application\GateCommand;
+use Gates\Application\GateSuite;
+use Gates\Infrastructure\GatesPackage;
+use Gates\Infrastructure\ProjectRoot;
+
+require __DIR__ . '/project.php';
+
+$root = (new ProjectRoot())->path();
+$package = (new GatesPackage())->path();
+
+exit((new GateCommand(new GateSuite($root, $package), $root, $package))->run(array_slice($argv ?? [], 1)));

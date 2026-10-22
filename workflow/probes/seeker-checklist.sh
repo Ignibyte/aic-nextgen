@@ -48,8 +48,8 @@ make_app() {
     find "${app}" -mindepth 1 -depth -type d -empty -not -path "${app}/.git/*" -delete
     (
         cd "${app}"
-        git rm -rq --cached workflow .claude CLAUDE.md CONSTITUTION.md bin/gate-house-rules.php
-        rm -rf workflow .claude CLAUDE.md CONSTITUTION.md bin/gate-house-rules.php
+        git rm -rq --cached workflow .claude CLAUDE.md CONSTITUTION.md
+        rm -rf workflow .claude CLAUDE.md CONSTITUTION.md
         cp -a "${repo}/vendor" "${repo}/tools" .
         ln -sfn "${scratch}/pkg/workflow" vendor/aic/workflow
         php "${probes}/probe.php" strip "${scratch}/pkg"

@@ -13,7 +13,7 @@ rm -f .phpcs-cache && vendor/bin/phpstan clear-result-cache -q
 composer run gate > "$TMPDIR/gate.log" 2>&1     # Bash run_in_background; about 20 seconds
 ```
 
-The suite runs on the host (no DDEV, no database). Read the log once, after it finishes (CONSTITUTION.md §18.1). `bin/gate-runner.sh` runs every gate even after a failure and ends with one line:
+The suite runs on the host (no DDEV, no database). Read the log once, after it finishes (CONSTITUTION.md §18.1). aic/gates' runner (`vendor/bin/aic-gate`) runs every gate even after a failure and ends with one line:
 
 - `gate-summary: N passed, D deferred (…). …` with no `failed` clause: green. Each deferral names its gate and reason.
 - `gate-summary: … K failed (gate:a,gate:b).`: red, and every failing gate is named.

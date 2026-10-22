@@ -138,7 +138,7 @@ final readonly class TemplateCompiler
                 . " The pass that writes its children.\n" : '');
 
         return "/**\n * " . $component . "'s markup, compiled from " . $component
-            . ".html.php by bin/aic-build (#97, #98):\n * edit the template and run composer run build, never this file.\n */\n"
+            . ".html.php by composer run build (#97, #98):\n * edit the template and run composer run build, never this file.\n */\n"
             . 'final readonly class ' . $component . "Template\n{\n"
             . (str_contains($parts, 'self::text(') ? "    use RendersMarkup;\n\n" : '')
             . "    /**\n" . $docblock . "     *\n     * @return string Its markup.\n     */\n"

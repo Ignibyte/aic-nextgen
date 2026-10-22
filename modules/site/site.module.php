@@ -7,7 +7,7 @@ declare(strict_types=1);
  * every page renders in, the home page, the status and health APIs, file
  * downloads and assets, the tick stream and its page, the greeting pages and
  * their greeters, the jobs and notifications pages with the demo job and its
- * schedule, the site's blocks, db:ping and greet. bin/aic-build reads it;
+ * schedule, the site's blocks, db:ping and greet. The build reads it;
  * nothing reads it at run time.
  */
 

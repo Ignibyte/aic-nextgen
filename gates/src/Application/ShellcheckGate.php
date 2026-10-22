@@ -101,7 +101,7 @@ final readonly class ShellcheckGate
     {
         $scripts = [];
 
-        foreach (['.claude/hooks', 'bin', 'workflow/bin', 'workflow/probes'] as $dir) {
+        foreach (['.claude/hooks', 'bin', 'gates/bin', 'workflow/bin', 'workflow/probes'] as $dir) {
             $iterator = new GlobIterator($root . '/' . $dir . '/*.sh', GlobIterator::CURRENT_AS_PATHNAME | FilesystemIterator::SKIP_DOTS);
 
             foreach ($iterator as $match) {

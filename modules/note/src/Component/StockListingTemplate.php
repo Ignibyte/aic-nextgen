@@ -7,7 +7,7 @@ namespace App\Note\Component;
 use AIC\Component\Domain\RendersMarkup;
 
 /**
- * StockListing's markup, compiled from StockListing.html.php by bin/aic-build (#97, #98):
+ * StockListing's markup, compiled from StockListing.html.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class StockListingTemplate

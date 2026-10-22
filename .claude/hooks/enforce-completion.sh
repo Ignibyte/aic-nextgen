@@ -67,7 +67,7 @@ ticket_op_ran() {
 }
 
 ran_full_gate() {
-    grep -qE 'composer run gate($|[^:])|bin/gate-runner\.sh' <<< "$BASH_COMMANDS"
+    grep -qE 'composer run gate($|[^:])|gate-runner\.sh|vendor/bin/aic-gate *($|[;&|])' <<< "$BASH_COMMANDS"
 }
 
 notes_has_aar() {

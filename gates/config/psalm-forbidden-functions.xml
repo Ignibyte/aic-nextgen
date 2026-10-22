@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+    forbiddenFunctions — Psalm second-opinion check; pairs with the
+    spaze/phpstan-disallowed-calls config in phpstan.neon. If PHPStan ever
+    fails to fire on one of these (e.g. a future version drops a rule),
+    Psalm catches it at gate:13.
+-->
+<forbiddenFunctions xmlns="https://getpsalm.org/schema/config">
+    <function name="var_dump"/>
+    <function name="print_r"/>
+    <function name="dump"/>
+    <function name="dd"/>
+    <function name="eval"/>
+    <function name="extract"/>
+    <function name="compact"/>
+    <function name="getenv"/>
+</forbiddenFunctions>

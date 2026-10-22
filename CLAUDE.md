@@ -107,7 +107,8 @@ included) or under `vendor/`; only `/dev/` is open outside.
 #105: `bin/aic workflow:init` installs the workflow in an app (`workflow/pack/`); it refuses here.
 #103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist;
 #127 made it one advisory pass at code, on the diff plus one hop. #126 (part A): the root is a
-three-module fixture app; a module's handlers build in parts that fit (`HandlerParts`). #117: modes and holds (agentic or interactive, `workflow:ask` and the
+three-module fixture app; a module's handlers build in parts that fit (`HandlerParts`). #116 (part 1):
+the gate suite is the dev package `aic/gates`, run by `vendor/bin/aic-gate`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 
 ## Five kinds
@@ -293,8 +294,10 @@ or was split off, what to check by hand.
 `composer run gate` runs every gate on the host (no DDEV), about 15 seconds, and ends with one
 `gate-summary:` line, after one `gate-result: gate:N passed|deferred|failed` line per gate, which
 the workflow engine reads (#101). AIC's own tickets still run the suite in Phase 3. **No baselines. No suppressions. Source fixes only.** The runner
-(`bin/gate-runner.sh`) runs each `gate:N` script in `composer.json` and keeps going after a
-failure, so one run names every failing gate. A gate that cannot run in full yet *defers* and
+(aic/gates' `gate-runner.sh`, #116) runs every gate of the suite (`vendor/bin/aic-gate --numbers`,
+from `Gates\Application\GateSuite`), each as `aic-gate N`, and keeps going after a failure, so one
+run names every failing gate. Each `gate:N` script in `composer.json` is the one-line alias
+`aic-gate N`, and `vendor/bin/aic-gate --list` names each gate with its scope. A gate that cannot run in full yet *defers* and
 says why; the summary names each deferral, and a deferral is not coverage.
 
 The settings of each gate are in `CONSTITUTION.md` §0.
@@ -305,7 +308,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | 1 | composer-normalize | 12 | Deptrac, the layer ladder per system |
 | 2 | runtime require allow-list | 13 | Psalm level 1, taint analysis |
 | 3 | require-checker | 14 | phpcpd (copy-paste) |
-| 4 | composer-unused | 15 | semgrep, `semgrep.yml` |
+| 4 | composer-unused | 15 | semgrep, `gates/config/semgrep.yml` |
 | 5 | no baselines, no suppressions | 16 | no runtime-dynamic require |
 | 6 | Pint | 17 | gitleaks |
 | 7 | Rector (dry run) | 18 | shellcheck |
@@ -321,8 +324,15 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | | | 28 | house rules: every shipped rule bites on its probe |
 | | | 29 | architecture docs: `framework/docs/` states what the code has |
 
-- The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
-  `App\`; a phpat rule keeps runtime code from depending on it.
+- The gate code is the dev-only package `aic/gates` in `gates/` (#116; namespace `Gates\`,
+  outside `AIC\` and `App\`), required by path like `aic/workflow`; a phpat rule keeps runtime
+  code from depending on it. It holds the code (`src/`, `architecture/`), the entries, the build,
+  the runner and the tool installer (`bin/`, every entry rooted at the working directory), the
+  base configs (`config/`) and the elephc pins (`native/`). AIC's root `phpstan.neon`,
+  `phpstan-architecture.neon`, `psalm.xml`, `deptrac.yaml`, `phpcs.xml.dist` and `rector.php`
+  include their bases and name AIC's paths; `pint.json` and `captainhook.json` stay whole at the
+  root (CaptainHook resolves paths against its config's directory). App profiles, stubs,
+  `aic-gate init` and gate:30 are #130.
 - phpat runs only rule classes registered with the `phpat.test` tag in
   `phpstan-architecture.neon`; a rule class that is not listed never runs. AIC's own PHPStan rules
   live in `gates/src/PhpStan` and are listed under `rules:` in `phpstan.neon`.
@@ -333,9 +343,9 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 - gate:21 probes each class under `framework/src`, `modules` and `generated` on its own: its class-graph closure,
   compiled with the fork's elephc in place (`/srv/stacks/elephc/target/release/elephc`;
   `ELEPHC_BIN` overrides), run, and compared with host PHP. Work files land in `.native-gate/`
-  (gitignored); pcre2 and oniguruma are pinned in `gates/native/elephc.{toml,lock}`. Everything
+  (gitignored); pcre2 and oniguruma are pinned in aic/gates' `native/elephc.{toml,lock}`. Everything
   outside those roots runs interpreted by design.
-- gate:25 (`bin/gate-templates.php`, #96) parses each `*.html.php` under `modules/` and
+- gate:25 (`gates/bin/gate-templates.php`, #96) parses each `*.html.php` under `modules/` and
   `templates/` with php-parser (`Gates\Templates\`), deny by default.
   - **Allowed:** inline HTML; `<?= one expression ?>`; `if`, `switch`, `for` and `foreach` in
     the alternative syntax; `match`; `break` and `continue`; the component variable (from the
@@ -349,7 +359,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   - **The class tools skip templates,** by Chad's decision, and so do the Stop hooks. A tool
     handed a template by explicit path ignores its excludes (Pint and phpcbf then rewrite it),
     so never pass a template to a fixer.
-- gate:26 (`bin/gate-modules.php`, #94) reads the manifests and `git ls-files -co
+- gate:26 (`gates/bin/gate-modules.php`, #94) reads the manifests and `git ls-files -co
   --exclude-standard`. A class's kind (`Gates\Domain\ClassKinds`, shared with the surface
   manifest) decides its folder: Page, Api and Stream in `src/Controller/`, then `Command/`,
   `Job/`, `Block/`, `Component/` (with the generated templates), `Notification/`, `Middleware/`,
@@ -364,18 +374,18 @@ The settings of each gate are in `CONSTITUTION.md` §0.
     response, so helpers go to `src/Service/`.
   - `aic.renderTreeInput` and `RenderingArchitectureTest`: `Region`, `Regions` and every
     `Layout` take components, blocks, regions, enums and scalars, never `Html`.
-- gate:27 (`bin/gate-raw-html.php`, `Gates\Rendering`, #99) lists every `new RawHtml` and holds
+- gate:27 (`gates/bin/gate-raw-html.php`, `Gates\Rendering`, #99) lists every `new RawHtml` and holds
   each module class to its grant in `config/raw-html.php` (`RawHtmlGrant`: class, exact uses,
   reason). `RawHtml::` may appear only in `Renderer` and `RenderPass`. `GATE_RAW_HTML_ROOT`
   takes a plant root.
-- gate:28 (`bin/gate-house-rules.php`, #104) runs every `workflow/rules/*.php` rule on its
+- gate:28 (`gates/bin/gate-house-rules.php`, #104) runs every `workflow/rules/*.php` rule on its
   `.probe/` cases in a temporary directory: each `held-*` must exit 0, each `broken-*` 1.
 - gate:21 caches (#110): a class whose closure files, compiler, bridge libraries, PHP, pinned
   packages and probe program are unchanged since its last green probe reports `CACHED`
   (`.native-gate/cache.txt`); a change reprobes only the classes whose closure holds it. Probes
   run 8 at a time under `nice -n 10`; `AIC_NATIVE_JOBS` sets the cap. A cold run takes under a
   minute, an unchanged tree under a second.
-- `bin/install-tools.sh` installs gitleaks (pinned, into `tools/`), semgrep and shellcheck;
+- `vendor/bin/aic-gate tools` installs gitleaks (pinned, into `tools/`), semgrep and shellcheck;
   `composer install` installs the git hooks (captainhook, conventional-commit subjects).
 
 ## Code conventions (binding)

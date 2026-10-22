@@ -16,7 +16,7 @@ namespace AIC\Module\Contracts;
  *
  * Each declaration is a `ModuleDeclaration`: a route, a binding, a plugin, a
  * command, a job, a schedule, a middleware, or a bare name by its section.
- * `bin/aic-build` reads every manifest and generates the wiring under
+ * `aic-build` reads every manifest and generates the wiring under
  * `generated/`; nothing reads a manifest at run time, so the app compiles
  * natively. Manifests build it; nothing in the framework does, so all of it is
  * API for them.

@@ -162,7 +162,7 @@ final class CoreArchitectureTest
             ->shouldNot()
             ->dependOn()
             ->classes(Selector::inNamespace('AIC\\Module\\Contracts'))
-            ->because('the manifests are read by bin/aic-build only; nothing at run time may read a module manifest.');
+            ->because('the manifests are read by aic-build only; nothing at run time may read a module manifest.');
     }
 
     /**

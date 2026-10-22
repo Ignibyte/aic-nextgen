@@ -27,6 +27,7 @@
     cacheDirectory=".psalm-cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
 >
     <projectFiles>
@@ -38,8 +39,9 @@
         <directory name="config"/>
         <directory name="bin"/>
         <file name="bin/aic"/>
-        <file name="bin/aic-build"/>
         <directory name="gates"/>
+        <file name="gates/bin/aic-build"/>
+        <file name="gates/bin/aic-gate"/>
         <directory name="workflow/src"/>
         <directory name="workflow/bin"/>
         <directory name="workflow/rules"/>
@@ -51,23 +53,7 @@
             <directory name=".psalm-cache"/>
         </ignoreFiles>
     </projectFiles>
-    <issueHandlers>
-        <ForbiddenCode errorLevel="error"/>
-    </issueHandlers>
-    <!--
-        forbiddenFunctions — Psalm second-opinion check; pairs with the
-        spaze/phpstan-disallowed-calls config in phpstan.neon. If PHPStan ever
-        fails to fire on one of these (e.g. a future version drops a rule),
-        Psalm catches it at gate:13.
-    -->
-    <forbiddenFunctions>
-        <function name="var_dump"/>
-        <function name="print_r"/>
-        <function name="dump"/>
-        <function name="dd"/>
-        <function name="eval"/>
-        <function name="extract"/>
-        <function name="compact"/>
-        <function name="getenv"/>
-    </forbiddenFunctions>
+    <xi:include href="vendor/aic/gates/config/psalm-issue-handlers.xml"/>
+    <!-- The issue handlers and the forbidden functions are aic/gates' (#116). -->
+    <xi:include href="vendor/aic/gates/config/psalm-forbidden-functions.xml"/>
 </psalm>

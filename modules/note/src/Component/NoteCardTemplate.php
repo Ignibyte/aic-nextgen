@@ -7,7 +7,7 @@ namespace App\Note\Component;
 use AIC\Component\Domain\RendersMarkup;
 
 /**
- * NoteCard's markup, compiled from NoteCard.html.php by bin/aic-build (#97, #98):
+ * NoteCard's markup, compiled from NoteCard.html.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class NoteCardTemplate

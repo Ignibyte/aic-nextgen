@@ -13,7 +13,7 @@ Best-practice code is the only acceptable output.
 - A failing gate is a real defect. If a tool produces a false positive, refactor the code into a shape the tool understands; do not silence the tool.
 - A gate that cannot run in full yet *defers* and says why; the summary names every deferral, and a deferral is not coverage.
 
-The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every failure in one run):
+The gates (aic/gates' runner, behind `composer run gate`, runs every gate of `Gates\Application\GateSuite` and reports every failure in one run; each `gate:N` script is the alias `aic-gate N`, #116):
 
 | # | Gate | Setting |
 |---|---|---|
@@ -32,7 +32,7 @@ The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every fai
 | 12 | Deptrac | Contracts → Domain → Application → Infrastructure per system; `--fail-on-uncovered` |
 | 13 | Psalm | errorLevel 1, taint analysis, unused code, sealed properties and methods |
 | 14 | phpcpd | no copy-paste: 4 lines, 50 tokens, fuzzy |
-| 15 | semgrep | the AIC ruleset in `semgrep.yml` (no env outside config, no static state, no singletons, no eval, no Swoole, no shell pipe into an early-exit reader, no `mixed` in phpdoc generics outside PSR overrides, …) |
+| 15 | semgrep | the AIC ruleset in `gates/config/semgrep.yml` (no env outside config, no static state, no singletons, no eval, no Swoole, no shell pipe into an early-exit reader, no `mixed` in phpdoc generics outside PSR overrides, …) |
 | 16 | no dynamic require | no runtime-dynamic `require`/`include` in `framework/src`, `modules` or `generated` |
 | 17 | gitleaks | no secrets in the history; default rules plus AIC's (Anthropic, OpenAI, Google keys) |
 | 18 | shellcheck | every shell script in `bin/` and `.claude/hooks/`, at `-S warning` |
@@ -45,7 +45,7 @@ The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every fai
 | 25 | templates | every `*.html.php` component template is plain PHP read only (#96): `<?=` and the alternative control syntax over the component and loop variables, no function, method or static call, no `new`, no assignment but a `for` counter, deny by default; the class tools skip templates (Chad, 2026-10-21); `composer run build` compiles each into its class and refuses, with file and line, a value whose static type it cannot write or a null test on a value that cannot be null (#97) |
 | 26 | module boundaries | inside a module a class's kind decides its `src/` folder; at most 15 files per folder (`src/Migration/` exempt); a module uses only classes another exports, from modules it requires; the requires name modules and form no cycle; nothing outside `modules/` but the shell (#94) |
 | 27 | raw html | every `new RawHtml`, the one way round the Renderer's escaping, is listed with its place and reason and held to its class's grant in `config/raw-html.php` (an exact count, a reason, module classes only); `RawHtml::` is named only in the Renderer. gate:8's `aic.htmlConstruction`, `aic.htmlMarkupRead`, `aic.controllerMarkupLiteral`, `aic.controllerReturnType` and `aic.renderTreeInput`, and gate:9's `RenderingArchitectureTest`, hold the rest: only the Renderer makes an `Html`, only the writer reads one, a controller carries no markup and returns its kind's response, and the render tree takes no markup (#99) |
-| 28 | house rules | every house rule the workflow ships (`workflow/rules/*.php`) bites on its own probe: each `held-*` case exits 0 and each `broken-*` case exits 1 under `bin/gate-house-rules.php`, and a rule with no held or no broken case fails (#104) |
+| 28 | house rules | every house rule the workflow ships (`workflow/rules/*.php`) bites on its own probe: each `held-*` case exits 0 and each `broken-*` case exits 1 under `gates/bin/gate-house-rules.php`, and a rule with no held or no broken case fails (#104) |
 | 29 | architecture docs | the pages in `framework/docs/`, which ship in aic/framework, state what the code has: every gate composer.json runs (and this table's rows), every entry kind and module folder, every namespace under `framework/src/` in exactly one system, every manifest declaration, every `AIC\…` name, `gate:N` and `composer run` script they cite, and every anchor they link; their prose holds no-ai-slop's banned words out and at most two em dashes a page (#107) |
 
 A new gate or rule is done only when it has been seen to fail on a planted violation.

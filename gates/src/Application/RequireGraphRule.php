@@ -13,7 +13,7 @@ use Override;
 /**
  * R4 of gate:26 (#94): the modules' requires name modules that exist and form
  * no cycle. The build's own `ModuleGraph` decides, so gate:26 and
- * `bin/aic-build` refuse the same graphs with the same words.
+ * `aic-build` refuse the same graphs with the same words.
  */
 final readonly class RequireGraphRule implements ModuleRule
 {
