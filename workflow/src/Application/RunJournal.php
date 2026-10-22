@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Workflow\Application;
 
 use AIC\Workflow\Domain\EventType;
+use AIC\Workflow\Domain\Guard\Hold;
 use AIC\Workflow\Domain\Outcome;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\PhaseReport;
@@ -154,6 +155,28 @@ final readonly class RunJournal
             'archived_to' => $archivedTo,
             'phase' => $currentPhase instanceof Phase ? $currentPhase->value : null,
         ])]);
+    }
+
+    /**
+     * @param RunState $runState The run, just held.
+     * @param Hold     $hold     What it waits on.
+     *
+     * @return list<string> Notes for what could not be logged.
+     */
+    public function held(RunState $runState, Hold $hold): array
+    {
+        return self::kept([$this->event($runState, EventType::RunHeld, $hold->toArray())]);
+    }
+
+    /**
+     * @param RunState $runState The run, just resumed.
+     * @param Hold     $hold     The hold the operator cleared.
+     *
+     * @return list<string> Notes for what could not be logged.
+     */
+    public function resumed(RunState $runState, Hold $hold): array
+    {
+        return self::kept([$this->event($runState, EventType::RunResumed, ['kind' => $hold->kind, 'phase' => $hold->phase])]);
     }
 
     /**

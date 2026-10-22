@@ -57,9 +57,9 @@ final readonly class EvidenceRecorder
     {
         return new CheckRow(
             $check,
-            CheckStatus::Failed,
+            CheckStatus::Held,
             'its verdict could not be recorded: ' . $workflowRefusal->getMessage(),
-            'make var/workflow/evidence.sqlite writable, then run bin/aic workflow:run again.',
+            'the operator makes var/workflow/evidence.sqlite writable, then runs bin/aic workflow:run.',
         );
     }
 }

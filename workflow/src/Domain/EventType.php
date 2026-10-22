@@ -16,4 +16,6 @@ enum EventType: string
     case TicketMoved = 'ticket.moved';
     case RunCompleted = 'run.completed';
     case RunReset = 'run.reset';
+    case RunHeld = 'run.held';
+    case RunResumed = 'run.resumed';
 }

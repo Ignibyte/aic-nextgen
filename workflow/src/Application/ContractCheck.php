@@ -26,7 +26,7 @@ final readonly class ContractCheck implements PhaseCheck
     /**
      * What to do when the freeze was not written.
      */
-    private const string WRITABLE = 'make var/workflow/ writable, then run bin/aic workflow:run again.';
+    private const string WRITABLE = 'the operator makes var/workflow/ writable, then runs bin/aic workflow:run.';
 
     /**
      * @param SpecFile     $specFile     Reads the spec.
@@ -87,7 +87,7 @@ final readonly class ContractCheck implements PhaseCheck
         } catch (WorkflowRefusal $workflowRefusal) {
             return new CheckRow(
                 'contract',
-                CheckStatus::Failed,
+                CheckStatus::Held,
                 'the freeze was not written: ' . $workflowRefusal->getMessage(),
                 self::WRITABLE,
             );

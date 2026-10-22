@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
+use AIC\Workflow\Application\Guard\OperatorHold;
+use AIC\Workflow\Application\RunBegin;
 use AIC\Workflow\Application\RunEngine;
 use AIC\Workflow\Application\RunJournal;
 use AIC\Workflow\Application\RunReset;
@@ -33,13 +35,24 @@ final readonly class WorkflowParts
     {
         $utcTime = new UtcTime(new SystemClock());
 
+        $localHost = new LocalHost($this->root);
+        $runJournal = $this->journal($utcTime);
+        $evidenceParts = new EvidenceParts($this->root, $this->workflowSettings);
+
         return new RunEngine(
             $this->runStore(),
-            $this->tickets($utcTime),
-            $this->journal($utcTime),
-            new LocalHost($this->root),
-            $utcTime,
+            new RunBegin(
+                $this->runStore(),
+                $this->tickets($utcTime),
+                $runJournal,
+                $localHost,
+                $utcTime,
+                $this->workflowSettings->enforcement,
+            ),
+            $runJournal,
             $this->checks()->all($utcTime),
+            new OperatorHold($this->runStore(), $runJournal, $localHost, $utcTime),
+            $evidenceParts->toolCallIngest(),
         );
     }
 

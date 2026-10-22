@@ -39,7 +39,7 @@ final readonly class ShellcheckGate
     }
 
     /**
-     * Run shellcheck against every `.sh` under `.claude/hooks/` + `bin/` and return the CLI exit code.
+     * Run shellcheck against every `.sh` under `.claude/hooks/`, `bin/` and `workflow/bin/` and return the CLI exit code.
      *
      * @param string   $root   Repo-root absolute path.
      * @param resource $stdout Stream success/preview lines are written to.
@@ -85,7 +85,7 @@ final readonly class ShellcheckGate
     }
 
     /**
-     * Collect every `.sh` under `.claude/hooks/` and `bin/`.
+     * Collect every `.sh` under `.claude/hooks/`, `bin/` and `workflow/bin/` (the guard's shim, #102).
      *
      * `GlobIterator::CURRENT_AS_PATHNAME` already yields strings, so the
      * caller does not need a `(string)` cast here — the value is fed
@@ -99,7 +99,7 @@ final readonly class ShellcheckGate
     {
         $scripts = [];
 
-        foreach (['.claude/hooks', 'bin'] as $dir) {
+        foreach (['.claude/hooks', 'bin', 'workflow/bin'] as $dir) {
             $iterator = new GlobIterator($root . '/' . $dir . '/*.sh', GlobIterator::CURRENT_AS_PATHNAME | FilesystemIterator::SKIP_DOTS);
 
             foreach ($iterator as $match) {

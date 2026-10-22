@@ -8,10 +8,12 @@ use AIC\Workflow\Application\EvidenceRecorder;
 use AIC\Workflow\Application\GateCheck;
 use AIC\Workflow\Application\GateRunner;
 use AIC\Workflow\Application\GateSummary;
+use AIC\Workflow\Application\Guard\ToolCallIngest;
 use AIC\Workflow\Application\RunSubject;
 use AIC\Workflow\Application\SpecFile;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\WorkflowSettings;
+use AIC\Workflow\Infrastructure\Guard\GuardLedgerFile;
 
 use function rtrim;
 
@@ -102,5 +104,13 @@ final readonly class EvidenceParts
             $this->runSubject(),
             $this->workflowSettings->maxGateRetries,
         );
+    }
+
+    /**
+     * @return ToolCallIngest Moves the guard's ledger into the store (#102).
+     */
+    public function toolCallIngest(): ToolCallIngest
+    {
+        return new ToolCallIngest(new GuardLedgerFile($this->root), $this->evidenceLog());
     }
 }

@@ -83,7 +83,7 @@ lookup (`generated/ModuleTemplates` and one `<M>Templates` per module), ending a
 hand-written templates; a module component with no template is refused. #91, the agent workflow,
 runs as #100 to #106; #100: the run engine and its state, the dev-only `aic/workflow` package.
 #101: the engine runs the gates itself and keeps each verdict in `var/workflow/evidence.sqlite`
-beside the subject hash of the tree it judged.
+beside the subject hash of the tree it judged. #102: the guard hook holds the agent to the open run.
 
 ## Five kinds
 
@@ -141,6 +141,15 @@ Background work is a job; the HTTP server's processes are its workers.
   - A verdict is fresh only on the tree it judged; a deferral is never a pass, and a deferred
     gate:21 or gate:23 holds complete. `maxGateRetries` failures of one check at a phase leave
     the phase to the operator.
+  - **The guard** (#102): `workflow/bin/aic-guard.sh <edit|shell|record|stop>`, wired by
+    `workflow/pack/hooks.json` (#105 installs it into an app). It refuses writes outside the
+    phase's scope (no run: the ticket directory; plan: the spec; code, check and complete: the
+    spec and the File Manifest), any write to `var/workflow/`, `config/workflow.php`, the hook
+    wiring or the package (MCP tools with a path field included), and the operator's verbs in the
+    agent's shell. It holds Stop mid-phase. A row only the operator can clear (`Held`) leaves the
+    run `awaiting` the operator, whose `workflow:run` from a terminal resumes it. Every call is a
+    line in `var/workflow/guard-calls.jsonl`, which `workflow:run` ingests into `tool_call`.
+    Levers: `enforcement` (frozen at begin) and `requireRun`, each hard, soft or off.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 - **Modules** (#90, #92, #93): `modules/<name>/<name>.module.php` returns a fluent
   `AIC\Module\Contracts\ModuleManifest`, naming only what the module has:

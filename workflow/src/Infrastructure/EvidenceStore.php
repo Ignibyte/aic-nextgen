@@ -8,6 +8,7 @@ use AIC\Workflow\Application\EvidenceLog;
 use AIC\Workflow\Domain\CheckRecord;
 use AIC\Workflow\Domain\CheckState;
 use AIC\Workflow\Domain\FrozenSpec;
+use AIC\Workflow\Domain\Guard\GuardRow;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
@@ -158,7 +159,7 @@ final readonly class EvidenceStore implements EvidenceLog
     public function browserCalls(string $runId, Phase $phase): int
     {
         $row = $this->first(
-            'SELECT COUNT(*) AS calls FROM tool_call WHERE run_id = ? AND phase = ?'
+            "SELECT COUNT(*) AS calls FROM tool_call WHERE run_id = ? AND phase = ? AND verdict <> 'refuse'"
                 . " AND (tool LIKE '%browser_%' OR tool LIKE '%playwright%')",
             [$runId, $phase->value],
         );
@@ -166,6 +167,40 @@ final readonly class EvidenceStore implements EvidenceLog
         return $row instanceof JsonReader
             ? $row->int('calls')
             : 0;
+    }
+
+    /**
+     * @param string $runId The run.
+     *
+     * @throws WorkflowRefusal When the store cannot be read.
+     *
+     * @return int The guard's rows for it the store holds.
+     */
+    #[Override]
+    public function toolCallCount(string $runId): int
+    {
+        $row = $this->first('SELECT COUNT(*) AS calls FROM tool_call WHERE run_id = ?', [$runId]);
+
+        return $row instanceof JsonReader
+            ? $row->int('calls')
+            : 0;
+    }
+
+    /**
+     * @param string         $runId The run.
+     * @param list<GuardRow> $rows  The guard's rows for it, in order.
+     *
+     * @throws WorkflowRefusal When they cannot be written.
+     */
+    #[Override]
+    public function recordToolCalls(string $runId, array $rows): void
+    {
+        foreach ($rows as $row) {
+            $this->write(
+                'INSERT INTO tool_call (run_id, phase, tool, at, hook, verdict, rule) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [$runId, $row->phase, $row->tool, $row->time, $row->hook, $row->verdict, $row->rule],
+            );
+        }
     }
 
     /**
