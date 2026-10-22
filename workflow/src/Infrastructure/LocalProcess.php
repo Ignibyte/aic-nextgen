@@ -11,6 +11,7 @@ use Override;
 use function fclose;
 use function feof;
 use function fread;
+use function fwrite;
 use function is_resource;
 use function microtime;
 use function proc_close;
@@ -22,7 +23,7 @@ use function stream_set_blocking;
 /**
  * Runs a process in the project (#101) through `proc_open` with an argument
  * list, never a shell: standard error and output are read together, in the order they come, standard input
- * is empty, the environment is the engine's, and a process that outlives its timeout is stopped and reads as
+ * is what the caller hands it (#104), the environment is the engine's, and a process that outlives its timeout is stopped and reads as
  * exit 124.
  */
 final readonly class LocalProcess implements ProcessRunner
@@ -38,18 +39,22 @@ final readonly class LocalProcess implements ProcessRunner
     /**
      * @param list<string> $argv    The program and its arguments.
      * @param int          $timeout Seconds before it is stopped.
+     * @param string       $input   What it reads on stdin.
      *
      * @return ProcessResult Its exit code and output; 127 when it could not start, 124 when it was stopped.
      */
     #[Override]
-    public function run(array $argv, int $timeout): ProcessResult
+    public function run(array $argv, int $timeout, string $input = ''): ProcessResult
     {
         $pipes = [];
-        $process = proc_open($argv, [0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, $this->root);
+        $process = proc_open($argv, [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, $this->root);
 
         if (!is_resource($process)) {
             return new ProcessResult(127, '');
         }
+
+        fwrite($pipes[0], $input);
+        fclose($pipes[0]);
 
         stream_set_blocking($pipes[1], false);
         stream_set_blocking($pipes[2], false);

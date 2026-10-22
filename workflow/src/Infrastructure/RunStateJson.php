@@ -55,6 +55,7 @@ final readonly class RunStateJson
         'notes',
         'enforcement',
         'awaiting',
+        'rule_files',
     ];
 
     /**
@@ -84,6 +85,7 @@ final readonly class RunStateJson
             'reports' => $runState->reports === []
                 ? new stdClass()
                 : array_map(static fn (PhaseReport $phaseReport): array => $phaseReport->toArray(), $runState->reports),
+            'rule_files' => $runState->runStart->ruleFiles === [] ? new stdClass() : $runState->runStart->ruleFiles,
             'run_id' => $runState->runStart->runId,
             'spec_path' => $runState->runStart->specPath,
             'started_at' => $runState->runStart->startedAt,
@@ -142,6 +144,7 @@ final readonly class RunStateJson
             $jsonReader->nullableString('base_commit'),
             $jsonReader->string('spec_path'),
             $this->runPartsJson->enforcement($jsonReader),
+            $this->runPartsJson->ruleFiles($jsonReader),
         );
         $currentPhase = $jsonReader->nullableString('current_phase');
 

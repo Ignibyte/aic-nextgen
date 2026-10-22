@@ -30,11 +30,13 @@ final readonly class WorkflowChecks
      * @param string        $root          The project's root.
      * @param EvidenceParts $evidenceParts The store, the subject and the gate.
      * @param string        $site          The rendered check's site.
+     * @param RuleParts     $ruleParts     The house rules' checks (#104).
      */
     public function __construct(
         private string $root,
         private EvidenceParts $evidenceParts,
         private string $site,
+        private RuleParts $ruleParts,
     ) {
     }
 
@@ -47,7 +49,11 @@ final readonly class WorkflowChecks
     {
         $parts = $this->evidenceParts;
         $specFile = $parts->specFile();
-        $checks = [new SpecPresentCheck($specFile), new ContractCheck($specFile, $parts->evidenceLog(), $parts->gateExecutor(), $utcTime)];
+        $checks = [
+            new SpecPresentCheck($specFile),
+            new ContractCheck($specFile, $parts->evidenceLog(), $parts->gateExecutor(), $utcTime),
+            ...$this->ruleParts->plan(),
+        ];
 
         foreach ([Phase::Code, Phase::Check, Phase::Complete] as $phase) {
             $checks = [...$checks, ...$this->exit($phase)];
@@ -73,6 +79,7 @@ final readonly class WorkflowChecks
             new FreezeCheck($phase, $specFile, new SpecFreeze(), $parts->evidenceLog(), $parts->evidenceRecorder(), $parts->runSubject()),
             new DeclarationCheck($phase, $parts->runHost(), $specFile, $parts->evidenceRecorder(), $parts->runSubject()),
             $this->composition($phase),
+            ...$this->ruleParts->exit($phase),
         ];
         $renderedCheck = new RenderedCheck(
             $phase,

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<ruleset name="AIC">
+    <file>modules</file>
+    <exclude-pattern>modules/shop/*</exclude-pattern>
+    <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
+        <properties>
+            <property name="rootNamespaces" type="array">
+                <element key="modules/site/src" value="App\Site"/>
+            </property>
+        </properties>
+    </rule>
+</ruleset>

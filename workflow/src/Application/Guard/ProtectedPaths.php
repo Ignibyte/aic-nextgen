@@ -8,6 +8,7 @@ use AIC\Workflow\Domain\Guard\GuardScene;
 use AIC\Workflow\Domain\RunState;
 
 use function array_any;
+use function array_keys;
 use function in_array;
 use function str_contains;
 use function str_starts_with;
@@ -43,29 +44,17 @@ final readonly class ProtectedPaths
     }
 
     /**
-     * @param string $absolute An absolute path.
-     * @param string $spec     The open run's spec, absolute; empty when no run is open.
+     * @param string     $absolute   An absolute path.
+     * @param GuardScene $guardScene The run: its spec may be written, its frozen house-rule files may not (#104).
      *
      * @return string Why it is protected, naming who changes it; empty when it is not.
      */
-    public function reason(string $absolute, string $spec): string
+    public function reason(string $absolute, GuardScene $guardScene): string
     {
         $landed = $this->pathResolver->landed($absolute);
+        $spec = $this->spec($guardScene);
 
-        foreach ($this->entries() as $entry => $why) {
-            if (
-                $absolute !== $spec
-                && $landed !== $spec
-                && (
-                    $this->under($absolute, $entry)
-                    || $this->under($landed, $entry)
-                )
-            ) {
-                return $why;
-            }
-        }
-
-        return '';
+        return $absolute === $spec || $landed === $spec ? '' : $this->hit([$absolute, $landed], $this->entries($guardScene));
     }
 
     /**
@@ -114,6 +103,23 @@ final readonly class ProtectedPaths
     }
 
     /**
+     * @param list<string>          $paths   A path as spelled and as landed.
+     * @param array<string, string> $entries The protected paths and their words.
+     *
+     * @return string The words of the first entry either path lies under; empty when none.
+     */
+    private function hit(array $paths, array $entries): string
+    {
+        foreach ($entries as $entry => $why) {
+            if ($this->under($paths[0], $entry) || $this->under($paths[1], $entry)) {
+                return $why;
+            }
+        }
+
+        return '';
+    }
+
+    /**
      * @param string $entry A protected path, absolute.
      *
      * @return string How a command's words name it: relative inside the project, a directory with its slash.
@@ -132,9 +138,11 @@ final readonly class ProtectedPaths
     }
 
     /**
+     * @param GuardScene|null $guardScene The run, whose frozen house-rule files join the list (#104); null for the fixed list.
+     *
      * @return array<string, string> Each protected path, absolute, and the words naming who changes it.
      */
-    private function entries(): array
+    private function entries(?GuardScene $guardScene = null): array
     {
         $entries = [
             $this->package => "the workflow package is the operator's: it changes in its own repository.",
@@ -144,6 +152,8 @@ final readonly class ProtectedPaths
             $this->root . '/var/workflow' => "var/workflow/ is the run's state: only the engine writes it, through bin/aic workflow:*.",
         ];
 
+        $entries = [...$entries, ...$this->ruled($guardScene)];
+
         return $this->home === ''
             ? $entries
             : [
@@ -152,6 +162,25 @@ final readonly class ProtectedPaths
             $this->home . '/.claude/plugins' => "Claude Code's plugins are the operator's.",
             $this->home . '/.claude/settings.json' => "Claude Code's global settings are the operator's.",
         ];
+    }
+
+    /**
+     * @param GuardScene|null $guardScene The run.
+     *
+     * @return array<string, string> The open run's frozen house-rule files and their words (#104).
+     */
+    private function ruled(?GuardScene $guardScene): array
+    {
+        $runState = $guardScene instanceof GuardScene
+            ? $guardScene->runState
+            : null;
+        $ruled = [];
+
+        foreach (array_keys($runState instanceof RunState ? $runState->runStart->ruleFiles : []) as $path) {
+            $ruled[$this->root . '/' . $path] = $path . " is a house rule's, frozen at begin: the operator changes it between runs.";
+        }
+
+        return $ruled;
     }
 
     /**

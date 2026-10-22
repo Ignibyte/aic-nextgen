@@ -48,6 +48,7 @@ final readonly class WorkflowParts
                 $localHost,
                 $utcTime,
                 $this->workflowSettings->enforcement,
+                $this->ruleParts($evidenceParts)->ruleFiles(),
             ),
             $runJournal,
             $this->checks()->all($utcTime),
@@ -77,7 +78,24 @@ final readonly class WorkflowParts
      */
     private function checks(): WorkflowChecks
     {
-        return new WorkflowChecks($this->root, new EvidenceParts($this->root, $this->workflowSettings), $this->workflowSettings->site);
+        $evidenceParts = new EvidenceParts($this->root, $this->workflowSettings);
+
+        return new WorkflowChecks(
+            $this->root,
+            $evidenceParts,
+            $this->workflowSettings->site,
+            $this->ruleParts($evidenceParts),
+        );
+    }
+
+    /**
+     * @param EvidenceParts $evidenceParts The store, the subject and the host.
+     *
+     * @return RuleParts The house rules' parts (#104).
+     */
+    private function ruleParts(EvidenceParts $evidenceParts): RuleParts
+    {
+        return new RuleParts($this->root, $this->workflowSettings, $evidenceParts);
     }
 
     /**

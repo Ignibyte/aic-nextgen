@@ -20,6 +20,7 @@ return RectorConfig::configure()
         __DIR__ . '/gates',
         __DIR__ . '/workflow/src',
         __DIR__ . '/workflow/bin',
+        __DIR__ . '/workflow/rules',
     ])
     ->withSkip([
         // Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).

@@ -16,6 +16,7 @@ use AIC\Workflow\Domain\TicketStatuses;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function in_array;
+use function preg_match;
 
 /**
  * The parts of `run.json` that are objects of their own (#100): the ticket,
@@ -101,6 +102,35 @@ final readonly class RunPartsJson
             'off' => Enforcement::Off,
             default => throw new WorkflowRefusal("the run's enforcement is neither hard, soft nor off."),
         };
+    }
+
+    /**
+     * @param JsonReader $jsonReader The run; `rule_files` is absent from a run.json #100 to #102 wrote.
+     *
+     * @throws WorkflowRefusal When a hash is neither 64 hex digits nor null.
+     *
+     * @return array<string, string|null> The house rules' files by path, each with its sha256 at begin (#104).
+     */
+    public function ruleFiles(JsonReader $jsonReader): array
+    {
+        if (!in_array('rule_files', $jsonReader->keys(), true)) {
+            return [];
+        }
+
+        $files = $jsonReader->object('rule_files');
+        $hashes = [];
+
+        foreach ($files->keys() as $path) {
+            $hash = $files->nullableString($path);
+
+            if ($hash !== null && preg_match('/^[0-9a-f]{64}$/', $hash) !== 1) {
+                throw new WorkflowRefusal("the run's rule_files hold a hash for " . $path . ' that is no sha256.');
+            }
+
+            $hashes[$path] = $hash;
+        }
+
+        return $hashes;
     }
 
     /**
