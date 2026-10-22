@@ -1,43 +1,48 @@
 # The AIC checklist
 
-What the seeker judges in a run's change. Each item names what the gates already hold, so the
-seeker does not redo a gate, then what it judges, and a default severity. Every finding opens with
-the id of the item it breaks.
+What the seeker checks in a run's change: did the agent build it to AIC's standard. Each item is
+one line of the seeker's answer, `pass` or `fail` with the file and line. Each names what the
+gates already hold, so the seeker does not redo a gate, then what it judges, and a default
+severity. Every finding opens with the id of the item it breaks. Severity says how much a
+finding matters; none holds the run.
 
-## A1 — Components only
+## A1 — No HTML in pages or controllers
 
 The gates hold: no `Html` built outside the Renderer, no markup string in a controller, a
-controller returns only its kind's response, layouts and regions take components, and every
-`RawHtml` use sits within its grant in `config/raw-html.php`.
+controller returns only its kind's response, and every `RawHtml` use sits within its grant in
+`config/raw-html.php`.
 
-Judge: markup built outside a controller and carried in through a grant; a component that should
-have been reused (an atom, or a component another module exports); one template doing several
-components' work. HIGH; MEDIUM for a missed reuse.
+Judge: markup built anywhere but a component's template and carried in (a Service string, a
+grant); a new component whose job an atom (`AIC\Component\Domain`) or a component another module
+exports already does. Ask `bin/aic code:search` for each new component. HIGH; MEDIUM for a missed
+reuse.
 
-## A2 — Tessera where it belongs
+## A2 — Templates are plain `.html.php`
 
-The gates hold: the compiled site answers each step as PHP does.
+The gates hold: every `*.html.php` uses only the template grammar, in its place.
 
-Judge: a page or part that should be a keyed Tessera component or answer a region fragment, where
-the app's own pattern does. MEDIUM; HIGH when the spec asked for it.
+Judge: logic a template carries past showing its component's values (sums, lookups, state
+branches that should be separate components); presentation moved into a component's PHP to keep
+a template legal. MEDIUM.
 
-## A3 — Module boundaries in spirit
+## A3 — Every class in its kind's folder and module
 
-The gates hold: a class's kind decides its folder, 15 files per folder, exports and requires, and
-nothing outside `modules/` but the shell.
+The gates hold: a class's kind decides its folder, 15 files per folder, nothing outside
+`modules/` but the shell.
 
-Judge: an export added only so another module can reach a class it should not own; code moved
-into `site` to dodge a require; a class named for a folder it does not belong in; a module reading
-another module's tables. HIGH.
+Judge: a class in the module that does not own its work (a module querying another module's
+tables, code moved into `site` to dodge a require); a class named for a folder it does not belong
+in. HIGH.
 
-## A4 — Plain PHP templates in spirit
+## A4 — Exports and requires declared
 
-The gates hold: every `*.html.php` uses only the plain PHP template grammar, in its place.
+The gates hold: a module uses another's class only through that module's export and its own
+`->requires(...)`.
 
-Judge: presentation moved into a component's PHP to keep a template legal; a template branching
-on state that should be separate components. MEDIUM.
+Judge: an export added only so another module can reach a class it should not own; a binding,
+route or command the change needs and the manifest does not declare. HIGH.
 
-## A5 — Generated code is never edited by hand
+## A5 — No generated file edited
 
 The gates hold: `build/surface.json`, `generated/`, the compiled templates and `public/assets/`
 match what the build writes.
@@ -45,7 +50,7 @@ match what the build writes.
 Judge: a change under `generated/`, `build/` or `public/assets/` with no source change that makes
 it; a build writer special-cased for one module. HIGH.
 
-## A6 — No suppression, no carve-out, no weakened rule
+## A6 — No suppression, no gate-config change
 
 The gates hold: no baseline file and no suppression comment.
 
@@ -56,7 +61,7 @@ gate scripts in `composer.json`, `gates/`, `bin/gate-*`), to `config/raw-html.ph
 with a reason. A module's PSR-4 line and its PHPCS root are free. HIGH; CRITICAL when the change
 quiets a finding the run itself causes.
 
-## A7 — Every invariant is a static guard
+## A7 — A static guard for every new invariant
 
 The gates hold: nothing; this is the rule they come from.
 
@@ -64,53 +69,41 @@ Judge: an invariant the spec or a comment states with no guard (a PHPStan, phpat
 to hold it; a new rule with no planted violation shown to fail it; a test written instead of a
 guard. HIGH.
 
-## A8 — Native compilation not dodged
+## A8 — Native, and every workaround named
 
-The gates hold: every runtime class compiles, links, runs and matches PHP; the compiled site
-answers as PHP does; no runtime-dynamic `require`.
+The gates hold: every runtime class compiles, links, runs and matches PHP (gate:21); the compiled
+site answers as PHP does (gate:23); no runtime-dynamic `require`.
 
 Judge: runtime behaviour moved outside `framework/src`, `modules` and `generated` (into `bin/`,
-`config/` or `gates/`) so the native gates do not see it; a native gate's deferral that the change
-caused. HIGH.
+`config/` or `gates/`) so the native gates do not see it; a native gate's deferral the change
+caused; code shaped around a compiler limit with no comment naming elephc and its carry ticket.
+HIGH; MEDIUM for an unnamed workaround.
 
-## A9 — A workaround names its reason
+## A9 — The manifest and entry points match the diff
 
-The gates hold: nothing.
+The gates hold: every changed path is in the spec's file manifest, and every declared entry point
+is built as declared.
 
-Judge: code shaped around a compiler limit with no comment naming elephc and the ticket that
-carries the fix; a workaround whose fix has landed. MEDIUM.
+Judge: a manifest row with no change behind it; a change that does more than its row's purpose
+says; an entry point that works differently from its row (another module, kind or name). MEDIUM;
+HIGH when the change does work the spec does not ask for.
 
 ## L1 — Dead code
 
 Judge: code the change adds that nothing calls, a parameter nothing reads, a branch that cannot
 run. MEDIUM; HIGH when it hides a missing call.
 
-## L2 — Drift from the plan
+## L2 — Criteria and decisions
 
-Judge: the change does something the spec does not ask for, or leaves out something it does: a
-criterion, a decision, an entry point, a manifest row with no change behind it. HIGH.
+Judge: a criterion or a locked-in decision the change plainly does not meet. HIGH.
 
-## L3 — Coupling
+## L3 — Security
 
-Judge: a class that reaches across systems or modules through a concrete class where the app has
-a seam; a new dependency where an existing service does the job. MEDIUM.
-
-## L4 — Security
-
-Judge: input that reaches SQL, a shell, a file path or the page without the app's own guard;
-a secret in code; a form or route that skips the CSRF or auth middleware the app uses. CRITICAL or
+Judge: input that reaches SQL, a shell, a file path or the page without the app's own guard; a
+secret in code; a form or route that skips the CSRF or auth middleware the app uses. CRITICAL or
 HIGH.
 
-## L5 — Rebuilt what exists
+## L4 — Rebuilt what exists
 
 Judge: the change writes a class, helper or component the app or the framework already has. Ask
-`bin/aic code:search` and `bin/aic code:refs` before you raise it. MEDIUM.
-
-## L6 — Criteria shown
-
-Judge at complete only, where each criterion's `Met` cell cites a check: a cited check that does
-not show what the criterion says. HIGH when a check exists that would show it (a rendered request
-for a route, a gate for the code's shape) and the run cites another; MEDIUM when no check the
-engine runs can show it (a command's output), so the operator looks at it by hand. At code and
-check nothing is ticked yet, so raise no L6 there; a criterion the change plainly does not meet is
-L2.
+`bin/aic code:search` before you raise it. MEDIUM.

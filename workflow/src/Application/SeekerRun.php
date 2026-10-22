@@ -9,8 +9,8 @@ use AIC\Workflow\Domain\RunState;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
- * The run the seeker reads (#103): open, and past plan, where there is code
- * to read.
+ * The run the seeker reads (#103): open and at code, where its one pass is
+ * (#127).
  */
 final readonly class SeekerRun
 {
@@ -23,7 +23,7 @@ final readonly class SeekerRun
     }
 
     /**
-     * @throws WorkflowRefusal When no run is open, it is at plan, or it cannot be read.
+     * @throws WorkflowRefusal When no run is open, it is not at code, or it cannot be read.
      *
      * @return array{RunState, Phase} The open run and its phase.
      */
@@ -34,8 +34,8 @@ final readonly class SeekerRun
             ? $runState->currentPhase
             : null;
 
-        if (!$runState instanceof RunState || !$phase instanceof Phase || $phase === Phase::Plan) {
-            throw new WorkflowRefusal('the seeker reads an open run at code, check or complete; plan has no code to read.');
+        if (!$runState instanceof RunState || !$phase instanceof Phase || $phase !== Phase::Code) {
+            throw new WorkflowRefusal('the seeker reads an open run at code, once; this run is not at code.');
         }
 
         return [$runState, $phase];

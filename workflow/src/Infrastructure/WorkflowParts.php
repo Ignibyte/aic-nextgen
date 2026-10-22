@@ -117,14 +117,13 @@ final readonly class WorkflowParts
     private function checks(): WorkflowChecks
     {
         $evidenceParts = $this->evidenceParts();
-        $seekerParts = $this->seekerParts();
 
         return new WorkflowChecks(
             $this->root,
             $evidenceParts,
             $this->workflowSettings->site,
             $this->ruleParts($evidenceParts),
-            ['code' => $seekerParts->atCode(), 'complete' => $seekerParts->atComplete()],
+            $this->seekerParts()->seekerCheck(),
             $this->holdParts()->confirmChecks(),
         );
     }

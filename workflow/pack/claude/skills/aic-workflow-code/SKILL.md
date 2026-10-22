@@ -49,8 +49,8 @@ the manifest, the spec's frozen rows are still there, every declared entry point
 declared (and nothing undeclared was added), and the house rules hold. Fix each blocked row and
 run again.
 
-When everything else passes, code answers `inspection-due`: an independent reader must look at
-the change before it leaves code.
+When everything else passes, code answers `inspection-due`: an independent reader checks the
+change once before it leaves code.
 
 1. Dispatch the `aic-seeker` agent with the Agent tool, in the foreground (not a fork, not in the
    background), with the prompt `Inspect the open run.` and nothing else. It takes its scope
@@ -59,8 +59,8 @@ the change before it leaves code.
    `bin/aic workflow:seeker-report` (a heredoc is fine). Never write a ledger yourself and never
    edit what it returned: the hook recorded what it returned, and a ledger that differs is
    refused. A self-reviewed ledger counts as no inspection.
-3. `bin/aic workflow:run`. An open CRITICAL or HIGH finding holds code; the row names each one.
-   Fix them, then dispatch the seeker again; it marks the fixed rows `resolved`. MEDIUM and LOW
-   are shown and do not hold.
+3. `bin/aic workflow:run`. The `seeker` row passes and lists every open finding with its
+   severity. None holds the run: fix what you agree with while you are still at code, and name
+   the rest in your report. A run has one seeker pass, so `seeker-report` refuses a second ledger.
 
 When code passes, go to the [check skill](../aic-workflow-check/SKILL.md).

@@ -11,36 +11,35 @@ use AIC\Workflow\Application\DeclarationCheck;
 use AIC\Workflow\Application\FreezeCheck;
 use AIC\Workflow\Application\PhaseCheck;
 use AIC\Workflow\Application\RenderedCheck;
+use AIC\Workflow\Application\SeekerCheck;
 use AIC\Workflow\Application\SpecFreeze;
 use AIC\Workflow\Application\UtcTime;
 use AIC\Workflow\Domain\Phase;
-
-use function array_key_exists;
 
 /**
  * The engine's checks, in the order they run at each phase (#100, #101).
  * Plan: the spec is written, then it reads as a contract and is frozen.
  * Code, check and complete: the gate, the freeze, the declaration audit and
  * the composition check; check and complete add the rendered check; check
- * adds the browser evidence, complete the criteria; code and complete end
- * with the seeker's inspection (#103).
+ * adds the browser evidence, complete the criteria; code ends with the
+ * seeker's one pass (#103, #127).
  */
 final readonly class WorkflowChecks
 {
     /**
-     * @param string                    $root          The project's root.
-     * @param EvidenceParts             $evidenceParts The store, the subject and the gate.
-     * @param string                    $site          The rendered check's site.
-     * @param RuleParts                 $ruleParts     The house rules' checks (#104).
-     * @param array<string, PhaseCheck> $seekerChecks  The seeker's row at code and at complete, by phase (#103).
-     * @param list<PhaseCheck>          $confirmChecks The phase-exit confirmation at every phase, registered last (#117).
+     * @param string           $root          The project's root.
+     * @param EvidenceParts    $evidenceParts The store, the subject and the gate.
+     * @param string           $site          The rendered check's site.
+     * @param RuleParts        $ruleParts     The house rules' checks (#104).
+     * @param SeekerCheck      $seekerCheck   The seeker's row at code (#103, #127).
+     * @param list<PhaseCheck> $confirmChecks The phase-exit confirmation at every phase, registered last (#117).
      */
     public function __construct(
         private string $root,
         private EvidenceParts $evidenceParts,
         private string $site,
         private RuleParts $ruleParts,
-        private array $seekerChecks,
+        private SeekerCheck $seekerCheck,
         private array $confirmChecks = [],
     ) {
     }
@@ -66,7 +65,7 @@ final readonly class WorkflowChecks
         $checks[] = new BrowserCheck($specFile, $parts->evidenceLog(), $parts->evidenceRecorder(), $parts->runSubject());
         $checks[] = new CriteriaCheck($specFile, $parts->evidenceLog(), $parts->evidenceRecorder(), $parts->runSubject());
 
-        return [...$checks, ...$this->seeker(Phase::Complete), ...$this->confirmChecks];
+        return [...$checks, ...$this->confirmChecks];
     }
 
     /**
@@ -95,7 +94,7 @@ final readonly class WorkflowChecks
         );
 
         return $phase === Phase::Code
-            ? [...$checks, ...$this->seeker(Phase::Code)]
+            ? [...$checks, $this->seekerCheck]
             : [...$checks, $renderedCheck];
     }
 
@@ -117,17 +116,5 @@ final readonly class WorkflowChecks
             $parts->evidenceRecorder(),
             $parts->runSubject(),
         );
-    }
-
-    /**
-     * @param Phase $phase Code or complete.
-     *
-     * @return list<PhaseCheck> The seeker's row at it; none at another phase (#103).
-     */
-    private function seeker(Phase $phase): array
-    {
-        return array_key_exists($phase->value, $this->seekerChecks)
-            ? [$this->seekerChecks[$phase->value]]
-            : [];
     }
 }
