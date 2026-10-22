@@ -41,7 +41,7 @@ The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every fai
 | 21 | native | every runtime class compiles, links, runs and matches PHP under elephc; a class whose closure and toolchain hash as at its last green probe is reported cached, the rest probed in parallel |
 | 22 | pipeline docs | the pipeline docs and phase commands: frontmatter, line caps, internal links |
 | 23 | native site | the app compiled with `elephc --web` answers the step script as the interpreted app does: status, content type, location, normalised body; the whole gate defers when the app's database does not answer (`bin/aic db:ping`) |
-| 24 | build manifests | `build/surface.json` (every route and command with its kind, #26) matches what `composer run build` writes |
+| 24 | build manifests | `build/surface.json` (every route and command with its kind, #26), the generated wiring, the template classes and `public/assets/` (the bundled `aic.css` and each module's copied assets, #95) match what `composer run build` writes; a file the build would not write under `generated/` or `public/assets/` is stale |
 | 26 | module boundaries | inside a module a class's kind decides its `src/` folder; at most 15 files per folder (`src/Migration/` exempt); a module uses only classes another exports, from modules it requires; the requires name modules and form no cycle; nothing outside `modules/` but the shell (#94) |
 
 A new gate or rule is done only when it has been seen to fail on a planted violation.
@@ -153,6 +153,7 @@ This Constitution is amended by editing this file through the four phases (`/pip
 
 ### Amendment log
 
+- **2026-10-21 — gate:24 holds the assets (#95).** §0 row 24 names the generated wiring and `public/assets/`, both of which the build owns, so a stale bundle, a missing copy or an orphan fails it. Each was seen to fail on a planted violation.
 - **2026-10-21 — gate:26, the module boundaries (#94).** §0 gains row 26, and row 16 names `modules` and `generated` in place of `app`. Each of gate:26's five rules was seen to fail on a planted violation (13 plants), and so was its fail-closed read.
 - **2026-10-21 — The demo as modules (#93).** §14 rule 10 names the generated wiring and the framework kernels as what composes the app, since `app/` and its composition classes are gone.
 - **2026-10-21 — gate:21 caches, gate:23 defers whole (#110).** §0's rows 21 and 23. gate:21 skips a class only when everything its probe compiled, ran and compared is unchanged (the closure's files by content, the compiler and its bridge libraries, host PHP, the pinned packages, the probe program), so its coverage is the same; a failure is never cached. gate:23 no longer runs a subset of steps without the database: since #41 every route opens a Postgres session, so the subset answered 500 on both sides and proved nothing. It now defers, named, as the rest of §0 requires.

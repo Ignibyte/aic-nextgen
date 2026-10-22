@@ -60,8 +60,9 @@ service that restarts runs `bin/aic queue:work`. A second `schedule:run` in the 
 queues nothing more. Notifications go out through the queue: DDEV's Mailpit catches the mail
 (`ddev mailpit`), and `AIC_MAIL_HOST`, `AIC_MAIL_PORT` and `AIC_MAIL_FROM` point it elsewhere.
 
-The theme lives in `theme/`; `composer run build` writes it to `public/assets/aic.css`, and the
-build output is committed. DDEV's nginx serves `public/` as static files. The compiled server
+The site theme lives in `assets/`, and each module's styles, scripts and images in its own
+`modules/<name>/assets/`. `composer run build` writes one `public/assets/aic.css` (the modules' CSS,
+then the theme) and copies the rest to `public/assets/<module>/`; the build output is committed. DDEV's nginx serves `public/` as static files. The compiled server
 serves no static files, so in production a reverse proxy (nginx, Caddy) serves `public/` and
 forwards the rest. Without a proxy, the app's `/assets/{file}` route answers the built assets.
 

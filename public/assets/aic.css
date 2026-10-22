@@ -1,6 +1,21 @@
-/* Built from theme/ by bin/aic-build (#39): edit theme/ and run composer run build, never this file. */
+/* Built by bin/aic-build (#95) from each module's assets/ CSS, then the site theme's assets/ CSS: edit those and run composer run build, never this file. */
 
-/* theme/10-tokens.css */
+/* modules/site/assets/site.css */
+/* The site module's nav block (SiteNavBlock): its links in a row, the current one in bold. */
+
+#site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+}
+
+#site-nav [aria-current="page"] {
+    color: var(--aic-text);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* assets/10-tokens.css */
 /* Tokens: every colour, size and font the theme uses, light first, dark by the system's scheme. */
 :root {
     --aic-bg: #fbfaf7;
@@ -35,7 +50,7 @@
     }
 }
 
-/* theme/20-base.css */
+/* assets/20-base.css */
 /* The document and the layout's regions. */
 *,
 *::before,
@@ -80,18 +95,6 @@ h2 {
     margin: 0.4rem 0 0;
 }
 
-#site-nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 1rem;
-}
-
-#site-nav [aria-current="page"] {
-    color: var(--aic-text);
-    font-weight: 600;
-    text-decoration: none;
-}
-
 ul {
     padding-left: 1.2rem;
 }
@@ -127,7 +130,7 @@ time {
     color: var(--aic-muted);
 }
 
-/* theme/30-atoms.css */
+/* assets/30-atoms.css */
 /* The atoms: each styles one aic-* class the framework renders. */
 .aic-link {
     color: var(--aic-accent);

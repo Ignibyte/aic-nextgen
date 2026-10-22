@@ -122,7 +122,7 @@
         ]
     },
     "scripts-descriptions": {
-        "build": "Write the build-time outputs: build/surface.json, every route and command with its kind, and each component template's class.",
+        "build": "Write the build-time outputs: the generated wiring, build/surface.json, each component template's class, and public/assets/ (the modules' CSS and the theme in aic.css, the modules' other assets copied).",
         "gate": "Run every quality gate and print one gate-summary line (bin/gate-runner.sh).",
         "gate:0": "composer audit: no known security advisories in the locked dependencies.",
         "gate:1": "composer-normalize: the root and framework manifests are in canonical order.",
@@ -141,7 +141,7 @@
         "gate:21": "Native: every runtime class compiles, links, runs and matches PHP under elephc.",
         "gate:22": "Pipeline docs: frontmatter, line caps and internal links of the pipeline docs and phase commands.",
         "gate:23": "Native site: the app compiled with elephc --web answers every step as the interpreted app does.",
-        "gate:24": "Build outputs: build/surface.json and the template classes match what composer run build writes.",
+        "gate:24": "Build outputs: the generated wiring, build/surface.json, the template classes and public/assets/ match what composer run build writes; an orphan there is stale.",
         "gate:26": "Module boundaries: kind folders, the 15-file cap, exports and requires, no require cycles, nothing outside modules/ but the shell.",
         "gate:3": "Require-checker: every symbol the runtime code uses comes from a declared require.",
         "gate:4": "composer-unused: no required package goes unused.",
