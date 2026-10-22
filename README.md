@@ -71,12 +71,14 @@ forwards the rest. Without a proxy, the app's `/assets/{file}` route answers the
 ```bash
 bash bin/install-tools.sh   # once: gitleaks (pinned, into tools/), semgrep, shellcheck
 composer run gate           # every gate, on the host; ends with one gate-summary line
-composer run gate:8         # one gate alone (gate:0 to gate:21)
+composer run gate:8         # one gate alone (gate:0 to gate:26)
 composer run gate:21        # the native gate: every runtime class through elephc
 ```
 
 The gates are static analysis only: PHPStan level 10, Psalm with taint analysis, PHPMD, PHPCS,
 Pint, Rector, Deptrac and phpat for the architecture, semgrep, gitleaks and the composer checks.
+A component template (`*.html.php`) is plain PHP read only; gate:25 holds it to that grammar, and
+the class tools skip it.
 The native gate compiles every runtime class with [elephc](https://github.com/illegalstudio/elephc),
 runs it and compares the output with PHP; it needs the compiler checkout at
 `/srv/stacks/elephc` (or `ELEPHC_BIN`).

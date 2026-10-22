@@ -123,6 +123,8 @@ final readonly class DeduplicatorGate
             '--min-lines=4',
             '--min-tokens=50',
             '--fuzzy',
+            // Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
+            '--exclude=/templates/',
             ...$existing,
         ];
     }

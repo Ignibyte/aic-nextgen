@@ -7,6 +7,9 @@
 # ladder. `--fail-on-uncovered` makes every class sit in a layer: a class
 # directly under AIC\<System>\, outside the six subnamespaces, fails the gate.
 deptrac:
+  # Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
+  exclude_files:
+    - '#/modules/[^/]+/templates/#'
   paths:
     - ./framework/src
     - ./modules
@@ -64,7 +67,18 @@ deptrac:
     - name: PhpstanVendor
       collectors:
         - type: classLike
-          value: '^(PHPStan|PhpParser)\\'
+          value: '^PHPStan\\'
+    # php-parser, which gate:25's template validator (#96) and AIC's PHPStan
+    # rules read.
+    - name: PhpParserVendor
+      collectors:
+        - type: classLike
+          value: '^PhpParser\\'
+    # gate:25's template grammar (#96): dev tooling over php-parser.
+    - name: TemplateGrammar
+      collectors:
+        - type: classLike
+          value: '^Gates\\Templates\\'
     # AIC's PHPMD rules (gate:10) and PHPCS sniffs (gate:11), and the tools'
     # own classes they extend or call (#56).
     - name: PhpmdRules
@@ -125,6 +139,13 @@ deptrac:
     PhpStanRules:
       - Contracts
       - PhpstanVendor
+      - PhpParserVendor
+    # gate:25's validator (#96) walks php-parser's tree and reports with
+    # Gates' Domain values, reading files through Application.
+    TemplateGrammar:
+      - Domain
+      - Application
+      - PhpParserVendor
     # The PHPMD rules and PHPCS sniffs wrap their tool's stock rule and ask
     # Gates' Domain which methods are kind methods (#56).
     PhpmdRules:

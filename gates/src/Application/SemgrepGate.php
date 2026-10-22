@@ -38,6 +38,8 @@ final readonly class SemgrepGate
         '.phpstan-cache',
         '.rector-cache',
         'docs',
+        // Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
+        'templates',
     ];
 
     /**

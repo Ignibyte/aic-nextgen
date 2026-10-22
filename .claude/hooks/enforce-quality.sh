@@ -45,10 +45,11 @@ fi
 source "$(dirname "$0")/lib-hook-helpers.sh"
 cd "$PROJECT_ROOT" || exit 0
 
+# Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
 git_capture CHANGED_PHP_FILES enforce-quality.sh \
-    git diff --name-only --diff-filter=ACM HEAD -- '*.php'
+    git diff --name-only --diff-filter=ACM HEAD -- '*.php' ':(exclude)modules/*/templates/*' ':(exclude)templates/*'
 git_capture UNTRACKED_PHP_FILES enforce-quality.sh \
-    git ls-files --others --exclude-standard -- '*.php'
+    git ls-files --others --exclude-standard -- '*.php' ':(exclude)modules/*/templates/*' ':(exclude)templates/*'
 
 FILES=""
 while IFS= read -r file; do
