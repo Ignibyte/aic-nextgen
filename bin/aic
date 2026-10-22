@@ -12,7 +12,9 @@ declare(strict_types=1);
  * console. Output goes to STDOUT, a line at a time, through the CommandWriter
  * below; the exit code is the command's. With no command, or an unknown one, it
  * lists the commands and exits 2. The database connection opens on the first
- * query, so a command that does not query runs without one.
+ * query, so a command that does not query runs without one. When the dev-only
+ * workflow (aic/workflow, #100) is installed, its `workflow:*` commands join
+ * the list, rooted in the directory bin/aic runs in.
  */
 
 use AIC\Console\Application\Console;
@@ -22,6 +24,7 @@ use AIC\Database\Infrastructure\PdoDatabase;
 use AIC\Module\Application\ConsoleKernel;
 use AIC\Notification\Domain\MailConfig;
 use AIC\Notification\Infrastructure\SmtpTransport;
+use AIC\Workflow\Infrastructure\WorkflowKernel;
 use App\Generated\ConsoleModules;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -39,7 +42,14 @@ if (!$mailConfig instanceof MailConfig) {
 }
 
 $consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTransport($mailConfig), $mailConfig, new ConsoleModules());
-$console = new Console($consoleKernel->commands());
+$commands = $consoleKernel->commands();
+
+if (class_exists(WorkflowKernel::class)) {
+    $commands = [...$commands, ...(new WorkflowKernel((string) getcwd()))->commands()];
+    ksort($commands);
+}
+
+$console = new Console($commands);
 
 exit($console->run($argv ?? [], new class () implements CommandWriter {
     /**

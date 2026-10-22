@@ -101,6 +101,49 @@ final class CoreArchitectureTest
     }
 
     /**
+     * The workflow is dev-only (#100): no runtime class, framework or app,
+     * depends on `AIC\Workflow\`, so an install without dev dependencies runs.
+     *
+     * @return Rule The rule.
+     */
+    public function testRuntimeDoesNotDependOnTheWorkflow(): Rule
+    {
+        return PHPat::rule()
+            ->classes(
+                Selector::AllOf(Selector::inNamespace('AIC'), Selector::Not(Selector::inNamespace('AIC\\Workflow'))),
+                Selector::inNamespace('App'),
+            )
+            ->shouldNot()
+            ->dependOn()
+            ->classes(Selector::inNamespace('AIC\\Workflow'))
+            ->because('aic/workflow is a dev-only package; the runtime must run without it.');
+    }
+
+    /**
+     * The workflow reaches the framework only through the Command kind (#100):
+     * `AIC\Controller\Contracts` and `CommandResult`, so #105 can install it
+     * into any AIC app.
+     *
+     * @return Rule The rule.
+     */
+    public function testTheWorkflowUsesOnlyTheCommandKind(): Rule
+    {
+        return PHPat::rule()
+            ->classes(Selector::inNamespace('AIC\\Workflow'))
+            ->shouldNot()
+            ->dependOn()
+            ->classes(
+                Selector::AllOf(
+                    Selector::inNamespace('AIC'),
+                    Selector::Not(Selector::inNamespace('AIC\\Workflow')),
+                    Selector::Not(Selector::inNamespace('AIC\\Controller\\Contracts')),
+                    Selector::Not(Selector::classname('/^AIC\\\\Controller\\\\Domain\\\\CommandResult$/', true)),
+                ),
+            )
+            ->because("the workflow is installed into apps (#105); it may assume only the console's Command kind.");
+    }
+
+    /**
      * A module's manifest is build input (#92): only the build reads it, so no
      * named runtime class depends on the manifest contract. The manifests
      * themselves are anonymous classes and are not selected.

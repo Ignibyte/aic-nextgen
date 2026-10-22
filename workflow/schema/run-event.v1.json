@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ignibyte/aic-nextgen/blob/main/workflow/schema/run-event.v1.json",
+  "title": "AIC run event, version 1",
+  "description": "One line of a project's run-event log (var/workflow/events.jsonl), written by the aic/workflow engine after each state change it saves (#100). Additive only within version 1: a consumer ignores event types and keys it does not know, and renaming or removing one is aic.run-event/2. event_id is the dedup key; seq rises by one per log and is a reader's cursor, never an identity. Ported from droost-workflow's droost.run-event/1.",
+  "type": "object",
+  "required": ["schema", "event_id", "seq", "run_id", "ticket_id", "at", "type", "payload"],
+  "properties": {
+    "schema": { "const": "aic.run-event/1" },
+    "event_id": { "type": "string", "pattern": "^evt-[0-9a-f]{16}$" },
+    "seq": { "type": "integer", "minimum": 1 },
+    "run_id": { "type": "string", "pattern": "^run-[0-9a-f]{12}$" },
+    "ticket_id": { "type": "string", "minLength": 1 },
+    "at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
+    "type": { "enum": ["run.started", "phase.began", "phase.attempted", "phase.ended", "ticket.moved", "run.completed", "run.reset"] },
+    "payload": { "type": "object" }
+  },
+  "allOf": [
+    { "if": { "properties": { "type": { "const": "run.started" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.started" } } } },
+    { "if": { "properties": { "type": { "const": "phase.began" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/phase" } } } },
+    { "if": { "properties": { "type": { "const": "phase.attempted" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/phase.attempted" } } } },
+    { "if": { "properties": { "type": { "const": "phase.ended" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/phase" } } } },
+    { "if": { "properties": { "type": { "const": "ticket.moved" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/ticket.moved" } } } },
+    { "if": { "properties": { "type": { "const": "run.completed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.completed" } } } },
+    { "if": { "properties": { "type": { "const": "run.reset" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.reset" } } } }
+  ],
+  "$defs": {
+    "run.started": {
+      "description": "A run began on a ticket.",
+      "type": "object",
+      "required": ["ticket", "spec", "base_commit", "phases"],
+      "properties": {
+        "ticket": { "type": "string" },
+        "spec": { "type": "string" },
+        "base_commit": { "type": ["string", "null"] },
+        "phases": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "phase": {
+      "description": "A phase became current (phase.began), or the run left it (phase.ended).",
+      "type": "object",
+      "required": ["phase"],
+      "properties": { "phase": { "enum": ["plan", "code", "check", "complete"] } }
+    },
+    "phase.attempted": {
+      "description": "A phase's checks ran, held or not: report is the phase report (phase, attempt, advance, rows), outcome what the call did.",
+      "type": "object",
+      "required": ["phase", "attempt", "outcome", "report"],
+      "properties": {
+        "phase": { "enum": ["plan", "code", "check", "complete"] },
+        "attempt": { "type": "integer", "minimum": 1 },
+        "outcome": { "enum": ["advanced", "blocked", "completed"] },
+        "report": { "type": "object" }
+      }
+    },
+    "ticket.moved": {
+      "description": "The engine wrote the ticket's status and phase, or tried to: ok is false and note says why when the source refused.",
+      "type": "object",
+      "required": ["ticket", "path", "status", "phase", "ok", "note"],
+      "properties": {
+        "ticket": { "type": "string" },
+        "path": { "type": "string" },
+        "status": { "type": "string" },
+        "phase": { "type": "string" },
+        "ok": { "type": "boolean" },
+        "note": { "type": "string" }
+      }
+    },
+    "run.completed": {
+      "description": "complete passed: outcome is the envelope the call printed.",
+      "type": "object",
+      "required": ["outcome"],
+      "properties": { "outcome": { "type": "object" } }
+    },
+    "run.reset": {
+      "description": "The operator abandoned the run: it was archived unfinished, its ticket left as it was.",
+      "type": "object",
+      "required": ["archived_run_id", "archived_to", "phase"],
+      "properties": {
+        "archived_run_id": { "type": "string" },
+        "archived_to": { "type": "string" },
+        "phase": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

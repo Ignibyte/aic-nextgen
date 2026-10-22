@@ -58,7 +58,7 @@ Every cross-system seam uses a PSR interface: PSR-4 (autoloading), PSR-7 (HTTP m
 
 ## §2  One package, our own implementation
 
-AIC is one package, `aic/framework`, in `framework/` with a namespace per system (`AIC\Http`, `AIC\Routing`, …), pulled into the demo app at the repo root. We may study any MIT- or BSD-licensed code to learn its patterns; we **never** depend on framework code from outside AIC (HTTP, routing, container, events, middleware, any Laravel or Symfony component). Composer dependencies are allowed for PSR interface packages, for the gate tooling (`require-dev`), and for orthogonal helpers nobody rewrites (`roave/security-advisories`). gate:2 holds the runtime `require` to that.
+AIC is one runtime package, `aic/framework`, in `framework/` with a namespace per system (`AIC\Http`, `AIC\Routing`, …), pulled into the demo app at the repo root. A second package, `aic/workflow` in `workflow/` (namespace `AIC\Workflow\`), is dev-only: the agent workflow's engine, required under `require-dev`, never by runtime code (two phpat rules hold both directions), and run interpreted rather than compiled. We may study any MIT- or BSD-licensed code to learn its patterns; we **never** depend on framework code from outside AIC (HTTP, routing, container, events, middleware, any Laravel or Symfony component). Composer dependencies are allowed for PSR interface packages, for the gate tooling (`require-dev`), and for orthogonal helpers nobody rewrites (`roave/security-advisories`). gate:2 holds the runtime `require` to that.
 
 ---
 
@@ -155,6 +155,7 @@ This Constitution is amended by editing this file through the four phases (`/pip
 
 ### Amendment log
 
+- **2026-10-22 — The workflow package (#100).** §2 names `aic/framework` the one runtime package and admits `aic/workflow` beside it as a dev-only package in this repo (Chad, 2026-10-22: "inside is fine for now"). gate:9 gains two phpat rules: runtime code never depends on the workflow, and the workflow takes only the Command kind from the framework. Each was seen to fail on a planted violation (28 gates green).
 - **2026-10-22 — Components only, and RawHtml counted (#99).** §0 gains row 27 (gate:27). gate:8 gains five rules and gate:9 one phpat test. Every rule, and each of gate:27's seven violation kinds, was seen to fail on planted violations, and the controls passed. A granted RawHtml page served the same bytes natively and under PHP (28 gates green).
 - **2026-10-22 — Templates compile from plain PHP (#97).** §0 rows 24 and 25 name the build's compile step: the template classes come from each `*.html.php`, and the build refuses what it cannot type. Each refusal, `break` and `continue` in a loop, `empty()` per type and a stale class under gate:24 were seen on planted templates; the four demo templates render the same bytes (27 gates green).
 - **2026-10-21 — gate:25, the template grammar (#96).** §0 gains row 25. Every refused category and a node outside the table were seen to fail on planted templates (38 lines for 38 plants, none for the allowed ones). The class tools leave templates to gate:25 by Chad's decision, which two valid templates in the tree proved (27 gates green).

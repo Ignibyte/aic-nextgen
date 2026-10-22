@@ -20,6 +20,7 @@
     <file>bin</file>
     <file>gates/src</file>
     <file>gates/architecture</file>
+    <file>workflow/src</file>
 
     <!-- Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96). -->
     <exclude-pattern>*/modules/*/templates/*</exclude-pattern>
@@ -298,6 +299,7 @@
         <properties>
             <property name="rootNamespaces" type="array">
                 <element key="framework/src" value="AIC"/>
+                <element key="workflow/src" value="AIC\Workflow"/>
                 <element key="modules/auth/src" value="App\Auth"/>
                 <element key="modules/content/src" value="App\Content"/>
                 <element key="modules/faq/src" value="App\Faq"/>

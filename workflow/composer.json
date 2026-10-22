@@ -1,0 +1,18 @@
+{
+    "name": "aic/workflow",
+    "description": "AIC's gated agent workflow (#91): a run per ticket through plan, code, check and complete. Ported from droost-workflow by its author and relicensed MIT. Dev-only.",
+    "license": "MIT",
+    "type": "library",
+    "require": {
+        "php": "^8.5",
+        "aic/framework": "0.1.x-dev",
+        "psr/clock": "^1.0"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "AIC\\Workflow\\": "src/"
+        }
+    }
+}

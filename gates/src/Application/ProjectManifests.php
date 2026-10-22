@@ -26,6 +26,7 @@ final readonly class ProjectManifests
         return [
             $root . '/composer.json',
             $root . '/framework/composer.json',
+            $root . '/workflow/composer.json',
         ];
     }
 }

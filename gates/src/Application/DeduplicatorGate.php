@@ -105,6 +105,7 @@ final readonly class DeduplicatorGate
             $root . '/generated',
             $root . '/gates/src',
             $root . '/gates/architecture',
+            $root . '/workflow/src',
         ];
     }
 

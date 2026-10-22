@@ -16,6 +16,7 @@ deptrac:
     - ./generated
     - ./gates/src
     - ./gates/architecture
+    - ./workflow/src
   layers:
     - name: Contracts
       collectors:

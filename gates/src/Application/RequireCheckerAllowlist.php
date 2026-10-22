@@ -65,6 +65,8 @@ final readonly class RequireCheckerAllowlist
         'FilesystemIterator',
         'GlobIterator',
         'SplFileInfo',
+        'SplFileObject',
+        'stdClass',
         'SplObjectStorage',
         'SplStack',
         'SplQueue',
