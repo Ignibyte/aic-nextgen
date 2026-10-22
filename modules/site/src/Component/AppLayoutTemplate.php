@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Site\Component;
 
-use AIC\Component\Contracts\Html;
+use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\RendersMarkup;
 use AIC\Form\Contracts\FormToken;
 
 /**
- * AppLayout's markup, compiled from AppLayout.html.php by bin/aic-build (#97):
+ * AppLayout's markup, compiled from AppLayout.html.php by bin/aic-build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class AppLayoutTemplate
@@ -17,13 +17,14 @@ final readonly class AppLayoutTemplate
     use RendersMarkup;
 
     /**
-     * @param AppLayout $appLayout The component.
+     * @param AppLayout  $appLayout  The component.
+     * @param RenderPass $renderPass The pass that writes its children.
      *
-     * @return Html Its markup.
+     * @return string Its markup.
      */
-    public function render(AppLayout $appLayout): Html
+    public function render(AppLayout $appLayout, RenderPass $renderPass): string
     {
-        return new Html($this->part2($appLayout));
+        return $this->part2($appLayout, $renderPass);
     }
 
     /**
@@ -35,32 +36,34 @@ final readonly class AppLayoutTemplate
     }
 
     /**
-     * @param AppLayout $appLayout The component.
+     * @param AppLayout  $appLayout  The component.
+     * @param RenderPass $renderPass The pass that writes its children.
      *
      * @return string Markup from AppLayout.html.php.
      */
-    private function part1(AppLayout $appLayout): string
+    private function part1(AppLayout $appLayout, RenderPass $renderPass): string
     {
         return self::text(FormToken::HEADER)
             . "\">\n"
-            . $appLayout->trackedAssets->markup()
+            . $renderPass->inline($appLayout->trackedAssets)
             . "</head>\n"
             . '<body><h1>'
             . self::text($appLayout->name)
             . "</h1>\n"
-            . $appLayout->content->render()->markup()
+            . $renderPass->region($appLayout->content)
             . "\n"
-            . $appLayout->nav->render()->markup()
+            . $renderPass->region($appLayout->nav)
             . "\n"
             . $this->part0();
     }
 
     /**
-     * @param AppLayout $appLayout The component.
+     * @param AppLayout  $appLayout  The component.
+     * @param RenderPass $renderPass The pass that writes its children.
      *
      * @return string Markup from AppLayout.html.php.
      */
-    private function part2(AppLayout $appLayout): string
+    private function part2(AppLayout $appLayout, RenderPass $renderPass): string
     {
         return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport"'
             . " content=\"width=device-width, initial-scale=1\">\n"
@@ -73,6 +76,6 @@ final readonly class AppLayoutTemplate
             . '<meta name="tessera-csrf-token" content="'
             . self::text($appLayout->csrfToken)
             . '"><meta name="tessera-csrf-header" content="'
-            . $this->part1($appLayout);
+            . $this->part1($appLayout, $renderPass);
     }
 }

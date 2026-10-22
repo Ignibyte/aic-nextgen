@@ -7,7 +7,7 @@ namespace App\Faq\Block;
 use AIC\Block\Contracts\Block;
 use AIC\Block\Contracts\Placement;
 use AIC\Component\Contracts\Component;
-use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\Paragraph;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -34,6 +34,6 @@ final readonly class FaqNoteBlock implements Block
     #[Override]
     public function component(ServerRequestInterface $serverRequest): Component
     {
-        return new Html('<p id="faq-note">This page, its route and this block were wired from modules/faq/faq.module.php.</p>');
+        return new Paragraph('This page, its route and this block were wired from modules/faq/faq.module.php.', 'faq-note');
     }
 }

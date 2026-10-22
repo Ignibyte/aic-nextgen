@@ -4,26 +4,24 @@ declare(strict_types=1);
 
 namespace App\Note\Component;
 
-use AIC\Component\Contracts\Html;
+use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\KeyedComponent;
-use AIC\Component\Domain\RendersMarkup;
 
 /**
- * NoteList's markup, compiled from NoteList.html.php by bin/aic-build (#97):
+ * NoteList's markup, compiled from NoteList.html.php by bin/aic-build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class NoteListTemplate
 {
-    use RendersMarkup;
-
     /**
-     * @param NoteList $noteList The component.
+     * @param NoteList   $noteList   The component.
+     * @param RenderPass $renderPass The pass that writes its children.
      *
-     * @return Html Its markup.
+     * @return string Its markup.
      */
-    public function render(NoteList $noteList): Html
+    public function render(NoteList $noteList, RenderPass $renderPass): string
     {
-        return new Html($this->part4($noteList));
+        return $this->part4($noteList, $renderPass);
     }
 
     /**
@@ -35,67 +33,65 @@ final readonly class NoteListTemplate
     }
 
     /**
+     * @param RenderPass     $renderPass     The pass that writes its children.
      * @param KeyedComponent $keyedComponent A loop's variable.
      *
      * @return string Markup from NoteList.html.php.
      */
-    private function part1(KeyedComponent $keyedComponent): string
+    private function part1(RenderPass $renderPass, KeyedComponent $keyedComponent): string
     {
         return '<li>'
-            . '<!--t:c NoteList.2:'
-            . self::text($keyedComponent->key())
-            . '-->'
-            . $keyedComponent->render()->markup()
-            . '<!--/t:c-->'
+            . $renderPass->child($keyedComponent, 'NoteList.2:' . $keyedComponent->key())
             . "</li>\n";
     }
 
     /**
-     * @param NoteList $noteList The component.
+     * @param NoteList   $noteList   The component.
+     * @param RenderPass $renderPass The pass that writes its children.
      *
      * @return string Markup from NoteList.html.php.
      */
-    private function part2(NoteList $noteList): string
+    private function part2(NoteList $noteList, RenderPass $renderPass): string
     {
         $markup = '';
 
         foreach ($noteList->links as $keyedComponent) {
-            $markup .= $this->part1($keyedComponent);
+            $markup .= $this->part1($renderPass, $keyedComponent);
         }
 
         return $markup;
     }
 
     /**
-     * @param NoteList $noteList The component.
+     * @param NoteList   $noteList   The component.
+     * @param RenderPass $renderPass The pass that writes its children.
      *
      * @return string Markup from NoteList.html.php.
      */
-    private function part3(NoteList $noteList): string
+    private function part3(NoteList $noteList, RenderPass $renderPass): string
     {
         return "<ul id=\"notes\">\n"
             . '<!--t:b-->'
-            . $this->part2($noteList)
+            . $this->part2($noteList, $renderPass)
             . '<!--/t:b-->'
             . "</ul>\n";
     }
 
     /**
-     * @param NoteList $noteList The component.
+     * @param NoteList   $noteList   The component.
+     * @param RenderPass $renderPass The pass that writes its children.
      *
      * @return string Markup from NoteList.html.php.
      */
-    private function part4(NoteList $noteList): string
+    private function part4(NoteList $noteList, RenderPass $renderPass): string
     {
         return '<h2>Notes '
-            . '<!--t:c NoteList.1-->'
-            . $noteList->count->render()->markup()
-            . '<!--/t:c-->'
+            . $renderPass->child($noteList->count, 'NoteList.1')
             . "</h2>\n"
             . '<!--t:b-->'
             . ($noteList->links === []
                 ? $this->part0()
-                : $this->part3($noteList))
+                : $this->part3($noteList, $renderPass))
             . '<!--/t:b-->';
     }
 }

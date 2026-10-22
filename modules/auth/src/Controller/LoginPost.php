@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Auth\Controller;
 
 use AIC\Auth\Application\Authenticator;
+use AIC\Component\Domain\Heading;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
@@ -51,9 +52,9 @@ final readonly class LoginPost implements Page
         $next = $this->postedFields->value($serverRequest, 'next');
 
         if (!$this->authenticator->login($serverRequest, $login, $this->postedFields->value($serverRequest, 'password'))) {
-            $form = $this->loginForm->render($serverRequest, $login, $next, 'Wrong login or password.');
+            $form = $this->loginForm->form($serverRequest, $login, $next, 'Wrong login or password.');
 
-            return $this->htmlLayout->content('<h2>Sign in</h2>' . $form->markup(), 422);
+            return $this->htmlLayout->content([new Heading('Sign in'), $form], 422);
         }
 
         return new PageRedirect((new SameOriginPath('/account'))->resolve($next));

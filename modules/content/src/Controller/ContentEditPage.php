@@ -8,10 +8,9 @@ use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
 use App\Content\Entity\ContentPage;
-use App\Content\Form\ContentForm;
 use App\Content\Repository\ContentRepository;
 use App\Content\Service\ContentRequest;
-use App\Site\Service\HtmlLayout;
+use App\Content\Service\ContentViews;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -22,16 +21,14 @@ use Psr\Http\Message\ServerRequestInterface;
 final readonly class ContentEditPage implements Page
 {
     /**
-     * @param HtmlLayout        $htmlLayout        Makes the page.
      * @param ContentRepository $contentRepository The pages.
      * @param ContentRequest    $contentRequest    Reads the slug.
-     * @param ContentForm       $contentForm       The editor.
+     * @param ContentViews      $contentViews      The editor and the 404.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
         private ContentRepository $contentRepository,
         private ContentRequest $contentRequest,
-        private ContentForm $contentForm,
+        private ContentViews $contentViews,
     ) {
     }
 
@@ -48,14 +45,11 @@ final readonly class ContentEditPage implements Page
         $slug = $this->contentRequest->slug($serverRequest);
 
         if ($slug === '') {
-            return $this->htmlLayout->content('<p id="not-found">There is no page here.</p>', 404);
+            return $this->contentViews->notFound();
         }
 
         $contentPage = $this->contentRepository->find($slug) ?? new ContentPage($slug, '', '');
 
-        return $this->htmlLayout->content(
-            '<h2>Edit /pages/' . $slug . '</h2>' . $this->contentForm->editor($serverRequest, $contentPage, '')->markup(),
-            200,
-        );
+        return $this->contentViews->editor($serverRequest, $contentPage, '', 200);
     }
 }

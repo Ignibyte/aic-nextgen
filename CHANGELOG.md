@@ -6,6 +6,15 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **One Renderer makes HTML** (#98, part 1 of #87). Components are data: `Component` declares no method, a component is its public props and its template, and no controller, service, form or block builds markup.
+  - **The Renderer:** `AIC\Component\Application\Renderer` is the only code that makes an `Html`, and `Psr7ResponseWriter` the only code that reads one. It writes a page's layout, regions, components and blocks through a `RenderPass`, which keeps Tessera's `<!--t:c-->` markers, keys and props tokens exactly as #37 and #70 spell them.
+  - **Fragments by path:** a Tessera fragment is the same tree rendered by its path (`content/c0/NoteList.1`), so `ComponentRuns`, `Marker` and `Run` are gone. gate:23 gains that step (73).
+  - **The lookup:** `composer run build` generates `ModuleTemplates` and one `<M>Templates` per module, ending at the atoms' hand-written templates (`AtomTemplates`, `ControlTemplates`, `FormTemplates`). It refuses a module component with no template.
+  - **Templates** compile to `render(X, RenderPass): string`: a component through `child()` (`inline()` in a layout), a `Region` through `region()`. An `Html` echo is refused until #99.
+  - **The demo:** pages hand `HtmlLayout::content()` a list of components, and form services return `Form` values. New atoms `Heading`, `Paragraph`, `HiddenInput` and `TrackedAssets`; new module components `SiteNav`, `Ticks`, `ContentPages`, `Greetings`, `Home`, `LineList`, `StockListing`, `StockLinks` and `FaqList`; `ContentViews` holds the page editor and its 404.
+  - **The proof:** a crawl of 84 requests against main abc2964 found every page and fragment byte-identical (41) or equal once Tessera markers are stripped (43), the note pages' regions exact; 27 gates green; the browser check on DDEV and on the compiled site.
+  - **Follow-ups:** #113 (an elephc carry: the template lookups use `if` chains), #114 (the atoms as templates), #115 (the tick stream's markup).
+
 - **Plain PHP templates compile** (#97, part 2 of #88). `composer run build` compiles each gate:25-valid `*.html.php` into the `XTemplate.php` beside its component, and the `.tpl` grammar, `TemplateParser` and `TemplateLines` are gone.
   - **Static types:** the reader types every expression from the component's declarations, by reflection and the constructor's `@param list<T>` (through `phpstan/phpdoc-parser`, a new `require-dev`).
   - **Escaping by type:** a string is escaped; a number is cast, then escaped; `Html` is written raw; a `Region` as it renders; a component between `Name.N` markers, keyed by its `Keyed` key inside a loop. A list, a bool or any other object is refused.

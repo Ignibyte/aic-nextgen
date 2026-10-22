@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Content\Component;
 
-use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\RendersMarkup;
 
 /**
- * ContentArticle's markup, compiled from ContentArticle.html.php by bin/aic-build (#97):
+ * ContentArticle's markup, compiled from ContentArticle.html.php by bin/aic-build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class ContentArticleTemplate
@@ -18,11 +17,11 @@ final readonly class ContentArticleTemplate
     /**
      * @param ContentArticle $contentArticle The component.
      *
-     * @return Html Its markup.
+     * @return string Its markup.
      */
-    public function render(ContentArticle $contentArticle): Html
+    public function render(ContentArticle $contentArticle): string
     {
-        return new Html($this->part2($contentArticle));
+        return $this->part2($contentArticle);
     }
 
     /**

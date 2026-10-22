@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Controller\Contracts;
 
+use AIC\Component\Contracts\Layout;
 use JsonSerializable;
 use Psr\Http\Message\ResponseInterface;
 
@@ -18,19 +19,21 @@ interface ResponseWriter
 {
     /**
      * @param int    $status The status.
-     * @param string $html   The whole HTML document.
+     * @param Layout $layout The page, rendered as the whole HTML document (#98).
      *
      * @return ResponseInterface The response.
      */
-    public function document(int $status, string $html): ResponseInterface;
+    public function document(int $status, Layout $layout): ResponseInterface;
 
     /**
-     * @param int    $status The page's status.
-     * @param string $body   Tessera fragments: the title, the tracked assets and one template per target (#70).
+     * @param int          $status  The page's status.
+     * @param Layout       $layout  The page.
+     * @param list<string> $targets The regions and component paths Tessera asked for, in order (#70).
      *
-     * @return ResponseInterface The response, `text/vnd.tessera+html` with `Tessera-Protocol: 0`.
+     * @return ResponseInterface Tessera fragments, `text/vnd.tessera+html` with `Tessera-Protocol: 0`: the title, the
+     *                           tracked assets and one template per target; the whole document when one is missing.
      */
-    public function fragments(int $status, string $body): ResponseInterface;
+    public function fragments(int $status, Layout $layout, array $targets): ResponseInterface;
 
     /**
      * @param string $location Where the browser loads in full.

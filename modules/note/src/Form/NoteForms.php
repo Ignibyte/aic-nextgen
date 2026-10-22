@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Note\Form;
 
-use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\Alert;
 use AIC\Component\Domain\AlertSeverity;
 use AIC\Component\Domain\Button;
@@ -40,7 +39,7 @@ final readonly class NoteForms
      * @param string                 $body          The body to show in the field.
      * @param string                 $error         The error to show; empty for none.
      *
-     * @return Html The form.
+     * @return Form The form.
      */
     public function form(
         ServerRequestInterface $serverRequest,
@@ -48,18 +47,19 @@ final readonly class NoteForms
         string $title,
         string $body,
         string $error,
-    ): Html {
-        $alert = $error === ''
-            ? new Html('')
-            : (new Alert(AlertSeverity::Error, $error, 'form-error'))->render();
-        $html = $alert
-            ->append((new FormField('Title', 'title', new Input('title', 'title', $title, $error !== '')))->render())
-            ->append((new FormField('Body', 'body', new Textarea('body', 'body', $body)))->render())
-            ->append((new Button('Save', 'submit', ''))->render());
+    ): Form {
+        $alerts = $error === ''
+            ? []
+            : [new Alert(AlertSeverity::Error, $error, 'form-error')];
+        $fields = [
+            $this->noteEnvelope->field($action),
+            ...$alerts,
+            new FormField('Title', 'title', new Input('title', 'title', $title, $error !== '')),
+            new FormField('Body', 'body', new Textarea('body', 'body', $body)),
+            new Button('Save', 'submit', ''),
+        ];
 
-        $sealed = $this->noteEnvelope->field($action)->append($html);
-
-        return (new Form('note-form', $action, $sealed, $this->formTokens->issue($serverRequest)))->render();
+        return new Form('note-form', $action, $fields, $this->formTokens->issue($serverRequest));
     }
 
     /**
@@ -69,9 +69,9 @@ final readonly class NoteForms
      *
      * @throws JsonException When the envelope cannot be encoded.
      *
-     * @return Html The form again, holding what was posted and showing the error.
+     * @return Form The form again, holding what was posted and showing the error.
      */
-    public function again(ServerRequestInterface $serverRequest, string $action, PostedNote $postedNote): Html
+    public function again(ServerRequestInterface $serverRequest, string $action, PostedNote $postedNote): Form
     {
         return $this->form($serverRequest, $action, $postedNote->title, $postedNote->body, $postedNote->error);
     }
@@ -80,14 +80,12 @@ final readonly class NoteForms
      * @param ServerRequestInterface $serverRequest The request, with its session.
      * @param string                 $path          The note's path.
      *
-     * @return Html The form whose button deletes the note.
+     * @return Form The form whose button deletes the note.
      */
-    public function deleteForm(ServerRequestInterface $serverRequest, string $path): Html
+    public function deleteForm(ServerRequestInterface $serverRequest, string $path): Form
     {
-        $html = (new Button('Delete', 'submit', 'delete'))->render();
+        $fields = [$this->noteEnvelope->field($path), new Button('Delete', 'submit', 'delete')];
 
-        $sealed = $this->noteEnvelope->field($path)->append($html);
-
-        return (new Form('', $path . '/delete', $sealed, $this->formTokens->issue($serverRequest)))->render();
+        return new Form('', $path . '/delete', $fields, $this->formTokens->issue($serverRequest));
     }
 }

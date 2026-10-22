@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Content\Form;
 
-use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\Alert;
 use AIC\Component\Domain\AlertSeverity;
 use AIC\Component\Domain\Button;
@@ -35,18 +34,21 @@ final readonly class ContentForm
      * @param ContentPage            $contentPage   The page as it stands, or as posted.
      * @param string                 $error         Why the last save failed; empty for none.
      *
-     * @return Html The editor, posting to the page's path under /account.
+     * @return Form The editor, posting to the page's path under /account.
      */
-    public function editor(ServerRequestInterface $serverRequest, ContentPage $contentPage, string $error): Html
+    public function editor(ServerRequestInterface $serverRequest, ContentPage $contentPage, string $error): Form
     {
-        $html = ($error === '' ? new Html('') : (new Alert(AlertSeverity::Error, $error, 'content-error'))->render())
-            ->append((new FormField('Title', 'title', new Input('title', 'title', $contentPage->title)))->render())
-            ->append((new FormField('Text', 'body', new Textarea('body', 'body', $contentPage->body)))->render())
-            ->append((new Button('Save', 'submit', ''))->render());
+        $alerts = $error === ''
+            ? []
+            : [new Alert(AlertSeverity::Error, $error, 'content-error')];
+        $fields = [
+            ...$alerts,
+            new FormField('Title', 'title', new Input('title', 'title', $contentPage->title)),
+            new FormField('Text', 'body', new Textarea('body', 'body', $contentPage->body)),
+            new Button('Save', 'submit', ''),
+        ];
 
-        $action = '/account/pages/' . $contentPage->slug;
-
-        return (new Form('content-form', $action, $html, $this->formTokens->issue($serverRequest)))->render();
+        return new Form('content-form', '/account/pages/' . $contentPage->slug, $fields, $this->formTokens->issue($serverRequest));
     }
 
     /**
@@ -54,14 +56,19 @@ final readonly class ContentForm
      * @param string                 $slug          The slug to show again.
      * @param string                 $error         Why it was refused; empty for none.
      *
-     * @return Html The form that starts a page by its slug.
+     * @return Form The form that starts a page by its slug.
      */
-    public function starter(ServerRequestInterface $serverRequest, string $slug, string $error): Html
+    public function starter(ServerRequestInterface $serverRequest, string $slug, string $error): Form
     {
-        $html = ($error === '' ? new Html('') : (new Alert(AlertSeverity::Error, $error, 'slug-error'))->render())
-            ->append((new FormField('New page, by slug', 'slug', new Input('slug', 'slug', $slug)))->render())
-            ->append((new Button('Write it', 'submit', 'start-page'))->render());
+        $alerts = $error === ''
+            ? []
+            : [new Alert(AlertSeverity::Error, $error, 'slug-error')];
+        $fields = [
+            ...$alerts,
+            new FormField('New page, by slug', 'slug', new Input('slug', 'slug', $slug)),
+            new Button('Write it', 'submit', 'start-page'),
+        ];
 
-        return (new Form('content-start', '/account/pages', $html, $this->formTokens->issue($serverRequest)))->render();
+        return new Form('content-start', '/account/pages', $fields, $this->formTokens->issue($serverRequest));
     }
 }

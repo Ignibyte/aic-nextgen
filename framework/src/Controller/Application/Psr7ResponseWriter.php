@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace AIC\Controller\Application;
 
+use AIC\Component\Application\Renderer;
+use AIC\Component\Contracts\Layout;
+use AIC\Component\Exception\UnknownComponent;
 use AIC\Controller\Contracts\EventSource;
 use AIC\Controller\Contracts\ResponseWriter;
 use AIC\Http\Application\ResponseBuilder;
@@ -35,35 +38,51 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
 {
     /**
      * @param ResponseBuilder $responseBuilder Makes the PSR-7 responses.
+     * @param Renderer        $renderer        Renders a page's layout, the only reader of its markup (#98).
      */
     public function __construct(
         private ResponseBuilder $responseBuilder,
+        private Renderer $renderer,
     ) {
     }
 
     /**
      * @param int    $status The status.
-     * @param string $html   The whole HTML document.
+     * @param Layout $layout The page.
      *
-     * @return ResponseInterface The HTML response.
+     * @throws UnknownComponent When no template renders one of its components.
+     *
+     * @return ResponseInterface The HTML response, varied.
      */
     #[Override]
-    public function document(int $status, string $html): ResponseInterface
+    public function document(int $status, Layout $layout): ResponseInterface
     {
-        return $this->varied($this->responseBuilder->create($status, 'text/html; charset=utf-8', $html));
+        $html = $this->renderer->document($layout);
+
+        return $this->varied($this->responseBuilder->create($status, 'text/html; charset=utf-8', $html->markup()));
     }
 
     /**
-     * @param int    $status The page's status.
-     * @param string $body   Tessera fragments.
+     * @param int          $status  The page's status.
+     * @param Layout       $layout  The page.
+     * @param list<string> $targets The regions and component paths Tessera asked for.
      *
-     * @return ResponseInterface The response, `text/vnd.tessera+html` with `Tessera-Protocol: 0`, varied.
+     * @throws UnknownComponent When no template renders one of its components.
+     *
+     * @return ResponseInterface The response, `text/vnd.tessera+html` with `Tessera-Protocol: 0`, varied; the whole
+     *                           document when the page has no such target.
      */
     #[Override]
-    public function fragments(int $status, string $body): ResponseInterface
+    public function fragments(int $status, Layout $layout, array $targets): ResponseInterface
     {
+        $html = $this->renderer->fragments($layout, $targets);
+
+        if ($html === null) {
+            return $this->document($status, $layout);
+        }
+
         return $this->varied($this->responseBuilder->withHeader(
-            $this->responseBuilder->create($status, 'text/vnd.tessera+html; charset=utf-8', $body),
+            $this->responseBuilder->create($status, 'text/vnd.tessera+html; charset=utf-8', $html->markup()),
             TesseraRequest::PROTOCOL,
             TesseraRequest::VERSION,
         ));

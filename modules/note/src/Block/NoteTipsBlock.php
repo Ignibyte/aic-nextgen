@@ -7,7 +7,7 @@ namespace App\Note\Block;
 use AIC\Block\Contracts\Block;
 use AIC\Block\Contracts\Placement;
 use AIC\Component\Contracts\Component;
-use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\Paragraph;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -33,6 +33,6 @@ final readonly class NoteTipsBlock implements Block
     #[Override]
     public function component(ServerRequestInterface $serverRequest): Component
     {
-        return new Html('<p id="note-tips">A note keeps a title and a body; edit or delete it from its page.</p>');
+        return new Paragraph('A note keeps a title and a body; edit or delete it from its page.', 'note-tips');
     }
 }

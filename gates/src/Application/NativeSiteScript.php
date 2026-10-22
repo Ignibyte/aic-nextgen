@@ -98,8 +98,9 @@ final readonly class NativeSiteScript
     }
 
     /**
-     * @return list<NativeSiteStep> Tessera requests (#70): another protocol refused, a component and two regions as
-     *                              fragments, another layout and a missing target as the whole document.
+     * @return list<NativeSiteStep> Tessera requests (#70): another protocol refused, a component, two regions and a
+     *                              template's child (#98) as fragments, another layout and a missing target as the
+     *                              whole document.
      */
     private function tessera(): array
     {
@@ -112,6 +113,7 @@ final readonly class NativeSiteScript
             new NativeSiteStep('tessera, a component', 'GET', '/stock', '', $app . 'content/stock-list', 200, false),
             new NativeSiteStep('tessera, two regions', 'GET', '/notes', '', $app . 'content, nav', 200, false),
             new NativeSiteStep('tessera, a region visit', 'GET', '/notes', '', $app . 'content', 200, false),
+            new NativeSiteStep('tessera, a template child', 'GET', '/notes', '', $app . 'content/c0/NoteList.1', 200, false),
             new NativeSiteStep('tessera, another layout', 'GET', '/stock', '', $layout, 200, false),
             new NativeSiteStep('tessera, a missing target', 'GET', '/stock', '', $app . 'content/nope', 200, false),
             new NativeSiteStep('tessera, altered props', 'GET', '/stock', '', $app . 'content/stock-list e30.forged', 400, false),

@@ -7,14 +7,14 @@ namespace App\Auth\Controller;
 use AIC\Auth\Application\Authenticator;
 use AIC\Component\Domain\Button;
 use AIC\Component\Domain\Form;
+use AIC\Component\Domain\Heading;
+use AIC\Component\Domain\Paragraph;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Form\Application\FormTokens;
 use App\Site\Service\HtmlLayout;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
-
-use function htmlspecialchars;
 
 /**
  * GET /account: who is signed in, and the sign-out button. The route is
@@ -43,11 +43,10 @@ final readonly class AccountPage implements Page
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
         $user = $this->authenticator->userId($serverRequest);
-        $html = (new Button('Sign out', 'submit', 'sign-out'))->render();
-        $signOut = (new Form('', '/logout', $html, $this->formTokens->issue($serverRequest)))->render();
+        $form = new Form('', '/logout', [new Button('Sign out', 'submit', 'sign-out')], $this->formTokens->issue($serverRequest));
 
         return $this->htmlLayout->content(
-            '<h2>Account</h2><p id="signed-in">Signed in as ' . htmlspecialchars($user) . '.</p>' . $signOut->markup(),
+            [new Heading('Account'), new Paragraph('Signed in as ' . $user . '.', 'signed-in'), $form],
             200,
         );
     }

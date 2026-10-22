@@ -68,19 +68,7 @@ final readonly class Regions
     /**
      * @param string $name A region's name.
      *
-     * @throws InvalidArgumentException When the name breaks the grammar.
-     *
-     * @return Html The region alone; its empty element when the page left it unfilled.
-     */
-    public function html(string $name): Html
-    {
-        return $this->region($name)->render();
-    }
-
-    /**
-     * @param string $name A region's name.
-     *
-     * @return Region The region of that name the page filled, or an empty one: a layout's template echoes it as is.
+     * @return Region The region of that name the page filled, or an empty one.
      */
     public function region(string $name): Region
     {

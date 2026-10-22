@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Note\Controller;
 
-use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\Heading;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
@@ -58,7 +58,7 @@ final readonly class NoteShowPage implements Page
         return $this->noteViews->page(
             [
                 new NoteCard($note),
-                new Html('<h2>Edit</h2>'),
+                new Heading('Edit'),
                 $this->noteForms->form($serverRequest, $path, $note->title, $note->body, ''),
                 $this->noteForms->deleteForm($serverRequest, $path),
             ],

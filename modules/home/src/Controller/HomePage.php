@@ -8,12 +8,15 @@ use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use App\Greeting\Form\GreetingForm;
+use App\Home\Component\Home;
+use App\Home\Entity\HomeDemo;
+use App\Home\Entity\HomeFact;
 use App\Site\Service\HtmlLayout;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_map;
 use function explode;
-use function htmlspecialchars;
 use function in_array;
 use function urldecode;
 
@@ -66,78 +69,26 @@ final readonly class HomePage implements Page
     /**
      * @param ServerRequestInterface $serverRequest The request.
      *
-     * @return PageResponse The page.
+     * @return PageResponse The home page.
      */
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        return $this->htmlLayout->content(
-            '<h2>Demos</h2>' . self::links()
-            . '<h2>This request</h2><p>The AIC kernel is serving this request.</p><dl>'
-            . self::item('app-name', 'App name (config/app.php)', $this->appConfig->name)
-            . self::item('app-booted', 'App booted', $this->bootedAt)
-            . self::item('request-method', 'Request method', $serverRequest->getMethod())
-            . self::item('request-path', 'Request path', $serverRequest->getUri()->getPath())
-            . '</dl><ul id="query">' . self::queryItems($serverRequest->getUri()->getQuery()) . '</ul>'
-            . $this->greetingForm->render($serverRequest, '', ''),
-            200,
-        );
-    }
-
-    /**
-     * @param string $id    The definition's element id.
-     * @param string $term  The term.
-     * @param string $value The value, unescaped.
-     *
-     * @return string One `<dt>` and `<dd>`.
-     */
-    private static function item(string $id, string $term, string $value): string
-    {
-        return '<dt>' . $term . '</dt><dd id="' . $id . '">' . htmlspecialchars($value) . '</dd>';
-    }
-
-    /**
-     * @param string $query The raw query string.
-     *
-     * @return string One `<li>` per `name=value` pair, decoded and escaped.
-     */
-    private static function queryItems(string $query): string
-    {
-        $items = '';
-
-        foreach ($query === '' ? [] : explode('&', $query) as $pair) {
-            $items .= '<li>' . htmlspecialchars(urldecode($pair)) . '</li>';
-        }
-
-        return $items;
-    }
-
-    /**
-     * @return string The list of every demo, each a link.
-     */
-    private static function links(): string
-    {
-        $links = '';
+        $demos = [];
 
         foreach (self::DEMOS as $path => $label) {
-            $links .= self::link($path, $label);
+            $demos[] = new HomeDemo($path, $label, in_array($path, self::PLAIN, true));
         }
 
-        return '<ul id="demos">' . $links . '</ul>';
-    }
+        $facts = [
+            new HomeFact('app-name', 'App name (config/app.php)', $this->appConfig->name),
+            new HomeFact('app-booted', 'App booted', $this->bootedAt),
+            new HomeFact('request-method', 'Request method', $serverRequest->getMethod()),
+            new HomeFact('request-path', 'Request path', $serverRequest->getUri()->getPath()),
+        ];
+        $query = $serverRequest->getUri()->getQuery();
+        $pairs = array_map(urldecode(...), $query === '' ? [] : explode('&', $query));
 
-    /**
-     * @param string $path  A demo's path.
-     * @param string $label What it shows.
-     *
-     * @return string Its list item, left to the browser when it is not an HTML page.
-     */
-    private static function link(string $path, string $label): string
-    {
-        $plain = in_array($path, self::PLAIN, true)
-            ? ' data-enhance="off"'
-            : '';
-
-        return '<li><a class="aic-link" href="' . $path . '"' . $plain . '>' . $label . '</a></li>';
+        return $this->htmlLayout->content([new Home($demos, $facts, $pairs, $this->greetingForm->form($serverRequest, '', ''))], 200);
     }
 }

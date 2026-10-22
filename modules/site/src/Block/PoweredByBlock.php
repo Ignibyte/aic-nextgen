@@ -7,7 +7,7 @@ namespace App\Site\Block;
 use AIC\Block\Contracts\Block;
 use AIC\Block\Contracts\Placement;
 use AIC\Component\Contracts\Component;
-use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\Paragraph;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -33,6 +33,6 @@ final readonly class PoweredByBlock implements Block
     #[Override]
     public function component(ServerRequestInterface $serverRequest): Component
     {
-        return new Html('<p id="powered-by">Served by AIC.</p>');
+        return new Paragraph('Served by AIC.', 'powered-by');
     }
 }

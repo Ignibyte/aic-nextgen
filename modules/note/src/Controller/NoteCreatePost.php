@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Note\Controller;
 
-use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\Heading;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
@@ -51,7 +51,7 @@ final readonly class NoteCreatePost implements Page
         if ($postedNote->error !== '') {
             $form = $this->noteForms->again($serverRequest, '/notes', $postedNote);
 
-            return $this->noteViews->page([new Html('<h2>New note</h2>'), $form], 422);
+            return $this->noteViews->page([new Heading('New note'), $form], 422);
         }
 
         return new PageRedirect('/notes/' . $this->noteRepository->create($postedNote->title, $postedNote->body));

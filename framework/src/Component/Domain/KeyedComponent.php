@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace AIC\Component\Domain;
 
 use AIC\Component\Contracts\Component;
-use AIC\Component\Contracts\Html;
 use AIC\Component\Contracts\Keyed;
 use InvalidArgumentException;
 use Override;
@@ -29,7 +28,7 @@ final readonly class KeyedComponent implements Keyed
      */
     public function __construct(
         private string $key,
-        private Component $component,
+        public Component $component,
         private string $props = '',
     ) {
         if ($props !== '' && (strlen($props) > 1_024 || preg_match('#^[A-Za-z0-9\\-_.~+/=]+$#', $props) !== 1)) {
@@ -59,14 +58,5 @@ final readonly class KeyedComponent implements Keyed
     public function props(): string
     {
         return $this->props;
-    }
-
-    /**
-     * @return Html What the component renders.
-     */
-    #[Override]
-    public function render(): Html
-    {
-        return $this->component->render();
     }
 }

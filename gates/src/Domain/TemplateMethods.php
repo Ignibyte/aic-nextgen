@@ -182,7 +182,11 @@ final class TemplateMethods
         foreach ($parameters as $at => $parameter) {
             $variable = self::variable($parameter);
             $lines .= '     * @param ' . str_pad($types[$at], $width) . ' ' . str_pad('$' . $variable, $nameWidth) . ' '
-                . ($variable === $this->component ? 'The component.' : "A loop's variable.") . "\n";
+                . match ($variable) {
+                    $this->component => 'The component.',
+                    'renderPass' => 'The pass that writes its children.',
+                    default => "A loop's variable.",
+                } . "\n";
         }
 
         return "    /**\n" . ($lines === '' ? '' : $lines . "     *\n")

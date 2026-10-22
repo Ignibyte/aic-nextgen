@@ -11,7 +11,7 @@ declare(strict_types=1);
 use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\RouteMethod;
 use App\Faq\Block\FaqNoteBlock;
-use App\Faq\Component\FaqItem;
+use App\Faq\Component\FaqList;
 use App\Faq\Controller\FaqApi;
 use App\Faq\Controller\FaqPage;
 use App\Faq\Service\DemoFaqEntries;
@@ -23,4 +23,4 @@ return (new ModuleManifest('faq'))
     ->route(RouteMethod::Get, '/api/faq', FaqApi::class)
     ->binding(FaqEntries::class, DemoFaqEntries::class)
     ->block(FaqNoteBlock::class)
-    ->export(FaqItem::class);
+    ->export(FaqList::class);

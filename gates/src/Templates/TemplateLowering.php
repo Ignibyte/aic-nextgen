@@ -41,12 +41,14 @@ final class TemplateLowering
 
     /**
      * @param string         $name           The component's short class name, for its keys.
+     * @param bool           $layout         Whether the component is a layout, whose components are written inline.
      * @param TemplateTypes  $templateTypes  Types expressions.
      * @param TemplateNames  $templateNames  Prints expressions.
      * @param TemplateEchoes $templateEchoes The escaping rule.
      */
     public function __construct(
         private readonly string $name,
+        private readonly bool $layout,
         private readonly TemplateTypes $templateTypes = new TemplateTypes(),
         private readonly TemplateNames $templateNames = new TemplateNames(),
         private readonly TemplateEchoes $templateEchoes = new TemplateEchoes(),
@@ -167,7 +169,9 @@ final class TemplateLowering
     private function echo(Expr $expr, array $scope, bool $inLoop): TemplateNode
     {
         $type = $this->templateTypes->type($expr, $scope);
-        $marker = $this->name . '.' . ($this->components + 1);
+        $marker = $this->layout
+            ? ''
+            : $this->name . '.' . ($this->components + 1);
         $templateNode = $this->templateEchoes->echo($this->code($expr, $scope), $type, $marker, $inLoop);
 
         if ($templateNode->kind === TemplateNodeKind::Component) {

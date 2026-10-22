@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Note\Controller;
 
-use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\Heading;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
@@ -45,7 +45,7 @@ final readonly class NoteListPage implements Page
         return $this->noteViews->page(
             [
                 $this->noteViews->noteList($this->noteRepository->all()),
-                new Html('<h2>New note</h2>'),
+                new Heading('New note'),
                 $this->noteForms->form($serverRequest, $serverRequest->getUri()->getPath(), '', '', ''),
             ],
             200,

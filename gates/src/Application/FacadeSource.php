@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use AIC\Component\Application\ComponentTemplates;
 use AIC\Container\Contracts\ServiceRegistry;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
@@ -171,6 +172,15 @@ final readonly class FacadeSource
             {
                 return (new ModulePrefixes())->all();
             }
+
+            /**
+             * @return ComponentTemplates The modules' component templates, ending at the framework's atoms (#98).
+             */
+            #[Override]
+            public function templates(): ComponentTemplates
+            {
+                return new ModuleTemplates();
+            }
         PHP;
 
     /**
@@ -212,7 +222,14 @@ final readonly class FacadeSource
      */
     public function files(array $aggregates, array $rootless): array
     {
-        $web = [WebWiring::class, Override::class, RouteCollector::class, DuplicateRouteException::class, Schedule::class];
+        $web = [
+            WebWiring::class,
+            Override::class,
+            RouteCollector::class,
+            DuplicateRouteException::class,
+            Schedule::class,
+            ComponentTemplates::class,
+        ];
         $console = [ConsoleWiring::class, Override::class, Migration::class, Schedule::class];
 
         $consoleParts = $this->parts(self::CONSOLE_PARTS, $aggregates, $rootless);

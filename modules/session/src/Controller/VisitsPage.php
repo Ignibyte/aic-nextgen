@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Session\Controller;
 
-use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\Button;
 use AIC\Component\Domain\Form;
+use AIC\Component\Domain\HiddenInput;
+use AIC\Component\Domain\Paragraph;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Form\Application\FormTokens;
@@ -44,14 +45,10 @@ final readonly class VisitsPage implements Page
         $session = $this->requestSession->read($serverRequest);
         $visits = (int) ($session->get('visits') ?? '0') + 1;
         $session->set('visits', (string) $visits);
-        $next = new Html('<input type="hidden" name="next" value="/visits">');
-        $button = $next->append((new Button('Forget me', 'submit', ''))->render());
-        $html = (new Form('forget', '/visits/forget', $button, $this->formTokens->issue($serverRequest)))->render();
+        $fields = [new HiddenInput('next', '/visits'), new Button('Forget me', 'submit', '')];
+        $form = new Form('forget', '/visits/forget', $fields, $this->formTokens->issue($serverRequest));
+        $seen = 'This session has seen this page ' . $visits . ($visits === 1 ? ' time.' : ' times.');
 
-        return $this->htmlLayout->content(
-            '<p id="visits">This session has seen this page ' . $visits . ($visits === 1 ? ' time.' : ' times.') . '</p>'
-            . $html->markup(),
-            200,
-        );
+        return $this->htmlLayout->content([new Paragraph($seen, 'visits'), $form], 200);
     }
 }

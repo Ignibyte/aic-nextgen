@@ -1,0 +1,2 @@
+<?php /** @var \App\Content\Component\ContentPages $contentPages */ ?>
+<?php if ($contentPages->links === []): ?><p id="content-pages">None yet.</p><?php else: ?><ul id="content-pages"><?php foreach ($contentPages->links as $keyedComponent): ?><li><?= $keyedComponent ?></li><?php endforeach ?></ul><?php endif ?>

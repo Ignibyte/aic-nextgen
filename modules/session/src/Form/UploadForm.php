@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Session\Form;
 
-use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\Alert;
 use AIC\Component\Domain\AlertSeverity;
 use AIC\Component\Domain\Button;
@@ -33,15 +32,16 @@ final readonly class UploadForm
      * @param ServerRequestInterface $serverRequest The request, with its session.
      * @param string                 $error         Why the last upload was refused; empty for none.
      *
-     * @return Html The form.
+     * @return Form The form.
      */
-    public function render(ServerRequestInterface $serverRequest, string $error): Html
+    public function form(ServerRequestInterface $serverRequest, string $error): Form
     {
         $accept = 'image/png,image/jpeg,image/gif,application/pdf,text/plain';
-        $html = ($error === '' ? new Html('') : (new Alert(AlertSeverity::Error, $error, 'upload-error'))->render())
-            ->append((new FormField('File', 'file', new FileInput('file', 'file', $accept)))->render())
-            ->append((new Button('Upload', 'submit', ''))->render());
+        $alerts = $error === ''
+            ? []
+            : [new Alert(AlertSeverity::Error, $error, 'upload-error')];
+        $fields = [...$alerts, new FormField('File', 'file', new FileInput('file', 'file', $accept)), new Button('Upload', 'submit', '')];
 
-        return (new Form('upload-form', '/uploads', $html, $this->formTokens->issue($serverRequest), FormEncoding::Multipart))->render();
+        return new Form('upload-form', '/uploads', $fields, $this->formTokens->issue($serverRequest), FormEncoding::Multipart);
     }
 }

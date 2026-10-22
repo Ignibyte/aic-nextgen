@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Component\Application\ComponentTemplates;
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use AIC\Schedule\Domain\Schedule;
@@ -35,4 +36,9 @@ interface WebWiring
      * @return list<string> The modules' protected path prefixes.
      */
     public function protectedPrefixes(): array;
+
+    /**
+     * @return ComponentTemplates The modules' component templates, ending at the framework's atoms (#98).
+     */
+    public function templates(): ComponentTemplates;
 }

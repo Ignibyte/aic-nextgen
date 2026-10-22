@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Component\Application\Renderer;
 use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Application\PageHandlers;
 use AIC\Controller\Application\Psr7ResponseWriter;
@@ -41,14 +42,14 @@ final readonly class HandlerContexts
     }
 
     /**
-     * @param WebWiring $webWiring The modules' plugins, schedules and protected prefixes.
+     * @param WebWiring $webWiring The modules' plugins, schedules, protected prefixes and templates.
      *
      * @return HandlerContext The context.
      */
     public function create(WebWiring $webWiring): HandlerContext
     {
         $plugins = new Plugins($webWiring instanceof PluginWiring ? $webWiring : null);
-        $psr7ResponseWriter = new Psr7ResponseWriter($this->responseBuilder);
+        $psr7ResponseWriter = new Psr7ResponseWriter($this->responseBuilder, new Renderer($webWiring->templates()));
 
         return new HandlerContext(
             new PageHandlers($psr7ResponseWriter, $plugins->blocks()),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Session\Controller;
 
+use AIC\Component\Domain\Paragraph;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Session\Application\RequestSession;
@@ -11,8 +12,6 @@ use App\Session\Form\UploadForm;
 use App\Site\Service\HtmlLayout;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
-
-use function htmlspecialchars;
 
 /**
  * GET /uploads: the upload form, and what the last accepted upload was, kept
@@ -50,9 +49,6 @@ final readonly class UploadsPage implements Page
             ? 'Nothing uploaded yet.'
             : 'Accepted ' . $last . '.';
 
-        return $this->htmlLayout->content(
-            '<p id="upload-last">' . htmlspecialchars($summary) . '</p>' . $this->uploadForm->render($serverRequest, '')->markup(),
-            200,
-        );
+        return $this->htmlLayout->content([new Paragraph($summary, 'upload-last'), $this->uploadForm->form($serverRequest, '')], 200);
     }
 }

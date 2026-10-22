@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Stock\Controller;
 
+use AIC\Component\Domain\Heading;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
@@ -55,9 +56,9 @@ final readonly class StockPost implements Page
         $problem = $stockEntry->problem();
 
         if ($problem !== '') {
-            $form = $this->stockForm->render($serverRequest, $stockEntry, $problem);
+            $form = $this->stockForm->form($serverRequest, $stockEntry, $problem);
 
-            return $this->htmlLayout->content('<h2>Stock</h2>' . $form->markup(), 422);
+            return $this->htmlLayout->content([new Heading('Stock'), $form], 422);
         }
 
         $this->stockRepository->add($stockEntry);

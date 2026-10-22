@@ -7,10 +7,7 @@ namespace AIC\Tessera\Domain;
 use AIC\Component\Contracts\Layout;
 
 use function array_any;
-use function array_slice;
-use function count;
 use function explode;
-use function htmlspecialchars;
 use function in_array;
 use function preg_match;
 use function str_contains;
@@ -102,38 +99,21 @@ final readonly class TesseraRequest
     }
 
     /**
-     * The fragment response's body for a visit, a refresh, a submission or
-     * an action whose targets all exist under the page's layout (protocol
-     * 5.1, 5.3). A visit also brings every other region of the layout, so
-     * what lies outside its targets (the nav's current link) follows the
-     * page (#71); the visitor's CSRF token comes too, as login renews it.
+     * The targets a fragment answer renders for a visit, a refresh, a
+     * submission or an action (protocol 5.1, 5.3). A visit also brings every
+     * other region of the layout, so what lies outside its targets (the nav's
+     * current link) follows the page (#71). The Renderer answers with the
+     * whole document when one of them is not on the page (#98).
      *
-     * @param Layout $layout The page, rendered.
+     * @param Layout $layout The page.
      *
-     * @return string The title, the tracked assets and one template per target; empty when the whole document answers.
+     * @return list<string> The targets in order; none when the whole document answers.
      */
-    public function fragments(Layout $layout): string
+    public function targets(Layout $layout): array
     {
-        if (!$this->asksFragmentsOf($layout)) {
-            return '';
-        }
-
-        $templates = '';
-
-        foreach ($this->answered($layout) as $target) {
-            $markup = $this->markup($layout, $target);
-
-            if ($markup === '') {
-                return '';
-            }
-
-            $templates .= '<template data-target="' . $target . '">' . $markup . '</template>';
-        }
-
-        return $templates === ''
-            ? ''
-            : '<title>' . htmlspecialchars($layout->title()) . '</title>' . self::csrfMeta($layout->csrfToken())
-                . $layout->trackedAssets()->markup() . $templates;
+        return $this->asksFragmentsOf($layout)
+            ? $this->answered($layout)
+            : [];
     }
 
     /**
@@ -194,28 +174,6 @@ final readonly class TesseraRequest
     }
 
     /**
-     * @param Layout $layout The page.
-     * @param string $target A region, or a component's path.
-     *
-     * @return string The target's markup as the page renders it; empty when the page has no such target.
-     */
-    private function markup(Layout $layout, string $target): string
-    {
-        $segments = explode('/', $target);
-        $region = $segments[0];
-
-        if (!in_array($region, $layout->names(), true)) {
-            return '';
-        }
-
-        $html = $layout->regions()->html($region)->markup();
-
-        return count($segments) === 1
-            ? $html
-            : (new ComponentRuns())->find($html, array_slice($segments, 1));
-    }
-
-    /**
      * @param list<string> $targets The requested targets.
      *
      * @return bool Whether one is a region rather than a component path: Tessera's design answers a GET naming a
@@ -224,18 +182,6 @@ final readonly class TesseraRequest
     private static function namesRegion(array $targets): bool
     {
         return array_any($targets, static fn (string $target): bool => !str_contains($target, '/'));
-    }
-
-    /**
-     * @param string $token The visitor's CSRF token; empty when none was issued.
-     *
-     * @return string The `tessera-csrf-token` meta that renews it, or nothing.
-     */
-    private static function csrfMeta(string $token): string
-    {
-        return $token === ''
-            ? ''
-            : '<meta name="tessera-csrf-token" content="' . htmlspecialchars($token) . '">';
     }
 
     /**

@@ -15,7 +15,10 @@ declare(strict_types=1);
  * connects on its first query. A component template, plain PHP
  * (`modules/<m>/templates/components/X.html.php`, or a page layout in
  * `templates/layouts/`), is checked by gate:25's grammar, typed, and compiled
- * to `XTemplate.php` beside the component its typing line names (#97).
+ * to `XTemplate.php` beside the component its typing line names (#97); the
+ * lookup that finds each component's template is generated/ModuleTemplates and
+ * one `<M>Templates` per module, and a module component with no template is
+ * refused (#98).
  * The assets (#39, #95): each module's assets/*.css in requires order, then
  * the site theme's assets/*.css, build public/assets/aic.css; a module's other
  * assets are copied to public/assets/<module>/. The build owns public/assets/:
@@ -46,6 +49,7 @@ use Gates\Application\PublicAssetOrphans;
 use Gates\Application\SurfaceManifest;
 use Gates\Application\TemplateBuild;
 use Gates\Application\TemplateCompiler;
+use Gates\Application\TemplatesSource;
 use Gates\Application\TesseraBuild;
 use Gates\Infrastructure\SystemProcessRunner;
 use Gates\Templates\PlainTemplateReader;
@@ -66,10 +70,15 @@ $root = dirname(__DIR__);
 $arguments = $argv ?? [];
 $checking = ($arguments[1] ?? '') === '--check';
 $moduleBuild = new ModuleBuild($root);
+$templateBuild = new TemplateBuild(new PlainTemplateReader(), new TemplateCompiler(), $root);
 
 try {
     $modules = $moduleBuild->modules();
     $generated = $moduleBuild->files($modules);
+
+    foreach ((new TemplatesSource())->files($root, $modules, $templateBuild->components()) as $file => $source) {
+        $generated[$root . '/generated/' . $file] = $source;
+    }
 } catch (InvalidArgumentException $invalidArgumentException) {
     fwrite(\STDERR, 'aic-build: ' . $invalidArgumentException->getMessage() . "\n");
 
@@ -104,8 +113,6 @@ if (!$checking) {
 }
 
 $consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTransport($mailConfig), $mailConfig, new ConsoleModules());
-$templateBuild = new TemplateBuild(new PlainTemplateReader(), new TemplateCompiler(), $root);
-
 try {
     $routes = $moduleBuild->routes($modules, new RouteCollector(new RoutePatternCompiler()))->table();
     $templates = $templateBuild->classes();

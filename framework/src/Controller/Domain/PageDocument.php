@@ -59,7 +59,7 @@ final readonly class PageDocument implements PageResponse
     #[Override]
     public function writeTo(ResponseWriter $responseWriter): ResponseInterface
     {
-        return $responseWriter->document($this->status, $this->layout->render()->markup());
+        return $responseWriter->document($this->status, $this->layout);
     }
 
     /**
@@ -92,10 +92,10 @@ final readonly class PageDocument implements PageResponse
      */
     public function answer(TesseraRequest $tesseraRequest): PageResponse
     {
-        $fragments = $tesseraRequest->fragments($this->layout);
+        $targets = $tesseraRequest->targets($this->layout);
 
-        return $fragments === ''
+        return $targets === []
             ? $this
-            : new PageFragments($this->status, $fragments);
+            : new PageFragments($this->status, $this->layout, $targets);
     }
 }
