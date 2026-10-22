@@ -42,27 +42,14 @@ final readonly class ControlTemplates implements ComponentTemplates
     #[Override]
     public function compose(Component $component, RenderPass $renderPass): string
     {
-        if ($component instanceof Input) {
-            return $this->input($component);
-        }
-
-        if ($component instanceof PasswordInput) {
-            return $this->password($component);
-        }
-
-        if ($component instanceof Textarea) {
-            return $this->textarea($component);
-        }
-
-        if ($component instanceof Checkbox) {
-            return $this->checkbox($component);
-        }
-
-        if ($component instanceof FileInput) {
-            return $this->file($component);
-        }
-
-        return $this->componentTemplates->compose($component, $renderPass);
+        return match (true) {
+            $component instanceof Input => $this->input($component),
+            $component instanceof PasswordInput => $this->password($component),
+            $component instanceof Textarea => $this->textarea($component),
+            $component instanceof Checkbox => $this->checkbox($component),
+            $component instanceof FileInput => $this->file($component),
+            default => $this->componentTemplates->compose($component, $renderPass),
+        };
     }
 
     /**

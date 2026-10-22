@@ -37,10 +37,9 @@ final readonly class FaqTemplates implements ComponentTemplates
     #[Override]
     public function compose(Component $component, RenderPass $renderPass): string
     {
-        if ($component instanceof FaqList) {
-            return (new FaqListTemplate())->render($component);
-        }
-
-        return $this->componentTemplates->compose($component, $renderPass);
+        return match (true) {
+            $component instanceof FaqList => (new FaqListTemplate())->render($component),
+            default => $this->componentTemplates->compose($component, $renderPass),
+        };
     }
 }

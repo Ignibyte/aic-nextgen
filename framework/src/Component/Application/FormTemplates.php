@@ -38,27 +38,15 @@ final readonly class FormTemplates implements ComponentTemplates
     #[Override]
     public function compose(Component $component, RenderPass $renderPass): string
     {
-        if ($component instanceof Form) {
-            return $this->form($component, $renderPass);
-        }
-
-        if ($component instanceof FormField) {
-            return $this->field($component, $renderPass);
-        }
-
-        if ($component instanceof HiddenInput) {
-            return '<input type="hidden" name="' . self::text($component->name) . '" value="' . self::text($component->value) . '">';
-        }
-
-        if ($component instanceof Button) {
-            return $this->button($component);
-        }
-
-        if ($component instanceof Alert) {
-            return $this->alert($component);
-        }
-
-        throw new UnknownComponent($component::class);
+        return match (true) {
+            $component instanceof Form => $this->form($component, $renderPass),
+            $component instanceof FormField => $this->field($component, $renderPass),
+            $component instanceof HiddenInput => '<input type="hidden" name="' . self::text($component->name)
+                . '" value="' . self::text($component->value) . '">',
+            $component instanceof Button => $this->button($component),
+            $component instanceof Alert => $this->alert($component),
+            default => throw new UnknownComponent($component::class),
+        };
     }
 
     /**

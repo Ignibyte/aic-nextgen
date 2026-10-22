@@ -39,14 +39,10 @@ final readonly class ContentTemplates implements ComponentTemplates
     #[Override]
     public function compose(Component $component, RenderPass $renderPass): string
     {
-        if ($component instanceof ContentArticle) {
-            return (new ContentArticleTemplate())->render($component);
-        }
-
-        if ($component instanceof ContentPages) {
-            return (new ContentPagesTemplate())->render($component, $renderPass);
-        }
-
-        return $this->componentTemplates->compose($component, $renderPass);
+        return match (true) {
+            $component instanceof ContentArticle => (new ContentArticleTemplate())->render($component),
+            $component instanceof ContentPages => (new ContentPagesTemplate())->render($component, $renderPass),
+            default => $this->componentTemplates->compose($component, $renderPass),
+        };
     }
 }

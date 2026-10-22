@@ -67,8 +67,10 @@ final readonly class TemplatesSource
             #[Override]
             public function compose(Component $component, RenderPass $renderPass): string
             {
+                return match (true) {
         {arms}
-                return $this->componentTemplates->compose($component, $renderPass);
+                    default => $this->componentTemplates->compose($component, $renderPass),
+                };
             }
         }
         PHP;
@@ -265,9 +267,8 @@ final readonly class TemplatesSource
 
         foreach ($components as $component => $takesPass) {
             $short = $this->phpClassFile->short($component);
-            $arms[] = '        if ($component instanceof ' . $short . ") {\n"
-                . '            return (new ' . $short . 'Template())->render($component' . ($takesPass ? ', $renderPass' : '') . ");\n"
-                . "        }\n";
+            $arms[] = '            $component instanceof ' . $short . ' => (new ' . $short . 'Template())->render($component'
+                . ($takesPass ? ', $renderPass' : '') . '),';
         }
 
         return implode("\n", $arms);
