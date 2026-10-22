@@ -12,7 +12,7 @@
     "run_id": { "type": "string", "pattern": "^run-[0-9a-f]{12}$" },
     "ticket_id": { "type": "string", "minLength": 1 },
     "at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
-    "type": { "enum": ["run.started", "phase.began", "phase.attempted", "phase.ended", "ticket.moved", "run.completed", "run.reset", "run.held", "run.resumed", "code.queried"] },
+    "type": { "enum": ["run.started", "phase.began", "phase.attempted", "phase.ended", "ticket.moved", "run.completed", "run.reset", "run.held", "run.resumed", "code.queried", "seeker.filed"] },
     "payload": { "type": "object" }
   },
   "allOf": [
@@ -25,7 +25,8 @@
     { "if": { "properties": { "type": { "const": "run.reset" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.reset" } } } },
     { "if": { "properties": { "type": { "const": "run.held" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.held" } } } },
     { "if": { "properties": { "type": { "const": "run.resumed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/run.resumed" } } } },
-    { "if": { "properties": { "type": { "const": "code.queried" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/code.queried" } } } }
+    { "if": { "properties": { "type": { "const": "code.queried" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/code.queried" } } } },
+    { "if": { "properties": { "type": { "const": "seeker.filed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/seeker.filed" } } } }
   ],
   "$defs": {
     "run.started": {
@@ -57,7 +58,7 @@
       "properties": {
         "phase": { "enum": ["plan", "code", "check", "complete"] },
         "attempt": { "type": "integer", "minimum": 1 },
-        "outcome": { "enum": ["advanced", "blocked", "completed", "held"] },
+        "outcome": { "enum": ["advanced", "blocked", "completed", "held", "inspection-due"] },
         "report": { "type": "object" }
       }
     },
@@ -112,6 +113,31 @@
         "files": { "type": "array", "items": { "type": "string" }, "maxItems": 500 },
         "scopes": { "type": "array", "items": { "type": "string" } },
         "truncated": { "type": "boolean" }
+      }
+    },
+    "seeker.filed": {
+      "description": "A seeker's ledger was filed through workflow:seeker-report (#103): its round, who read, what the guard's record says of it, whether it counts, the tree it read, its digest, its open findings by severity and how many hold the run.",
+      "type": "object",
+      "required": ["phase", "round", "inspector", "dispatch", "counted", "subject", "digest", "counts", "holding"],
+      "properties": {
+        "phase": { "enum": ["code", "check", "complete"] },
+        "round": { "type": "integer", "minimum": 1 },
+        "inspector": { "enum": ["independent", "self-reviewed"] },
+        "dispatch": { "enum": ["verified", "unverified", "none"] },
+        "counted": { "type": "boolean" },
+        "subject": { "type": "string" },
+        "digest": { "type": "string" },
+        "counts": {
+          "type": "object",
+          "required": ["critical", "high", "medium", "low"],
+          "properties": {
+            "critical": { "type": "integer", "minimum": 0 },
+            "high": { "type": "integer", "minimum": 0 },
+            "medium": { "type": "integer", "minimum": 0 },
+            "low": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "holding": { "type": "integer", "minimum": 0 }
       }
     },
     "run.reset": {

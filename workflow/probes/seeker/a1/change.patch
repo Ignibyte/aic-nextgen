@@ -1,0 +1,80 @@
+diff --git i/CHANGELOG.md w/CHANGELOG.md
+index cc44902..2b898a3 100644
+--- i/CHANGELOG.md
++++ w/CHANGELOG.md
+@@ -4,6 +4,8 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
+ 
+ ## Unreleased
+ 
++- The FAQ page says how many questions it answers.
++
+ ### Added
+ 
+ - **The installer for new apps** (#105, part 6 of #91). `bin/aic workflow:init` installs the gated workflow in an app made from the demo, and a second run changes nothing.
+diff --git i/modules/faq/src/Component/FaqCount.php w/modules/faq/src/Component/FaqCount.php
+new file mode 100644
+index 0000000..867b256
+--- /dev/null
++++ w/modules/faq/src/Component/FaqCount.php
+@@ -0,0 +1,22 @@
++<?php
++
++declare(strict_types=1);
++
++namespace App\Faq\Component;
++
++use AIC\Component\Contracts\Component;
++
++/**
++ * The FAQ's count, from FaqCount.html.php: one paragraph saying how many
++ * questions the page answers.
++ */
++final readonly class FaqCount implements Component
++{
++    /**
++     * @param int $count How many questions there are.
++     */
++    public function __construct(
++        public int $count,
++    ) {
++    }
++}
+diff --git i/modules/faq/src/Controller/FaqPage.php w/modules/faq/src/Controller/FaqPage.php
+index ec83748..f68604f 100644
+--- i/modules/faq/src/Controller/FaqPage.php
++++ w/modules/faq/src/Controller/FaqPage.php
+@@ -8,6 +8,7 @@ use AIC\Component\Contracts\Region;
+ use AIC\Component\Contracts\Regions;
+ use AIC\Controller\Contracts\Page;
+ use AIC\Controller\Contracts\PageResponse;
++use App\Faq\Component\FaqCount;
+ use App\Faq\Component\FaqList;
+ use App\Faq\Service\FaqEntries;
+ use App\Site\Service\HtmlLayout;
+@@ -15,6 +16,8 @@ use InvalidArgumentException;
+ use Override;
+ use Psr\Http\Message\ServerRequestInterface;
+ 
++use function count;
++
+ /**
+  * GET /faq: the questions about modules, in the app's layout. The first page
+  * a module wires (#92): its route, its handler and its block come from
+@@ -42,6 +45,8 @@ final readonly class FaqPage implements Page
+     #[Override]
+     public function page(ServerRequestInterface $serverRequest): PageResponse
+     {
+-        return $this->htmlLayout->page(new Regions([new Region('content', [new FaqList($this->faqEntries->all())])]), 200);
++        $entries = $this->faqEntries->all();
++
++        return $this->htmlLayout->page(new Regions([new Region('content', [new FaqCount(count($entries)), new FaqList($entries)])]), 200);
+     }
+ }
+diff --git i/modules/faq/templates/components/FaqCount.html.php w/modules/faq/templates/components/FaqCount.html.php
+new file mode 100644
+index 0000000..b54c34a
+--- /dev/null
++++ w/modules/faq/templates/components/FaqCount.html.php
+@@ -0,0 +1,2 @@
++<?php /** @var \App\Faq\Component\FaqCount $faqCount */ ?>
++<p class="faq-count"><?= $faqCount->count ?> questions</p>

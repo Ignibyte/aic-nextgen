@@ -65,6 +65,23 @@ final readonly class LocalHost implements RunHost
     }
 
     /**
+     * @return string|null Standard input, read whole; null when it is a terminal.
+     */
+    #[Override]
+    public function standardInput(): ?string
+    {
+        if (stream_isatty(STDIN)) {
+            return null;
+        }
+
+        $input = stream_get_contents(STDIN);
+
+        return $input === false
+            ? ''
+            : $input;
+    }
+
+    /**
      * @param string $prefix `run` or `evt`.
      * @param int    $bytes  How many random bytes.
      *

@@ -32,4 +32,18 @@ interface WorkflowContext
      * @return RunStore The run's store.
      */
     public function runStore(): RunStore;
+
+    /**
+     * @throws WorkflowRefusal When the workflow is not installed in this project.
+     *
+     * @return SeekerFiling Files a seeker's ledger (#103).
+     */
+    public function seekerFiling(): SeekerFiling;
+
+    /**
+     * @throws WorkflowRefusal When the workflow is not installed in this project.
+     *
+     * @return SeekerBrief The seeker's scope (#103).
+     */
+    public function seekerBrief(): SeekerBrief;
 }

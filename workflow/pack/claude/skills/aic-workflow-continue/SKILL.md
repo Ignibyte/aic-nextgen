@@ -16,6 +16,7 @@ minutes: give the command a timeout of ten minutes, and wait for it.
 | 0 | `completed` | The run is archived and the ticket is `in-review`. Report and stop. |
 | 1 | `blocked` | Read each row of `blocked`, fix what it names, run again. |
 | 1 | `held` | The run waits on the operator. Stop and tell them what holds it. |
+| 1 | `inspection-due` | Only the seeker's inspection holds the phase: dispatch it as the `seeker` row says. |
 | 2 | (none) | Refused: the line says why and what to do. |
 
 Each blocked row has a `check`, a `why` and a `remedy`. Fix the cause the `why` names; running

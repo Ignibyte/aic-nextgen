@@ -1,0 +1,123 @@
+diff --git i/CHANGELOG.md w/CHANGELOG.md
+index cc44902..fc99a66 100644
+--- i/CHANGELOG.md
++++ w/CHANGELOG.md
+@@ -4,6 +4,8 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
+ 
+ ## Unreleased
+ 
++- `bin/aic notes:stats` prints how many notes and content pages the demo holds.
++
+ ### Added
+ 
+ - **The installer for new apps** (#105, part 6 of #91). `bin/aic workflow:init` installs the gated workflow in an app made from the demo, and a second run changes nothing.
+diff --git i/modules/note/note.module.php w/modules/note/note.module.php
+index d625cc5..b513f69 100644
+--- i/modules/note/note.module.php
++++ w/modules/note/note.module.php
+@@ -10,6 +10,7 @@ declare(strict_types=1);
+ use AIC\Module\Contracts\ModuleManifest;
+ use AIC\Module\Contracts\RouteMethod;
+ use App\Note\Block\NoteTipsBlock;
++use App\Note\Command\NoteStats;
+ use App\Note\Controller\NoteCreatePost;
+ use App\Note\Controller\NoteDeletePost;
+ use App\Note\Controller\NoteListPage;
+@@ -26,6 +27,7 @@ return (new ModuleManifest('note'))
+     ->route(RouteMethod::Get, '/notes/{id:int}', NoteShowPage::class)
+     ->route(RouteMethod::Post, '/notes/{id:int}', NoteUpdatePost::class)
+     ->route(RouteMethod::Post, '/notes/{id:int}/delete', NoteDeletePost::class)
++    ->command('notes:stats', NoteStats::class)
+     ->block(NoteTipsBlock::class)
+     ->migration(CreateNotesTable::class)
+     ->migration(CreateNoteTagsTable::class)
+diff --git i/modules/note/src/Command/NoteStats.php w/modules/note/src/Command/NoteStats.php
+new file mode 100644
+index 0000000..0ca233a
+--- /dev/null
++++ w/modules/note/src/Command/NoteStats.php
+@@ -0,0 +1,43 @@
++<?php
++
++declare(strict_types=1);
++
++namespace App\Note\Command;
++
++use AIC\Controller\Contracts\Command;
++use AIC\Controller\Contracts\CommandInput;
++use AIC\Controller\Contracts\CommandResponse;
++use AIC\Controller\Domain\CommandResult;
++use AIC\Database\Contracts\QueryException;
++use App\Note\Repository\NoteRepository;
++use Override;
++
++/**
++ * `aic notes:stats`: how many notes and content pages the demo holds.
++ */
++final readonly class NoteStats implements Command
++{
++    /**
++     * @param NoteRepository $noteRepository The counts.
++     */
++    public function __construct(
++        private NoteRepository $noteRepository,
++    ) {
++    }
++
++    /**
++     * @param CommandInput $commandInput None.
++     *
++     * @throws QueryException When a count fails.
++     *
++     * @return CommandResponse A line per count.
++     */
++    #[Override]
++    public function command(CommandInput $commandInput): CommandResponse
++    {
++        return new CommandResult([
++            'notes: ' . $this->noteRepository->noteCount(),
++            'content pages: ' . $this->noteRepository->contentPageCount(),
++        ], 0);
++    }
++}
+diff --git i/modules/note/src/Repository/NoteRepository.php w/modules/note/src/Repository/NoteRepository.php
+index 54f65a2..12e3ab4 100644
+--- i/modules/note/src/Repository/NoteRepository.php
++++ w/modules/note/src/Repository/NoteRepository.php
+@@ -14,6 +14,7 @@ use AIC\Entity\Domain\FieldType;
+ use App\Note\Entity\Note;
+ 
+ use function array_map;
++use function count;
+ 
+ /**
+  * The notes: the `notes` entity type over the entity store, its rows mapped to
+@@ -49,6 +50,28 @@ final readonly class NoteRepository
+         return array_map(self::note(...), $this->entityStore->query($this->entityType)->orderBy('id')->rows());
+     }
+ 
++    /**
++     * @throws QueryException When the query fails.
++     *
++     * @return int How many notes there are.
++     */
++    public function noteCount(): int
++    {
++        return count($this->entityStore->query($this->entityType)->rows());
++    }
++
++    /**
++     * @throws QueryException When the query fails.
++     *
++     * @return int How many content pages there are.
++     */
++    public function contentPageCount(): int
++    {
++        return count($this->entityStore->query(new EntityType('content_pages', 'slug', [
++            new Field('title', FieldType::Text),
++        ]))->rows());
++    }
++
+     /**
+      * @param int $id The note's key.
+      *

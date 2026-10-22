@@ -35,9 +35,9 @@ final readonly class WorkflowParts
     {
         $utcTime = new UtcTime(new SystemClock());
 
-        $localHost = new LocalHost($this->root);
+        $localHost = $this->evidenceParts()->runHost();
         $runJournal = $this->journal($utcTime);
-        $evidenceParts = new EvidenceParts($this->root, $this->workflowSettings);
+        $evidenceParts = $this->evidenceParts();
 
         return new RunEngine(
             $this->runStore(),
@@ -62,7 +62,7 @@ final readonly class WorkflowParts
      */
     public function runReset(): RunReset
     {
-        return new RunReset($this->runStore(), $this->journal(new UtcTime(new SystemClock())), new LocalHost($this->root));
+        return new RunReset($this->runStore(), $this->journal(new UtcTime(new SystemClock())), $this->evidenceParts()->runHost());
     }
 
     /**
@@ -74,17 +74,35 @@ final readonly class WorkflowParts
     }
 
     /**
+     * @return SeekerParts The seeker's parts (#103).
+     */
+    public function seekerParts(): SeekerParts
+    {
+        return new SeekerParts($this->root, $this->evidenceParts());
+    }
+
+    /**
+     * @return EvidenceParts The services the checks share.
+     */
+    private function evidenceParts(): EvidenceParts
+    {
+        return new EvidenceParts($this->root, $this->workflowSettings);
+    }
+
+    /**
      * @return WorkflowChecks The engine's checks for this project.
      */
     private function checks(): WorkflowChecks
     {
-        $evidenceParts = new EvidenceParts($this->root, $this->workflowSettings);
+        $evidenceParts = $this->evidenceParts();
+        $seekerParts = $this->seekerParts();
 
         return new WorkflowChecks(
             $this->root,
             $evidenceParts,
             $this->workflowSettings->site,
             $this->ruleParts($evidenceParts),
+            ['code' => $seekerParts->atCode(), 'complete' => $seekerParts->atComplete()],
         );
     }
 
@@ -105,7 +123,9 @@ final readonly class WorkflowParts
      */
     private function journal(UtcTime $utcTime): RunJournal
     {
-        return new RunJournal(new EventLogFile($this->root, $utcTime, new LocalHost($this->root)), $this->tickets($utcTime), $utcTime);
+        $eventLogFile = new EventLogFile($this->root, $utcTime, $this->evidenceParts()->runHost());
+
+        return new RunJournal($eventLogFile, $this->tickets($utcTime), $utcTime);
     }
 
     /**

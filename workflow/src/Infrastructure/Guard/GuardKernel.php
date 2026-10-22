@@ -12,6 +12,7 @@ use AIC\Workflow\Infrastructure\RunStateFile;
 use AIC\Workflow\Infrastructure\SettingsFile;
 use Throwable;
 
+use function in_array;
 use function json_encode;
 use function str_contains;
 
@@ -22,8 +23,8 @@ use const JSON_UNESCAPED_SLASHES;
  * The guard's entry (#102): reads the project's settings and the open run
  * through the engine's own strict reader, then hands the call to the
  * guard. Settings that will not load hold both levers hard; a state that
- * will not read refuses; anything that throws refuses, but `record`, which
- * only keeps the ledger, allows.
+ * will not read refuses; anything that throws refuses, but `record` and
+ * `returned` (#103), which only keep the ledger, allow.
  */
 final readonly class GuardKernel
 {
@@ -40,7 +41,7 @@ final readonly class GuardKernel
     }
 
     /**
-     * @param string $verb    `edit`, `shell`, `record` or `stop`.
+     * @param string $verb    `edit`, `shell`, `record`, `stop` or `returned` (#103).
      * @param string $payload The hook's payload.
      *
      * @return GuardVerdict The verdict.
@@ -56,9 +57,7 @@ final readonly class GuardKernel
 
             return (new GuardParts($this->root, $this->home, $this->package))->guardHook()->handle($verb, $hookCall, $this->scene());
         } catch (Throwable $throwable) {
-            return $verb === 'record'
-                ? new GuardVerdict()
-                : new GuardVerdict('refuse', 'crash', 'the guard failed (' . $throwable->getMessage() . '), so it refuses.');
+            return $this->crashed($verb, $throwable);
         }
     }
 
@@ -72,6 +71,19 @@ final readonly class GuardKernel
         return $guardVerdict->refused() || $guardVerdict->message === ''
             ? ''
             : json_encode(['systemMessage' => $guardVerdict->message], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES) . "\n";
+    }
+
+    /**
+     * @param string    $verb      The verb.
+     * @param Throwable $throwable What the guard threw.
+     *
+     * @return GuardVerdict Allowed for the verbs that only keep the ledger; refused for the rest.
+     */
+    private function crashed(string $verb, Throwable $throwable): GuardVerdict
+    {
+        return in_array($verb, ['record', 'returned'], true)
+            ? new GuardVerdict()
+            : new GuardVerdict('refuse', 'crash', 'the guard failed (' . $throwable->getMessage() . '), so it refuses.');
     }
 
     /**

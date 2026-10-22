@@ -130,7 +130,8 @@ final readonly class GuardLedgerFile implements GuardLedger
     /**
      * @param stdClass $line A decoded line.
      *
-     * @return GuardRow|null The row; null when a field is missing or not a string.
+     * @return GuardRow|null The row; null when a field is missing or not a string. A `returned` row's subagent and
+     *                       digest are optional (#103).
      */
     private function row(stdClass $line): ?GuardRow
     {
@@ -145,7 +146,10 @@ final readonly class GuardLedgerFile implements GuardLedger
             $values[] = $fields[$key];
         }
 
-        return new GuardRow(...$values);
+        $subagent = $fields['subagent'] ?? '';
+        $digest = $fields['digest'] ?? '';
+
+        return new GuardRow(...$values, ...[is_string($subagent) ? $subagent : '', is_string($digest) ? $digest : '']);
     }
 
     /**

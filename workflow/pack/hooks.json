@@ -35,6 +35,18 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "s=\"$CLAUDE_PROJECT_DIR/{vendor}/aic/workflow/bin/aic-guard.sh\"; test -x \"$s\" || { echo \"aic-guard is missing at $s, so the workflow refuses: the operator runs composer install, then bin/aic workflow:init\" >&2; exit 2; }; exec bash \"$s\" returned",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [

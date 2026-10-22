@@ -45,6 +45,7 @@ final readonly class PackManifest
         'skills/aic-workflow-code/SKILL.md',
         'skills/aic-workflow-check/SKILL.md',
         'skills/aic-workflow-complete/SKILL.md',
+        'agents/aic-seeker.md',
         'commands/aic/workflow/start.md',
         'commands/aic/workflow/continue.md',
         'commands/aic/workflow/status.md',

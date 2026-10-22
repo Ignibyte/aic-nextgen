@@ -204,7 +204,7 @@ final readonly class HookMerge
         $command = get_object_vars($hook)['command'] ?? null;
         $guard = is_string($command) && str_contains($command, 'aic-guard.sh');
 
-        return $guard && preg_match('/\\s(edit|shell|record|stop)\\s*$/', $command, $match) === 1
+        return $guard && preg_match('/\\s(edit|shell|record|stop|returned)\\s*$/', $command, $match) === 1
             ? $match[1]
             : '';
     }

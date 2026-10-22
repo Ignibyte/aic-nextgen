@@ -13,6 +13,9 @@ description: Finish a run of this AIC app's workflow (the complete phase). Use w
 3. `bin/aic workflow:run`. Complete runs the gate suite again. A deferred gate is not a pass,
    and complete holds while a native gate is deferred: when the reason is outside the code (the
    database is down, say), tell the operator. Then the criteria check reads the ticks.
+4. The seeker reads the tree as it is now. When the run answers `inspection-due`, dispatch
+   `aic-seeker` and file its ledger as at code (the [code skill](../aic-workflow-code/SKILL.md)
+   has the steps), then run again.
 
 When the outcome is `completed`, the run is archived and the ticket is `in-review`. Report what
 the run did, what each criterion cites, and anything the operator should look at. Delivery

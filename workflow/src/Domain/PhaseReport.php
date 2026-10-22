@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Domain;
 
+use function array_all;
 use function array_filter;
 use function array_map;
 use function array_values;
@@ -54,6 +55,16 @@ final readonly class PhaseReport
             $this->rows,
             static fn (CheckRow $checkRow): bool => $checkRow->checkStatus === CheckStatus::Held,
         ));
+    }
+
+    /**
+     * @return bool Whether every row that holds the phase is an inspection the seeker owes (#103).
+     */
+    public function inspectionOnly(): bool
+    {
+        $blocked = $this->blocked();
+
+        return $blocked !== [] && array_all($blocked, static fn (CheckRow $checkRow): bool => $checkRow->checkStatus === CheckStatus::Due);
     }
 
     /**

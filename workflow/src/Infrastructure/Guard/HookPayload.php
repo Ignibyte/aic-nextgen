@@ -10,6 +10,7 @@ use stdClass;
 use function array_filter;
 use function array_values;
 use function get_object_vars;
+use function implode;
 use function is_array;
 use function is_string;
 use function json_decode;
@@ -18,7 +19,9 @@ use function json_decode;
  * Reads a Claude Code hook's payload (#102, Droost's payload read once):
  * the tool, the paths and command its input names, the directory it
  * started in, and the session. Stop's `stop_hook_active` is the shim's. Unknown keys are
- * ignored; a payload that is not a JSON object reads as nothing.
+ * ignored; a payload that is not a JSON object reads as nothing. Since #103 it
+ * also reads the subagent type making a call (`agent_type`) and, on
+ * PostToolUse `Agent`, the type and text a completed subagent returned.
  */
 final readonly class HookPayload
 {
@@ -64,13 +67,53 @@ final readonly class HookPayload
             return null;
         }
 
+        [$returned, $text] = $this->returned($payload);
+
         return new HookCall(
             $tool,
             $this->paths($input),
             $this->text($input, 'command'),
             $cwd === '' ? $root : $cwd,
             $this->text($payload, 'session_id'),
+            $this->text($payload, 'agent_type'),
+            $returned,
+            $text,
         );
+    }
+
+    /**
+     * @param stdClass $payload The payload.
+     *
+     * @return array{string, string} A completed subagent's type and the text it returned; empty strings otherwise.
+     */
+    private function returned(stdClass $payload): array
+    {
+        $response = get_object_vars($payload)['tool_response'] ?? null;
+
+        if (!$response instanceof stdClass || $this->text($response, 'status') !== 'completed') {
+            return ['', ''];
+        }
+
+        return [$this->text($response, 'agentType'), $this->texts($response)];
+    }
+
+    /**
+     * @param stdClass $response A completed subagent's response.
+     *
+     * @return string The text blocks of its content, joined.
+     */
+    private function texts(stdClass $response): string
+    {
+        $content = get_object_vars($response)['content'] ?? null;
+        $texts = [];
+
+        foreach (is_array($content) ? $content : [] as $block) {
+            $texts[] = $block instanceof stdClass
+                ? $this->text($block, 'text')
+                : '';
+        }
+
+        return implode("\n", $texts);
     }
 
     /**

@@ -8,8 +8,11 @@ use AIC\Workflow\Domain\Guard\GuardScene;
 use AIC\Workflow\Domain\Guard\GuardVerdict;
 use AIC\Workflow\Domain\Guard\HookCall;
 use AIC\Workflow\Domain\Guard\Invocation;
+use AIC\Workflow\Domain\SeekerInspection;
 
+use function array_any;
 use function in_array;
+use function str_starts_with;
 
 /**
  * The wall on Bash (#102, Droost's `operator-commands` verb, order kept):
@@ -57,6 +60,10 @@ final readonly class ShellWall
             return new GuardVerdict('refuse', 'operator-verb', $why);
         }
 
+        if ($hookCall->caller === SeekerInspection::AGENT && array_any($invocations, $this->seekerWrites(...))) {
+            return new GuardVerdict('refuse', 'seeker-reads', SeekerInspection::AGENT . ' reads the run and writes nothing (#103).');
+        }
+
         $cwd = $hookCall->cwd;
         $verdict = new GuardVerdict();
 
@@ -66,6 +73,16 @@ final readonly class ShellWall
         }
 
         return $verdict;
+    }
+
+    /**
+     * @param Invocation $invocation A command the seeker runs.
+     *
+     * @return bool Whether it writes anywhere but `/dev/` (a `2>/dev/null` is a read's).
+     */
+    private function seekerWrites(Invocation $invocation): bool
+    {
+        return array_any($this->shellWrites->targets($invocation), static fn (string $target): bool => !str_starts_with($target, '/dev/'));
     }
 
     /**

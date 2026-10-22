@@ -100,13 +100,16 @@ final readonly class RunEngine
      *
      * @throws WorkflowRefusal When the run cannot be saved.
      *
-     * @return RunOutcome Blocked; held for the operator when a row only the operator can clear holds it (#102).
+     * @return RunOutcome Blocked; held for the operator when a row only the operator can clear holds it (#102);
+     *                    inspection-due when only the seeker's inspection holds it (#103).
      */
     private function held(RunState $runState, PhaseReport $phaseReport, array $notes): RunOutcome
     {
-        $outcome = $phaseReport->held() === []
-            ? Outcome::Blocked
-            : Outcome::Held;
+        $outcome = match (true) {
+            $phaseReport->held() !== [] => Outcome::Held,
+            $phaseReport->inspectionOnly() => Outcome::InspectionDue,
+            default => Outcome::Blocked,
+        };
         $this->runStore->save($runState);
         $attempted = $this->runJournal->attempted($runState, $phaseReport, $outcome);
         [$runState, $held] = $outcome === Outcome::Held

@@ -4,12 +4,13 @@
 # =============================================================================
 #
 # Claude Code runs it with the hook's payload on stdin; the verb is edit,
-# shell, record or stop (workflow/pack/hooks.json). It finds the project's
+# shell, record, stop or returned (#103, PostToolUse Agent: the guard notes
+# what a subagent returned) (workflow/pack/hooks.json). It finds the project's
 # root, stays silent where the workflow is not installed, and hands the call
 # to aic-guard.php. Exit 0 allows, exit 2 refuses with the reason on stderr.
 #
 # Any other exit is a crash, and a crash refuses: an agent must not get past
-# a guard that broke. Two exceptions: record only keeps the ledger, so its
+# a guard that broke. Two exceptions: record and returned only keep the ledger, so their
 # crash allows; and a stop crash lets a Stop that already continues once
 # (stop_hook_active) end, so a broken guard cannot trap a session.
 # =============================================================================
@@ -25,7 +26,7 @@ if [ ! -f "${root}/config/workflow.php" ]; then
 fi
 
 crash() {
-    if [ "${verb}" = "record" ]; then
+    if [ "${verb}" = "record" ] || [ "${verb}" = "returned" ]; then
         exit 0
     fi
 
