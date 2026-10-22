@@ -6,14 +6,12 @@ namespace AIC\Workflow\Infrastructure;
 
 use AIC\Workflow\Application\BrowserCheck;
 use AIC\Workflow\Application\CompositionCheck;
-use AIC\Workflow\Application\ContractCheck;
 use AIC\Workflow\Application\CriteriaCheck;
 use AIC\Workflow\Application\DeclarationCheck;
 use AIC\Workflow\Application\FreezeCheck;
 use AIC\Workflow\Application\PhaseCheck;
 use AIC\Workflow\Application\RenderedCheck;
 use AIC\Workflow\Application\SpecFreeze;
-use AIC\Workflow\Application\SpecPresentCheck;
 use AIC\Workflow\Application\UtcTime;
 use AIC\Workflow\Domain\Phase;
 
@@ -57,8 +55,7 @@ final readonly class WorkflowChecks
         $parts = $this->evidenceParts;
         $specFile = $parts->specFile();
         $checks = [
-            new SpecPresentCheck($specFile),
-            new ContractCheck($specFile, $parts->evidenceLog(), $parts->gateExecutor(), $utcTime),
+            ...(new PlanParts($this->root, $parts))->checks($utcTime),
             ...$this->ruleParts->plan(),
         ];
 

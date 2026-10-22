@@ -156,6 +156,7 @@ final readonly class ProtectedPaths
             $this->root . '/.claude/settings.json' => "the hook wiring is the operator's.",
             $this->root . '/.claude/settings.local.json' => "the hook wiring is the operator's.",
             $this->root . '/config/workflow.php' => 'config/workflow.php holds the levers: the operator changes it.',
+            $this->root . '/var/index' => 'var/index/ is the code index: only bin/aic code:* and the engine write it (#118).',
             $this->root . '/var/workflow' => "var/workflow/ is the run's state: only the engine writes it, through bin/aic workflow:*.",
         ];
 

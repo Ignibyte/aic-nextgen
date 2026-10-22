@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Plan's grounding check** (#118, part 7b of #91). Plan cannot pass until the engine, on a code index it rebuilds in full each attempt, finds the plan grounded.
+  - **Real:** every File Manifest row is one file path with `create`, `modify` or `delete`; a modify or delete row names a file git lists; a create row names a path that is not there; no path appears twice; every Entry Points class exists or a create row makes it (by PSR-4, or the module convention for a new module).
+  - **Looked:** the run's own `code.queried` events at plan show at least one `code:tree`, a lookup of every file it modifies or deletes and every existing class it names, an outline of each created file's area, and a `code:search` before each new class. A `code:refs` answer now counts for its subject's file only.
+  - **Verdicts:** every reason at once, each naming the lookup to run; a miss is the agent's and spends no retry budget, and counts the lookups so far so new ones are progress; an index or event log the engine cannot read holds the run for the operator.
+  - **The wall:** `var/index/` joins the guard's protected paths; a row hand-written into the index does not survive the rebuild.
+  - **The proof:** each criterion planted in a scratch copy through the real guard and index, and a live session whose lookups grounded its plan.
+
 - **Inspect commands for agents** (#109, part 1). `bin/aic` answers what the app declares, from `build/surface.json`, without booting the app or opening the database.
   - **The commands:** `route:list [<module>] [--kind=<Kind>]`, `command:list` (each command `runtime` or `dev`), `job:list` (with the schedules that queue each job), `schedule:list`, `module:list` (requires, dependents, counts), `module:show <name>` (the manifest as declared, with each export's users from the code index) and `kind:list` (contract, method, response, folder, count). They are dev-only, in `aic/workflow`: an install with `--no-dev` has none of them.
   - **Output:** plain text in columns, or with `--json` one `aic.console/1` envelope on one line, described by `workflow/schema/console.v1.json`. An unknown flag, a missing value or a wrong count of arguments exits 2 with the usage line; nothing found exits 1.

@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace AIC\Workflow\Application;
 
 use AIC\Workflow\Domain\DeclaredEntry;
+use AIC\Workflow\Domain\FileChange;
+use AIC\Workflow\Domain\ManifestRow;
 
 use function array_map;
 use function array_slice;
 use function count;
 use function ctype_digit;
+use function explode;
 use function implode;
 use function in_array;
 use function preg_match;
 use function preg_replace;
+use function strtolower;
 use function trim;
 
 /**
@@ -116,7 +120,15 @@ final readonly class SpecContract
      */
     public function files(): array
     {
-        $files = [];
+        return array_map(static fn (ManifestRow $manifestRow): string => $manifestRow->path, $this->manifestRows());
+    }
+
+    /**
+     * @return list<ManifestRow> Each `### File Manifest` row with a path: the path, its change (#118) and the cell as written.
+     */
+    public function manifestRows(): array
+    {
+        $rows = [];
 
         foreach ($this->markdownSections->rows(self::MANIFEST) ?? [] as $row) {
             $path = trim($row[0], ' `');
@@ -125,10 +137,11 @@ final readonly class SpecContract
                 continue;
             }
 
-            $files[] = $path;
+            $cell = trim($row[1] ?? '', ' `');
+            $rows[] = new ManifestRow($path, self::change($cell), $cell);
         }
 
-        return $files;
+        return $rows;
     }
 
     /**
@@ -250,5 +263,20 @@ final readonly class SpecContract
             $route && ctype_digit($cells[5]) ? (int) $cells[5] : 200,
             $route ? $cells[6] : '',
         );
+    }
+
+    /**
+     * @param string $cell A `Change` cell.
+     *
+     * @return FileChange|null Its first word as a change; null when it is none.
+     */
+    private static function change(string $cell): ?FileChange
+    {
+        return match (strtolower(explode(' ', $cell)[0])) {
+            'create' => FileChange::Create,
+            'modify' => FileChange::Modify,
+            'delete' => FileChange::Delete,
+            default => null,
+        };
     }
 }

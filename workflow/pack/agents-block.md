@@ -16,7 +16,7 @@ the run's spec and the paths its file manifest declares.
    the area the ticket touches: the kinds, the modules and their manifests, the systems, the
    conventions and the gates.
 5. Ask the code index before you name a class or a path: `bin/aic code:tree [<module>]`,
-   `bin/aic code:search <text>`, `bin/aic code:refs <name>`.
+   `bin/aic code:search <text>`, `bin/aic code:refs <name>`. Plan's exit reads these lookups.
 6. `bin/aic workflow:reset` and `bin/aic workflow:init --force` are the operator's. When a run
    waits on the operator, stop and tell them what holds it.
 
