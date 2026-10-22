@@ -10,10 +10,9 @@ use AIC\Controller\Domain\PageRedirect;
 use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\PostedFields;
 use App\Content\Entity\ContentPage;
-use App\Content\Form\ContentForm;
 use App\Content\Repository\ContentRepository;
 use App\Content\Service\ContentRequest;
-use App\Site\Service\HtmlLayout;
+use App\Content\Service\ContentViews;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -26,17 +25,15 @@ use function trim;
 final readonly class ContentSavePost implements Page
 {
     /**
-     * @param HtmlLayout        $htmlLayout        Makes the page.
      * @param ContentRepository $contentRepository The pages.
      * @param ContentRequest    $contentRequest    Reads the slug.
-     * @param ContentForm       $contentForm       The editor, shown again on a refusal.
+     * @param ContentViews      $contentViews      The editor and the 404.
      * @param PostedFields      $postedFields      Reads the title and the text.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
         private ContentRepository $contentRepository,
         private ContentRequest $contentRequest,
-        private ContentForm $contentForm,
+        private ContentViews $contentViews,
         private PostedFields $postedFields = new PostedFields(),
     ) {
     }
@@ -54,16 +51,14 @@ final readonly class ContentSavePost implements Page
         $slug = $this->contentRequest->slug($serverRequest);
 
         if ($slug === '') {
-            return $this->htmlLayout->content('<p id="not-found">There is no page here.</p>', 404);
+            return $this->contentViews->notFound();
         }
 
         $title = trim($this->postedFields->value($serverRequest, 'title'));
         $contentPage = new ContentPage($slug, $title, $this->postedFields->value($serverRequest, 'body'));
 
         if ($title === '') {
-            $editor = $this->contentForm->editor($serverRequest, $contentPage, 'A page needs a title.');
-
-            return $this->htmlLayout->content('<h2>Edit /pages/' . $slug . '</h2>' . $editor->markup(), 422);
+            return $this->contentViews->editor($serverRequest, $contentPage, 'A page needs a title.', 422);
         }
 
         $this->contentRepository->save($contentPage);

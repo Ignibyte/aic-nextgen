@@ -7,12 +7,12 @@ namespace App\Greeting\Controller;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Module\Attribute\Tagged;
+use App\Greeting\Component\Greetings;
 use App\Greeting\Service\Greeter;
 use App\Site\Service\HtmlLayout;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
-use function htmlspecialchars;
 use function is_string;
 
 /**
@@ -44,16 +44,16 @@ final readonly class GreetingPage implements Page
         $name = is_string($attribute)
             ? $attribute
             : '';
-        $items = '';
+        $greetings = [];
 
         foreach ($this->greeters as $greeter) {
             if (!($greeter instanceof Greeter)) {
                 continue;
             }
 
-            $items .= '<li>' . htmlspecialchars($greeter->greet($name)) . '</li>';
+            $greetings[] = $greeter->greet($name);
         }
 
-        return $this->htmlLayout->content('<ul id="greetings">' . $items . '</ul>', 200);
+        return $this->htmlLayout->content([new Greetings($greetings)], 200);
     }
 }

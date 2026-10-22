@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\TemplateClass;
 use Gates\Domain\TemplateMethods;
 use Gates\Domain\TemplateNode;
 use Gates\Domain\TemplateNodeKind;
@@ -14,11 +15,13 @@ use function array_map;
 use function array_merge;
 use function array_reverse;
 use function lcfirst;
+use function max;
 use function mb_str_split;
 use function preg_split;
 use function str_contains;
 use function str_ends_with;
-use function str_starts_with;
+use function str_pad;
+use function strlen;
 use function substr;
 use function substr_count;
 
@@ -52,11 +55,6 @@ final readonly class TemplateCompiler
     private const int CLASS_LINES = 300;
 
     /**
-     * The literal that closes a component's markers (Tessera's protocol 2.2, #70).
-     */
-    private const string COMPONENT_END = "'<!--/t:c-->'";
-
-    /**
      * The literal that closes a condition's or a loop's block markers, rendered even when empty (protocol 2.3).
      */
     private const string BLOCK_END = "'<!--/t:b-->'";
@@ -83,30 +81,26 @@ final readonly class TemplateCompiler
      *
      * @throws InvalidArgumentException When the template is too big for one class.
      *
-     * @return string The source of `<component>Template`, in the same namespace.
+     * @return TemplateClass The source of `<component>Template`, in the same namespace, and whether its `render()`
+     *                       takes the render pass.
      */
-    public function compile(array $nodes, string $namespace, string $component): string
+    public function compile(array $nodes, string $namespace, string $component): TemplateClass
     {
         $variable = lcfirst($component);
         $templateMethods = new TemplateMethods($component . '.html.php', $variable);
-        $first = $this->sequence($nodes, [$component . ' $' . $variable], $templateMethods);
+        $scope = [$component . ' $' . $variable, 'RenderPass $renderPass'];
+        $first = $templateMethods->call($this->sequence($nodes, $scope, $templateMethods));
+        $takesPass = str_contains($first, '$renderPass');
         $parts = $templateMethods->source();
-        $parameter = $component . ' $' . $variable;
-        $class = $this->templateImports->head($nodes, $namespace, $parts)
-            . "/**\n * " . $component . "'s markup, compiled from " . $component
-            . ".html.php by bin/aic-build (#97):\n * edit the template and run composer run build, never this file.\n */\n"
-            . 'final readonly class ' . $component . "Template\n{\n"
-            . (str_contains($parts, 'self::text(') ? "    use RendersMarkup;\n\n" : '')
-            . "    /**\n     * @param " . $parameter . " The component.\n     *\n     * @return Html Its markup.\n     */\n"
-            . '    public function render(' . $parameter . "): Html\n    {\n"
-            . '        return new Html(' . $templateMethods->call($first) . ");\n    }\n\n" . $parts . "}\n";
+        $class = $this->templateImports->head($nodes, $namespace, $parts . ($takesPass ? 'RenderPass $renderPass' : ''))
+            . $this->declaration($component, $variable, $takesPass, $parts) . '        return ' . $first . ";\n    }\n\n" . $parts . "}\n";
 
         if ($templateMethods->count() > self::PARTS || substr_count($class, "\n") > self::CLASS_LINES) {
             throw new InvalidArgumentException('too big for one class (' . $templateMethods->count()
                 . ' part methods, ' . substr_count($class, "\n") . ' lines): move some of it into components');
         }
 
-        return $class;
+        return new TemplateClass($class, $takesPass);
     }
 
     /**
@@ -125,6 +119,31 @@ final readonly class TemplateCompiler
         }
 
         return $this->chain($pieces === [] ? ["''"] : $pieces, $scope, $templateMethods);
+    }
+
+    /**
+     * @param string $component The component's class name.
+     * @param string $variable  Its variable.
+     * @param bool   $takesPass Whether `render()` takes the render pass.
+     * @param string $parts     The part methods' source.
+     *
+     * @return string The class docblock and declaration, then `render()` up to its body.
+     */
+    private function declaration(string $component, string $variable, bool $takesPass, string $parts): string
+    {
+        $width = max(strlen($component), $takesPass ? strlen('RenderPass') : 0);
+        $nameWidth = max(strlen($variable) + 1, $takesPass ? strlen('$renderPass') : 0);
+        $docblock = '     * @param ' . str_pad($component, $width) . ' ' . str_pad('$' . $variable, $nameWidth) . " The component.\n"
+            . ($takesPass ? '     * @param ' . str_pad('RenderPass', $width) . ' ' . str_pad('$renderPass', $nameWidth)
+                . " The pass that writes its children.\n" : '');
+
+        return "/**\n * " . $component . "'s markup, compiled from " . $component
+            . ".html.php by bin/aic-build (#97, #98):\n * edit the template and run composer run build, never this file.\n */\n"
+            . 'final readonly class ' . $component . "Template\n{\n"
+            . (str_contains($parts, 'self::text(') ? "    use RendersMarkup;\n\n" : '')
+            . "    /**\n" . $docblock . "     *\n     * @return string Its markup.\n     */\n"
+            . '    public function render(' . $component . ' $' . $variable . ($takesPass ? ', RenderPass $renderPass' : '')
+            . "): string\n    {\n";
     }
 
     /**
@@ -157,7 +176,7 @@ final readonly class TemplateCompiler
         return match ($templateNode->kind) {
             TemplateNodeKind::Text => $this->texts($templateNode->code),
             TemplateNodeKind::Escaped => ['self::text(' . $templateNode->code . ')'],
-            TemplateNodeKind::Raw => [$this->wrapped($templateNode->code) . '->markup()'],
+            TemplateNodeKind::Raw => [$templateNode->code],
             TemplateNodeKind::Component => $this->component($templateNode),
             TemplateNodeKind::Condition => ["'<!--t:b-->'", $this->condition($templateNode, $scope, $templateMethods), self::BLOCK_END],
             TemplateNodeKind::ElseIf => [$this->condition($templateNode, $scope, $templateMethods)],
@@ -177,13 +196,11 @@ final readonly class TemplateCompiler
      */
     private function component(TemplateNode $templateNode): array
     {
-        $markup = $this->wrapped($templateNode->code) . '->render()->markup()';
+        $key = $templateNode->binding === ''
+            ? "'" . $templateNode->key . "'"
+            : "'" . $templateNode->key . ":' . " . $templateNode->binding;
 
-        $open = $templateNode->binding === ''
-            ? ["'<!--t:c " . $templateNode->key . "-->'"]
-            : ["'<!--t:c " . $templateNode->key . ":'", 'self::text(' . $templateNode->binding . ')', "'-->'"];
-
-        return [...$open, $markup, self::COMPONENT_END];
+        return ['$renderPass->child(' . $templateNode->code . ', ' . $key . ')'];
     }
 
     /**
@@ -258,17 +275,5 @@ final readonly class TemplateCompiler
         return str_ends_with($text, "\n")
             ? '"' . addcslashes(substr($text, 0, -1), '"\\$') . '\\n"'
             : "'" . addcslashes($text, "'\\") . "'";
-    }
-
-    /**
-     * @param string $code An object expression.
-     *
-     * @return string It, in parentheses when it is a `new`, so a call can follow.
-     */
-    private function wrapped(string $code): string
-    {
-        return str_starts_with($code, 'new ')
-            ? '(' . $code . ')'
-            : $code;
     }
 }

@@ -5,48 +5,26 @@ declare(strict_types=1);
 namespace AIC\Component\Domain;
 
 use AIC\Component\Contracts\Component;
-use AIC\Component\Contracts\Html;
 use AIC\Form\Contracts\FormToken;
-use Override;
 
 /**
  * A form around its fields and buttons.
  */
 final readonly class Form implements Component
 {
-    use RendersMarkup;
-
     /**
-     * @param string       $id           The element id; empty for none.
-     * @param string       $action       Where it posts.
-     * @param Html         $html         The fields, alerts and buttons, in order.
-     * @param FormToken    $formToken    The visitor's CSRF token, rendered first with the honeypot (#42).
-     * @param FormEncoding $formEncoding How it posts; multipart for a form with a file (#44).
+     * @param string          $id           The element id; empty for none.
+     * @param string          $action       Where it posts.
+     * @param list<Component> $fields       The hidden fields, alerts, fields and buttons, in order.
+     * @param FormToken       $formToken    The visitor's CSRF token, rendered first with the honeypot (#42).
+     * @param FormEncoding    $formEncoding How it posts; multipart for a form with a file (#44).
      */
     public function __construct(
-        private string $id,
-        private string $action,
-        private Html $html,
-        private FormToken $formToken,
-        private FormEncoding $formEncoding = FormEncoding::Urlencoded,
+        public string $id,
+        public string $action,
+        public array $fields,
+        public FormToken $formToken,
+        public FormEncoding $formEncoding = FormEncoding::Urlencoded,
     ) {
-    }
-
-    /**
-     * @return Html `<form class="aic-form" method="post">`.
-     */
-    #[Override]
-    public function render(): Html
-    {
-        $encoding = $this->formEncoding === FormEncoding::Multipart
-            ? $this->formEncoding->value
-            : '';
-        $open = '<form' . self::attribute('id', $this->id) . ' method="post"'
-            . self::attribute('action', $this->action) . self::attribute('enctype', $encoding) . ' class="aic-form">';
-
-        return (new Html($open))
-            ->append($this->formToken->fields())
-            ->append($this->html)
-            ->append(new Html('</form>'));
     }
 }

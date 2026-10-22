@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Content\Component;
 
 use AIC\Component\Contracts\Component;
-use AIC\Component\Contracts\Html;
-use Override;
 
 /**
  * A content page as an article, from ContentArticle.html.php: its title and
@@ -22,14 +20,5 @@ final readonly class ContentArticle implements Component
         public string $title,
         public array $paragraphs,
     ) {
-    }
-
-    /**
-     * @return Html `<article id="content-page">`.
-     */
-    #[Override]
-    public function render(): Html
-    {
-        return (new ContentArticleTemplate())->render($this);
     }
 }

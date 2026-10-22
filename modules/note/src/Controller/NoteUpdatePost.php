@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Note\Controller;
 
-use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\Heading;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
@@ -60,7 +60,7 @@ final readonly class NoteUpdatePost implements Page
         }
 
         if ($postedNote->error !== '') {
-            return $this->noteViews->page([new Html('<h2>Edit</h2>'), $this->noteForms->again($serverRequest, $path, $postedNote)], 422);
+            return $this->noteViews->page([new Heading('Edit'), $this->noteForms->again($serverRequest, $path, $postedNote)], 422);
         }
 
         try {

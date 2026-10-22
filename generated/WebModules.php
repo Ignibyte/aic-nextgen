@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Component\Application\ComponentTemplates;
 use AIC\Container\Contracts\ServiceRegistry;
 use AIC\Module\Application\HandlerContext;
 use AIC\Module\Application\HandlerWiring;
@@ -52,6 +53,15 @@ final readonly class WebModules implements HandlerWiring, MiddlewareWiring, Plug
     public function protectedPrefixes(): array
     {
         return (new ModulePrefixes())->all();
+    }
+
+    /**
+     * @return ComponentTemplates The modules' component templates, ending at the framework's atoms (#98).
+     */
+    #[Override]
+    public function templates(): ComponentTemplates
+    {
+        return new ModuleTemplates();
     }
 
     /**

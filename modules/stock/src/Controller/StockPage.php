@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Stock\Controller;
 
-use AIC\Component\Contracts\Html;
-use AIC\Component\Contracts\Region;
-use AIC\Component\Contracts\Regions;
+use AIC\Component\Domain\Heading;
+use AIC\Component\Domain\Paragraph;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
@@ -22,7 +21,6 @@ use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function count;
-use function htmlspecialchars;
 
 /**
  * GET /stock (#65): every stock item, the latest in full, and the form that
@@ -63,19 +61,19 @@ final readonly class StockPage implements Page
         try {
             $list = $this->stockList->component($serverRequest, $items);
         } catch (InvalidEnvelope) {
-            return $this->htmlLayout->content('<p>The list could not be refreshed. Reload the page.</p>', 400);
+            return $this->htmlLayout->content([new Paragraph('The list could not be refreshed. Reload the page.', '')], 400);
         }
 
         $latest = $items[count($items) - 1] ?? null;
         $summary = $latest instanceof StockItem
             ? 'Latest: ' . $latest->line() . '.'
             : 'Nothing in stock yet.';
-        $html = $this->stockForm->render($serverRequest, new StockEntry('', '', '', false), '');
-
-        return $this->htmlLayout->page(new Regions([new Region('content', [
-            new Html('<h2>Stock</h2><p id="stock-latest">' . htmlspecialchars($summary) . '</p>'),
+        return $this->htmlLayout->content([
+            new Heading('Stock'),
+            new Paragraph($summary, 'stock-latest'),
             $list,
-            $this->stockList->links()->append($html),
-        ])]), 200);
+            $this->stockList->links(),
+            $this->stockForm->form($serverRequest, new StockEntry('', '', '', false), ''),
+        ], 200);
     }
 }

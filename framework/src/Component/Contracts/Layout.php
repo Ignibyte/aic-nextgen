@@ -38,9 +38,10 @@ interface Layout extends Component
     public function title(): string;
 
     /**
-     * @return Html The `<link>` and `<script>` it tracks (`data-track`), as its head renders them (protocol 9).
+     * @return Component The `<link>` and `<script>` it tracks (`data-track`, protocol 9), which its head writes and
+     *                   a Tessera fragment answer repeats.
      */
-    public function trackedAssets(): Html;
+    public function assets(): Component;
 
     /**
      * @return string The visitor's CSRF token it carries; empty before one is issued.

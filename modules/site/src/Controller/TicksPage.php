@@ -6,6 +6,7 @@ namespace App\Site\Controller;
 
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
+use App\Site\Component\Ticks;
 use App\Site\Service\HtmlLayout;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -33,11 +34,6 @@ final readonly class TicksPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        return $this->htmlLayout->content(
-            '<h2>Ticks</h2><p>Five ticks, streamed from <code>/events</code> by Tessera into the list below.</p>'
-                . '<p data-signals__document=\'{"ticks":0}\'>Ticks seen: <strong id="ticks-seen" data-text="$ticks">0</strong></p>'
-                . '<ol data-region="ticks" data-stream="/events?count=5"></ol>',
-            200,
-        );
+        return $this->htmlLayout->content([new Ticks('/events?count=5')], 200);
     }
 }

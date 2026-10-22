@@ -85,6 +85,6 @@ final readonly class UploadsPost implements Page
      */
     private function refused(ServerRequestInterface $serverRequest, string $reason): PageDocument
     {
-        return $this->htmlLayout->content($this->uploadForm->render($serverRequest, $reason)->markup(), 422);
+        return $this->htmlLayout->content([$this->uploadForm->form($serverRequest, $reason)], 422);
     }
 }

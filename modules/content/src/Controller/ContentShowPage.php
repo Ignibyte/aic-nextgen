@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Content\Controller;
 
+use AIC\Component\Domain\Paragraph;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
@@ -49,9 +50,9 @@ final readonly class ContentShowPage implements Page
             : $this->contentRepository->find($slug);
 
         if (!$contentPage instanceof ContentPage) {
-            return $this->htmlLayout->content('<p id="not-found">There is no page here.</p>', 404);
+            return $this->htmlLayout->content([new Paragraph('There is no page here.', 'not-found')], 404);
         }
 
-        return $this->htmlLayout->content((new ContentArticle($contentPage->title, $contentPage->paragraphs()))->render()->markup(), 200);
+        return $this->htmlLayout->content([new ContentArticle($contentPage->title, $contentPage->paragraphs())], 200);
     }
 }

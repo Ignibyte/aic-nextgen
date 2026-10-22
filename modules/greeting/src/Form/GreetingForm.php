@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Greeting\Form;
 
-use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\Alert;
 use AIC\Component\Domain\AlertSeverity;
 use AIC\Component\Domain\Button;
@@ -33,17 +32,15 @@ final readonly class GreetingForm
      * @param string                 $value         The name to show in the field.
      * @param string                 $error         The error to show; empty for none.
      *
-     * @return string The form markup.
+     * @return Form The form.
      */
-    public function render(ServerRequestInterface $serverRequest, string $value, string $error): string
+    public function form(ServerRequestInterface $serverRequest, string $value, string $error): Form
     {
-        $alert = $error === ''
-            ? new Html('')
-            : (new Alert(AlertSeverity::Error, $error, 'form-error'))->render();
-        $html = $alert
-            ->append((new FormField('Name', 'name', new Input('name', 'name', $value)))->render())
-            ->append((new Button('Greet', 'submit', ''))->render());
+        $alerts = $error === ''
+            ? []
+            : [new Alert(AlertSeverity::Error, $error, 'form-error')];
+        $fields = [...$alerts, new FormField('Name', 'name', new Input('name', 'name', $value)), new Button('Greet', 'submit', '')];
 
-        return (new Form('greeting-form', '/hello', $html, $this->formTokens->issue($serverRequest)))->render()->markup();
+        return new Form('greeting-form', '/hello', $fields, $this->formTokens->issue($serverRequest));
     }
 }

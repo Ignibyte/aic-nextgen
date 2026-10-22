@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Content\Controller;
 
+use AIC\Component\Domain\Heading;
+use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\Link;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
+use App\Content\Component\ContentPages;
 use App\Content\Entity\ContentPage;
 use App\Content\Form\ContentForm;
 use App\Content\Repository\ContentRepository;
@@ -16,7 +19,6 @@ use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function array_map;
-use function implode;
 
 /**
  * GET /pages: every content page, linked by title, and the form that starts
@@ -46,17 +48,16 @@ final readonly class ContentListPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $items = array_map(
-            static fn (ContentPage $contentPage): string => '<li>'
-                . (new Link($contentPage->title, '/pages/' . $contentPage->slug))->render()->markup() . '</li>',
+        $links = array_map(
+            static fn (ContentPage $contentPage): KeyedComponent => new KeyedComponent(
+                $contentPage->slug,
+                new Link($contentPage->title, '/pages/' . $contentPage->slug),
+            ),
             $this->contentRepository->all(),
         );
-        $list = $items === []
-            ? '<p id="content-pages">None yet.</p>'
-            : '<ul id="content-pages">' . implode('', $items) . '</ul>';
 
         return $this->htmlLayout->content(
-            '<h2>Pages</h2>' . $list . $this->contentForm->starter($serverRequest, '', '')->markup(),
+            [new Heading('Pages'), new ContentPages($links), $this->contentForm->starter($serverRequest, '', '')],
             200,
         );
     }

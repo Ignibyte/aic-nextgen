@@ -4,16 +4,10 @@ declare(strict_types=1);
 
 namespace AIC\Form\Contracts;
 
-use AIC\Component\Contracts\Html;
-
-use function htmlspecialchars;
-
-use const ENT_QUOTES;
-
 /**
- * The visitor's CSRF token, as a form carries it (#42): `fields()` renders
- * the hidden token and the honeypot, and the Form atom puts them in every
- * form. FormGuardMiddleware checks both on every unsafe request.
+ * The visitor's CSRF token, as a form carries it (#42): the Form atom's
+ * template writes it as a hidden field with the honeypot in every form.
+ * FormGuardMiddleware checks both on every unsafe request.
  */
 final readonly class FormToken
 {
@@ -51,17 +45,5 @@ final readonly class FormToken
     public function value(): string
     {
         return $this->token;
-    }
-
-    /**
-     * @return Html The hidden token, and the honeypot in an off-screen label.
-     */
-    public function fields(): Html
-    {
-        return new Html(
-            '<input type="hidden" name="' . self::FIELD . '" value="' . htmlspecialchars($this->token, ENT_QUOTES) . '">'
-            . '<p class="aic-honeypot" aria-hidden="true"><label>Leave this empty <input name="' . self::HONEYPOT . '"'
-            . ' tabindex="-1" autocomplete="off"></label></p>',
-        );
     }
 }

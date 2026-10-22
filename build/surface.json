@@ -356,7 +356,7 @@
                 "App\\Faq\\Block\\FaqNoteBlock"
             ],
             "exports": [
-                "App\\Faq\\Component\\FaqItem"
+                "App\\Faq\\Component\\FaqList"
             ],
             "migrations": [],
             "name": "faq",

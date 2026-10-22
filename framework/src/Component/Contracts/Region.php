@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace AIC\Component\Contracts;
 
 use InvalidArgumentException;
-use Override;
 
 use function array_merge;
 use function preg_match;
 
 /**
- * One named region of a page and the components in it (#37). It renders as
- * `<div data-region="name">`, the identity the browser runtime targets, and
- * each component in it sits between key markers, keyed `name/position`.
+ * One named region of a page and the components in it (#37). The Renderer
+ * writes it as `<div data-region="name">`, the identity the browser runtime
+ * targets, each component between key markers (#98).
  */
-final readonly class Region implements Component
+final readonly class Region
 {
     /**
      * @param string          $name       Lower-case words joined by hyphens, such as `content`.
@@ -51,34 +50,10 @@ final readonly class Region implements Component
     }
 
     /**
-     * @return Html The region's element, each component between Tessera's markers (#70) under its own key or `cN`.
+     * @return list<Component> What it holds, in order.
      */
-    #[Override]
-    public function render(): Html
+    public function components(): array
     {
-        $markup = '';
-        $position = 0;
-
-        foreach ($this->components as $component) {
-            $opening = $component instanceof Keyed
-                ? self::opening($component)
-                : 'c' . $position;
-            $markup .= '<!--t:c ' . $opening . '-->' . $component->render()->markup() . '<!--/t:c-->';
-            $position += 1;
-        }
-
-        return new Html('<div data-region="' . $this->name . '">' . $markup . '</div>');
-    }
-
-    /**
-     * @param Keyed $keyed A component with its own key.
-     *
-     * @return string Its key, then its props token when it has one.
-     */
-    private static function opening(Keyed $keyed): string
-    {
-        return $keyed->props() === ''
-            ? $keyed->key()
-            : $keyed->key() . ' ' . $keyed->props();
+        return $this->components;
     }
 }

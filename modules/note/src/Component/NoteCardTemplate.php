@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Note\Component;
 
-use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\RendersMarkup;
 
 /**
- * NoteCard's markup, compiled from NoteCard.html.php by bin/aic-build (#97):
+ * NoteCard's markup, compiled from NoteCard.html.php by bin/aic-build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class NoteCardTemplate
@@ -18,11 +17,11 @@ final readonly class NoteCardTemplate
     /**
      * @param NoteCard $noteCard The component.
      *
-     * @return Html Its markup.
+     * @return string Its markup.
      */
-    public function render(NoteCard $noteCard): Html
+    public function render(NoteCard $noteCard): string
     {
-        return new Html($this->part0($noteCard));
+        return $this->part0($noteCard);
     }
 
     /**

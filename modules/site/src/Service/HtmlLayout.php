@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Site\Service;
 
-use AIC\Component\Contracts\Html;
+use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Region;
 use AIC\Component\Contracts\Regions;
+use AIC\Component\Domain\TrackedAssets;
 use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Domain\PageDocument;
 use App\Site\Component\AppLayout;
@@ -35,25 +36,24 @@ final readonly class HtmlLayout
      */
     public function page(Regions $regions, int $status): PageDocument
     {
-        $html = new Html('<link rel="stylesheet" href="/assets/aic.css" data-track>'
-            . '<script defer src="' . $this->appConfig->tessera->scriptPath() . '" data-track></script>');
+        $trackedAssets = new TrackedAssets('/assets/aic.css', $this->appConfig->tessera->scriptPath());
 
         return new PageDocument(
-            new AppLayout($this->appConfig->name, $html, $regions, $regions->region('content'), $regions->region('nav')),
+            new AppLayout($this->appConfig->name, $trackedAssets, $regions, $regions->region('content'), $regions->region('nav')),
             $status,
         );
     }
 
     /**
-     * @param string $markup The `content` region's markup, already escaped.
-     * @param int    $status 200, 404 or 422.
+     * @param list<Component> $components The `content` region's components, in order.
+     * @param int             $status     200, 404 or 422.
      *
      * @throws InvalidArgumentException When the status is none of these.
      *
      * @return PageDocument The page, with only its content region filled.
      */
-    public function content(string $markup, int $status): PageDocument
+    public function content(array $components, int $status): PageDocument
     {
-        return $this->page(new Regions([new Region('content', [new Html($markup)])]), $status);
+        return $this->page(new Regions([new Region('content', $components)]), $status);
     }
 }

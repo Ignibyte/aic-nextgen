@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Component\Contracts\Html;
+use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\RendersMarkup;
 use Gates\Domain\TemplateNode;
 use Gates\Domain\TemplateNodeKind;
@@ -26,16 +26,18 @@ use const SORT_STRING;
 
 /**
  * The opening of a generated template class (#36): its namespace and its
- * imports, sorted and grouped as PHPCS wants them. The template's `@use`
- * lines, Html, and what the part methods call.
+ * imports, sorted and grouped as PHPCS wants them. The classes the template
+ * names, the render pass when it writes children (#98), and what the part
+ * methods call.
  */
 final readonly class TemplateImports
 {
     /**
-     * The imports a part method's call needs, by the call.
+     * The imports a part method's code needs, by what it holds.
      */
     private const array NEEDS = [
         'array_map(' => ['function array_map', 'function implode'],
+        'RenderPass $renderPass' => [RenderPass::class],
         'self::text(' => [RendersMarkup::class],
     ];
 
@@ -48,7 +50,7 @@ final readonly class TemplateImports
      */
     public function head(array $nodes, string $namespace, string $parts): string
     {
-        $imports = [Html::class, ...$this->imported($nodes)];
+        $imports = $this->imported($nodes);
 
         foreach (self::NEEDS as $call => $names) {
             $imports = str_contains($parts, $call)

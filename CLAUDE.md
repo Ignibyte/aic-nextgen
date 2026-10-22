@@ -31,7 +31,7 @@ M0, M1 and M2 are done (2026-10-19).
 #26: `build/surface.json` lists every route and command with its kind, written by `composer run
 build`; gate:24 keeps it fresh. #25: byte ranges (206/416) on downloads and Server-Sent Events
 (`EventStream` pulling from an `EventSource`, streamed natively). #7 (M3) runs as #35 to #39;
-#35: `AIC\Component` (`Component::render(): Html`, the catalog atoms with a caller). #36: a
+#35: `AIC\Component` (the catalog atoms with a caller; data since #98). #36: a
 component's template compiles to `XTemplate.php` beside it (`composer run build`, kept fresh by
 gate:24); the generated class passes every gate unexcluded. #37: a Page returns
 `PageDocument(Layout)`; regions render as `data-region` elements, components and blocks between
@@ -71,7 +71,14 @@ class tools skip `modules/*/templates/` and `templates/`. #97: `composer run bui
 `*.html.php` into its `XTemplate.php`, escaping every `<?= ?>` by its static type; loops are real
 loops (`break`, `continue`) and `empty()` lowers by type; the old grammar is gone. A component
 is data: its constructor takes the ready values as promoted public props, computed by whoever
-builds it, and a class-typed loop variable is named for its class (`$keyedComponent`).
+builds it, and a class-typed loop variable is named for its class (`$keyedComponent`). #98: one
+Renderer makes HTML. `Component` declares no method; `AIC\Component\Application\Renderer` is the
+only `new Html`, and `Psr7ResponseWriter` the only reader of `markup()`. A page answers a layout of
+regions holding components (`HtmlLayout::content(list<Component>, int)`), never a string. A
+template writes children through a `RenderPass` (`child()` with markers, `region()`, `inline()` in a
+layout), and a Tessera fragment is the same tree rendered by its path. The build generates the
+lookup (`generated/ModuleTemplates` and one `<M>Templates` per module), ending at the atoms'
+hand-written templates; a module component with no template is refused.
 
 ## Five kinds
 

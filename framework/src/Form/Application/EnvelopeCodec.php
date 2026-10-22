@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Form\Application;
 
-use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\HiddenInput;
 use AIC\Form\Exception\InvalidEnvelope;
 use AIC\Secret\Application\HmacSigner;
 use AIC\Session\Domain\StringMapJson;
@@ -61,11 +61,11 @@ final readonly class EnvelopeCodec
      *
      * @throws JsonException When they cannot be encoded.
      *
-     * @return Html The hidden field that carries them.
+     * @return HiddenInput The hidden field that carries them.
      */
-    public function field(array $values): Html
+    public function field(array $values): HiddenInput
     {
-        return new Html('<input type="hidden" name="' . self::FIELD . '" value="' . $this->seal($values) . '">');
+        return new HiddenInput(self::FIELD, $this->seal($values));
     }
 
     /**

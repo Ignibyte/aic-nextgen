@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Note\Form;
 
-use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\HiddenInput;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Form\Exception\InvalidEnvelope;
 use JsonException;
@@ -30,9 +30,9 @@ final readonly class NoteEnvelope
      *
      * @throws JsonException When the envelope cannot be encoded.
      *
-     * @return Html The hidden envelope naming it.
+     * @return HiddenInput The hidden envelope naming it.
      */
-    public function field(string $path): Html
+    public function field(string $path): HiddenInput
     {
         return $this->envelopeCodec->field(['note' => $path]);
     }

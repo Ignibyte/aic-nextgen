@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Content\Controller;
 
+use AIC\Component\Domain\Heading;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
@@ -47,7 +48,7 @@ final readonly class ContentNewPost implements Page
         if (!$this->contentRequest->isSlug($slug)) {
             $error = 'A slug is lower-case words and digits joined by hyphens, such as about-us.';
 
-            return $this->htmlLayout->content('<h2>Pages</h2>' . $this->contentForm->starter($serverRequest, $slug, $error)->markup(), 422);
+            return $this->htmlLayout->content([new Heading('Pages'), $this->contentForm->starter($serverRequest, $slug, $error)], 422);
         }
 
         return new PageRedirect('/account/pages/' . $slug);

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Note\Service;
 
 use AIC\Component\Contracts\Component;
-use AIC\Component\Contracts\Html;
 use AIC\Component\Contracts\Region;
 use AIC\Component\Contracts\Regions;
 use AIC\Component\Domain\Badge;
 use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\Link;
+use AIC\Component\Domain\Paragraph;
 use AIC\Controller\Domain\PageDocument;
 use App\Note\Component\NoteList;
 use App\Note\Entity\Note;
@@ -73,7 +73,7 @@ final readonly class NoteViews
      */
     public function altered(): PageDocument
     {
-        return $this->page([new Html('<p id="altered">This form was changed after it was sent. Reload the note and try again.</p>')], 400);
+        return $this->page([new Paragraph('This form was changed after it was sent. Reload the note and try again.', 'altered')], 400);
     }
 
     /**
@@ -81,6 +81,6 @@ final readonly class NoteViews
      */
     public function notFound(): PageDocument
     {
-        return $this->page([new Html('<p id="not-found">Note not found.</p>')], 404);
+        return $this->page([new Paragraph('Note not found.', 'not-found')], 404);
     }
 }

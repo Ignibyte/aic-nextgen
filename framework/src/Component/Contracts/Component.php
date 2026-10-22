@@ -5,14 +5,10 @@ declare(strict_types=1);
 namespace AIC\Component\Contracts;
 
 /**
- * A server-rendered piece of a page. Its props are its constructor's
- * parameters, and a component that holds another renders it itself: there is
- * no renderer looking classes up.
+ * A server-rendered piece of a page, as data (#98): its public readonly props
+ * and its template. A component never renders itself; the Renderer writes it
+ * through its template, the only way markup is made (#87).
  */
 interface Component
 {
-    /**
-     * @return Html The component's markup.
-     */
-    public function render(): Html;
 }

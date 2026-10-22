@@ -7,8 +7,9 @@ namespace App\Site\Block;
 use AIC\Block\Contracts\Block;
 use AIC\Block\Contracts\Placement;
 use AIC\Component\Contracts\Component;
-use AIC\Component\Contracts\Html;
+use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\Link;
+use App\Site\Component\SiteNav;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -49,13 +50,13 @@ final readonly class SiteNavBlock implements Block
     public function component(ServerRequestInterface $serverRequest): Component
     {
         $path = $serverRequest->getUri()->getPath();
-        $links = '';
+        $links = [];
 
         foreach (self::ENTRIES as $href => $label) {
-            $links .= (new Link($label, $href, self::isCurrent($href, $path), 'content nav'))->render()->markup();
+            $links[] = new KeyedComponent($label, new Link($label, $href, self::isCurrent($href, $path), 'content nav'));
         }
 
-        return new Html('<nav id="site-nav" aria-label="Demos">' . $links . '</nav>');
+        return new SiteNav($links);
     }
 
     /**

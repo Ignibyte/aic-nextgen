@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\TemplateClass;
 use Gates\Domain\TemplateReader;
 use Gates\Domain\TemplateUnit;
 use InvalidArgumentException;
@@ -46,6 +47,41 @@ final readonly class TemplateBuild
     {
         $classes = [];
 
+        foreach ($this->units() as $path => $templateUnit) {
+            $classes[$templateUnit->generated] = $this->compile($path, $templateUnit)->source;
+        }
+
+        ksort($classes);
+
+        return $classes;
+    }
+
+    /**
+     * @throws InvalidArgumentException When a template cannot be read, is refused, or is too big for one class.
+     *
+     * @return array<string, bool> Whether each template's `render()` takes the render pass, by its component class,
+     *                             fully qualified, in template order (#98's lookup).
+     */
+    public function components(): array
+    {
+        $components = [];
+
+        foreach ($this->units() as $path => $templateUnit) {
+            $components[$templateUnit->component] = $this->compile($path, $templateUnit)->takesPass;
+        }
+
+        return $components;
+    }
+
+    /**
+     * @throws InvalidArgumentException When a template cannot be read or is refused.
+     *
+     * @return array<string, TemplateUnit> Each template read, by its path relative to the repo root.
+     */
+    private function units(): array
+    {
+        $units = [];
+
         foreach ($this->templates() as $template) {
             $source = file_get_contents($template);
 
@@ -54,13 +90,10 @@ final readonly class TemplateBuild
             }
 
             $path = substr($template, strlen($this->root) + 1);
-            $templateUnit = $this->templateReader->read($path, $source);
-            $classes[$templateUnit->generated] = $this->compile($path, $templateUnit);
+            $units[$path] = $this->templateReader->read($path, $source);
         }
 
-        ksort($classes);
-
-        return $classes;
+        return $units;
     }
 
     /**
@@ -70,9 +103,9 @@ final readonly class TemplateBuild
      * @throws InvalidArgumentException When it is too big for one class, or a loop too big or too complex for one part:
      *                                  `path: detail`.
      *
-     * @return string The generated class's source.
+     * @return TemplateClass The generated class.
      */
-    private function compile(string $path, TemplateUnit $templateUnit): string
+    private function compile(string $path, TemplateUnit $templateUnit): TemplateClass
     {
         $component = $templateUnit->component;
         $split = (int) strrpos($component, '\\');

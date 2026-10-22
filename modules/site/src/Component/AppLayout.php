@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Site\Component;
 
-use AIC\Component\Contracts\Html;
 use AIC\Component\Contracts\Layout;
 use AIC\Component\Contracts\Region;
 use AIC\Component\Contracts\Regions;
+use AIC\Component\Domain\TrackedAssets;
 use Override;
 
 /**
@@ -22,30 +22,21 @@ final readonly class AppLayout implements Layout
     public const string ID = 'app';
 
     /**
-     * @param string  $name          The app's name.
-     * @param Html    $trackedAssets The theme's stylesheet and Tessera's script, each `data-track`.
-     * @param Regions $pageRegions   The regions the page filled.
-     * @param Region  $content       The `content` region: the page's filled one, or an empty one.
-     * @param Region  $nav           The `nav` region: the page's filled one, or an empty one.
-     * @param string  $csrfToken     The visitor's CSRF token, for Tessera's header; empty before one is issued.
+     * @param string        $name          The app's name.
+     * @param TrackedAssets $trackedAssets The theme's stylesheet and Tessera's script, each `data-track`.
+     * @param Regions       $pageRegions   The regions the page filled.
+     * @param Region        $content       The `content` region: the page's filled one, or an empty one.
+     * @param Region        $nav           The `nav` region: the page's filled one, or an empty one.
+     * @param string        $csrfToken     The visitor's CSRF token, for Tessera's header; empty before one is issued.
      */
     public function __construct(
         public string $name,
-        public Html $trackedAssets,
+        public TrackedAssets $trackedAssets,
         private Regions $pageRegions,
         public Region $content,
         public Region $nav,
         public string $csrfToken = '',
     ) {
-    }
-
-    /**
-     * @return Html The whole document.
-     */
-    #[Override]
-    public function render(): Html
-    {
-        return (new AppLayoutTemplate())->render($this);
     }
 
     /**
@@ -103,10 +94,10 @@ final readonly class AppLayout implements Layout
     }
 
     /**
-     * @return Html The theme's stylesheet and Tessera's script, each `data-track`.
+     * @return TrackedAssets The theme's stylesheet and Tessera's script, each `data-track`.
      */
     #[Override]
-    public function trackedAssets(): Html
+    public function assets(): TrackedAssets
     {
         return $this->trackedAssets;
     }

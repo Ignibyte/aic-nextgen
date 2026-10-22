@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Auth\Controller;
 
+use AIC\Component\Domain\Heading;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use App\Auth\Form\LoginForm;
@@ -40,7 +41,7 @@ final readonly class LoginPage implements Page
         $next = $query['next'] ?? '';
 
         return $this->htmlLayout->content(
-            '<h2>Sign in</h2>' . $this->loginForm->render($serverRequest, '', is_string($next) ? $next : '', '')->markup(),
+            [new Heading('Sign in'), $this->loginForm->form($serverRequest, '', is_string($next) ? $next : '', '')],
             200,
         );
     }

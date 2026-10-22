@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Stock\Service;
 
-use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\Link;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Form\Exception\InvalidEnvelope;
 use AIC\Tessera\Application\TesseraProps;
+use App\Stock\Component\StockLinks;
+use App\Stock\Component\StockListing;
 use App\Stock\Entity\StockItem;
 use JsonException;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function array_slice;
 use function ctype_digit;
-use function htmlspecialchars;
 use function is_string;
 use function max;
 use function min;
@@ -62,38 +62,38 @@ final readonly class StockList
 
         return new KeyedComponent(
             'stock-list',
-            self::list(array_slice($items, -$limit), $limit),
+            self::listing(array_slice($items, -$limit), $limit),
             $this->envelopeCodec->seal(['limit' => (string) $limit]),
         );
     }
 
     /**
-     * @return Html The links that show three or ten, and the one that refreshes the list alone.
+     * @return StockLinks The links that show three or ten, and the one that refreshes the list alone.
      */
-    public function links(): Html
+    public function links(): StockLinks
     {
-        $three = (new Link('Show the last 3', '/stock?limit=3', false, self::TARGET))->render()->markup();
-        $ten = (new Link('Show the last 10', '/stock?limit=10', false, self::TARGET))->render()->markup();
-        $refresh = (new Link('Refresh the list', '/stock', false, self::TARGET))->render()->markup();
-
-        return new Html('<p>' . $three . ' · ' . $ten . ' · ' . $refresh . '</p>');
+        return new StockLinks(
+            new Link('Show the last 3', '/stock?limit=3', false, self::TARGET),
+            new Link('Show the last 10', '/stock?limit=10', false, self::TARGET),
+            new Link('Refresh the list', '/stock', false, self::TARGET),
+        );
     }
 
     /**
      * @param list<StockItem> $items The items to show, oldest first.
      * @param int             $limit How many the list shows at most.
      *
-     * @return Html The list.
+     * @return StockListing The list.
      */
-    private static function list(array $items, int $limit): Html
+    private static function listing(array $items, int $limit): StockListing
     {
-        $lines = '';
+        $lines = [];
 
         foreach ($items as $item) {
-            $lines .= '<li>' . htmlspecialchars($item->line()) . '</li>';
+            $lines[] = $item->line();
         }
 
-        return new Html('<p id="stock-limit">The last ' . $limit . '.</p><ul id="stock">' . $lines . '</ul>');
+        return new StockListing($limit, $lines);
     }
 
     /**

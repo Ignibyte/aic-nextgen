@@ -13,6 +13,7 @@ use App\Content\Controller\ContentShowPage;
 use App\Content\Form\ContentForm;
 use App\Content\Repository\ContentRepository;
 use App\Content\Service\ContentRequest;
+use App\Content\Service\ContentViews;
 use App\Site\Service\HtmlLayout;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -39,16 +40,13 @@ final readonly class ContentHandlers
         $contentRepository = new ContentRepository($this->handlerContext->database());
         $contentForm = new ContentForm();
         $contentRequest = new ContentRequest();
+        $contentViews = new ContentViews($htmlLayout, $contentForm);
 
         return [
-            ContentEditPage::class => $this->handlerContext->page(
-                new ContentEditPage($htmlLayout, $contentRepository, $contentRequest, $contentForm),
-            ),
+            ContentEditPage::class => $this->handlerContext->page(new ContentEditPage($contentRepository, $contentRequest, $contentViews)),
             ContentListPage::class => $this->handlerContext->page(new ContentListPage($htmlLayout, $contentRepository, $contentForm)),
             ContentNewPost::class => $this->handlerContext->page(new ContentNewPost($htmlLayout, $contentForm, $contentRequest)),
-            ContentSavePost::class => $this->handlerContext->page(
-                new ContentSavePost($htmlLayout, $contentRepository, $contentRequest, $contentForm),
-            ),
+            ContentSavePost::class => $this->handlerContext->page(new ContentSavePost($contentRepository, $contentRequest, $contentViews)),
             ContentShowPage::class => $this->handlerContext->page(new ContentShowPage($htmlLayout, $contentRepository, $contentRequest)),
         ];
     }

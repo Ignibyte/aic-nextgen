@@ -7,19 +7,17 @@ namespace App\Job\Controller;
 use AIC\Component\Domain\Button;
 use AIC\Component\Domain\Form;
 use AIC\Component\Domain\FormField;
+use AIC\Component\Domain\Heading;
 use AIC\Component\Domain\Input;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\FormTokens;
 use AIC\Notification\Application\DatabaseChannel;
+use App\Job\Component\LineList;
 use App\Site\Service\HtmlLayout;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
-
-use function array_map;
-use function htmlspecialchars;
-use function implode;
 
 /**
  * GET /notifications: the demo user's latest notifications from the database
@@ -56,18 +54,17 @@ final readonly class NotificationsPage implements Page
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
         $latest = $this->databaseChannel->latest(self::USER, 5);
-        $list = $latest === []
-            ? '<p id="notifications">None yet.</p>'
-            : '<ul id="notifications">' . implode('', array_map(
-                static fn (string $line): string => '<li>' . htmlspecialchars($line) . '</li>',
-                $latest,
-            )) . '</ul>';
-        $html = (new FormField('Message', 'message', new Input('message', 'message', 'Hello from the demo.')))->render()
-            ->append((new Button('Send a notification', 'submit', 'notify'))->render());
+        $fields = [
+            new FormField('Message', 'message', new Input('message', 'message', 'Hello from the demo.')),
+            new Button('Send a notification', 'submit', 'notify'),
+        ];
 
         return $this->htmlLayout->content(
-            '<h2>Notifications</h2>' . $list
-            . (new Form('', '/notifications', $html, $this->formTokens->issue($serverRequest)))->render()->markup(),
+            [
+                new Heading('Notifications'),
+                new LineList('notifications', $latest, 'None yet.'),
+                new Form('', '/notifications', $fields, $this->formTokens->issue($serverRequest)),
+            ],
             200,
         );
     }

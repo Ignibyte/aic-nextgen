@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Templates;
 
+use AIC\Component\Contracts\Layout;
 use Gates\Domain\TemplateReader;
 use Gates\Domain\TemplateType;
 use Gates\Domain\TemplateTypeKind;
@@ -15,6 +16,7 @@ use Override;
 use function array_map;
 use function dirname;
 use function implode;
+use function is_a;
 use function lcfirst;
 use function preg_match;
 use function strrpos;
@@ -70,7 +72,7 @@ final readonly class PlainTemplateReader implements TemplateReader
         try {
             $file = $this->templateClassTypes->component($component, $path);
             $scope = [lcfirst($short) => new TemplateType([TemplateTypeKind::Object], $component)];
-            $nodes = (new TemplateLowering($short))->lower($stmts, $scope);
+            $nodes = (new TemplateLowering($short, is_a($component, Layout::class, true)))->lower($stmts, $scope);
         } catch (InvalidArgumentException $invalidArgumentException) {
             $message = $path . ':' . $this->located($invalidArgumentException->getMessage());
 
