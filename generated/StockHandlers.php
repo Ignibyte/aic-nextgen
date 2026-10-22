@@ -9,11 +9,11 @@ use AIC\Form\Application\PostedFields;
 use AIC\Module\Application\HandlerContext;
 use AIC\Tessera\Application\TesseraProps;
 use App\Site\Service\HtmlLayout;
-use App\Stock\Component\StockList;
 use App\Stock\Controller\StockPage;
 use App\Stock\Controller\StockPost;
 use App\Stock\Form\StockForm;
 use App\Stock\Repository\StockRepository;
+use App\Stock\Service\StockList;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**

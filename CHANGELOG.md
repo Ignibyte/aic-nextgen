@@ -4,6 +4,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Added
+
+- **gate:26, the module boundaries** (#94, part 3 of #90). `bin/gate-modules.php` reads the module manifests, `git ls-files -co --exclude-standard`, each PHP file's symbols, the build's template classes and composer.json's `App\` prefixes, then holds five rules.
+  - **R1:** a class's kind decides its `src/` folder, at any depth, and a kind folder holds only its kind. The kinds come from the interfaces through `Gates\Domain\ClassKinds`, which the surface manifest now shares; Repository and Form go by name suffix. A plain class sits in `Entity/`, `Service/` or `Form/`, and a module's root holds only its manifest, `src/`, `templates/components/`, `assets/` and `resources/`.
+  - **R2:** at most 15 files per folder; `src/Migration/` is exempt.
+  - **R3:** a module uses another's class only when that module exports it and this one requires that module.
+  - **R4:** the requires name modules and form no cycle, through the build's own `ModuleGraph`, whose cycle message now names only the cycle.
+  - **R5:** nothing outside `modules/` but the shell (`generated/`, `config/`, `bootstrap/`, `public/`, `templates/layouts/`, `theme/`, `build/`, the console and the build, this repo's framework and tooling, and the root files by name). Every `App\` prefix maps a module's namespace to its `src/`, and no PHP outside `modules/` and `generated/` declares an `App\` class.
+
+  Each breach is one line naming the folder, the `->export(...)` or the `->requires(...)` to add. There is no deferral: an unreadable tree fails the gate. All 13 plants and the fail-closed read were seen to fail. The stock list's builder, `StockList`, moved from `src/Component/` to `src/Service/`, because it makes a component rather than being one.
+
 ### Changed
 
 - **The demo app is ten modules** (#93, part 2 of #90). `app/`, `resources/`, `config/routes.php` and every hand-written composition class are gone. The demo's features are now the modules site, home, greeting, note, session, auth, content, job and stock, beside faq. Each class sits in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\`, migrations in `src/Migration/`; component templates are in `modules/<name>/templates/components/`, the page layout in `templates/layouts/`, the downloads in `modules/site/resources/`.

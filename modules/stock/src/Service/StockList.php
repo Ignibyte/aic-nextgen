@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Stock\Component;
+namespace App\Stock\Service;
 
 use AIC\Component\Contracts\Html;
 use AIC\Component\Domain\KeyedComponent;
@@ -22,8 +22,9 @@ use function max;
 use function min;
 
 /**
- * The stock page's list (#74): the component `content/stock-list`, showing
- * the last N items. N comes from the `limit` query field; a request without
+ * Builds the stock page's list (#74): the keyed component `content/stock-list`,
+ * showing the last N items. It makes the component rather than being one, so
+ * it is a service (#94). N comes from the `limit` query field; a request without
  * one (a refresh of the list alone) takes it from the props the marker
  * carried, so a refresh keeps it while a visit to `?limit=3` changes it (#83).
  */

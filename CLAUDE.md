@@ -62,7 +62,9 @@ speak Tessera (`TesseraEvents`, ids, `tessera-close`, `Last-Event-ID`); `/ticks`
 M8a (the app shape) runs as #92 to #109; #92: modules, a manifest per `modules/<name>/` read by
 `bin/aic-build`, which writes the wiring into `generated/` (pilot: `modules/faq/`). #93: the demo
 is ten modules and `app/` is gone; `AppKernel` and `ConsoleKernel` compose the framework's own
-wiring around the generated pieces.
+wiring around the generated pieces. #94: gate:26 holds the module boundaries (a class's kind
+decides its `src/` folder, 15 files per folder, exports and requires, nothing outside `modules/`
+but the shell).
 
 ## Five kinds
 
@@ -192,6 +194,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | | | 22 | pipeline docs: frontmatter, line caps, links |
 | | | 23 | native site: the compiled app answers as PHP does |
 | | | 24 | build manifests: `build/surface.json` is fresh |
+| | | 26 | module boundaries: kind folders, the 15-file cap, exports and requires, the shell |
 
 - The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
   `App\`; a phpat rule keeps runtime code from depending on it.
@@ -202,11 +205,18 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   coupling <= 15). Raise one only when code needs it, with the reason beside the value.
 - A new gate or rule is done only when it has been seen to fail on a planted violation.
 - Before a final run: `rm -f .phpcs-cache` (a stale cache passes PHPCS falsely).
-- gate:21 probes each class under `framework/src` and `app` on its own: its class-graph closure,
+- gate:21 probes each class under `framework/src`, `modules` and `generated` on its own: its class-graph closure,
   compiled with the fork's elephc in place (`/srv/stacks/elephc/target/release/elephc`;
   `ELEPHC_BIN` overrides), run, and compared with host PHP. Work files land in `.native-gate/`
   (gitignored); pcre2 and oniguruma are pinned in `gates/native/elephc.{toml,lock}`. Everything
-  outside those two roots runs interpreted by design.
+  outside those roots runs interpreted by design.
+- gate:26 (`bin/gate-modules.php`, #94) reads the manifests and `git ls-files -co
+  --exclude-standard`. A class's kind (`Gates\Domain\ClassKinds`, shared with the surface
+  manifest) decides its folder: Page, Api and Stream in `src/Controller/`, then `Command/`,
+  `Job/`, `Block/`, `Component/` (with the generated templates), `Notification/`, `Middleware/`,
+  `Migration/`, `Repository/` and `Form/` by name suffix. A plain class goes in `Entity/`,
+  `Service/` or `Form/`. Its message names the folder, the `->export(...)` or the
+  `->requires(...)` to add; the shell list is a constant in `ModuleShellRule`.
 - gate:21 caches (#110): a class whose closure files, compiler, bridge libraries, PHP, pinned
   packages and probe program are unchanged since its last green probe reports `CACHED`
   (`.native-gate/cache.txt`); a change reprobes only the classes whose closure holds it. Probes

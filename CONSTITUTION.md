@@ -33,7 +33,7 @@ The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every fai
 | 13 | Psalm | errorLevel 1, taint analysis, unused code, sealed properties and methods |
 | 14 | phpcpd | no copy-paste: 4 lines, 50 tokens, fuzzy |
 | 15 | semgrep | the AIC ruleset in `semgrep.yml` (no env outside config, no static state, no singletons, no eval, no Swoole, no shell pipe into an early-exit reader, no `mixed` in phpdoc generics outside PSR overrides, …) |
-| 16 | no dynamic require | no runtime-dynamic `require`/`include` in `framework/src` or `app` |
+| 16 | no dynamic require | no runtime-dynamic `require`/`include` in `framework/src`, `modules` or `generated` |
 | 17 | gitleaks | no secrets in the history; default rules plus AIC's (Anthropic, OpenAI, Google keys) |
 | 18 | shellcheck | every shell script in `bin/` and `.claude/hooks/`, at `-S warning` |
 | 19 | documentation | no `(TODO)` or `(WIP)` markers and no dead relative links in markdown |
@@ -42,6 +42,7 @@ The gates (`bin/gate-runner.sh` runs every `gate:N` script and reports every fai
 | 22 | pipeline docs | the pipeline docs and phase commands: frontmatter, line caps, internal links |
 | 23 | native site | the app compiled with `elephc --web` answers the step script as the interpreted app does: status, content type, location, normalised body; the whole gate defers when the app's database does not answer (`bin/aic db:ping`) |
 | 24 | build manifests | `build/surface.json` (every route and command with its kind, #26) matches what `composer run build` writes |
+| 26 | module boundaries | inside a module a class's kind decides its `src/` folder; at most 15 files per folder (`src/Migration/` exempt); a module uses only classes another exports, from modules it requires; the requires name modules and form no cycle; nothing outside `modules/` but the shell (#94) |
 
 A new gate or rule is done only when it has been seen to fail on a planted violation.
 
@@ -152,6 +153,8 @@ This Constitution is amended by editing this file through the four phases (`/pip
 
 ### Amendment log
 
+- **2026-10-21 — gate:26, the module boundaries (#94).** §0 gains row 26, and row 16 names `modules` and `generated` in place of `app`. Each of gate:26's five rules was seen to fail on a planted violation (13 plants), and so was its fail-closed read.
+- **2026-10-21 — The demo as modules (#93).** §14 rule 10 names the generated wiring and the framework kernels as what composes the app, since `app/` and its composition classes are gone.
 - **2026-10-21 — gate:21 caches, gate:23 defers whole (#110).** §0's rows 21 and 23. gate:21 skips a class only when everything its probe compiled, ran and compared is unchanged (the closure's files by content, the compiler and its bridge libraries, host PHP, the pinned packages, the probe program), so its coverage is the same; a failure is never cached. gate:23 no longer runs a subset of steps without the database: since #41 every route opens a Postgres session, so the subset answered 500 on both sides and proved nothing. It now defers, named, as the rest of §0 requires.
 - **2026-10-19 — Wiring is code (#21).** §14 rule 10 names the composition root, not a container, as what wires: constructors and readonly properties, typed throughout and compiled natively. The rule against `new` in business logic is unchanged. The PSR-11 container arrives with plugins (#5).
 - **2026-10-19 — PSR overrides (#20, Chad's decision).** §14 rule 7 names its one exception: a `#[Override]` method whose PSR interface dictates `mixed`. PHPStan accepts only `array<mixed>` as the contravariant phpdoc of PSR-7's `array` parameters, PHPCS `DisallowMixedTypeHint` already exempted overrides, and semgrep's `aic-no-mixed-in-phpdoc-template` now does the same, bite-checked both ways.
