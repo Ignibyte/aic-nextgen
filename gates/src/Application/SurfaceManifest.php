@@ -9,6 +9,9 @@ use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\Stream;
+use AIC\Module\Contracts\ModuleRoute;
+use AIC\Module\Contracts\ModuleSection;
+use AIC\Module\Contracts\PluginTag;
 use AIC\Routing\Domain\Route;
 use AIC\Schedule\Domain\Schedule;
 use Gates\Domain\ModuleDefinition;
@@ -29,7 +32,7 @@ use const JSON_UNESCAPED_UNICODE;
  * with its name, class and kind, and every queue job with its name, class and
  * kind, and every schedule with its cadence and job, in declaration order. A kind is read from the
  * class's interfaces, so it is never declared twice. Each route names the module that declares it
- * (`""` for `config/routes.php`), and the modules follow in build order with what each declares (#92).
+ * (#92, #93: every route is a module's), and the modules follow in build order with what each declares.
  */
 final readonly class SurfaceManifest
 {
@@ -90,14 +93,14 @@ final readonly class SurfaceManifest
      * @param list<Route>            $routes  The routes, as declared.
      * @param list<ModuleDefinition> $modules The modules, in build order.
      *
-     * @return list<array<string, string>> One row per route, with the module that declares it, `""` for `config/routes.php`.
+     * @return list<array<string, string>> One row per route, with the module that declares it.
      */
     private function routes(array $routes, array $modules): array
     {
         $moduleOf = [];
 
         foreach ($modules as $module) {
-            foreach ($module->module->routes() as $moduleRoute) {
+            foreach ($module->declared(ModuleRoute::class) as $moduleRoute) {
                 $moduleOf[$moduleRoute->handler] = $module->name;
             }
         }
@@ -118,21 +121,20 @@ final readonly class SurfaceManifest
      */
     private function module(ModuleDefinition $moduleDefinition): array
     {
-        $module = $moduleDefinition->module;
         $plugins = [];
 
-        foreach ($module->plugins() as $pluginTag) {
+        foreach ($moduleDefinition->declared(PluginTag::class) as $pluginTag) {
             $plugins[] = ['class' => $pluginTag->class, 'type' => $pluginTag->type];
         }
 
         return [
-            'blocks' => $module->blocks(),
-            'exports' => $module->exports(),
-            'migrations' => $module->migrations(),
+            'blocks' => $moduleDefinition->entries(ModuleSection::Blocks),
+            'exports' => $moduleDefinition->entries(ModuleSection::Exports),
+            'migrations' => $moduleDefinition->entries(ModuleSection::Migrations),
             'name' => $moduleDefinition->name,
             'namespace' => $moduleDefinition->namespace,
             'plugins' => $plugins,
-            'requires' => $module->requires(),
+            'requires' => $moduleDefinition->entries(ModuleSection::Requires),
         ];
     }
 

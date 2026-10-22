@@ -11,8 +11,8 @@ use Rector\ValueObject\PhpVersion;
 return RectorConfig::configure()
     ->withPaths([
         __DIR__ . '/framework/src',
-        __DIR__ . '/app',
         __DIR__ . '/modules',
+        __DIR__ . '/generated',
         __DIR__ . '/public',
         __DIR__ . '/bootstrap',
         __DIR__ . '/config',

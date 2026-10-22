@@ -9,7 +9,7 @@ namespace AIC\Module\Contracts;
  * constructor asks for the interface, in this module and the modules that
  * require it.
  */
-final readonly class Binding
+final readonly class Binding implements ModuleDeclaration
 {
     /**
      * @param class-string $interface The interface a constructor asks for.

@@ -8,7 +8,7 @@ purpose: Detailed Phase 2 (Code) procedures — where code goes, keeping touched
 
 ## Step 1 — Write the code
 
-- Framework code lives under `framework/src/<System>/{Contracts,Domain,Exception,Attribute,Application,Infrastructure}/` (`AIC\<System>\…`), the layer ladder Deptrac checks (gate:12). The demo app lives under `app/` (`App\`). Gate tooling lives under `gates/` (`Gates\`) and never ships.
+- Framework code lives under `framework/src/<System>/{Contracts,Domain,Exception,Attribute,Application,Infrastructure}/` (`AIC\<System>\…`), the layer ladder Deptrac checks (gate:12). The demo app is modules under `modules/<name>/` (`App\<Name>\`), wired by the generated classes in `generated/` (`App\Generated\`). Gate tooling lives under `gates/` (`Gates\`) and never ships.
 - Every file: `declare(strict_types=1);`, one class per file, a class docblock and full method docblocks, everything typed, `final` (or `abstract` by design), `readonly` unless mutation is essential, no `mixed`, `array<K, V>` and `list<T>` in phpdoc, no static state, no `new` in business logic (CONSTITUTION.md §14).
 - Every entry point is one of the five kinds (Page, Api, Stream, Command, Job; CLAUDE.md).
 - Every runtime class compiles natively (CONSTITUTION.md §3): typed properties and small value objects over loose arrays (elephc ignores a plain `array<K, V>` docblock), literal `require` paths, no runtime reflection on dynamic class names, no `eval`.

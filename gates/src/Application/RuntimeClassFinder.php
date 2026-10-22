@@ -25,7 +25,7 @@ final readonly class RuntimeClassFinder
     /**
      * The runtime roots, as PSR-4 prefix => directories relative to the repo root.
      */
-    private const array RUNTIME_ROOTS = ['AIC\\' => 'framework/src', 'App\\' => ['app', 'modules']];
+    private const array RUNTIME_ROOTS = ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'generated']];
 
     /**
      * @param ClassReferenceScanner $classReferenceScanner Reads what each file declares.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use AIC\Module\Contracts\ModuleSection;
 use Gates\Domain\ModuleDefinition;
 use InvalidArgumentException;
 
@@ -64,7 +65,7 @@ final readonly class ModuleGraph
             throw new InvalidArgumentException('modules require each other in a cycle: ' . $cycle . '.');
         }
 
-        foreach ($moduleDefinition->module->requires() as $required) {
+        foreach ($moduleDefinition->entries(ModuleSection::Requires) as $required) {
             if (!array_key_exists($required, $byName)) {
                 throw new InvalidArgumentException(
                     'module ' . $moduleDefinition->name . ' requires "' . $required . '", which is no module.',

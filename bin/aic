@@ -6,8 +6,9 @@ declare(strict_types=1);
 /*
  * bin/aic: the console entry point (`bin/aic <command> [arguments]`).
  *
- * It reads config/database.php, wires the app's commands (App\ConsoleCommands,
- * the console's composition root) and runs the command line through the
+ * It reads config/database.php and config/mail.php, wires the console kernel
+ * (AIC\Module\Application\ConsoleKernel) over the generated wiring
+ * (App\Generated\ConsoleModules, #93) and runs the command line through the
  * console. Output goes to STDOUT, a line at a time, through the CommandWriter
  * below; the exit code is the command's. With no command, or an unknown one, it
  * lists the commands and exits 2. The database connection opens on the first
@@ -18,11 +19,10 @@ use AIC\Console\Application\Console;
 use AIC\Controller\Contracts\CommandWriter;
 use AIC\Database\Domain\DatabaseConfig;
 use AIC\Database\Infrastructure\PdoDatabase;
+use AIC\Module\Application\ConsoleKernel;
 use AIC\Notification\Domain\MailConfig;
 use AIC\Notification\Infrastructure\SmtpTransport;
-use App\AppPlugins;
-use App\AppProvider;
-use App\ConsoleCommands;
+use App\Generated\ConsoleModules;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -38,8 +38,8 @@ if (!$mailConfig instanceof MailConfig) {
     throw new RuntimeException('config/mail.php must return an ' . MailConfig::class . '.');
 }
 
-$consoleCommands = new ConsoleCommands(new PdoDatabase($databaseConfig), new AppPlugins(new AppProvider()), new SmtpTransport($mailConfig), $mailConfig);
-$console = new Console($consoleCommands->byName());
+$consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTransport($mailConfig), $mailConfig, new ConsoleModules());
+$console = new Console($consoleKernel->commands());
 
 exit($console->run($argv ?? [], new class () implements CommandWriter {
     /**

@@ -101,7 +101,7 @@ fi
 RECTOR_FILES=()
 for file in "${FILE_LIST[@]}"; do
     case "$file" in
-        framework/src/*|app/*|public/*|bin/*|gates/*) RECTOR_FILES+=("$file") ;;
+        framework/src/*|modules/*|generated/*|public/*|bin/*|gates/*) RECTOR_FILES+=("$file") ;;
     esac
 done
 if [ -x vendor/bin/rector ] && [ ${#RECTOR_FILES[@]} -gt 0 ]; then

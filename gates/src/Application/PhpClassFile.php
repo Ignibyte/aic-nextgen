@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use InvalidArgumentException;
 
+use function array_filter;
 use function array_map;
 use function array_unique;
 use function array_values;
@@ -48,18 +49,15 @@ final readonly class PhpClassFile
     public function file(string $namespace, array $classes, array $functions, string $docblock, string $class): string
     {
         $this->checkFits(array_values(array_unique($classes)), $class);
+        $functionImports = array_map(static fn (string $function): string => 'use function ' . $function . ';', $functions);
+        $groups = array_filter([$this->imports($namespace, $classes), $functionImports], static fn (array $group): bool => $group !== []);
         $lines = ['<?php', '', 'declare(strict_types=1);', '', 'namespace ' . $namespace . ';', ''];
-        $lines = [...$lines, ...$this->imports($namespace, $classes)];
 
-        if ($functions !== []) {
-            $lines[] = '';
+        foreach ($groups as $group) {
+            $lines = [...$lines, ...$group, ''];
         }
 
-        foreach ($functions as $function) {
-            $lines[] = 'use function ' . $function . ';';
-        }
-
-        return implode("\n", [...$lines, '', '/**', $docblock, ' */', $class]) . "\n";
+        return implode("\n", [...$lines, '/**', $docblock, ' */', $class]) . "\n";
     }
 
     /**

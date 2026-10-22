@@ -9,8 +9,8 @@
 deptrac:
   paths:
     - ./framework/src
-    - ./app
     - ./modules
+    - ./generated
     - ./gates/src
     - ./gates/architecture
   layers:

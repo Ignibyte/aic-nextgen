@@ -52,8 +52,17 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "App\\": "app/",
-            "App\\Faq\\": "modules/faq/src/"
+            "App\\Auth\\": "modules/auth/src/",
+            "App\\Content\\": "modules/content/src/",
+            "App\\Faq\\": "modules/faq/src/",
+            "App\\Generated\\": "generated/",
+            "App\\Greeting\\": "modules/greeting/src/",
+            "App\\Home\\": "modules/home/src/",
+            "App\\Job\\": "modules/job/src/",
+            "App\\Note\\": "modules/note/src/",
+            "App\\Session\\": "modules/session/src/",
+            "App\\Site\\": "modules/site/src/",
+            "App\\Stock\\": "modules/stock/src/"
         }
     },
     "autoload-dev": {
@@ -83,7 +92,7 @@
         "gate": "bash bin/gate-runner.sh",
         "gate:0": "@php bin/gate-composer-audit.php",
         "gate:1": "@php bin/gate-normalize-all.php",
-        "gate:10": "vendor/bin/phpmd framework/src,app,modules,gates text phpmd.xml --strict",
+        "gate:10": "vendor/bin/phpmd framework/src,modules,generated,gates text phpmd.xml --strict",
         "gate:11": "vendor/bin/phpcs --standard=phpcs.xml.dist",
         "gate:12": "vendor/bin/deptrac analyse --no-progress --fail-on-uncovered",
         "gate:13": "vendor/bin/psalm --no-progress --show-info=true --no-cache --no-diff",

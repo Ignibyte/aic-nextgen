@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Config\Domain\AppConfig;
-use AIC\Database\Contracts\Database;
-use AIC\Form\Application\EnvelopeCodec;
+use AIC\Module\Attribute\Tagged;
 use Gates\Domain\WiredObject;
 use Gates\Domain\WiringScope;
 use InvalidArgumentException;
@@ -21,35 +19,20 @@ use function interface_exists;
 use function sprintf;
 
 /**
- * Resolves a module class's constructor at build time (#92), by reflection, into
- * the object graph the generated wiring builds.
+ * Resolves a module class's constructor at build time (#92, #93), by
+ * reflection, into the object graph the generated wiring builds.
  *
- * A parameter is a root the handler context gives (the app's settings, the
- * database and the envelope codec by type; `string $bootedAt` and
- * `string $root` by name), an interface bound by the module or a module it
- * requires, or a readonly class the scope reaches, built the same way.
+ * A parameter is, in this order: a plugin list marked `#[Tagged(Type::class)]`;
+ * a root of the side being wired, by name (`string $bootedAt`, `array
+ * $schedules`) or by type (the app's settings, the database, …); a type a
+ * module factory makes; an interface bound by the module or a module it
+ * requires; or a readonly class the scope reaches, built the same way.
  * Trailing parameters with defaults keep them. Anything else is refused with
- * the module, the class and the parameter: a scalar, an array, a nullable,
- * union or variadic type, a class that is not readonly, a module's class the
- * module does not require, or a cycle. Only readonly classes are built, so
- * sharing one instance between controllers is never observable.
+ * the module, the class and the parameter. Only readonly classes are built, so
+ * sharing one instance between classes is never observable.
  */
 final readonly class Autowirer
 {
-    /**
-     * The roots by type, as the `HandlerContext` accessor that gives each.
-     */
-    private const array ROOT_TYPES = [
-        AppConfig::class => 'appConfig',
-        Database::class => 'database',
-        EnvelopeCodec::class => 'envelopeCodec',
-    ];
-
-    /**
-     * The string roots by parameter name.
-     */
-    private const array ROOT_STRINGS = ['bootedAt', 'root'];
-
     /**
      * @param class-string $class       The class to build.
      * @param WiringScope  $wiringScope What it may be built from.
@@ -119,14 +102,14 @@ final readonly class Autowirer
         array $path,
     ): WiredObject {
         $reflectionNamedType = $this->namedType($class, $reflectionParameter, $wiringScope);
-        $root = $this->root($reflectionNamedType->getName(), $reflectionParameter->getName());
+        $root = $this->tagged($reflectionParameter) ?? $this->root($reflectionNamedType, $reflectionParameter->getName(), $wiringScope);
 
         if ($root instanceof WiredObject) {
             return $root;
         }
 
         if ($reflectionNamedType->isBuiltin()) {
-            $why = 'the scalar type ' . $reflectionNamedType->getName() . ', which is no root';
+            $why = 'the ' . $reflectionNamedType->getName() . ' type, which is no root of this side and no #[Tagged] plugin list';
 
             throw $this->refusal($wiringScope, $class, $reflectionParameter, $why);
         }
@@ -158,19 +141,40 @@ final readonly class Autowirer
     }
 
     /**
-     * @param string $type A parameter's type.
-     * @param string $name Its name.
+     * @param ReflectionParameter $reflectionParameter A parameter.
+     *
+     * @return WiredObject|null The plugin list it takes, when it is marked `#[Tagged]`; else null.
+     */
+    private function tagged(ReflectionParameter $reflectionParameter): ?WiredObject
+    {
+        foreach ($reflectionParameter->getAttributes(Tagged::class) as $reflectionAttribute) {
+            return new WiredObject($reflectionAttribute->newInstance()->type, WiredObject::TAGGED, []);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param ReflectionNamedType $reflectionNamedType A parameter's type.
+     * @param string              $name                Its name.
+     * @param WiringScope         $wiringScope         The side's roots.
      *
      * @return WiredObject|null The root it is, or null.
      */
-    private function root(string $type, string $name): ?WiredObject
-    {
-        if ($type === 'string' && in_array($name, self::ROOT_STRINGS, true)) {
-            return new WiredObject('string', $name, []);
+    private function root(
+        ReflectionNamedType $reflectionNamedType,
+        string $name,
+        WiringScope $wiringScope,
+    ): ?WiredObject {
+        $type = $reflectionNamedType->getName();
+        $roots = $wiringScope->roots;
+
+        if ($reflectionNamedType->isBuiltin() && array_key_exists($name, $roots->names)) {
+            return new WiredObject($type, $roots->names[$name], []);
         }
 
-        return array_key_exists($type, self::ROOT_TYPES)
-            ? new WiredObject($type, self::ROOT_TYPES[$type], [])
+        return array_key_exists($type, $roots->types)
+            ? new WiredObject($type, $roots->types[$type], [])
             : null;
     }
 
@@ -181,7 +185,7 @@ final readonly class Autowirer
      * @param WiringScope         $wiringScope         What it may be wired from.
      * @param list<string>        $path                The classes being built.
      *
-     * @throws InvalidArgumentException When no binding or reachable readonly class answers it.
+     * @throws InvalidArgumentException When no factory, binding or reachable readonly class answers it.
      *
      * @return WiredObject The service.
      */
@@ -192,12 +196,18 @@ final readonly class Autowirer
         WiringScope $wiringScope,
         array $path,
     ): WiredObject {
+        if (array_key_exists($type, $wiringScope->factories)) {
+            [$factory, $method] = $wiringScope->factories[$type];
+
+            return new WiredObject($type, '', [$this->wire($factory, $wiringScope, $path)], $method);
+        }
+
         if (interface_exists($type) && array_key_exists($type, $wiringScope->bindings)) {
             return $this->wire($wiringScope->bindings[$type], $wiringScope, $path);
         }
 
         if (!class_exists($type) || !$this->buildable($type, $wiringScope)) {
-            $why = $type . ', which no visible module binds and which is not a readonly class'
+            $why = $type . ', which no visible module makes or binds and which is not a readonly class'
                 . ' of the app, the framework or a required module';
 
             throw $this->refusal($wiringScope, $class, $reflectionParameter, $why);

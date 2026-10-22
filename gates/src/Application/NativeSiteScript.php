@@ -78,7 +78,7 @@ final readonly class NativeSiteScript
      */
     private function visits(): array
     {
-        $upload = 'multipart:aic_csrf={csrf}&file=@resources/';
+        $upload = 'multipart:aic_csrf={csrf}&file=@modules/site/resources/';
 
         return [
             new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, false),

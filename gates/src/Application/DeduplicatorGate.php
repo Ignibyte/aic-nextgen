@@ -101,8 +101,8 @@ final readonly class DeduplicatorGate
     {
         return [
             $root . '/framework/src',
-            $root . '/app',
             $root . '/modules',
+            $root . '/generated',
             $root . '/gates/src',
             $root . '/gates/architecture',
         ];

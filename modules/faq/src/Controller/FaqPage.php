@@ -10,7 +10,7 @@ use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use App\Faq\Component\FaqList;
 use App\Faq\Service\FaqEntries;
-use App\Site\HtmlLayout;
+use App\Site\Service\HtmlLayout;
 use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;

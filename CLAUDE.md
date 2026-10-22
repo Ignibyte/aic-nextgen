@@ -60,7 +60,9 @@ applied once per `Tessera-Write-Id` (`TesseraWriteMiddleware`, `aic_tessera_writ
 speak Tessera (`TesseraEvents`, ids, `tessera-close`, `Last-Event-ID`); `/ticks` streams live.
 #74: signed props tokens on `KeyedComponent`, verified by `TesseraProps`. #12's server half is done.
 M8a (the app shape) runs as #92 to #109; #92: modules, a manifest per `modules/<name>/` read by
-`bin/aic-build`, which writes the wiring into `app/Generated/` (pilot: `modules/faq/`).
+`bin/aic-build`, which writes the wiring into `generated/` (pilot: `modules/faq/`). #93: the demo
+is ten modules and `app/` is gone; `AppKernel` and `ConsoleKernel` compose the framework's own
+wiring around the generated pieces.
 
 ## Five kinds
 
@@ -89,22 +91,30 @@ Background work is a job; the HTTP server's processes are its workers.
 - One package, **`aic/framework`**, in `framework/`, namespace `AIC\` with one namespace per
   system (`AIC\Http`, `AIC\Routing`, `AIC\Entity`, ...). It reaches the root through a composer
   path repository and moves to its own repo when published.
-- The repo root is the demo app, `aic/app`, namespace `App\`, under `app/`: composition classes
-  (`AppServices`, `AppHandlers`, ...) at the top, then one folder per feature (`Site`, `Greeting`,
-  `Note`, `Auth`, `Session`, `Job`, `Content`, `Stock`, plus `Console` and `Migration`), each
-  holding its pages, forms, templates, handlers and domain together (#49).
+- The repo root is the demo app, `aic/app`: ten modules under `modules/` (`site`, `home`,
+  `greeting`, `note`, `session`, `auth`, `content`, `job`, `stock`, `faq`), each with its classes
+  in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Component`, `Block`,
+  `Form`, `Entity`, `Repository`, `Service`, `Command`, `Job`, `Migration`). There is no `app/`
+  and no hand-written composition class (#93). Page layouts compile from `templates/layouts/`.
 - One project theme at `theme/` renders into `public/`.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
-- **Modules** (#90, #92): `modules/<name>/<name>.module.php` returns an anonymous class
-  implementing `AIC\Module\Contracts\Module` (routes, services, blocks, plugins, migrations,
-  exports, requires); the classes sit in `modules/<name>/src/` as `App\<StudlyName>\`.
-  `composer run build` checks every manifest and writes the wiring into `app/Generated/`
-  (per module `<M>Routes`, `<M>Handlers`, `<M>Provider`, `<M>Migrations`; then `ModuleRoutes`,
-  `ModuleHandlers`, `ModuleProvider` and `ModuleMigrations`, chained in `…Part2` and on for any
-  number of modules), merged after the hand-written app's; never edit those files. A new module needs one PSR-4 line
-  in composer.json (then `composer dump-autoload`) and one PHPCS root in `phpcs.xml.dist`; the
-  build prints both when missing. Until #93, the demo's features stay in `app/` beside the pilot
-  `modules/faq/`.
+- **Modules** (#90, #92, #93): `modules/<name>/<name>.module.php` returns a fluent
+  `AIC\Module\Contracts\ModuleManifest`, naming only what the module has:
+  `(new ModuleManifest('job'))->requires('site')->route(…)->job(…)->schedule(…)->migration(…)`.
+  The other declarations are `binding`, `block`, `plugin`, `export`, `command`, `middleware` (with
+  a `MiddlewarePosition`), `protectedPrefix` and `factory`.
+  - `#[Tagged(Type::class)]` on a constructor's list parameter takes the plugins of that type.
+  - A factory is a readonly module class whose methods return services built from values; a
+    constructor asking for a method's return type gets its product.
+  - `composer run build` checks every manifest and writes the wiring into `generated/`
+    (`App\Generated\`). Per module, `<M>Routes`, `<M>Handlers`, `<M>Middleware`, `<M>Commands`,
+    `<M>Jobs`, `<M>Provider`, `<M>Migrations`, `<M>Schedules` and `<M>Prefixes`. Then the
+    aggregators, chained in `…Part2` and on, and the facades `WebModules` and `ConsoleModules`
+    that `AppKernel` and `ConsoleKernel` take.
+  - A generated class takes the context only when it reads a root (the `Rootless…Wiring`
+    interfaces). Never edit those files.
+  - A new module needs one PSR-4 line in composer.json (then `composer dump-autoload`) and one
+    PHPCS root in `phpcs.xml.dist`; the build prints both when missing.
 
 ## Tickets and planning
 
@@ -220,7 +230,8 @@ Every file:
 - `final` by default; `abstract` only when designed for extension.
 - No `static` caches, no globals, no singletons: state lives in the objects the composition root
   wires.
-- No `new` in business logic; the composition root wires (`app/AppServices.php`).
+- No `new` in business logic; the generated wiring and the framework kernels compose the app
+  (`generated/`, `AIC\Module\Application\AppKernel`, `ConsoleKernel`).
 - PSR interfaces at every seam.
 
 ## On this box

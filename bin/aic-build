@@ -8,34 +8,34 @@ declare(strict_types=1);
  * `--check`, compare them with the committed files instead (gate:24).
  *
  * AIC compiles its wiring at build time, never at boot. build/surface.json
- * (#26) holds every route with its method, path, handler and kind, and every
- * console command with its kind, so an agent can read the app's whole surface
- * in one file. The routes come from config/routes.php and the commands from
- * App\ConsoleCommands; the database is never opened, because PdoDatabase
- * connects on its first query. Each component template, `X.tpl` under app/ or
- * framework/src/, compiles to `XTemplate.php` beside it (#36), and theme/*.css
- * builds into public/assets/aic.css (#39).
+ * (#26) holds every route with its method, path, handler and kind, every
+ * console command, job and schedule, and the modules, so an agent can read the
+ * app's whole surface in one file. The commands, jobs and schedules come from
+ * the console kernel (#93); the database is never opened, because PdoDatabase
+ * connects on its first query. A component template compiles to
+ * `XTemplate.php`: beside itself under framework/src/ (#36), into
+ * modules/<m>/src/Component/ from modules/<m>/templates/components/, and from
+ * templates/layouts/ beside the one module component of its name (#93).
+ * theme/*.css builds into public/assets/aic.css (#39).
  *
  * The modules come first (#92): every modules/<name>/<name>.module.php is read
- * and checked, and the wiring under app/Generated/ is written (or, with
- * --check, compared) before any composition class loads, since those classes
- * load the generated ones. The build owns app/Generated/: a file there that no
- * module generates any more is deleted, and --check calls it stale. The modules' routes join config/routes.php's here
- * as they do in bootstrap/serve.php, so surface.json lists exactly what the
- * app serves.
+ * and checked, and the wiring under generated/ is written (or, with --check,
+ * compared) before any composition class loads, since those classes load the
+ * generated ones. The build owns generated/: a file there that no module
+ * generates any more is deleted, and --check calls it stale. The routes are
+ * the modules', in the build order the app kernel adds them in, so
+ * surface.json lists exactly what the app serves.
  */
 
 use AIC\Config\Domain\AppConfig;
 use AIC\Database\Domain\DatabaseConfig;
 use AIC\Database\Infrastructure\PdoDatabase;
+use AIC\Module\Application\ConsoleKernel;
 use AIC\Notification\Domain\MailConfig;
 use AIC\Notification\Infrastructure\SmtpTransport;
 use AIC\Routing\Application\RouteCollector;
-use App\AppJobs;
-use App\AppPlugins;
-use App\AppProvider;
-use App\AppSchedules;
-use App\ConsoleCommands;
+use AIC\Routing\Domain\RoutePatternCompiler;
+use App\Generated\ConsoleModules;
 use Gates\Application\BuildOutputs;
 use Gates\Application\ModuleBuild;
 use Gates\Application\SurfaceManifest;
@@ -49,12 +49,11 @@ use Gates\Infrastructure\SystemProcessRunner;
 require __DIR__ . '/../vendor/autoload.php';
 
 $appConfig = require __DIR__ . '/../config/app.php';
-$routeCollector = require __DIR__ . '/../config/routes.php';
 $databaseConfig = require __DIR__ . '/../config/database.php';
 $mailConfig = require __DIR__ . '/../config/mail.php';
 
-if (!$appConfig instanceof AppConfig || !$routeCollector instanceof RouteCollector || !$databaseConfig instanceof DatabaseConfig || !$mailConfig instanceof MailConfig) {
-    fwrite(\STDERR, "aic-build: config/app.php, config/routes.php, config/database.php or config/mail.php returned the wrong type.\n");
+if (!$appConfig instanceof AppConfig || !$databaseConfig instanceof DatabaseConfig || !$mailConfig instanceof MailConfig) {
+    fwrite(\STDERR, "aic-build: config/app.php, config/database.php or config/mail.php returned the wrong type.\n");
 
     exit(1);
 }
@@ -67,7 +66,6 @@ $moduleBuild = new ModuleBuild($root);
 try {
     $modules = $moduleBuild->modules();
     $generated = $moduleBuild->files($modules);
-    $routes = $moduleBuild->routes($modules, $routeCollector)->table();
 } catch (InvalidArgumentException $invalidArgumentException) {
     fwrite(\STDERR, 'aic-build: ' . $invalidArgumentException->getMessage() . "\n");
 
@@ -76,7 +74,7 @@ try {
 
 $buildOutputs = new BuildOutputs($root);
 
-$orphans = $buildOutputs->orphans($root . '/app/Generated', $generated);
+$orphans = $buildOutputs->orphans($root . '/generated', $generated);
 $staleGenerated = [...$buildOutputs->stale($generated), ...$orphans];
 
 if ($checking && $staleGenerated !== []) {
@@ -101,17 +99,21 @@ if (!$checking) {
     }
 }
 
-$database = new PdoDatabase($databaseConfig);
-$smtpTransport = new SmtpTransport($mailConfig);
-$consoleCommands = new ConsoleCommands($database, new AppPlugins(new AppProvider()), $smtpTransport, $mailConfig);
-$jobs = (new AppJobs($database, $smtpTransport, $mailConfig))->byName();
-$templateBuild = new TemplateBuild(new TemplateParser(), new TemplateCompiler(), [$root . '/app' => 'App\\', $root . '/framework/src' => 'AIC\\']);
+$consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTransport($mailConfig), $mailConfig, new ConsoleModules());
+$templateBuild = new TemplateBuild(
+    new TemplateParser(),
+    new TemplateCompiler(),
+    [$root . '/framework/src' => 'AIC\\'],
+    $root . '/modules',
+    $root . '/templates/layouts',
+);
 
 try {
+    $routes = $moduleBuild->routes($modules, new RouteCollector(new RoutePatternCompiler()))->table();
     $templates = $templateBuild->classes();
     $tessera = (new TesseraBuild($root, $appConfig->tessera, new SystemProcessRunner()))->files();
     $outputs = [
-        $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleCommands->byName(), $jobs, (new AppSchedules())->all(), $modules),
+        $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleKernel->commands(), $consoleKernel->jobs(), $consoleKernel->schedules(), $modules),
         $root . '/public/assets/aic.css' => (new ThemeBuild($root . '/theme'))->stylesheet(),
     ] + $templates + $tessera;
 } catch (InvalidArgumentException|RuntimeException $exception) {
@@ -127,7 +129,7 @@ if ($checking) {
         exit(1);
     }
 
-    fwrite(\STDOUT, 'gate:24 — build outputs are fresh: ' . count($routes->routes()) . ' routes, ' . count($consoleCommands->byName()) . ' commands, ' . count($modules) . ' module(s) and their wiring, the theme, ' . count($templates) . ' templates, Tessera ' . $appConfig->tessera->version . ".\n");
+    fwrite(\STDOUT, 'gate:24 — build outputs are fresh: ' . count($routes->routes()) . ' routes, ' . count($consoleKernel->commands()) . ' commands, ' . count($modules) . ' module(s) and their wiring, the theme, ' . count($templates) . ' templates, Tessera ' . $appConfig->tessera->version . ".\n");
 
     exit(0);
 }
@@ -142,6 +144,6 @@ foreach ($outputs as $file => $output) {
     file_put_contents($file, $output);
 }
 
-fwrite(\STDOUT, 'aic-build: wrote app/Generated/ (' . count($modules) . ' module(s)), build/surface.json, public/assets/aic.css, ' . count($templates) . ' templates and Tessera ' . $appConfig->tessera->version . ".\n");
+fwrite(\STDOUT, 'aic-build: wrote generated/ (' . count($modules) . ' module(s)), build/surface.json, public/assets/aic.css, ' . count($templates) . ' templates and Tessera ' . $appConfig->tessera->version . ".\n");
 
 exit(0);
