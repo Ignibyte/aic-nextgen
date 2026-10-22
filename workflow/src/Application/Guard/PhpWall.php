@@ -7,11 +7,14 @@ namespace AIC\Workflow\Application\Guard;
 use AIC\Workflow\Domain\Guard\Invocation;
 
 use function array_any;
+use function array_map;
+use function array_search;
 use function array_slice;
 use function file_get_contents;
 use function in_array;
 use function is_file;
 use function preg_match;
+use function rtrim;
 use function str_contains;
 use function str_starts_with;
 
@@ -21,15 +24,22 @@ use function str_starts_with;
  * or names the workflow package could run the workflow's own classes and
  * forge the run's state. Such a php is refused, whether the code comes inline
  * (`-r`, `-B`, `-R`, `-E`), from a heredoc, from a script or through
- * `auto_prepend_file`; `-S` serves the app, which loads the autoloader.
- * `bin/aic` and `php -l` pass.
+ * `auto_prepend_file`. `bin/aic` and `php -l` pass, and so does `php -S` serving
+ * the app (its router `public/index.php` or `bootstrap/serve.php`, or `-t
+ * public` with none), since the app's runtime cannot reach the workflow; any
+ * other router is refused.
  */
 final readonly class PhpWall
 {
     /**
      * The options whose next word is their value; `-r`, `-B`, `-R` and `-E` hand php code inline.
      */
-    private const array VALUED = ['-r', '-B', '-R', '-E', '-d', '-c', '-F', '-z'];
+    private const array VALUED = ['-r', '-B', '-R', '-E', '-d', '-c', '-F', '-z', '-S', '-t'];
+
+    /**
+     * The routers `php -S` may serve the app through, relative to the project.
+     */
+    private const array ROUTERS = ['public/index.php', 'bootstrap/serve.php'];
 
     /**
      * What the refusal tells the agent.
@@ -64,10 +74,11 @@ final readonly class PhpWall
         }
 
         $scriptAt = self::scriptAt($words);
-
-        $reaches = $this->options(array_slice($words, 0, $scriptAt))
+        $options = array_slice($words, 0, $scriptAt);
+        $script = $words[$scriptAt] ?? '';
+        $reaches = $this->options($options)
             || $this->reaches($invocation->heredoc)
-            || $this->script($words[$scriptAt] ?? '', $cwd);
+            || $this->runs($options, $script, $cwd);
 
         return $reaches
             ? self::WHY
@@ -83,9 +94,48 @@ final readonly class PhpWall
     {
         return array_any(
             $options,
-            fn (string $word): bool => $word === '-S' || str_contains($word, 'auto_prepend_file')
-                || str_contains($word, 'auto_append_file') || $this->reaches($word),
+            fn (string $word): bool => str_contains($word, 'auto_prepend_file') || str_contains($word, 'auto_append_file')
+                || $this->reaches($word),
         );
+    }
+
+    /**
+     * @param list<string> $options php's words before its script.
+     * @param string       $script  The script, or `php -S`'s router, as written; empty for none.
+     * @param string       $cwd     Where paths resolve.
+     *
+     * @return bool Whether what php runs reaches the workflow: a server that does not serve the app, or a script that does.
+     */
+    private function runs(array $options, string $script, string $cwd): bool
+    {
+        return in_array('-S', $options, true)
+            ? !$this->servesApp($options, $script, $cwd)
+            : $this->script($script, $cwd);
+    }
+
+    /**
+     * @param list<string> $options php's words before its router.
+     * @param string       $router  The router script, as written; empty for none.
+     * @param string       $cwd     Where paths resolve.
+     *
+     * @return bool Whether `php -S` serves the app: through `public/index.php` or `bootstrap/serve.php`, or with no router
+     *              from `-t public`. The app's runtime cannot reach the workflow (phpat holds it).
+     */
+    private function servesApp(array $options, string $router, string $cwd): bool
+    {
+        if ($router !== '') {
+            $routers = array_map(fn (string $path): string => $this->root . '/' . $path, self::ROUTERS);
+
+            return in_array($this->pathResolver->absolute($router, $cwd), $routers, true);
+        }
+
+        $docroot = array_search('-t', $options, true);
+
+        $served = $docroot === false
+            ? ''
+            : rtrim($this->pathResolver->absolute($options[$docroot + 1] ?? '', $cwd), '/');
+
+        return $served === $this->root . '/public';
     }
 
     /**
