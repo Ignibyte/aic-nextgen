@@ -6,6 +6,8 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The guard judges a write by where it really lands** (#125). Found in #118's proof, where an agent followed a symlinked `vendor/aic/*` into AIC's own repository. Every write the guard sees (an edit, an MCP tool's path, a shell redirect, `cp`, `tee`, `sed -i`) is resolved to its real path, through the deepest existing folder for a new file, and refused at every enforcement level, run or no run, when it lands outside the project or under `vendor/`. Only `/dev/` stays open, so `2>/dev/null` still works. Proved in a scratch app whose `vendor/aic/framework` links back to this repository.
+
 - **The code wiki** (#108). `composer run build` now writes `docs/wiki/`: an index and one page per module, generated whole from the module manifests, `build/surface.json` and the code index, and committed so a reviewer sees in the diff what a change did to a module.
   - **A module page:** namespace, manifest, requires and required by, exports, routes with their kinds, commands, jobs with their schedules, schedules, blocks, migrations in order, plugins, bindings, middleware, protected prefixes, factories, classes by kind folder (components beside their templates and template classes), the framework systems it uses (each linked to its section of `framework/docs/systems.md`), the other modules' classes it uses, and what other modules use of it. Notes go in `modules/<m>/README.md`, which the page links.
   - **The index:** every module with its routes by kind and class count, the requires graph as a mermaid block, every route, command, job and schedule, and a link to the architecture pages.

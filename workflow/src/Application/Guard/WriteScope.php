@@ -15,6 +15,7 @@ use AIC\Workflow\Domain\RunState;
 use function array_any;
 use function in_array;
 use function rtrim;
+use function sprintf;
 use function str_starts_with;
 use function strlen;
 use function substr;
@@ -23,10 +24,13 @@ use function substr;
  * Where the agent may write in the project (#102), the same for an edit and
  * a shell write. No run open: the ticket directory only (`require_run`).
  * Plan: the run's spec only. Code, check and complete: the spec and each
- * path of its `### File Manifest`, never the build's outputs. Outside the
- * project is always open. Hard refuses, soft nudges once per run, phase and
- * rule, off stands the wall down. While a question waits for the operator,
- * every write in the project is refused at any level (#117).
+ * path of its `### File Manifest`, never the build's outputs. Hard refuses,
+ * soft nudges once per run, phase and rule, off stands the wall down. While a
+ * question waits for the operator, every write in the project is refused at
+ * any level (#117). A write is judged by where it really lands (#125): one
+ * whose real path leaves the project, through a symlinked path repository or
+ * any other link, or lands under `vendor/`, is refused at every level; only
+ * `/dev/` is open outside.
  */
 final readonly class WriteScope
 {
@@ -34,6 +38,18 @@ final readonly class WriteScope
      * What `composer run build` writes.
      */
     private const array BUILD = ['build/', 'generated/', 'public/assets/', 'docs/wiki/'];
+
+    /**
+     * What a write that leaves the project hears (#125).
+     */
+    private const string OUTSIDE = '%s really lands at %s, outside the project: the guard refuses every write that leaves it, '
+        . 'whatever the lever.';
+
+    /**
+     * What a write under the project's `vendor/` hears.
+     */
+    private const string VENDOR = '%s lands under vendor/, which composer owns: a package changes in its own repository, '
+        . 'never through vendor/.';
 
     /**
      * What an undeclared path's refusal says after the path.
@@ -62,18 +78,18 @@ final readonly class WriteScope
      */
     public function verdict(string $absolute, GuardScene $guardScene): GuardVerdict
     {
-        $relative = $this->relative($absolute);
         $runState = $guardScene->runState;
         $phase = $guardScene->phase();
+        $wall = $this->wall($absolute, $runState);
+
+        if ($wall instanceof GuardVerdict) {
+            return $wall;
+        }
+
+        $relative = $this->relative($absolute);
 
         if ($relative === null) {
             return new GuardVerdict();
-        }
-
-        $waits = self::waits($runState);
-
-        if ($waits !== '') {
-            return new GuardVerdict('refuse', 'question-waits', $waits);
         }
 
         if (!$runState instanceof RunState || !$phase instanceof Phase) {
@@ -85,6 +101,46 @@ final readonly class WriteScope
         return $problem === []
             ? new GuardVerdict()
             : $this->lever($guardScene->enforcement(), $problem[0], $problem[1], $guardScene);
+    }
+
+    /**
+     * @param string        $absolute Where a write is aimed, absolute.
+     * @param RunState|null $runState The open run.
+     *
+     * @return GuardVerdict|null The refusal at any lever: the write leaves the project or lands under `vendor/` (#125), or a
+     *                           question waits for the operator (#117); null when neither holds, or the write is under `/dev/`.
+     */
+    private function wall(string $absolute, ?RunState $runState): ?GuardVerdict
+    {
+        $leaves = $this->leaves($absolute);
+        $waits = self::waits($runState);
+
+        return match (true) {
+            str_starts_with($absolute, '/dev/') => null,
+            $leaves !== [] => new GuardVerdict('refuse', $leaves[0], $leaves[1]),
+            $waits !== '' => new GuardVerdict('refuse', 'question-waits', $waits),
+            default => null,
+        };
+    }
+
+    /**
+     * @param string $absolute Where a write is aimed, absolute.
+     *
+     * @return array{}|array{string, string} The rule and its words when the write really lands outside the project or under
+     *                                       its `vendor/`; empty when it lands in the project.
+     */
+    private function leaves(string $absolute): array
+    {
+        $landed = $this->pathResolver->landed($absolute);
+        $root = $this->pathResolver->landed($this->root);
+
+        if (!str_starts_with($landed . '/', $root . '/')) {
+            return ['outside-project', sprintf(self::OUTSIDE, $absolute, $landed)];
+        }
+
+        return self::underVendor(substr($landed, strlen($root) + 1))
+            ? ['vendor', sprintf(self::VENDOR, $absolute)]
+            : [];
     }
 
     /**
@@ -202,6 +258,16 @@ final readonly class WriteScope
         }
 
         return null;
+    }
+
+    /**
+     * @param string $relative A landing, relative to the project's real root.
+     *
+     * @return bool Whether it is `vendor/` or under it.
+     */
+    private static function underVendor(string $relative): bool
+    {
+        return $relative === 'vendor' || str_starts_with($relative, 'vendor/');
     }
 
     /**
