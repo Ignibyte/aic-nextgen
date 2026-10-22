@@ -26,45 +26,64 @@ use AIC\Module\Application\HandlerContexts;
 use AIC\Sapi\Contracts\SapiRequest;
 use AIC\Sapi\Contracts\SapiUpload;
 use AIC\Sapi\Infrastructure\PhpSapiSink;
+use AIC\Sapi\Infrastructure\SapiInput;
 use AIC\Secret\Domain\AppSecret;
 use App\Generated\WebModules;
 
-$appConfig = require __DIR__ . '/../config/app.php';
+try {
+    $appConfig = require __DIR__ . '/../config/app.php';
 
-if (!$appConfig instanceof AppConfig) {
-    throw new RuntimeException('config/app.php must return an ' . AppConfig::class . '.');
+    if (!$appConfig instanceof AppConfig) {
+        throw new RuntimeException('config/app.php must return an ' . AppConfig::class . '.');
+    }
+
+    $databaseConfig = require __DIR__ . '/../config/database.php';
+
+    if (!$databaseConfig instanceof DatabaseConfig) {
+        throw new RuntimeException('config/database.php must return an ' . DatabaseConfig::class . '.');
+    }
+
+    $appSecret = require __DIR__ . '/../config/secret.php';
+
+    if (!$appSecret instanceof AppSecret) {
+        throw new RuntimeException('config/secret.php must return an ' . AppSecret::class . '.');
+    }
+
+    $sapiServices = new SapiServices(new PhpSapiSink());
+    $database = new PdoDatabase($databaseConfig);
+    $appKernel = new AppKernel(
+        new HandlerContexts(
+            $appConfig,
+            $sapiServices->responseBuilder(),
+            $database,
+            $appSecret,
+            gmdate('Y-m-d\\TH:i:s\\Z'),
+            __DIR__ . '/..',
+        ),
+        $sapiServices->requestExtractor(),
+        $sapiServices->responseBuilder(),
+        $database,
+        new WebModules(),
+    );
+} catch (Throwable) {
+    http_response_code(500);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "The application could not start. Check its configuration.\n";
+
+    return;
 }
 
-$databaseConfig = require __DIR__ . '/../config/database.php';
-
-if (!$databaseConfig instanceof DatabaseConfig) {
-    throw new RuntimeException('config/database.php must return an ' . DatabaseConfig::class . '.');
-}
-
-$appSecret = require __DIR__ . '/../config/secret.php';
-
-if (!$appSecret instanceof AppSecret) {
-    throw new RuntimeException('config/secret.php must return an ' . AppSecret::class . '.');
-}
-
-$sapiServices = new SapiServices(new PhpSapiSink());
-$database = new PdoDatabase($databaseConfig);
-$appKernel = new AppKernel(
-    new HandlerContexts($appConfig, $sapiServices->responseBuilder(), $database, $appSecret, gmdate('Y-m-d\\TH:i:s\\Z'), __DIR__ . '/..'),
-    $sapiServices->requestExtractor(),
-    $sapiServices->responseBuilder(),
-    $database,
-    new WebModules(),
-);
-
+$sapiInput = new SapiInput();
 $server = [];
 
 foreach ($_SERVER as $key => $value) {
-    if (!is_string($key) || !is_scalar($value)) {
+    $name = $sapiInput->name($key);
+
+    if ($name === null || !is_scalar($value)) {
         continue;
     }
 
-    $server[$key] = $value;
+    $server[$name] = $value;
 }
 
 $body = file_get_contents('php://input');
@@ -83,24 +102,14 @@ foreach ($_POST as $name => $value) {
 
 $uploads = [];
 
-foreach ($_FILES as $field => $file) {
-    if (!is_string($field) || !is_array($file)) {
+foreach (array_filter($_FILES, is_array(...)) as $field => $file) {
+    $upload = $sapiInput->upload($field, array_filter($file, is_scalar(...)));
+
+    if (!($upload instanceof SapiUpload)) {
         continue;
     }
 
-    $clientName = $file['name'] ?? '';
-    $clientType = $file['type'] ?? '';
-    $path = $file['tmp_name'] ?? '';
-    $error = $file['error'] ?? 4;
-    $size = $file['size'] ?? 0;
-    $uploads[] = new SapiUpload(
-        $field,
-        is_string($clientName) ? $clientName : '',
-        is_string($clientType) ? $clientType : '',
-        is_string($path) ? $path : '',
-        is_int($error) ? $error : 4,
-        is_int($size) ? $size : 0,
-    );
+    $uploads[] = $upload;
 }
 
 $sapiServices->sapiResponseEmitter()->emit(

@@ -10,6 +10,7 @@ use AIC\Controller\Contracts\PageResponse;
 use AIC\Session\Application\RequestSession;
 use App\Account\Form\UploadForm;
 use App\Site\Service\HtmlLayout;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -38,6 +39,8 @@ final readonly class UploadsPage implements Page
 
     /**
      * @param ServerRequestInterface $serverRequest The request, with its session.
+     *
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return PageResponse The page.
      */

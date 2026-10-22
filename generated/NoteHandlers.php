@@ -17,6 +17,7 @@ use App\Note\Repository\NoteRepository;
 use App\Note\Service\NoteRequest;
 use App\Note\Service\NoteViews;
 use App\Site\Service\HtmlLayout;
+use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -34,6 +35,8 @@ final readonly class NoteHandlers
     }
 
     /**
+     * @throws InvalidArgumentException When a called constructor or service fails.
+     *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array

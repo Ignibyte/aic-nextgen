@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\RendersMarkup;
+use AIC\Component\Exception\UnknownComponent;
 use Gates\Domain\TemplateNode;
 use Gates\Domain\TemplateNodeKind;
 
@@ -36,6 +37,7 @@ final readonly class TemplateImports
      * The imports a part method's code needs, by what it holds.
      */
     private const array NEEDS = [
+        '@throws UnknownComponent' => [UnknownComponent::class],
         'array_map(' => ['function array_map', 'function implode'],
         'RenderPass $renderPass' => [RenderPass::class],
         'self::text(' => [RendersMarkup::class],

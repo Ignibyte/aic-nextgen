@@ -13,5 +13,6 @@
     <function name="eval"/>
     <function name="extract"/>
     <function name="compact"/>
-    <function name="getenv"/>
+    <!-- Environment access is checked by PHPStan and semgrep with the config/ boundary;
+         a global getenv ban would reject the designated configuration boundary. -->
 </forbiddenFunctions>

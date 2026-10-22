@@ -13,6 +13,7 @@ use AIC\Component\Domain\HiddenInput;
 use AIC\Component\Domain\Input;
 use AIC\Component\Domain\PasswordInput;
 use AIC\Form\Application\FormTokens;
+use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -34,6 +35,8 @@ final readonly class LoginForm
      * @param string                 $login         The login to show again.
      * @param string                 $next          Where to go after; LoginPost keeps it on the site.
      * @param string                 $error         Why the last attempt failed; empty for none.
+     *
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return Form The form.
      */

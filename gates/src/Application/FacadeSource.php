@@ -156,7 +156,7 @@ final readonly class FacadeSource
             }
 
             /**
-             * @return list<Schedule> The modules' schedules.
+        {scheduleThrows}     * @return list<Schedule> The modules' schedules.
              */
             #[Override]
             public function schedules(): array
@@ -197,7 +197,7 @@ final readonly class FacadeSource
             }
 
             /**
-             * @return list<Schedule> The modules' schedules.
+        {scheduleThrows}     * @return list<Schedule> The modules' schedules.
              */
             #[Override]
             public function schedules(): array
@@ -207,21 +207,25 @@ final readonly class FacadeSource
         PHP;
 
     /**
-     * @param PhpClassFile $phpClassFile Lays out each file.
+     * @param PhpClassFile  $phpClassFile  Lays out each file.
+     * @param ExceptionDocs $exceptionDocs Reads freshly generated aggregator contracts.
      */
     public function __construct(
         private PhpClassFile $phpClassFile = new PhpClassFile(),
+        private ExceptionDocs $exceptionDocs = new ExceptionDocs(),
     ) {
     }
 
     /**
-     * @param list<string> $aggregates The optional aggregators generated (`ModuleHandlers`, …).
-     * @param list<string> $rootless   Those that take no context (`ModuleJobs` when no job reads a root).
+     * @param list<string>          $aggregates The optional aggregators generated (`ModuleHandlers`, …).
+     * @param list<string>          $rootless   Those that take no context (`ModuleJobs` when no job reads a root).
+     * @param array<string, string> $sources    The freshly generated aggregators.
      *
      * @return array<string, string> `WebModules` and `ConsoleModules`, by file name.
      */
-    public function files(array $aggregates, array $rootless): array
+    public function files(array $aggregates, array $rootless, array $sources): array
     {
+        $scheduleTypes = $this->exceptionDocs->source($sources['ModuleSchedules.php'] ?? '');
         $web = [
             WebWiring::class,
             Override::class,
@@ -229,15 +233,17 @@ final readonly class FacadeSource
             DuplicateRouteException::class,
             Schedule::class,
             ComponentTemplates::class,
+            ...$scheduleTypes,
         ];
-        $console = [ConsoleWiring::class, Override::class, Migration::class, Schedule::class];
+        $console = [ConsoleWiring::class, Override::class, Migration::class, Schedule::class, ...$scheduleTypes];
 
-        $consoleParts = $this->parts(self::CONSOLE_PARTS, $aggregates, $rootless);
-        $webParts = $this->parts(self::WEB_PARTS, $aggregates, $rootless);
+        $consoleParts = $this->parts(self::CONSOLE_PARTS, $aggregates, $rootless, $sources);
+        $webParts = $this->parts(self::WEB_PARTS, $aggregates, $rootless, $sources);
+        $replace = ['{scheduleThrows}' => $this->exceptionDocs->block($scheduleTypes)];
 
         return [
-            'ConsoleModules.php' => $this->facade('ConsoleModules', 'the console kernel', $console, self::CONSOLE, $consoleParts),
-            'WebModules.php' => $this->facade('WebModules', 'the app kernel', $web, self::WEB, $webParts),
+            'ConsoleModules.php' => $this->facade('ConsoleModules', 'console', $console, strtr(self::CONSOLE, $replace), $consoleParts),
+            'WebModules.php' => $this->facade('WebModules', 'app', $web, strtr(self::WEB, $replace), $webParts),
         ];
     }
 
@@ -245,11 +251,12 @@ final readonly class FacadeSource
      * @param array<string, array{class-string, string, list<class-string>}> $parts      The optional parts.
      * @param list<string>                                                   $aggregates The aggregators generated.
      * @param list<string>                                                   $rootless   Those that take no context.
+     * @param array<string, string>                                          $sources    The freshly generated aggregators.
      *
      * @return list<array{class-string, string, list<class-string>}> The parts whose aggregator exists, each rootless
      *                                                               one as its context-free sibling.
      */
-    private function parts(array $parts, array $aggregates, array $rootless): array
+    private function parts(array $parts, array $aggregates, array $rootless, array $sources): array
     {
         $present = [];
 
@@ -257,6 +264,10 @@ final readonly class FacadeSource
             if (!in_array($aggregate, $aggregates, true)) {
                 continue;
             }
+
+            $exceptions = $this->exceptionDocs->source($sources[$aggregate . '.php'] ?? '');
+            $part[1] = $this->exceptionDocs->append($part[1], $exceptions);
+            $part[2] = [...$part[2], ...$exceptions];
 
             $present[] = in_array($aggregate, $rootless, true)
                 ? $this->rootless($part)
@@ -314,7 +325,7 @@ final readonly class FacadeSource
         sort($interfaces, SORT_STRING | SORT_FLAG_CASE);
         $declaration = 'final readonly class ' . $class . ' implements ' . implode(', ', $interfaces);
         $body = $declaration . "\n{\n" . implode("\n\n", $methods) . "\n}";
-        $docblock = $this->phpClassFile->generated('the module manifests', "the modules' wiring, as " . $kernel . ' takes it.');
+        $docblock = $this->phpClassFile->generated('the module manifests', "the modules' wiring, as the " . $kernel . ' kernel takes it.');
 
         return $this->phpClassFile->file('App\\Generated', $classes, [], $docblock, $body);
     }

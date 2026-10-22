@@ -12,6 +12,7 @@ use AIC\Entity\Domain\EntityType;
 use AIC\Entity\Domain\Field;
 use AIC\Entity\Domain\FieldType;
 use App\Note\Entity\Note;
+use InvalidArgumentException;
 
 use function array_map;
 
@@ -28,6 +29,8 @@ final readonly class NoteRepository
 
     /**
      * @param EntityStore $entityStore The entity store.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      */
     public function __construct(
         private EntityStore $entityStore,
@@ -40,7 +43,8 @@ final readonly class NoteRepository
     }
 
     /**
-     * @throws QueryException When the query fails.
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return list<Note> Every note, oldest first.
      */
@@ -52,8 +56,9 @@ final readonly class NoteRepository
     /**
      * @param int $id The note's key.
      *
-     * @throws EntityNotFoundException When there is no such note.
-     * @throws QueryException          When the query fails.
+     * @throws EntityNotFoundException  When there is no such note.
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return Note The note.
      */
@@ -66,7 +71,8 @@ final readonly class NoteRepository
      * @param string $title The title.
      * @param string $body  The body; empty for none.
      *
-     * @throws QueryException When the insert fails.
+     * @throws QueryException           When the insert fails.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return int The new note's key.
      */
@@ -80,8 +86,9 @@ final readonly class NoteRepository
      * @param string $title The new title.
      * @param string $body  The new body.
      *
-     * @throws EntityNotFoundException When there is no such note.
-     * @throws QueryException          When the update fails.
+     * @throws EntityNotFoundException  When there is no such note.
+     * @throws QueryException           When the update fails.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      */
     public function update(int $id, string $title, string $body): void
     {

@@ -7,6 +7,7 @@ namespace AIC\Component\Application;
 use AIC\Component\Contracts\Html;
 use AIC\Component\Contracts\Layout;
 use AIC\Component\Exception\UnknownComponent;
+use InvalidArgumentException;
 
 use function count;
 use function explode;
@@ -78,7 +79,8 @@ final readonly class Renderer
      * @param Layout $layout The page.
      * @param string $target A region, or a component's path below one.
      *
-     * @throws UnknownComponent When no template renders one of its components.
+     * @throws UnknownComponent         When no template renders one of its components.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return string The target's markup as the document renders it; empty when the page has no such target.
      */

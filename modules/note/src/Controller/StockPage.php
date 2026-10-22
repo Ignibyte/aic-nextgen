@@ -17,6 +17,7 @@ use App\Note\Repository\StockRepository;
 use App\Note\Service\StockList;
 use App\Site\Service\HtmlLayout;
 use JsonException;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -50,6 +51,7 @@ final readonly class StockPage implements Page
      *
      * @throws QueryException When the items cannot be read.
      * @throws JsonException  When the list's props cannot be sealed.
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return PageResponse The page; 400 when the list's props were altered.
      */
@@ -64,7 +66,9 @@ final readonly class StockPage implements Page
             return $this->htmlLayout->content([new Paragraph('The list could not be refreshed. Reload the page.', '')], 400);
         }
 
-        $latest = $items[count($items) - 1] ?? null;
+        $latest = $items === []
+            ? null
+            : $items[count($items) - 1];
         $summary = $latest instanceof StockItem
             ? 'Latest: ' . $latest->line() . '.'
             : 'Nothing in stock yet.';

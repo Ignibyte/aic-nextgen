@@ -7,6 +7,7 @@ namespace AIC\Form\Application;
 use AIC\Form\Domain\UploadKind;
 use AIC\Form\Exception\RefusedUpload;
 use Psr\Http\Message\UploadedFileInterface;
+use RuntimeException;
 
 use function array_map;
 use function implode;
@@ -36,7 +37,7 @@ final readonly class UploadCheck
     /**
      * @param UploadedFileInterface $uploadedFile An upload.
      *
-     * @throws RefusedUpload When it failed, is empty, is too large, or is none of the kinds.
+     * @throws RuntimeException When the underlying operation fails.
      *
      * @return string Its kind, for a person (`PNG image`).
      */

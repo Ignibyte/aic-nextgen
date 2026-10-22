@@ -13,6 +13,7 @@ use AIC\Component\Domain\Input;
 use AIC\Component\Domain\Textarea;
 use AIC\Form\Application\FormTokens;
 use JsonException;
+use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -38,6 +39,9 @@ final readonly class NoteForms
      * @param string                 $title         The title to show in the field.
      * @param string                 $body          The body to show in the field.
      * @param string                 $error         The error to show; empty for none.
+     *
+     * @throws JsonException  When a value cannot be encoded as JSON.
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return Form The form.
      */
@@ -67,7 +71,8 @@ final readonly class NoteForms
      * @param string                 $action        Where it posts.
      * @param PostedNote             $postedNote    What was posted, with its error.
      *
-     * @throws JsonException When the envelope cannot be encoded.
+     * @throws JsonException  When the envelope cannot be encoded.
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return Form The form again, holding what was posted and showing the error.
      */
@@ -79,6 +84,9 @@ final readonly class NoteForms
     /**
      * @param ServerRequestInterface $serverRequest The request, with its session.
      * @param string                 $path          The note's path.
+     *
+     * @throws JsonException  When a value cannot be encoded as JSON.
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return Form The form whose button deletes the note.
      */

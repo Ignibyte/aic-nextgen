@@ -7,6 +7,7 @@ namespace AIC\Routing\Application;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Routing\Domain\MethodNotAllowedException;
 use AIC\Routing\Domain\RouteNotFoundException;
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -37,6 +38,8 @@ final readonly class RouteErrorMiddleware implements MiddlewareInterface
     /**
      * @param ServerRequestInterface  $request The request.
      * @param RequestHandlerInterface $handler The rest of the stack.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The handler's response, or the 404 or 405.
      */

@@ -29,35 +29,41 @@ use App\Generated\ConsoleModules;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$databaseConfig = require __DIR__ . '/../config/database.php';
+try {
+    $databaseConfig = require __DIR__ . '/../config/database.php';
 
-if (!$databaseConfig instanceof DatabaseConfig) {
-    throw new RuntimeException('config/database.php must return an ' . DatabaseConfig::class . '.');
-}
-
-$mailConfig = require __DIR__ . '/../config/mail.php';
-
-if (!$mailConfig instanceof MailConfig) {
-    throw new RuntimeException('config/mail.php must return an ' . MailConfig::class . '.');
-}
-
-$consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTransport($mailConfig), $mailConfig, new ConsoleModules());
-$commands = $consoleKernel->commands();
-
-if (class_exists(WorkflowKernel::class)) {
-    $commands = [...$commands, ...(new WorkflowKernel((string) getcwd()))->commands()];
-    ksort($commands);
-}
-
-$console = new Console($commands);
-
-exit($console->run($argv ?? [], new class () implements CommandWriter {
-    /**
-     * @param string $text One line, without its line break.
-     */
-    #[Override]
-    public function line(string $text): void
-    {
-        fwrite(\STDOUT, $text . "\n");
+    if (!$databaseConfig instanceof DatabaseConfig) {
+        throw new RuntimeException('config/database.php must return an ' . DatabaseConfig::class . '.');
     }
-}));
+
+    $mailConfig = require __DIR__ . '/../config/mail.php';
+
+    if (!$mailConfig instanceof MailConfig) {
+        throw new RuntimeException('config/mail.php must return an ' . MailConfig::class . '.');
+    }
+
+    $consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTransport($mailConfig), $mailConfig, new ConsoleModules());
+    $commands = $consoleKernel->commands();
+
+    if (class_exists(WorkflowKernel::class)) {
+        $commands = [...$commands, ...(new WorkflowKernel((string) getcwd()))->commands()];
+        ksort($commands);
+    }
+
+    $console = new Console($commands);
+
+    exit($console->run($argv ?? [], new class () implements CommandWriter {
+        /**
+         * @param string $text One line, without its line break.
+         */
+        #[Override]
+        public function line(string $text): void
+        {
+            fwrite(\STDOUT, $text . "\n");
+        }
+    }));
+} catch (Throwable $failure) {
+    fwrite(\STDERR, 'AIC could not start: ' . $failure->getMessage() . "\n");
+
+    exit(1);
+}

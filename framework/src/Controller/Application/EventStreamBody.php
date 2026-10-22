@@ -53,6 +53,8 @@ final class EventStreamBody implements StreamInterface
     }
 
     /**
+     * @throws RuntimeException When the underlying operation fails.
+     *
      * @return string Every remaining event, pulled to the end.
      */
     #[Override]

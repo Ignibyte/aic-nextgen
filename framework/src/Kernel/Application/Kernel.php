@@ -8,6 +8,7 @@ use AIC\Http\Application\ResponseBuilder;
 use AIC\Http\Domain\MalformedInputException;
 use AIC\Sapi\Contracts\RequestExtractor;
 use AIC\Sapi\Contracts\SapiRequest;
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
@@ -44,6 +45,8 @@ final readonly class Kernel
 
     /**
      * @param SapiRequest $sapiRequest One request, as the SAPI gave it.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The response: the stack's, a 400 or a 500.
      */

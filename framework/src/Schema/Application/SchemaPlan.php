@@ -60,6 +60,8 @@ final class SchemaPlan implements Schema
     /**
      * @param string $table The new table's name.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return TableBuilder Its columns, added in order.
      */
     #[Override]

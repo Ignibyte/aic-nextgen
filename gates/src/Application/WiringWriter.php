@@ -63,9 +63,11 @@ final readonly class WiringWriter
             }
         }
 
-        $aggregates = $this->aggregateSources->files($members, $rootless);
+        $aggregates = $this->aggregateSources->files($members, $rootless, $files);
         $roots = array_map(static fn (string $file): string => substr($file, 0, -4), array_keys($aggregates));
 
-        return [...$files, ...$aggregates, ...$this->facadeSource->files($roots, $this->aggregateSources->rootless($members, $rootless))];
+        $rootless = $this->aggregateSources->rootless($members, $rootless);
+
+        return [...$files, ...$aggregates, ...$this->facadeSource->files($roots, $rootless, $aggregates)];
     }
 }

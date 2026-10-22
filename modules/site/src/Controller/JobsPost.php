@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
 use AIC\Database\Contracts\QueryException;
 use AIC\Queue\Application\PostgresQueue;
+use InvalidArgumentException;
 use JsonException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -30,8 +31,9 @@ final readonly class JobsPost implements Page
     /**
      * @param ServerRequestInterface $serverRequest The posted form, with `?mode=`.
      *
-     * @throws JsonException  When the payload cannot be encoded.
-     * @throws QueryException When the job cannot be queued.
+     * @throws JsonException            When the payload cannot be encoded.
+     * @throws QueryException           When the job cannot be queued.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return PageResponse 303 to /jobs.
      */

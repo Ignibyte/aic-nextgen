@@ -9,9 +9,11 @@ use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use App\Account\Form\LoginForm;
 use App\Site\Service\HtmlLayout;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
 use function is_string;
 
 /**
@@ -32,16 +34,20 @@ final readonly class LoginPage implements Page
     /**
      * @param ServerRequestInterface $serverRequest The request, with its session and perhaps `?next=`.
      *
+     * @throws LogicException When the required application state is unavailable.
+     *
      * @return PageResponse The page.
      */
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
         $query = $serverRequest->getQueryParams();
-        $next = $query['next'] ?? '';
+        $next = array_key_exists('next', $query) && is_string($query['next'])
+            ? $query['next']
+            : '';
 
         return $this->htmlLayout->content(
-            [new Heading('Sign in'), $this->loginForm->form($serverRequest, '', is_string($next) ? $next : '', '')],
+            [new Heading('Sign in'), $this->loginForm->form($serverRequest, '', $next, '')],
             200,
         );
     }

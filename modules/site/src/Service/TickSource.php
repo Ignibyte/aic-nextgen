@@ -7,6 +7,7 @@ namespace App\Site\Service;
 use AIC\Controller\Contracts\EventSource;
 use AIC\Controller\Contracts\ServerEvent;
 use AIC\Tessera\Domain\TesseraEvents;
+use InvalidArgumentException;
 use Override;
 
 use function usleep;
@@ -41,6 +42,8 @@ final class TickSource implements EventSource
     }
 
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return ServerEvent The next tick, after a pause unless it is the first, then its signal patch; a closing
      *                     comment when none is left.
      */

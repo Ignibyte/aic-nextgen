@@ -7,6 +7,7 @@ namespace Gates\Application;
 use Gates\Domain\Aggregate;
 use Gates\Domain\WiringRoots;
 use InvalidArgumentException;
+use Throwable;
 
 use function array_diff;
 use function array_map;
@@ -31,7 +32,7 @@ final readonly class MergeSource
         final readonly class {class}
         {
         {constructor}    /**
-             * @return {returnDoc} {what}
+        {throws}     * @return {returnDoc} {what}
              */
             public function {method}(): array
             {
@@ -54,25 +55,28 @@ final readonly class MergeSource
         PHP;
 
     /**
-     * @param PhpClassFile $phpClassFile Lays out each file.
-     * @param ChainSource  $chainSource  Splits the aggregator into parts.
+     * @param PhpClassFile  $phpClassFile  Lays out each file.
+     * @param ChainSource   $chainSource   Splits the aggregator into parts.
+     * @param ExceptionDocs $exceptionDocs Reads the members' generated exception contracts.
      */
     public function __construct(
         private PhpClassFile $phpClassFile = new PhpClassFile(),
         private ChainSource $chainSource = new ChainSource(),
+        private ExceptionDocs $exceptionDocs = new ExceptionDocs(),
     ) {
     }
 
     /**
-     * @param Aggregate    $aggregate The aggregator.
-     * @param list<string> $members   The modules' generated classes of its kind, in build order.
-     * @param list<string> $rootless  The generated classes that take no context.
+     * @param Aggregate             $aggregate The aggregator.
+     * @param list<string>          $members   The modules' generated classes of its kind, in build order.
+     * @param list<string>          $rootless  The generated classes that take no context.
+     * @param array<string, string> $sources   The freshly generated member classes.
      *
      * @throws InvalidArgumentException Never: each part fits by its size.
      *
      * @return array<string, string> The root and its parts, by file name.
      */
-    public function aggregate(Aggregate $aggregate, array $members, array $rootless): array
+    public function aggregate(Aggregate $aggregate, array $members, array $rootless, array $sources): array
     {
         $files = [];
         $docblock = $this->phpClassFile->generated('the module manifests', $aggregate->what);
@@ -81,8 +85,8 @@ final readonly class MergeSource
             ? [...$this->rootedParts($aggregate, $parts, $rootless), ...array_diff($members, $rootless)]
             : [];
 
-        foreach ($parts as $part) {
-            $files[$part['class'] . '.php'] = $this->part($aggregate, $part, $rooted, $docblock);
+        foreach (array_reverse($parts) as $part) {
+            $files[$part['class'] . '.php'] = $this->part($aggregate, $part, $rooted, $docblock, [...$sources, ...$files]);
         }
 
         return $files;
@@ -132,14 +136,16 @@ final readonly class MergeSource
      * @param list<string>                                              $rooted    The parts and members that take the
      *                                                                             context.
      * @param string                                                    $docblock  Its class docblock.
+     * @param array<string, string>                                     $sources   The members and already generated later parts.
      *
      * @throws InvalidArgumentException Never: each part fits by its size.
      *
      * @return string The part's class file.
      */
-    private function part(Aggregate $aggregate, array $part, array $rooted, string $docblock): string
+    private function part(Aggregate $aggregate, array $part, array $rooted, string $docblock, array $sources): string
     {
         $calls = $this->chainSource->calls($part);
+        $exceptions = $this->exceptions($calls, $sources);
         $roots = in_array($part['class'], $rooted, true)
             ? $aggregate->roots
             : null;
@@ -149,14 +155,34 @@ final readonly class MergeSource
             '{method}' => $aggregate->method,
             '{returnDoc}' => $aggregate->returnDoc,
             '{return}' => $this->returnStatement($calls, $aggregate, $rooted),
+            '{throws}' => $this->exceptionDocs->block($exceptions),
             '{what}' => $aggregate->what,
         ]);
         $context = $roots instanceof WiringRoots
             ? [$roots->context]
             : [];
-        $classes = [...$context, ...$aggregate->docTypes, ...$this->chainSource->qualified($calls)];
+        $classes = [...$context, ...$aggregate->docTypes, ...$this->chainSource->qualified($calls), ...$exceptions];
 
         return $this->phpClassFile->file('App\\Generated', $classes, count($calls) > 1 ? ['array_merge'] : [], $docblock, $body);
+    }
+
+    /**
+     * @param list<string>          $calls   The called generated classes.
+     * @param array<string, string> $sources Their current generated sources.
+     *
+     * @throws InvalidArgumentException When a generated exception contract is invalid.
+     *
+     * @return list<class-string<Throwable>> Their combined exception contracts.
+     */
+    private function exceptions(array $calls, array $sources): array
+    {
+        $types = [];
+
+        foreach ($calls as $call) {
+            $types = [...$types, ...$this->exceptionDocs->source($sources[$call . '.php'] ?? '')];
+        }
+
+        return $this->exceptionDocs->normalized($types);
     }
 
     /**

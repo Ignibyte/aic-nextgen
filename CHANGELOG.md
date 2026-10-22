@@ -4,6 +4,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Fixed
+
+- **Runtime ordinary Psalm analysis** (#133, part 1 of #131). Runtime exception contracts and checked PSR, PDO, SAPI, array and resource boundaries now have no findings in the complete ordinary diagnostic. Wiring, template and scaffold generators own the emitted contracts and their formatting.
+  - Invalid typed configuration returns a plain HTTP 500 at boot; the console reports a clean error and exits 1. The approved Psalm policy keeps method exception checks and disables the incompatible global-scope check with its reason. PHPStan and semgrep retain the config-only environment boundary.
+  - The ordinary report still exposes 183 gates and 275 workflow findings; its exit remains nonzero. Gate:13 stays taint-only until #135 completes both passes.
+
 ### Added
 
 - **`bin/aic workflow:probe`, the probe sweep** (#119, split from #104). The engine's planted cases, replayed in throwaway apps so a workflow change is checked against every one of them, not re-proved by hand.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Container\Exception\ContainerException;
 use AIC\Controller\Contracts\Command;
 use AIC\Module\Application\ConsoleContext;
 use App\Site\Command\DatabasePing;
@@ -25,6 +26,8 @@ final readonly class SiteCommands
     }
 
     /**
+     * @throws ContainerException When a called constructor or service fails.
+     *
      * @return array<string, Command> The module's commands by name.
      */
     public function byName(): array

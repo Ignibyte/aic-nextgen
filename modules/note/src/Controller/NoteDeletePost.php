@@ -13,6 +13,7 @@ use App\Note\Form\NoteEnvelope;
 use App\Note\Repository\NoteRepository;
 use App\Note\Service\NoteRequest;
 use App\Note\Service\NoteViews;
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -39,7 +40,8 @@ final readonly class NoteDeletePost implements Page
     /**
      * @param ServerRequestInterface $serverRequest The request, with the `id` attribute.
      *
-     * @throws QueryException When the note cannot be deleted.
+     * @throws QueryException           When the note cannot be deleted.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return PageResponse The redirect, the 404 page, or 400 for an altered form.
      */

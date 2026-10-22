@@ -16,6 +16,8 @@ use Override;
 final readonly class ColumnTypeFactory implements ColumnTypes
 {
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return ColumnType An integer the database generates for each row.
      */
     #[Override]
@@ -38,6 +40,8 @@ final readonly class ColumnTypeFactory implements ColumnTypes
     }
 
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return ColumnType Text of any length.
      */
     #[Override]
@@ -47,6 +51,8 @@ final readonly class ColumnTypeFactory implements ColumnTypes
     }
 
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return ColumnType A whole number.
      */
     #[Override]
@@ -56,6 +62,8 @@ final readonly class ColumnTypeFactory implements ColumnTypes
     }
 
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return ColumnType A 64-bit whole number.
      */
     #[Override]
@@ -65,6 +73,8 @@ final readonly class ColumnTypeFactory implements ColumnTypes
     }
 
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return ColumnType A point in time with its time zone.
      */
     #[Override]
@@ -74,6 +84,8 @@ final readonly class ColumnTypeFactory implements ColumnTypes
     }
 
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return ColumnType A calendar date with no time or zone.
      */
     #[Override]
@@ -97,6 +109,8 @@ final readonly class ColumnTypeFactory implements ColumnTypes
     }
 
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return ColumnType True or false.
      */
     #[Override]

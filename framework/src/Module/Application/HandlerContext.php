@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Module\Application;
 
 use AIC\Config\Domain\AppConfig;
+use AIC\Container\Exception\ContainerException;
 use AIC\Controller\Application\ApiHandler;
 use AIC\Controller\Application\PageHandlers;
 use AIC\Controller\Application\StreamHandler;
@@ -125,6 +126,8 @@ final readonly class HandlerContext
 
     /**
      * @param string $type A plugin type.
+     *
+     * @throws ContainerException When a registered service cannot be resolved.
      *
      * @return list<object> The plugins tagged under it, in registration order.
      */

@@ -24,6 +24,7 @@ final readonly class PostSource
         use AIC\Controller\Contracts\Page;
         use AIC\Controller\Contracts\PageResponse;
         use AIC\Controller\Domain\PageRedirect;
+        use InvalidArgumentException;
         use Override;
         use Psr\Http\Message\ServerRequestInterface;
 
@@ -34,6 +35,8 @@ final readonly class PostSource
         {
             /**
              * @param ServerRequestInterface $serverRequest The request.
+             *
+             * @throws InvalidArgumentException When the redirect location is invalid.
              *
              * @return PageResponse 303 to {path}.
              */

@@ -8,6 +8,7 @@ use AIC\Component\Contracts\Layout;
 use AIC\Component\Contracts\Region;
 use AIC\Component\Contracts\Regions;
 use AIC\Component\Domain\TrackedAssets;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -59,6 +60,8 @@ final readonly class AppLayout implements Layout
 
     /**
      * @param Regions $regions Regions for the page.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return self The layout holding them.
      */

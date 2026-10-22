@@ -12,6 +12,7 @@ use App\Site\Entity\HomeDemo;
 use App\Site\Entity\HomeFact;
 use App\Site\Form\GreetingForm;
 use App\Site\Service\HtmlLayout;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -66,6 +67,8 @@ final readonly class HomePage implements Page
 
     /**
      * @param ServerRequestInterface $serverRequest The request.
+     *
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return PageResponse The home page.
      */

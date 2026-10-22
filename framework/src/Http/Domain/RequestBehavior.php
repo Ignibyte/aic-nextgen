@@ -111,6 +111,8 @@ trait RequestBehavior
      * @param UriInterface $uri          The URI for the copy.
      * @param bool         $preserveHost Keep an existing Host header instead of the URI's host.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return static A copy with that URI.
      */
     #[Override]
@@ -130,6 +132,8 @@ trait RequestBehavior
      * Set the Host header from the URI unless the request already has one.
      *
      * @param UriInterface $uri The URI to take the host from.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      */
     private function initialHostFromUri(UriInterface $uri): void
     {
@@ -145,6 +149,8 @@ trait RequestBehavior
      * nothing happens when the URI has no host.
      *
      * @param UriInterface $uri The URI to take the host from.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      */
     private function hostFromUri(UriInterface $uri): void
     {

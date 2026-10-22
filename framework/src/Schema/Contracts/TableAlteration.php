@@ -39,6 +39,8 @@ interface TableAlteration
     public function changeType(string $column, ColumnType $columnType, string $using = ''): self;
 
     /**
+     * @api
+     *
      * @param list<string> $columns Columns whose values, taken together, no two rows may share.
      *
      * @return self The builder.
@@ -46,6 +48,8 @@ interface TableAlteration
     public function unique(array $columns): self;
 
     /**
+     * @api
+     *
      * @param list<string> $columns The columns to index, in order.
      *
      * @return self The builder.

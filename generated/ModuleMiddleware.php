@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Module\Application\HandlerContext;
+use InvalidArgumentException;
 use Psr\Http\Server\MiddlewareInterface;
 
 /**
@@ -22,6 +23,8 @@ final readonly class ModuleMiddleware
     }
 
     /**
+     * @throws InvalidArgumentException When a called constructor or service fails.
+     *
      * @return list<MiddlewareInterface> The modules' middleware after the session, in build order.
      */
     public function afterSession(): array

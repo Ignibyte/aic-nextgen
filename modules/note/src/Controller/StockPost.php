@@ -14,6 +14,7 @@ use App\Note\Form\StockEntry;
 use App\Note\Form\StockForm;
 use App\Note\Repository\StockRepository;
 use App\Site\Service\HtmlLayout;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -41,6 +42,7 @@ final readonly class StockPost implements Page
      * @param ServerRequestInterface $serverRequest The posted form, with its session.
      *
      * @throws QueryException When the item cannot be stored.
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return PageResponse 303 to /stock, or the form again as 422.
      */

@@ -12,9 +12,11 @@ use AIC\Tessera\Application\TesseraProps;
 use App\Note\Component\StockLinks;
 use App\Note\Component\StockListing;
 use App\Note\Entity\StockItem;
+use InvalidArgumentException;
 use JsonException;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
 use function array_slice;
 use function ctype_digit;
 use function is_string;
@@ -49,8 +51,9 @@ final readonly class StockList
      * @param ServerRequestInterface $serverRequest The request: an optional `limit`, maybe the list's props.
      * @param list<StockItem>        $items         Every item, oldest first.
      *
-     * @throws InvalidEnvelope When the request's props for the list were altered.
-     * @throws JsonException   When the props cannot be sealed.
+     * @throws InvalidEnvelope          When the request's props for the list were altered.
+     * @throws JsonException            When the props cannot be sealed.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return KeyedComponent The list, its limit sealed in its props.
      */
@@ -103,10 +106,10 @@ final readonly class StockList
      */
     private static function queryLimit(ServerRequestInterface $serverRequest): string
     {
-        $limit = $serverRequest->getQueryParams()['limit'] ?? '';
+        $query = $serverRequest->getQueryParams();
 
-        return is_string($limit)
-            ? $limit
+        return array_key_exists('limit', $query) && is_string($query['limit'])
+            ? $query['limit']
             : '';
     }
 

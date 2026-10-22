@@ -70,17 +70,18 @@ final readonly class AggregateSources
     /**
      * @param array<string, list<string>> $members  The modules' generated classes by kind suffix, in build order.
      * @param list<string>                $rootless The generated classes that take no context.
+     * @param array<string, string>       $sources  The freshly generated per-module classes.
      *
      * @throws InvalidArgumentException Never: each part fits by its size.
      *
      * @return array<string, string> The aggregators and their parts, by file name.
      */
-    public function files(array $members, array $rootless): array
+    public function files(array $members, array $rootless, array $sources): array
     {
         $files = $this->routesSource->aggregate($members['Routes'] ?? []);
 
         foreach ($this->aggregates($members) as $kind => $aggregate) {
-            $files = [...$files, ...$this->mergeSource->aggregate($aggregate, $members[$kind] ?? [], $rootless)];
+            $files = [...$files, ...$this->mergeSource->aggregate($aggregate, $members[$kind] ?? [], $rootless, $sources)];
         }
 
         $providers = $members['Provider'] ?? [];

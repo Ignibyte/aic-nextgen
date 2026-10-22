@@ -8,6 +8,7 @@ use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandWriter;
 use AIC\Controller\Domain\CommandResult;
+use InvalidArgumentException;
 
 use function array_keys;
 use function array_slice;
@@ -31,6 +32,8 @@ final readonly class Console
      * @param list<string>  $argv          The command line, the script first.
      * @param CommandWriter $commandWriter Writes the output.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return int The exit code.
      */
     public function run(array $argv, CommandWriter $commandWriter): int
@@ -45,6 +48,8 @@ final readonly class Console
     }
 
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return CommandResult How to call the console, and its commands.
      */
     private function usage(): CommandResult

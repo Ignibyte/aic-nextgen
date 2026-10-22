@@ -10,6 +10,7 @@ use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Module\Attribute\Tagged;
 use App\Site\Service\Greeter;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -29,6 +30,8 @@ final readonly class Greet implements Command
 
     /**
      * @param CommandInput $commandInput The name, first.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return CommandResponse The greetings.
      */

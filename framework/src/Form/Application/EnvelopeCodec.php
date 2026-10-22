@@ -11,6 +11,7 @@ use AIC\Session\Domain\StringMapJson;
 use JsonException;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
 use function base64_decode;
 use function base64_encode;
 use function is_array;
@@ -94,7 +95,7 @@ final readonly class EnvelopeCodec
             ? ''
             : substr($envelope, 0, $dot);
 
-        if ($body === '' || !$this->hmacSigner->verify($body, substr($envelope, $dot + 1))) {
+        if ($dot === false || $body === '' || !$this->hmacSigner->verify($body, substr($envelope, $dot + 1))) {
             throw new InvalidEnvelope('The envelope is missing or was altered.');
         }
 
@@ -111,12 +112,8 @@ final readonly class EnvelopeCodec
     private static function envelope(ServerRequestInterface $serverRequest): string
     {
         $parsed = $serverRequest->getParsedBody();
-        $field = is_array($parsed)
-            ? $parsed[self::FIELD] ?? ''
-            : '';
-
-        return is_string($field)
-            ? $field
+        return is_array($parsed) && array_key_exists(self::FIELD, $parsed) && is_string($parsed[self::FIELD])
+            ? $parsed[self::FIELD]
             : '';
     }
 }

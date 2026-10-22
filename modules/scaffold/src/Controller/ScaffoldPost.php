@@ -7,6 +7,7 @@ namespace App\Scaffold\Controller;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -17,6 +18,8 @@ final readonly class ScaffoldPost implements Page
 {
     /**
      * @param ServerRequestInterface $serverRequest The request.
+     *
+     * @throws InvalidArgumentException When the redirect location is invalid.
      *
      * @return PageResponse 303 to /scaffold.
      */

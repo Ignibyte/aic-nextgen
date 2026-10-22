@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Container\Exception\ContainerException;
 use AIC\Database\Contracts\Database;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Kernel\Application\Kernel;
@@ -12,7 +13,6 @@ use AIC\Routing\Application\Router;
 use AIC\Routing\Domain\RoutePatternCompiler;
 use AIC\Sapi\Contracts\RequestExtractor;
 use LogicException;
-use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * The app's web side, composed from the generated wiring (#93): the handler
@@ -36,7 +36,8 @@ final readonly class AppKernel
      * @param Database         $database         The database.
      * @param WebWiring        $webWiring        The modules' generated wiring.
      *
-     * @throws LogicException When two modules declare one route, or a route pattern does not compile.
+     * @throws LogicException     When two modules declare one route, or a route pattern does not compile.
+     * @throws ContainerException When a registered service cannot be resolved.
      */
     public function __construct(
         HandlerContexts $handlerContexts,
@@ -50,7 +51,7 @@ final readonly class AppKernel
         $handlers = $webWiring instanceof HandlerWiring
             ? $webWiring->handlers($handlerContext)
             : [];
-        $afterSession = $this->afterSession($webWiring, $handlerContext);
+        $afterSession = (new ModuleLayers())->afterSession($webWiring, $handlerContext);
         $this->kernel = new Kernel(
             $requestExtractor,
             (new FrameworkStack($responseBuilder, $database))->around(new Router($routeTable, $handlers), $afterSession),
@@ -64,27 +65,5 @@ final readonly class AppKernel
     public function kernel(): Kernel
     {
         return $this->kernel;
-    }
-
-    /**
-     * An if per interface, not `match (true)`: elephc narrows `instanceof` in an
-     * if, not in a match arm (#112).
-     *
-     * @param WebWiring      $webWiring      The modules' wiring.
-     * @param HandlerContext $handlerContext The roots.
-     *
-     * @return list<MiddlewareInterface> The modules' middleware after the session; none when no module has any.
-     */
-    private function afterSession(WebWiring $webWiring, HandlerContext $handlerContext): array
-    {
-        if ($webWiring instanceof MiddlewareWiring) {
-            return $webWiring->afterSession($handlerContext);
-        }
-
-        if ($webWiring instanceof RootlessMiddlewareWiring) {
-            return $webWiring->afterSession();
-        }
-
-        return [];
     }
 }

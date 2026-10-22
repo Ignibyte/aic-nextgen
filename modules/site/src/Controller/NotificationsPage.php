@@ -16,6 +16,7 @@ use AIC\Form\Application\FormTokens;
 use AIC\Notification\Application\DatabaseChannel;
 use App\Site\Component\LineList;
 use App\Site\Service\HtmlLayout;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -47,6 +48,7 @@ final readonly class NotificationsPage implements Page
      * @param ServerRequestInterface $serverRequest The request, with its session.
      *
      * @throws QueryException When the notifications cannot be read.
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return PageResponse The page.
      */

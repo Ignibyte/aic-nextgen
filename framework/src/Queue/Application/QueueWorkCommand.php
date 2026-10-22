@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Database\Contracts\QueryException;
+use InvalidArgumentException;
 use Override;
 
 use function ctype_digit;
@@ -31,7 +32,8 @@ final readonly class QueueWorkCommand implements Command
     /**
      * @param CommandInput $commandInput The most jobs to run, first.
      *
-     * @throws QueryException When the queue cannot be read or changed.
+     * @throws QueryException           When the queue cannot be read or changed.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return CommandResult How many ran; exit 2 for a max that is not a number.
      */

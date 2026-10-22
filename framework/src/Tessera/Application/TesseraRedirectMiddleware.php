@@ -6,6 +6,7 @@ namespace AIC\Tessera\Application;
 
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Tessera\Domain\TesseraRequest;
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -37,6 +38,8 @@ final readonly class TesseraRedirectMiddleware implements MiddlewareInterface
     /**
      * @param ServerRequestInterface  $request The request.
      * @param RequestHandlerInterface $handler The rest of the stack.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The rest of the stack's answer, a redirect turned into `Tessera-Location` for Tessera.
      */

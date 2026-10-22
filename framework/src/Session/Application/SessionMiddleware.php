@@ -9,6 +9,7 @@ use AIC\Session\Contracts\SessionStore;
 use AIC\Session\Domain\RandomTokens;
 use AIC\Session\Domain\StoredSession;
 use AIC\Session\Domain\StringMapJson;
+use InvalidArgumentException;
 use JsonException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
@@ -16,6 +17,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use function array_key_exists;
 use function is_string;
 
 /**
@@ -53,7 +55,8 @@ final readonly class SessionMiddleware implements MiddlewareInterface
      * @param ServerRequestInterface  $request The request.
      * @param RequestHandlerInterface $handler The rest of the stack.
      *
-     * @throws JsonException When the session cannot be encoded.
+     * @throws JsonException            When the session cannot be encoded.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The response, with the session cookie set or cleared when it changed.
      */
@@ -85,10 +88,8 @@ final readonly class SessionMiddleware implements MiddlewareInterface
     private function cookie(ServerRequestInterface $serverRequest): string
     {
         $cookies = $serverRequest->getCookieParams();
-        $value = $cookies[self::COOKIE] ?? '';
-
-        return is_string($value)
-            ? $value
+        return array_key_exists(self::COOKIE, $cookies) && is_string($cookies[self::COOKIE])
+            ? $cookies[self::COOKIE]
             : '';
     }
 
@@ -111,6 +112,8 @@ final readonly class SessionMiddleware implements MiddlewareInterface
     /**
      * @param string            $incoming The id the visitor sent; empty for none.
      * @param ResponseInterface $response The handler's response.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface It, clearing the cookie the visitor sent.
      */

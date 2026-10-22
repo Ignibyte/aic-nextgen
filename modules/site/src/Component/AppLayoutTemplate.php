@@ -6,6 +6,7 @@ namespace App\Site\Component;
 
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\RendersMarkup;
+use AIC\Component\Exception\UnknownComponent;
 use AIC\Form\Contracts\FormToken;
 
 /**
@@ -19,6 +20,8 @@ final readonly class AppLayoutTemplate
     /**
      * @param AppLayout  $appLayout  The component.
      * @param RenderPass $renderPass The pass that writes its children.
+     *
+     * @throws UnknownComponent When a child has no registered template.
      *
      * @return string Its markup.
      */
@@ -38,6 +41,8 @@ final readonly class AppLayoutTemplate
     /**
      * @param AppLayout  $appLayout  The component.
      * @param RenderPass $renderPass The pass that writes its children.
+     *
+     * @throws UnknownComponent When a child has no registered template.
      *
      * @return string Markup from AppLayout.html.php.
      */
@@ -60,6 +65,8 @@ final readonly class AppLayoutTemplate
     /**
      * @param AppLayout  $appLayout  The component.
      * @param RenderPass $renderPass The pass that writes its children.
+     *
+     * @throws UnknownComponent When a child has no registered template.
      *
      * @return string Markup from AppLayout.html.php.
      */

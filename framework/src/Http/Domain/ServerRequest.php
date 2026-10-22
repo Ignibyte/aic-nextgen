@@ -12,15 +12,15 @@ use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
 
 use function array_filter;
-use function array_is_list;
 use function array_key_exists;
+use function array_keys;
+use function array_map;
 use function count;
 use function is_array;
 use function is_object;
 use function is_scalar;
 use function is_string;
-
-use const ARRAY_FILTER_USE_KEY;
+use function strval;
 
 /**
  * The PSR-7 server request, with typed input.
@@ -32,6 +32,7 @@ use const ARRAY_FILTER_USE_KEY;
  */
 final class ServerRequest extends Message implements ServerRequestInterface
 {
+    use InputFields;
     use RequestBehavior;
 
     /**
@@ -49,14 +50,14 @@ final class ServerRequest extends Message implements ServerRequestInterface
     private array $attributes = [];
 
     /**
-     * @param string                                                        $method          The request method.
-     * @param UriInterface                                                  $uri             The request URI.
-     * @param StreamInterface                                               $stream          The request body.
-     * @param string                                                        $protocolVersion The HTTP version.
-     * @param array<string, scalar>                                         $serverParams    The SAPI's server params.
-     * @param array<string, string>                                         $cookieParams    The cookies.
-     * @param array<string, string|list<string>|array<string, string>>      $queryParams     The query fields.
-     * @param array<string, string|list<string>|array<string, string>>|null $parsedBody      The form fields, or null.
+     * @param string                                                               $method          The request method.
+     * @param UriInterface                                                         $uri             The request URI.
+     * @param StreamInterface                                                      $stream          The request body.
+     * @param string                                                               $protocolVersion The HTTP version.
+     * @param array<string, scalar>                                                $serverParams    The SAPI's server params.
+     * @param array<string, string>                                                $cookieParams    The cookies.
+     * @param array<string, string|list<string>|array<string, string>>             $queryParams     The query fields.
+     * @param array<string, string|list<string>|array<string, string>>|object|null $parsedBody      The form fields, an object, or null.
      *
      * @throws InvalidArgumentException When the method is invalid.
      */
@@ -107,8 +108,16 @@ final class ServerRequest extends Message implements ServerRequestInterface
     #[Override]
     public function withCookieParams(array $cookies): static
     {
+        $strings = [];
+
+        foreach (array_keys($cookies) as $key) {
+            $strings[$key] = is_string($cookies[$key])
+                ? $cookies[$key]
+                : throw new MalformedInputException('Each cookie must be a string under a string name.');
+        }
+
         $new = clone $this;
-        $new->cookieParams = self::stringMap('cookie', array_filter($cookies, is_string(...)), count($cookies));
+        $new->cookieParams = self::stringMap('cookie', $strings, count($cookies));
 
         return $new;
     }
@@ -134,12 +143,21 @@ final class ServerRequest extends Message implements ServerRequestInterface
     {
         $fields = [];
 
-        foreach ($query as $name => $value) {
-            $fields[(string) $name] = match (true) {
-                is_string($value) => $value,
-                is_array($value) => self::fieldGroup((string) $name, array_filter($value, is_string(...)), count($value)),
-                default => throw new MalformedInputException('An input field must be a string or a group of strings: ' . $name),
-            };
+        foreach (array_keys($query) as $name) {
+            if (is_string($query[$name])) {
+                $fields[(string) $name] = $query[$name];
+                continue;
+            }
+
+            if (!is_array($query[$name])) {
+                throw new MalformedInputException('An input field must be a string or a group of strings: ' . $name);
+            }
+
+            $fields[(string) $name] = self::fieldGroup(
+                (string) $name,
+                array_map(strval(...), array_filter($query[$name], is_string(...))),
+                count($query[$name]),
+            );
         }
 
         $new = clone $this;
@@ -271,45 +289,5 @@ final class ServerRequest extends Message implements ServerRequestInterface
         $new->attributes = $attributes;
 
         return $new;
-    }
-
-    /**
-     * @param string                   $name    The field name, for the message.
-     * @param array<array-key, string> $strings The group's string members.
-     * @param int                      $total   How many members the group had.
-     *
-     * @throws MalformedInputException When a member is not a string, or the group is
-     *                                 neither a list nor keyed by strings.
-     *
-     * @return list<string>|array<string, string> The group as a list or a map.
-     */
-    private static function fieldGroup(string $name, array $strings, int $total): array
-    {
-        if (count($strings) !== $total) {
-            throw new MalformedInputException('An input field may nest one level of strings at most: ' . $name);
-        }
-
-        return array_is_list($strings) ? $strings
-            : self::stringMap($name, $strings, $total);
-    }
-
-    /**
-     * @param string                   $name    What the map holds, for the message.
-     * @param array<array-key, string> $strings The string members.
-     * @param int                      $total   How many members there were.
-     *
-     * @throws MalformedInputException When a member is not a string or its key is not a string.
-     *
-     * @return array<string, string> The members by name.
-     */
-    private static function stringMap(string $name, array $strings, int $total): array
-    {
-        $map = array_filter($strings, is_string(...), ARRAY_FILTER_USE_KEY);
-
-        if (count($map) !== $total) {
-            throw new MalformedInputException('Each ' . $name . ' must be a string under a string name.');
-        }
-
-        return $map;
     }
 }

@@ -8,6 +8,7 @@ use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -17,6 +18,8 @@ final readonly class ScaffoldHello implements Command
 {
     /**
      * @param CommandInput $commandInput The arguments.
+     *
+     * @throws InvalidArgumentException When the command result is invalid.
      *
      * @return CommandResponse Its line, exit 0.
      */

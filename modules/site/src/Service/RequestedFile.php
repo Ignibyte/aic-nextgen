@@ -7,6 +7,7 @@ namespace App\Site\Service;
 use AIC\Controller\Domain\FileDownload;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
 use function basename;
 use function is_string;
 use function pathinfo;
@@ -70,9 +71,9 @@ final readonly class RequestedFile
      */
     private static function name(ServerRequestInterface $serverRequest, string $attribute): string
     {
-        $value = $serverRequest->getAttribute($attribute);
+        $attributes = $serverRequest->getAttributes();
 
-        return basename(is_string($value) ? $value : '');
+        return basename(array_key_exists($attribute, $attributes) && is_string($attributes[$attribute]) ? $attributes[$attribute] : '');
     }
 
     /**

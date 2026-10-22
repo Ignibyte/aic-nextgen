@@ -12,6 +12,7 @@ use AIC\Entity\Domain\Field;
 use AIC\Entity\Domain\FieldType;
 use App\Note\Entity\StockItem;
 use App\Note\Form\StockEntry;
+use InvalidArgumentException;
 
 use function array_map;
 
@@ -28,6 +29,8 @@ final readonly class StockRepository
 
     /**
      * @param EntityStore $entityStore The entity store.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      */
     public function __construct(
         private EntityStore $entityStore,
@@ -42,7 +45,8 @@ final readonly class StockRepository
     }
 
     /**
-     * @throws QueryException When the query fails.
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return list<StockItem> Every item, oldest first.
      */
@@ -54,7 +58,8 @@ final readonly class StockRepository
     /**
      * @param StockEntry $stockEntry A posted item with nothing wrong with it.
      *
-     * @throws QueryException When the insert fails.
+     * @throws QueryException           When the insert fails.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      */
     public function add(StockEntry $stockEntry): void
     {

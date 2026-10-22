@@ -9,9 +9,11 @@ use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
 use AIC\Form\Domain\SameOriginPath;
 use AIC\Session\Application\RequestSession;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
 use function is_array;
 use function is_string;
 
@@ -33,6 +35,8 @@ final readonly class VisitsForget implements Page
     /**
      * @param ServerRequestInterface $serverRequest The request, with its session.
      *
+     * @throws LogicException When the required application state is unavailable.
+     *
      * @return PageResponse 303 to `next`, or to /visits.
      */
     #[Override]
@@ -40,10 +44,10 @@ final readonly class VisitsForget implements Page
     {
         $this->requestSession->read($serverRequest)->clear();
         $body = $serverRequest->getParsedBody();
-        $next = is_array($body)
-            ? $body['next'] ?? ''
+        $next = is_array($body) && array_key_exists('next', $body) && is_string($body['next'])
+            ? $body['next']
             : '';
 
-        return new PageRedirect((new SameOriginPath('/visits'))->resolve(is_string($next) ? $next : ''));
+        return new PageRedirect((new SameOriginPath('/visits'))->resolve($next));
     }
 }

@@ -16,6 +16,19 @@ The architecture set an app's agent reads, shipped in `aic/framework`, is
 
 ## Status
 
+Current takeover order (Chad, 2026-10-22): upstream elephc tickets are parked. Finish AIC's
+ordinary Psalm repair (#131: runtime #133, gates #134, workflow and both passes #135),
+bounded process teardown (#137), and Codex workflow support (#136), then build Lotline fresh
+in `/srv/stacks/aic-demo` (#128, #132). The separate ten-module demo rebuild (#129) is superseded.
+Old `/srv/stacks/lotline` is product and design reference; its code is not carried over.
+The existing workflow hooks target Claude Code; Codex enforcement must be proved by #136.
+
+#133: complete ordinary analysis has no runtime findings; 183 gates and 275 workflow findings
+remain visible, with exit 2. Gate:13 is still taint-only until #135. Typed config failures are
+handled at boot; Psalm keeps method exception checking and records the approved reason for
+disabling global-scope exception checking. Environment access stays config-only under PHPStan
+and semgrep. Generated wiring, renderers and scaffold output own their exception contracts.
+
 M0, M1 and M2 are done (2026-10-19).
 - **M0:** the workspace (#1), the gate suite (#2), the four-phase workflow (#3) and the native gate (#14).
 - **M1:** typed config, PSR-7/17 with typed input, routing and the PSR-15 stack, the kernel and the composition root, the kinds, and plugins (#4 as #18 to #22, then #5).

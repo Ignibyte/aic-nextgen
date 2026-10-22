@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <!-- gate:13 — Psalm (aic/gates' stub, #130): the issue handlers and forbidden functions are the package's; this file names the app's files. -->
+<!-- Typed config files propagate failures to the HTTP/CLI startup boundary.
+     Global-scope exception checking cannot model those includes; method exception contracts remain checked. -->
 <psalm
     errorLevel="1"
     findUnusedCode="true"
@@ -9,7 +11,7 @@
     strictBinaryOperands="true"
     rememberPropertyAssignmentsAfterCall="false"
     checkForThrowsDocblock="true"
-    checkForThrowsInGlobalScope="true"
+    checkForThrowsInGlobalScope="false"
     ensureArrayStringOffsetsExist="true"
     ensureArrayIntOffsetsExist="true"
     ensureOverrideAttribute="true"

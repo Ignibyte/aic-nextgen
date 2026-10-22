@@ -66,6 +66,8 @@ final readonly class PageDocument implements PageResponse
      * @param Blocks                 $blocks        The app's blocks.
      * @param ServerRequestInterface $serverRequest The request the document answers.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return self The same document, its layout holding the matching blocks' components.
      */
     public function withBlocks(Blocks $blocks, ServerRequestInterface $serverRequest): self
@@ -77,6 +79,8 @@ final readonly class PageDocument implements PageResponse
 
     /**
      * @param string $csrfToken The visitor's CSRF token.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return self The same document, its layout carrying the token for Tessera (#70).
      */

@@ -15,9 +15,9 @@ use function preg_replace;
 final readonly class CompiledRoute
 {
     /**
-     * @param Route        $route      The route.
-     * @param string       $regex      The anchored regex its path pattern compiles to.
-     * @param list<string> $parameters The parameter names, in group order.
+     * @param Route            $route      The route.
+     * @param non-empty-string $regex      The anchored regex its path pattern compiles to.
+     * @param list<string>     $parameters The parameter names, in group order.
      */
     public function __construct(
         public Route $route,

@@ -9,9 +9,11 @@ use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
 use App\Site\Form\GreetingForm;
 use App\Site\Service\HtmlLayout;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
 use function is_array;
 use function is_string;
 use function rawurlencode;
@@ -36,16 +38,17 @@ final readonly class GreetingPost implements Page
     /**
      * @param ServerRequestInterface $serverRequest The posted form.
      *
+     * @throws LogicException When the required application state is unavailable.
+     *
      * @return PageResponse The redirect, or the form again as 422.
      */
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
         $body = $serverRequest->getParsedBody();
-        $field = is_array($body)
-            ? $body['name'] ?? ''
+        $name = is_array($body) && array_key_exists('name', $body) && is_string($body['name'])
+            ? trim($body['name'])
             : '';
-        $name = trim(is_string($field) ? $field : '');
 
         if ($name === '') {
             return $this->htmlLayout->content([$this->greetingForm->form($serverRequest, '', 'A name is required.')], 422);

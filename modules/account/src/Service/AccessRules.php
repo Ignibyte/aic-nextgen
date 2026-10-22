@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Account\Service;
 
 use AIC\Auth\Domain\RouteAuthConfig;
+use InvalidArgumentException;
 
 /**
  * The sign-in rules (#93), a factory the manifest lists: every module's
@@ -27,6 +28,8 @@ final readonly class AccessRules
     }
 
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return RouteAuthConfig The paths the sign-in middleware guards, and where it sends a visitor.
      */
     public function routeAuthConfig(): RouteAuthConfig

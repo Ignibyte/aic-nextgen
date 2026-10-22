@@ -13,6 +13,8 @@ use App\Note\Form\NoteForms;
 use App\Note\Repository\NoteRepository;
 use App\Note\Service\NoteRequest;
 use App\Note\Service\NoteViews;
+use JsonException;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -40,6 +42,8 @@ final readonly class NoteCreatePost implements Page
      * @param ServerRequestInterface $serverRequest The posted form.
      *
      * @throws QueryException When the note cannot be stored.
+     * @throws JsonException  When a value cannot be encoded as JSON.
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return PageResponse The redirect, or the form again as 422.
      */

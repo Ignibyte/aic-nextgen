@@ -13,6 +13,7 @@ use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Form\Application\FormTokens;
 use App\Site\Service\HtmlLayout;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -36,6 +37,8 @@ final readonly class AccountPage implements Page
 
     /**
      * @param ServerRequestInterface $serverRequest The request, from a signed-in user.
+     *
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return PageResponse The page.
      */

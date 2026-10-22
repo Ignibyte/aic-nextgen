@@ -11,6 +11,8 @@ use AIC\Database\Contracts\QueryException;
 use App\Note\Form\NoteForms;
 use App\Note\Repository\NoteRepository;
 use App\Note\Service\NoteViews;
+use JsonException;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -36,6 +38,8 @@ final readonly class NoteListPage implements Page
      * @param ServerRequestInterface $serverRequest The request.
      *
      * @throws QueryException When the notes cannot be read.
+     * @throws JsonException  When a value cannot be encoded as JSON.
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return PageResponse The list.
      */

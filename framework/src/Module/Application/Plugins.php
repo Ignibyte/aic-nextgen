@@ -7,6 +7,7 @@ namespace AIC\Module\Application;
 use AIC\Block\Contracts\Block;
 use AIC\Block\Contracts\Blocks;
 use AIC\Container\Application\Container;
+use AIC\Container\Exception\ContainerException;
 
 use function array_filter;
 use function array_values;
@@ -44,6 +45,8 @@ final readonly class Plugins
     /**
      * @param string $type A plugin type.
      *
+     * @throws ContainerException When a registered service cannot be resolved.
+     *
      * @return list<object> The plugins tagged under it, in registration order.
      */
     public function tagged(string $type): array
@@ -52,6 +55,8 @@ final readonly class Plugins
     }
 
     /**
+     * @throws ContainerException When a registered service cannot be resolved.
+     *
      * @return Blocks The blocks among the plugins, in registration order.
      */
     public function blocks(): Blocks
