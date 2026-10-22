@@ -1,0 +1,127 @@
+# Systems
+
+The framework is one package, `aic/framework`, with one namespace per part under `AIC\`. The parts
+group into ten systems. Each section below names its namespaces, what they do and the classes an
+app meets first.
+
+| System | Namespaces |
+|---|---|
+| 1. HTTP, routing and the kinds | Http, Routing, Controller, Kernel, Sapi, Config, Console |
+| 2. Wiring and modules | Container, Module |
+| 3. Data | Database, Schema, Entity |
+| 4. Components | Component |
+| 5. Middleware | Middleware |
+| 6. Blocks | Block |
+| 7. The browser runtime | Tessera |
+| 8. Form security | Form, Session, Secret |
+| 9. Auth | Auth |
+| 10. Background work | Queue, Schedule, Notification |
+
+## 1. HTTP, routing and the kinds
+
+- `AIC\Http`: PSR-7 messages and PSR-17 factories, with typed input. Byte ranges are parsed here.
+- `AIC\Sapi`: turns one server request into a PSR-7 request, uploads included, and emits the
+  response. `AIC\Sapi\Infrastructure\SapiRequestExtractor` is the one place superglobals are read.
+- `AIC\Kernel`: `AIC\Kernel\Application\Kernel` takes a request across that boundary and hands it
+  to the middleware stack.
+- `AIC\Routing`: `AIC\Routing\Application\Router` matches a path against the route table built
+  from the manifests and passes typed path parameters as request attributes; route errors become
+  404 and 405 answers.
+- `AIC\Controller`: the five kind interfaces, their sealed responses, and
+  `AIC\Controller\Application\Psr7ResponseWriter`, which turns a response into PSR-7. See
+  [kinds.md](kinds.md).
+- `AIC\Config`: `AIC\Config\Domain\AppConfig`, the typed object `config/app.php` returns.
+- `AIC\Console`: `AIC\Console\Application\Console` runs `bin/aic <name>`; a missing or unknown
+  name prints the usage and exits 2.
+
+## 2. Wiring and modules
+
+- `AIC\Module`: the manifest (`AIC\Module\Contracts\ModuleManifest`), the `#[Tagged]` attribute,
+  and the kernels `AIC\Module\Application\AppKernel` and `AIC\Module\Application\ConsoleKernel`,
+  which compose the framework's own services around the generated wiring. See
+  [modules.md](modules.md).
+- `AIC\Container`: a PSR-11 container that service providers fill at boot; it is frozen after
+  boot and never changes during a request.
+
+## 3. Data
+
+- `AIC\Database`: `AIC\Database\Contracts\Database`, parameterised queries with `?` placeholders
+  over PDO pgsql, typed rows and transactions. Postgres is the only database.
+- `AIC\Schema`: migrations. A migration describes its tables through
+  `AIC\Schema\Contracts\Schema`; `AIC\Schema\Application\Migrator` applies each version once, in a
+  transaction, and keeps a ledger with a checksum of each, so a changed migration shows as changed.
+- `AIC\Entity`: tables as entity types with typed fields; `AIC\Entity\Application\EntityStore`
+  queries, inserts, updates and deletes rows by key. A module's repository builds on it.
+
+## 4. Components
+
+- `AIC\Component`: `AIC\Component\Contracts\Component` (a piece of a page as data), layouts and
+  regions, the catalog atoms in `AIC\Component\Domain` (links, buttons, inputs, forms, alerts and
+  the rest), and `AIC\Component\Application\Renderer`, the only class that makes HTML. Every value
+  a template writes is escaped by its type; `AIC\Component\Domain\RawHtml` is the one way round
+  that, and each use needs a grant in `config/raw-html.php` (gate:27).
+
+## 5. Middleware
+
+- `AIC\Middleware`: one step of a PSR-15 stack. The stack's order is fixed: the browser runtime's
+  protocol check and redirects, route errors, the session, the modules' middleware, the form guard,
+  the browser runtime's write ledger, then the router.
+
+## 6. Blocks
+
+- `AIC\Block`: a block (`AIC\Block\Contracts\Block`) gives its placement (a region, a weight and a
+  route prefix) and the component it shows. On every page whose path matches, it joins the region
+  after the page's own components, lighter weights first.
+
+## 7. The browser runtime
+
+- `AIC\Tessera`: the server side of Tessera, the browser runtime AIC pins and serves from
+  `public/assets/`. It answers an enhanced request with the regions that changed instead of a whole
+  document, turns redirects into a header the runtime follows, applies each write once by its id,
+  and verifies the signed props a keyed component carries.
+
+## 8. Form security
+
+- `AIC\Form`: `AIC\Form\Application\FormGuardMiddleware` checks the form token and a honeypot on
+  every unsafe request; `AIC\Form\Application\EnvelopeCodec` signs values a form carries;
+  `AIC\Form\Domain\SameOriginPath` keeps redirects on the site; `AIC\Form\Application\UploadCheck`
+  accepts an upload by its content, not its name.
+- `AIC\Session`: a session in Postgres behind the `__Host-aic_session` cookie, string values by
+  key, on the request as the `aic.session` attribute.
+- `AIC\Secret`: `AIC\Secret\Domain\AppSecret`, the key every signature uses. It comes only from
+  the `AIC_APP_SECRET` environment variable, and the app does not boot without 32 bytes or more.
+
+## 9. Auth
+
+- `AIC\Auth`: `AIC\Auth\Application\Authenticator` signs a user in and out, with the user's id in
+  the session; passwords are hashed by Postgres pgcrypto (bcrypt). Users come from the app through
+  `AIC\Auth\Contracts\UserProvider`, so there is no user entity in the framework. A manifest's
+  `protectedPrefix` turns an anonymous visitor away.
+
+## 10. Background work
+
+- `AIC\Queue`: a job queue in Postgres; `bin/aic queue:work` takes jobs with `FOR UPDATE SKIP
+  LOCKED`, so several workers can share it, and a job whose worker died is due again after ten
+  minutes.
+- `AIC\Schedule`: schedules declared in manifests; `bin/aic schedule:run`, once a minute, queues
+  each one that is due, and a ledger keeps a minute from firing twice.
+- `AIC\Notification`: a notification goes to the database and by mail (AIC's own SMTP client),
+  each delivery a job.
+
+## The layer ladder
+
+Every namespace above has the same layers, and gate:12 (Deptrac) holds who may use whom. A class
+directly under a namespace, outside these layers, fails the gate.
+
+| Layer | May use |
+|---|---|
+| `Contracts` | PSR interfaces |
+| `Domain` | Contracts, Attribute, PSR |
+| `Exception` | Contracts, PSR |
+| `Attribute` | Contracts, PSR |
+| `Application` | Contracts, Domain, Exception, Attribute, PSR |
+| `Infrastructure` | everything above |
+
+An app's module code may use every layer but Infrastructure: it builds on the framework's seams,
+never on its adapters. Where a seam is crossed between systems, the type is a PSR interface:
+PSR-7 and PSR-17 for messages, PSR-15 for middleware and handlers, PSR-11 for the container.

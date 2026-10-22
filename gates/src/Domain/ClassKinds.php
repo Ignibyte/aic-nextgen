@@ -101,6 +101,14 @@ final readonly class ClassKinds
     }
 
     /**
+     * @return list<string> The entry kinds, in the order the docs list them.
+     */
+    public function entryKinds(): array
+    {
+        return self::ENTRY_KINDS;
+    }
+
+    /**
      * @param string $class A class name.
      *
      * @return string Its entry kind (`Page`, `Api`, `Stream`, `Command`, `Job`), or `none`.

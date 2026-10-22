@@ -10,6 +10,9 @@ At plan you may write one file: the run's spec, `var/workflow/spec-<number>.md`.
 
 ## Look before you write
 
+Read AIC's architecture pages first: `{vendor}/aic/framework/docs/README.md` lists them, and
+`kinds.md`, `modules.md` and `conventions.md` beside it say how a module's code is shaped.
+
 Ask the code index about the code the ticket touches before you name a class, a path or a route:
 
 - `bin/aic code:tree` lists the modules and the framework's systems; `bin/aic code:tree <module>`
