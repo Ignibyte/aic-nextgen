@@ -5,14 +5,14 @@
 #
 # Counts what the aic-seeker catches. For each planted item under
 # workflow/probes/seeker/<item>/ (ticket.md, spec.md, change.patch) and the
-# clean control, it makes an app from this repository's working tree (files it
-# deleted stay deleted) in <scratch-dir>/<item>,
-# the package required by path from a copy, installs the workflow, takes the
-# ticket's run through plan (with plan's code lookups, #118), applies the change
+# clean control, it makes an app in <scratch-dir>/<item> with scratch-app.sh
+# (#119, the builder bin/aic workflow:probe shares), takes the ticket's run
+# through plan (with plan's code lookups, #118), applies the change
 # (two lines of context, so a newer CHANGELOG still takes it) and builds, and
 # runs code once:
 # the answer must be inspection-due, which shows every gate green. Then it runs
-# the seeker headless <runs> times (3; 2 for the control) and reads each ledger
+# the seeker headless <runs> times (3; at most 2 for the control; 0 plants
+# only) and reads each ledger
 # with the workflow's own parser. A run with no ledger is invalid, never a miss.
 # It prints, per item, how many runs caught it (an open finding citing it) and
 # how many rated it CRITICAL or HIGH (`high`; since #127 no finding holds the
@@ -35,59 +35,12 @@ runs="${2:-3}"
 mkdir -p "${scratch}"
 scratch="$(cd "${scratch}" && pwd)"
 
-# make_app <dir>: this repository's tree as an app, aic/workflow required by path from a copy.
-make_app() {
-    local app="$1"
-    rm -rf "${app}"
-    mkdir -p "${scratch}/pkg"
-    rsync -a --delete "${repo}/workflow/" "${scratch}/pkg/workflow/"
-    git clone -q "${repo}" "${app}"
-    (cd "${repo}" && git ls-files -co --exclude-standard -z) | rsync -a --from0 --files-from=- "${repo}/" "${app}/"
-    comm -23 <(git -C "${app}" ls-files | sort) <(cd "${repo}" && git ls-files -co --exclude-standard | sort) \
-        | (cd "${app}" && xargs -r -d '\n' rm -f --)
-    find "${app}" -mindepth 1 -depth -type d -empty -not -path "${app}/.git/*" -delete
-    (
-        cd "${app}"
-        git rm -rq --cached workflow .claude CLAUDE.md CONSTITUTION.md
-        rm -rf workflow .claude CLAUDE.md CONSTITUTION.md
-        cp -a "${repo}/vendor" "${repo}/tools" .
-        ln -sfn "${scratch}/pkg/workflow" vendor/aic/workflow
-        php "${probes}/probe.php" strip "${scratch}/pkg"
-        git config user.email probe@example.com
-        git config user.name probe
-        git add -A
-        git commit -qm "base" --no-verify
-        vendor/bin/captainhook install -f -q
-        php bin/aic workflow:init < /dev/null > /dev/null
-        git add -A
-        git commit -qm "workflow:init" --no-verify
-    )
-}
-
-# look <spec>: plan's lookups (#118's grounding): the overview, each manifest row and its module, a
-# search for each PHP row's class, and the refs of each class the spec names.
-look() {
-    local path module class
-    php bin/aic code:tree < /dev/null > /dev/null
-    while IFS= read -r path; do
-        module="$(sed -nE 's#^modules/([^/]+)/.*#\1#p' <<< "${path}")"
-        if [ -n "${module}" ]; then
-            php bin/aic code:tree "${module}" < /dev/null > /dev/null
-        fi
-        php bin/aic code:tree "${path}" < /dev/null > /dev/null || true
-        if [ "${path%.php}" != "${path}" ]; then
-            php bin/aic code:search "$(basename "${path}" .php)" < /dev/null > /dev/null || true
-        fi
-    done < <(sed -nE "s/^\\| \`([^\`]+)\`.*/\\1/p" "$1")
-    while IFS= read -r class; do
-        php bin/aic code:refs "${class}" < /dev/null > /dev/null || true
-    done < <(grep -oE 'App\\[A-Za-z\\]+' "$1" | sort -u)
-}
+builder="${repo}/workflow/probes/scratch-app.sh"
 
 # plant <item>: the item's ticket through plan, its change applied and built; prints the code answer's outcome.
 plant() {
     local item="$1" app="${scratch}/$1"
-    make_app "${app}" > /dev/null
+    bash "${builder}" make "${app}" "${app}-pkg" > /dev/null
     (
         cd "${app}"
         cp "${probes}/${item}/ticket.md" tickets/0001-probe.md
@@ -95,7 +48,7 @@ plant() {
         git commit -qm "the ticket" --no-verify > /dev/null
         php bin/aic workflow:run 1 < /dev/null > /dev/null || true
         cp "${probes}/${item}/spec.md" var/workflow/spec-1.md
-        look "${probes}/${item}/spec.md"
+        bash "${builder}" look "${probes}/${item}/spec.md"
         php bin/aic workflow:run < /dev/null > /dev/null || true
         git apply -C2 "${probes}/${item}/change.patch"
         composer run build > /dev/null 2>&1
@@ -129,7 +82,7 @@ for dir in "${probes}"/*/; do
     item="$(basename "${dir}")"
     outcome="$(plant "${item}")"
     count="${runs}"
-    if [ "${item}" = control ]; then
+    if [ "${item}" = control ] && [ "${runs}" -gt 2 ]; then
         count=2
     fi
     if [ "${outcome}" != inspection-due ]; then

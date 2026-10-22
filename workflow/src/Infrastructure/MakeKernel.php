@@ -35,11 +35,14 @@ final readonly class MakeKernel
      * @param string             $root          The project's root.
      * @param ProjectFiles|null  $projectFiles  The files to read and write; the project's on disk when null.
      * @param ModuleFolders|null $moduleFolders The modules there; those on disk when null.
+     * @param bool               $watched       Whether the guard watches the makes and an open run records them; gate:31
+     *                                          makes over memory, so neither (#119).
      */
     public function __construct(
         private string $root,
         private ?ProjectFiles $projectFiles = null,
         private ?ModuleFolders $moduleFolders = null,
+        private bool $watched = true,
     ) {
     }
 
@@ -50,7 +53,7 @@ final readonly class MakeKernel
     {
         $moduleFolders = $this->moduleFolders ?? new LocalModuleFolders($this->root);
         $projectFiles = $this->projectFiles ?? new LocalProjectFiles($this->root);
-        $makeRun = (new MakeParts($this->root, $projectFiles, $moduleFolders, '', self::PACKAGE))->makeRun();
+        $makeRun = (new MakeParts($this->root, $projectFiles, $moduleFolders, '', self::PACKAGE, $this->watched))->makeRun();
 
         return [
             'make:api' => new MakeApiCommand($makeRun),

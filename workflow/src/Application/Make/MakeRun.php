@@ -97,7 +97,9 @@ final readonly class MakeRun
         $paths = array_map(static fn (MadeFile $madeFile): string => $madeFile->path, $files);
         $nudges = $this->makeScope->check($commandUsage->name, $paths);
         $this->write($files);
-        $note = $this->makeRecorder->record($commandUsage->name, $makeRecipe->target, $files);
+        $note = $this->makeScope->watched()
+            ? $this->makeRecorder->record($commandUsage->name, $makeRecipe->target, $files)
+            : '';
 
         return $this->makeReport->made($commandUsage, $makeRecipe, $files, [...$nudges, ...($note === '' ? [] : [$note])], false, $json);
     }

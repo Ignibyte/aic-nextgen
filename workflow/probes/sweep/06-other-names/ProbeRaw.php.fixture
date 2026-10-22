@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Note\Service;
+
+use AIC\Component\Domain\RawHtml;
+
+/**
+ * An ungranted RawHtml, which gate:27 refuses (#119).
+ */
+final readonly class ProbeRaw
+{
+    /**
+     * @return RawHtml A paragraph.
+     */
+    public function paragraph(): RawHtml
+    {
+        return new RawHtml('<p>probe</p>');
+    }
+}

@@ -114,6 +114,13 @@ operator's `workflow:answer`, the stall rule, the shell's read forms, the php wa
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration; dev-only in
 `aic/workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
 is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the ten make lines.
+#119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
+cases (`workflow/probes/sweep/`) in throwaway apps made by `workflow/probes/scratch-app.sh`, the
+builder the seeker probe shares; it ends `probe-summary: P passed, F failed, N not run.`, exits 0
+only with F = N = 0, runs here only and never beside a gate run, and is not a gate. **Run it in
+Code of every ticket that changes `workflow/`, the gate runner, the gate list or a tool config
+naming `workflow/`, and paste its summary in the notes** (about 25 minutes; while coding, run the
+scenarios the change touches by name).
 
 ## Five kinds
 

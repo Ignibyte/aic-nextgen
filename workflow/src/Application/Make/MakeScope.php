@@ -69,6 +69,15 @@ final readonly class MakeScope
     }
 
     /**
+     * @return bool Whether the guard watches the makes, so an open run records them: the project has
+     *              `config/workflow.php` and the makes are not gate:31's in memory (#119).
+     */
+    public function watched(): bool
+    {
+        return ($this->scene)() instanceof GuardScene;
+    }
+
+    /**
      * @param string     $command    The make.
      * @param string     $path       A target, relative to the root.
      * @param GuardScene $guardScene The guard's settings and run.

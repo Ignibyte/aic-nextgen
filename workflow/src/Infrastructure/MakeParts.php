@@ -27,6 +27,7 @@ final readonly class MakeParts
      * @param ModuleFolders $moduleFolders The modules there.
      * @param string        $home          The user's home, for the guard's protected paths; empty when unknown.
      * @param string        $package       The workflow package's directory, for the same.
+     * @param bool          $watched       Whether the guard watches the makes and the run records them.
      */
     public function __construct(
         private string $root,
@@ -34,6 +35,7 @@ final readonly class MakeParts
         private ModuleFolders $moduleFolders,
         private string $home,
         private string $package,
+        private bool $watched = true,
     ) {
     }
 
@@ -43,7 +45,7 @@ final readonly class MakeParts
     public function makeRun(): MakeRun
     {
         $parsedManifests = new ParsedManifests($this->projectFiles);
-        $makeRunParts = new MakeRunParts($this->root, $this->home, $this->package);
+        $makeRunParts = new MakeRunParts($this->root, $this->home, $this->package, $this->watched);
         $makePlanner = new MakePlanner(
             $parsedManifests,
             $this->moduleFolders,

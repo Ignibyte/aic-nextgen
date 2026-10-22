@@ -25,11 +25,14 @@ final readonly class MakeRunParts
      * @param string $root    The project's root.
      * @param string $home    The user's home, for the guard's protected paths; empty when unknown.
      * @param string $package The workflow package's directory, for the same.
+     * @param bool   $watched Whether the guard watches the makes and the run records them; gate:31 makes in memory, so
+     *                        neither (#119).
      */
     public function __construct(
         private string $root,
         private string $home,
         private string $package,
+        private bool $watched = true,
     ) {
     }
 
@@ -58,11 +61,12 @@ final readonly class MakeRunParts
     }
 
     /**
-     * @return GuardScene|null The guard's settings and run, read when a make asks; null without `config/workflow.php`.
+     * @return GuardScene|null The guard's settings and run, read when a make asks; null without `config/workflow.php`
+     *                         or when the makes are not watched.
      */
     private function scene(): ?GuardScene
     {
-        return is_file($this->root . '/config/workflow.php')
+        return $this->watched && is_file($this->root . '/config/workflow.php')
             ? (new GuardKernel($this->root, $this->home, $this->package))->scene()
             : null;
     }

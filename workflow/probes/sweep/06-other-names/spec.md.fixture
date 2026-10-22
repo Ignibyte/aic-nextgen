@@ -1,0 +1,32 @@
+---
+ticket: 1
+browser_testable: No
+---
+
+## Acceptance Criteria
+
+| # | Target | Met |
+|---|---|---|
+| 1 | The home page's uploads link says each file is checked by its content | [ ] |
+
+## Design
+
+One label in the home page's list of pages changes; the page reads it as before.
+
+### File Manifest
+
+| File | Change | Purpose |
+|---|---|---|
+| `modules/note/templates/components/NoteCard.html.php` | modify | A function call |
+| `modules/note/src/Entity/ProbePage.php` | create | A Page in Entity |
+| `modules/note/src/Service/ProbeRaw.php` | create | An ungranted RawHtml |
+| `modules/note/src/Controller/ProbeLiteralPage.php` | create | Markup in a controller |
+
+### Locked-In Decisions
+
+1. Only the label's text changes.
+
+## Entry Points
+
+| Kind | Method | Path or name | Class | Module | Status | Example |
+|---|---|---|---|---|---|---|

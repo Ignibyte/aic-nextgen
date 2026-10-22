@@ -50,7 +50,7 @@ final readonly class ComposerManifest
         $composer = $this->composer();
 
         return match (true) {
-            $this->home() => "this project holds aic/workflow's own source; init installs into an app that requires the package.",
+            $this->holdsSource() => "this project holds aic/workflow's own source; init installs into an app that requires the package.",
             !$composer instanceof stdClass => 'composer.json is missing or not JSON; init reads its require-dev.',
             $this->requires($composer, 'require') => 'composer.json requires aic/workflow at run time; it is a development tool: '
                 . 'composer remove aic/workflow, then ' . self::REQUIRE_DEV . '.',
@@ -78,9 +78,10 @@ final readonly class ComposerManifest
     }
 
     /**
-     * @return bool Whether the package's source lies inside the project, as in the repository that develops it.
+     * @return bool Whether the package's source lies inside the project, as in the repository that develops it: where
+     *              init refuses and the probe sweep runs (#119).
      */
-    private function home(): bool
+    public function holdsSource(): bool
     {
         $root = realpath($this->root);
         $package = realpath($this->package);

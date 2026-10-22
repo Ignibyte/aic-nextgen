@@ -26,6 +26,15 @@ keywords = ["AIzaSy"]
 
 [allowlist]
 description = "Allowlist for AIC project"
+# The workflow's progress key (#117), "key": "<xxh128>" in each phase report and run event, is a
+# hash of the tree and the spec, not a credential; generic-api-key reads it as one wherever
+# var/workflow/ or the probe sweep's var/probe/ is scanned (#119). Only that exact match is
+# allowed: the regex is held to the whole match, so a real key elsewhere on the line, or in
+# var/, is still caught.
+regexTarget = "match"
+regexes = [
+    '''^key": ?"[0-9a-f]{32}"$''',
+]
 paths = [
     '''vendor/.*''',
     '''storage/.*''',

@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+use AIC\Workflow\Domain\Guard\Enforcement;
+use AIC\Workflow\Domain\HouseRule;
+use AIC\Workflow\Domain\Mode;
+use AIC\Workflow\Domain\WorkflowSettings;
+
+return new WorkflowSettings(
+    tickets: 'tickets',
+    gateTimeout: 5,
+    enforcement: Enforcement::Hard,
+    requireRun: Enforcement::Hard,
+    houseRules: [
+        new HouseRule('gate-suite', 'A run leaves the gate suite as it began.', 'vendor/aic/workflow/rules/gate-suite.php'),
+        new HouseRule('raw-html-grants', 'A run adds no RawHtml grant.', 'vendor/aic/workflow/rules/raw-html-grants.php'),
+    ],
+    mode: Mode::Agentic,
+);
