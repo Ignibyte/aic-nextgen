@@ -9,7 +9,6 @@ use AIC\Workflow\Domain\CodeEdge;
 use AIC\Workflow\Domain\CodeSymbol;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
-use function array_filter;
 use function array_slice;
 use function array_unique;
 use function array_values;
@@ -48,12 +47,6 @@ final readonly class CodeRefsView
     {
         $incoming = $this->codeLookup->incoming($codeSymbol->name);
         $outgoing = $this->codeLookup->outgoing($codeSymbol->name);
-        $files = [$codeSymbol->file];
-
-        foreach ([...$incoming, ...$outgoing] as $codeEdge) {
-            $files[] = $codeEdge->file;
-        }
-
         return new CodeAnswer(
             [
                 $this->codeLines->symbol($codeSymbol),
@@ -62,7 +55,7 @@ final readonly class CodeRefsView
                 'refers to (' . count($outgoing) . '):',
                 ...$this->grouped($outgoing, false),
             ],
-            array_values(array_unique(array_filter($files, static fn (string $file): bool => $file !== ''))),
+            $codeSymbol->file === '' ? [] : [$codeSymbol->file],
             [],
         );
     }

@@ -23,6 +23,21 @@ Ask the code index about the code the ticket touches before you name a class, a 
 The index follows the code, and the engine logs your lookups during the run. Read the files the
 index points you to before you plan a change to them.
 
+Plan cannot pass until the `grounding` row does. It reads the lookups you made during this run
+at plan, on an index the engine rebuilds itself, and holds the phase naming every miss at once:
+
+- at least one `bin/aic code:tree` answered;
+- each File Manifest row is one file path with `create`, `modify` or `delete`; a modify or delete
+  row names a file git lists, a create row a path that is not there yet;
+- each file you modify or delete was shown by `code:tree <module>` or `code:tree <path>`, each
+  existing Entry Points class by `code:refs <Class>`, and each file you create sits in an area
+  you outlined (a new module or folder: `bin/aic code:tree`); a `code:refs` answer counts for
+  its subject only, not the lines that refer to it;
+- before you create a class, `bin/aic code:search <part of its name>` looked for one the app
+  already has.
+
+Each reason names the lookup to run. Run it, fix what it shows, then `bin/aic workflow:run`.
+
 ## The sections
 
 - **Frontmatter:** `ticket` is the ticket's number. `browser_testable: Yes` when the work changes

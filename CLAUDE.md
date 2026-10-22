@@ -93,7 +93,11 @@ beside the subject hash of the tree it judged. #102: the guard hook holds the ag
 answered from `build/surface.json` (now with each command's, job's and schedule's module, the
 modules' bindings, middleware, prefixes and factories, and a `kinds` table), text or `--json`
 (`aic.console/1`, `workflow/schema/console.v1.json`), each lookup recorded as `code.queried`;
-make:* is #122.
+make:* is #122. #118: plan's grounding check (`GroundingCheck`, after the contract): on an index it
+rebuilds in full, every File Manifest row and Entry Points class must be real, and the run's own
+`code.queried` events at plan must show `code:tree`, a lookup of each modified or deleted file
+and existing class (`code:refs` counts its subject only), the area of each created file, and a
+`code:search` before each new class; `var/index/` is walled.
 #105: `bin/aic workflow:init` installs the workflow in an app (`workflow/pack/`); it refuses here.
 #103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist
 at code and complete. #117: modes and holds (agentic or interactive, `workflow:ask` and the

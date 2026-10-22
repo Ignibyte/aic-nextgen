@@ -112,7 +112,7 @@
         "target": { "type": "string" },
         "outcome": { "enum": ["ok", "fail"] },
         "phase": { "enum": ["plan", "code", "check", "complete"] },
-        "files": { "type": "array", "items": { "type": "string" }, "maxItems": 500 },
+        "files": { "description": "The files whose declarations the answer printed: an outline line, a match line, or code:refs' subject only (#118).", "type": "array", "items": { "type": "string" }, "maxItems": 500 },
         "scopes": { "type": "array", "items": { "type": "string" } },
         "truncated": { "type": "boolean" }
       }
