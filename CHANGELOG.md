@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **AIC's architecture documents, part 1, and gate:29** (#107). `aic/framework` now ships `framework/docs/`, which an app's agent reads at `vendor/aic/framework/docs/README.md` before it builds.
+  - **The pages:** the README (what AIC is, the reading order), `kinds.md` (the five entry kinds and the other kinds), `systems.md` (the ten systems, their namespaces, the layer ladder), `modules.md` (the manifest and every declaration, the build, the folders, exports and requires, assets), `gates.md` (every gate and its usual fix) and `conventions.md` (the code rules, each with its gate). They are written for an app: no ticket numbers, no AIC process.
+  - **gate:29** fails the set when a page and the code disagree: a gate missing from gates.md or CONSTITUTION §0, an entry kind with no heading, a module folder missing from the table, a namespace in no system section or in two, a manifest declaration never named, an `AIC\…` name, `gate:N` or `composer run` script that does not exist, an anchor no heading answers, an unlinked page, a banned word, or more than two em dashes on a page. It runs in AIC's repo only.
+  - **gate:15** now scans `framework/docs/` (its `docs` exclude matched any path part; it is anchored to the root) with two new rules: no AIC process names and no ticket numbers in the set.
+  - **The pack** points the app's agent at the docs: the AGENTS block's new item 4 and the plan skill name `{vendor}/aic/framework/docs/README.md`.
+  - **The proof:** each of gate:29's checks failed by name on a planted violation (15 plants, each reverted), and a banned word in a code span and two em dashes passed. Planted `docs/planning` and `#93` failed gate:15, and a dead link and a `(TODO)` failed gate:19.
+
 - **The seeker and the AIC checklist** (#103, part 4 of #91). At code and at complete the engine holds a run until an independent reader has read its change against the spec and the AIC checklist, and found nothing CRITICAL or HIGH.
   - **The flow:** with every other row green, `workflow:run` answers `inspection-due` (exit 1). The coding agent dispatches the `aic-seeker` subagent with the prompt "Inspect the open run."; the seeker takes its scope from `bin/aic workflow:seeker-brief`, reads the diff and the checklist, and returns one ledger, which the agent pipes to `bin/aic workflow:seeker-report`.
   - **The ledger:** `Inspector:`, `Subject:` (the tree it read) and a table whose every finding cites a checklist id, or `(no findings)`. Anything else is refused with the format, and nothing is recorded. Filing needs a passing gate verdict on that tree.

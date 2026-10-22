@@ -37,7 +37,8 @@ final readonly class SemgrepGate
         '.psalm-cache',
         '.phpstan-cache',
         '.rector-cache',
-        'docs',
+        // The planning checkout only: a leading slash anchors to the root, so framework/docs/ is scanned (#107).
+        '/docs',
         // Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
         'templates',
     ];

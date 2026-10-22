@@ -222,3 +222,23 @@ rules:
       include:
         - "/workflow/pack/**"
     severity: ERROR
+
+  # The architecture docs ship in aic/framework (#107) and are read by an app's
+  # agent: they name no AIC process and cite no ticket an app cannot open.
+  - id: aic-docs-app-only
+    pattern-regex: '/pipeline:|docs/planning|CONSTITUTION\.md|bin/ticket\.sh|elephc-carry'
+    message: "The architecture docs name AIC's own process; an app has none of it. Describe the rule as it holds for the app (#107)."
+    languages: [generic]
+    paths:
+      include:
+        - "/framework/docs/**"
+    severity: ERROR
+
+  - id: aic-docs-no-ticket-refs
+    pattern-regex: '(?<![\w/(])#\d+'
+    message: "The architecture docs cite a ticket number, which an app cannot open: state the rule as it stands; the history is in CHANGELOG (#107)."
+    languages: [generic]
+    paths:
+      include:
+        - "/framework/docs/**"
+    severity: ERROR

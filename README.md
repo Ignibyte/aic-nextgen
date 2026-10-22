@@ -12,11 +12,15 @@ schedules and notifications, content pages, stock items with a date, a price and
 Server-Sent Events, downloads, `/api/status` and `/health`. The
 compiled binary serves it, and PHP serves the same app as the reference.
 
+**Architecture:** [framework/docs/README.md](framework/docs/README.md), the pages an app's agent
+reads before building on AIC (the kinds, the modules, the systems, the conventions, the gates).
+They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs/`.
+
 ## Layout
 
 | Path | Holds |
 |---|---|
-| `framework/` | `aic/framework`, namespace `AIC\` under `framework/src/`, pulled in through a composer path repository |
+| `framework/` | `aic/framework`, namespace `AIC\` under `framework/src/`, its architecture pages in `framework/docs/`, pulled in through a composer path repository |
 | `modules/` | The demo app, `aic/app`: one module per feature, `modules/<name>/<name>.module.php` (its manifest) and `src/` (`App\<Name>\`) |
 | `generated/` | The wiring `composer run build` writes from the manifests (`App\Generated\`); never edited by hand |
 | `templates/layouts/` | The page layouts' templates |

@@ -11,6 +11,8 @@ pinned at main `e0778896`.
 
 **Read `docs/planning/handoff.md` first**, then `roadmap.md` (the standing rules, the five kinds,
 the ten systems, the milestones) and `plan.md` (the decisions and the port map from old wards).
+The architecture set an app's agent reads, shipped in `aic/framework`, is
+[framework/docs/README.md](framework/docs/README.md); gate:29 holds it to the code.
 
 ## Status
 
@@ -293,6 +295,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | | | 26 | module boundaries: kind folders, the 15-file cap, exports and requires, the shell |
 | | | 27 | raw html: every RawHtml use listed and held to its grant |
 | | | 28 | house rules: every shipped rule bites on its probe |
+| | | 29 | architecture docs: `framework/docs/` states what the code has |
 
 - The gate code is dev-only tooling in `gates/` (namespace `Gates\`), outside `AIC\` and
   `App\`; a phpat rule keeps runtime code from depending on it.
