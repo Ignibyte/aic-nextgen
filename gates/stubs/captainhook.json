@@ -1,0 +1,29 @@
+{
+    "config": {
+        "verbosity": "normal",
+        "ansi-colors": true,
+        "run-mode": "local"
+    },
+    "commit-msg": {
+        "enabled": true,
+        "actions": [
+            {
+                "action": "\\CaptainHook\\App\\Hook\\Message\\Action\\Regex",
+                "options": {
+                    "regex": "#^(feat|fix|refactor|chore|docs|test|build|ci|perf|style|revert)(\\([a-z0-9-]+\\))?(!)?: .{1,72}$#m",
+                    "error": "Commit subject must follow Conventional Commits: type(scope)?: subject (≤72 chars)"
+                }
+            }
+        ]
+    },
+    "pre-push": {
+        "enabled": false,
+        "actions": []
+    },
+    "post-merge": {
+        "enabled": true,
+        "actions": [
+            { "action": "vendor/bin/aic-gate tools" }
+        ]
+    }
+}

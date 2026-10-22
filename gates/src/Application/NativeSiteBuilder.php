@@ -108,7 +108,7 @@ final readonly class NativeSiteBuilder
         $psr4Map = $this->composerPsr4Loader->load($root);
         $files = [];
 
-        foreach ($this->runtimeClassFinder->find($root) as $class) {
+        foreach ($this->runtimeClassFinder->forSite($root) as $class) {
             $files = self::union($files, $this->closureBundler->closure($class, $psr4Map));
         }
 

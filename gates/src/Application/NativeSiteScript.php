@@ -5,196 +5,165 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\NativeSiteStep;
+use InvalidArgumentException;
+use stdClass;
+
+use function array_is_list;
+use function get_object_vars;
+use function is_array;
+use function is_bool;
+use function is_int;
+use function is_string;
+use function json_decode;
 
 /**
- * The requests gate:23 sends to both sites, in order: the pages without a
- * form, the API, the download and its ranges, a theme asset, an event
- * stream and the error answers; then the steps with a session: the greeting
- * form and its guard (#42), the visits and a note's whole life. Each site
- * keeps its own session and token, and deletes the note it made, so both
- * see the same database.
+ * The requests gate:23 sends to both sites, in order (#130): the app's own
+ * script, `config/native-site.json` (`aic.native-site/1`), one step a line so
+ * an added step is an added line. JSON, not PHP, so `config/` names no
+ * dev-only class. AIC's script holds its pages, forms, visits, notes, stock,
+ * sign-in and Tessera steps; each site keeps its own session and token, and
+ * deletes the note it made, so both see the same database.
  */
 final readonly class NativeSiteScript
 {
     /**
+     * The script, relative to the project's root.
+     */
+    public const string PATH = 'config/native-site.json';
+
+    /**
+     * @param QuietFileReader $quietFileReader Reads the script.
+     */
+    public function __construct(
+        private QuietFileReader $quietFileReader = new QuietFileReader(),
+    ) {
+    }
+
+    /**
+     * @param string $root The project's root.
+     *
+     * @throws InvalidArgumentException When the script is not an `aic.native-site/1` object, naming the step and field.
+     *
      * @return list<NativeSiteStep> The steps, in order.
      */
-    public function steps(): array
+    public function steps(string $root): array
     {
-        return [
-            ...$this->pages(),
-            ...$this->forms(),
-            ...$this->visits(),
-            ...$this->notes(),
-            ...$this->stock(),
-            ...$this->signIn(),
-            ...$this->tessera(),
-        ];
+        $steps = get_object_vars($this->script($root))['steps'] ?? null;
+
+        if (!is_array($steps) || $steps === [] || !array_is_list($steps)) {
+            throw new InvalidArgumentException(self::PATH . ' holds no list of steps.');
+        }
+
+        $read = [];
+
+        foreach ($steps as $index => $step) {
+            $read[] = $this->step($index, $step instanceof stdClass ? $step : new stdClass());
+        }
+
+        return $read;
     }
 
     /**
-     * @return list<NativeSiteStep> The pages without a form, the API, the faq module's page and API (#92), the download,
-     *                              an asset, events and errors.
+     * @param string $root The project's root.
+     *
+     * @throws InvalidArgumentException When the script is not an `aic.native-site/1` object.
+     *
+     * @return stdClass The script, decoded.
      */
-    private function pages(): array
+    private function script(string $root): stdClass
     {
-        return [
-            new NativeSiteStep('greeting', 'GET', '/hello/Ada', '', '', 200, false),
-            new NativeSiteStep('status', 'GET', '/api/status', '', '', 200, false),
-            new NativeSiteStep('health', 'GET', '/health', '', '', 200, false),
-            new NativeSiteStep('download', 'GET', '/download/hello.txt', '', '', 200, false),
-            new NativeSiteStep('missing file', 'GET', '/download/nope.txt', '', '', 404, false),
-            new NativeSiteStep('asset', 'GET', '/assets/aic.css', '', '', 200, false),
-            new NativeSiteStep('module asset', 'GET', '/assets/site/favicon.svg', '', '', 200, false),
-            new NativeSiteStep('range part', 'GET', '/download/hello.txt', '', 'Range: bytes=0-4', 206, false),
-            new NativeSiteStep('range suffix', 'GET', '/download/hello.txt', '', 'Range: bytes=-6', 206, false),
-            new NativeSiteStep('range unsatisfiable', 'GET', '/download/hello.txt', '', 'Range: bytes=9999-', 416, false),
-            new NativeSiteStep('events', 'GET', '/events?count=3', '', '', 200, false),
-            new NativeSiteStep('events, resumed', 'GET', '/events?count=3', '', 'Last-Event-ID: 2', 200, false),
-            new NativeSiteStep('events, all seen', 'GET', '/events?count=3', '', 'Last-Event-ID: 3', 200, false),
-            new NativeSiteStep('no route', 'GET', '/nope', '', '', 404, false),
-        ];
+        $script = json_decode($this->quietFileReader->read($root . '/' . self::PATH) ?? '');
+        $schema = $script instanceof stdClass
+            ? get_object_vars($script)['schema'] ?? null
+            : null;
+
+        return $script instanceof stdClass && $schema === 'aic.native-site/1'
+            ? $script
+            : throw new InvalidArgumentException(self::PATH . ' is not an aic.native-site/1 object.');
     }
 
     /**
-     * @return list<NativeSiteStep> The greeting form and its guard (#42).
+     * @param int      $index Its place, from 0.
+     * @param stdClass $step  Its fields.
+     *
+     * @throws InvalidArgumentException When a field is missing or of the wrong type.
+     *
+     * @return NativeSiteStep The step.
      */
-    private function forms(): array
+    private function step(int $index, stdClass $step): NativeSiteStep
     {
-        return [
-            new NativeSiteStep('home', 'GET', '/', '', '', 200, false),
-            new NativeSiteStep('greet blank', 'POST', '/hello', 'name=&aic_csrf={csrf}', '', 422, false),
-            new NativeSiteStep('greet', 'POST', '/hello', 'name=Ada&aic_csrf={csrf}', '', 303, false),
-            new NativeSiteStep('greet, no token', 'POST', '/hello', 'name=Ada', '', 403, false),
-            new NativeSiteStep('greet, wrong token', 'POST', '/hello', 'name=Ada&aic_csrf=forged', '', 403, false),
-            new NativeSiteStep('greet, honeypot', 'POST', '/hello', 'name=Ada&aic_csrf={csrf}&aic_website=spam', '', 400, false),
-            new NativeSiteStep('unsafe method, forged header', 'DELETE', '/', '', 'X-AIC-CSRF: forged', 403, false),
-        ];
+        return new NativeSiteStep(
+            $this->text($index, $step, 'name'),
+            $this->text($index, $step, 'method'),
+            $this->text($index, $step, 'path'),
+            $this->text($index, $step, 'form'),
+            $this->text($index, $step, 'header'),
+            $this->number($index, $step),
+            $this->flag($index, $step),
+        );
     }
 
     /**
-     * @return list<NativeSiteStep> A session's visits, where forgetting goes, and uploads (#41, #43, #44).
+     * @param int      $index The step's place.
+     * @param stdClass $step  Its fields.
+     * @param string   $field A string field.
+     *
+     * @throws InvalidArgumentException When it is missing or not a string.
+     *
+     * @return string Its value.
      */
-    private function visits(): array
+    private function text(int $index, stdClass $step, string $field): string
     {
-        $upload = 'multipart:aic_csrf={csrf}&file=@modules/site/resources/';
+        $value = get_object_vars($step)[$field] ?? null;
 
-        return [
-            new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, false),
-            new NativeSiteStep('visits, unknown', 'GET', '/visits', '', 'Cookie: __Host-aic_session=unknown', 200, false),
-            new NativeSiteStep('forget, off-site', 'POST', '/visits/forget', 'next=%2F%2Fevil.test&aic_csrf={csrf}', '', 303, false),
-            new NativeSiteStep('visits', 'GET', '/visits', '', '', 200, false),
-            new NativeSiteStep('forget, next', 'POST', '/visits/forget', 'next=%2Fnotes&aic_csrf={csrf}', '', 303, false),
-            new NativeSiteStep('jobs', 'GET', '/jobs', '', '', 200, false),
-            new NativeSiteStep('notifications', 'GET', '/notifications', '', '', 200, false),
-            new NativeSiteStep('uploads', 'GET', '/uploads', '', '', 200, false),
-            new NativeSiteStep('upload a PNG', 'POST', '/uploads', $upload . 'upload.png', '', 303, false),
-            new NativeSiteStep('uploads, accepted', 'GET', '/uploads', '', '', 200, false),
-            new NativeSiteStep('upload, disguised', 'POST', '/uploads', $upload . 'disguised.png', '', 422, false),
-            new NativeSiteStep('upload, none', 'POST', '/uploads', 'multipart:aic_csrf={csrf}', '', 422, false),
-        ];
+        return is_string($value)
+            ? $value
+            : throw $this->wrong($index, $field, 'string');
     }
 
     /**
-     * @return list<NativeSiteStep> Tessera requests (#70): another protocol refused, a component, two regions and a
-     *                              template's child (#98) as fragments, another layout and a missing target as the
-     *                              whole document.
+     * @param int      $index The step's place.
+     * @param stdClass $step  Its fields.
+     *
+     * @throws InvalidArgumentException When `status` is missing or not an integer.
+     *
+     * @return int Its value.
      */
-    private function tessera(): array
+    private function number(int $index, stdClass $step): int
     {
-        $other = "Tessera-Request: visit\r\nTessera-Protocol: 9";
-        $app = "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: ";
-        $layout = "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: other\r\nTessera-Targets: content";
+        $value = get_object_vars($step)['status'] ?? null;
 
-        return [
-            new NativeSiteStep('tessera, another protocol', 'GET', '/stock', '', $other, 400, false),
-            new NativeSiteStep('tessera, a component', 'GET', '/stock', '', $app . 'content/stock-list', 200, false),
-            new NativeSiteStep('tessera, two regions', 'GET', '/notes', '', $app . 'content, nav', 200, false),
-            new NativeSiteStep('tessera, a region visit', 'GET', '/notes', '', $app . 'content', 200, false),
-            new NativeSiteStep('tessera, a template child', 'GET', '/notes', '', $app . 'content/c0/NoteList.1', 200, false),
-            new NativeSiteStep('tessera, another layout', 'GET', '/stock', '', $layout, 200, false),
-            new NativeSiteStep('tessera, a missing target', 'GET', '/stock', '', $app . 'content/nope', 200, false),
-            new NativeSiteStep('tessera, altered props', 'GET', '/stock', '', $app . 'content/stock-list e30.forged', 400, false),
-            ...$this->tesseraWrites(),
-        ];
+        return is_int($value)
+            ? $value
+            : throw $this->wrong($index, 'status', 'integer');
     }
 
     /**
-     * @return list<NativeSiteStep> Tessera writes (#71): a redirect as `Tessera-Location`, a refusal as a 422
-     *                              fragment, a stale token as 419; a write id applied once and repeated, and a
-     *                              malformed one refused (#72).
+     * @param int      $index The step's place.
+     * @param stdClass $step  Its fields.
+     *
+     * @throws InvalidArgumentException When `captures` is missing or not a boolean.
+     *
+     * @return bool Its value.
      */
-    private function tesseraWrites(): array
+    private function flag(int $index, stdClass $step): bool
     {
-        $submit = "Tessera-Request: submit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content";
-        $ada = 'name=Ada&aic_csrf={csrf}';
-        $withId = $submit . "\r\nTessera-Write-Id: ";
+        $value = get_object_vars($step)['captures'] ?? null;
 
-        return [
-            new NativeSiteStep('tessera, a submit that redirects', 'POST', '/hello', $ada, $submit, 200, false),
-            new NativeSiteStep('tessera, a refused submit', 'POST', '/hello', 'name=&aic_csrf={csrf}', $submit, 422, false),
-            new NativeSiteStep('tessera, a stale token', 'POST', '/hello', 'name=Ada&aic_csrf=stale', $submit, 419, false),
-            new NativeSiteStep('tessera, a write with an id', 'POST', '/hello', $ada, $withId . 'gate-1', 200, false),
-            new NativeSiteStep('tessera, its repeat', 'POST', '/hello', $ada, $withId . 'gate-1', 200, false),
-            new NativeSiteStep('tessera, a malformed id', 'POST', '/hello', $ada, $withId . 'no good', 400, false),
-        ];
+        return is_bool($value)
+            ? $value
+            : throw $this->wrong($index, 'captures', 'boolean');
     }
 
     /**
-     * @return list<NativeSiteStep> Stock items with a date, a price and a certified flag, written and read back (#65).
+     * @param int    $index The step's place.
+     * @param string $field The field.
+     * @param string $type  What it must be.
+     *
+     * @return InvalidArgumentException The refusal, naming them.
      */
-    private function stock(): array
+    private function wrong(int $index, string $field, string $type): InvalidArgumentException
     {
-        $car = 'name=Gate+car&price=18999.99&added_on=2026-10-21&certified=1&aic_csrf={csrf}';
-        $van = 'name=Gate+van&price=7000&added_on=2024-02-29&aic_csrf={csrf}';
-        $badPrice = 'name=Gate+car&price=abc&added_on=2026-10-21&aic_csrf={csrf}';
-        $badDate = 'name=Gate+car&price=1&added_on=2026-02-30&aic_csrf={csrf}';
-
-        return [
-            new NativeSiteStep('stock, bad price', 'POST', '/stock', $badPrice, '', 422, false),
-            new NativeSiteStep('stock, bad date', 'POST', '/stock', $badDate, '', 422, false),
-            new NativeSiteStep('stock add, certified', 'POST', '/stock', $car, '', 303, false),
-            new NativeSiteStep('stock, certified', 'GET', '/stock', '', '', 200, false),
-            new NativeSiteStep('stock add, not certified', 'POST', '/stock', $van, '', 303, false),
-            new NativeSiteStep('stock, not certified', 'GET', '/stock', '', '', 200, false),
-        ];
-    }
-
-    /**
-     * @return list<NativeSiteStep> A note's whole life, its envelope altered once (#43).
-     */
-    private function notes(): array
-    {
-        $update = 'title=Gate+edited&body=y&aic_csrf={csrf}&aic_envelope={envelope}';
-
-        return [
-            new NativeSiteStep('notes', 'GET', '/notes', '', '', 200, false),
-            new NativeSiteStep('note blank', 'POST', '/notes', 'title=&aic_csrf={csrf}', '', 422, false),
-            new NativeSiteStep('note create', 'POST', '/notes', 'title=Gate&body=x&aic_csrf={csrf}', '', 303, true),
-            new NativeSiteStep('note show', 'GET', '{note}', '', '', 200, false),
-            new NativeSiteStep('note update, altered', 'POST', '{note}', $update . 'x', '', 400, false),
-            new NativeSiteStep('note update', 'POST', '{note}', $update, '', 303, false),
-            new NativeSiteStep('note show again', 'GET', '{note}', '', '', 200, false),
-            new NativeSiteStep('note delete', 'POST', '{note}/delete', 'aic_csrf={csrf}&aic_envelope={envelope}', '', 303, false),
-            new NativeSiteStep('note gone', 'GET', '{note}', '', '', 404, false),
-        ];
-    }
-
-    /**
-     * @return list<NativeSiteStep> Signing in and out as the gate user, and the protected page (#9).
-     */
-    private function signIn(): array
-    {
-        $login = 'login=gate&next=%2Faccount&aic_csrf={csrf}&password=';
-
-        return [
-            new NativeSiteStep('account, anonymous', 'GET', '/account', '', '', 303, false),
-            new NativeSiteStep('login page', 'GET', '/login?next=%2Faccount', '', '', 200, false),
-            new NativeSiteStep('login, wrong', 'POST', '/login', $login . 'wrong', '', 422, false),
-            new NativeSiteStep('login', 'POST', '/login', $login . '{password}', '', 303, false),
-            new NativeSiteStep('account', 'GET', '/account', '', '', 200, false),
-            new NativeSiteStep('logout', 'POST', '/logout', 'aic_csrf={csrf}', '', 303, false),
-            new NativeSiteStep('account, signed out', 'GET', '/account', '', '', 303, false),
-        ];
+        return new InvalidArgumentException(self::PATH . ': step ' . $index . '\'s "' . $field . '" must be a ' . $type . '.');
     }
 }

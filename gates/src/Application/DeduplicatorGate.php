@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use Gates\Domain\ProcessRunner;
 
+use function array_map;
 use function count;
 use function fwrite;
 use function implode;
@@ -25,12 +26,14 @@ use const STDOUT;
 final readonly class DeduplicatorGate
 {
     /**
-     * @param ProcessRunner $processRunner Seam wrapping `proc_open`.
-     * @param PhpFileFinder $phpFileFinder Recursive `*.php` directory predicate.
+     * @param ProcessRunner  $processRunner  Seam wrapping `proc_open`.
+     * @param PhpFileFinder  $phpFileFinder  Recursive `*.php` directory predicate.
+     * @param ProjectProfile $projectProfile The source roots, by the project's profile (#130).
      */
     public function __construct(
         private ProcessRunner $processRunner,
         private PhpFileFinder $phpFileFinder = new PhpFileFinder(),
+        private ProjectProfile $projectProfile = new ProjectProfile(),
     ) {
     }
 
@@ -99,14 +102,7 @@ final readonly class DeduplicatorGate
      */
     private function candidateSourceDirs(string $root): array
     {
-        return [
-            $root . '/framework/src',
-            $root . '/modules',
-            $root . '/generated',
-            $root . '/gates/src',
-            $root . '/gates/architecture',
-            $root . '/workflow/src',
-        ];
+        return array_map(static fn (string $folder): string => $root . '/' . $folder, $this->projectProfile->roots($root)->sourceRoots);
     }
 
     /**

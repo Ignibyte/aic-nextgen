@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\NativeSiteSetup;
+use Gates\Domain\NativeSiteStep;
 use Gates\Domain\ProcessResult;
 use Gates\Domain\ServerLauncher;
+use InvalidArgumentException;
 use RuntimeException;
 
 use function array_slice;
@@ -14,6 +16,7 @@ use function count;
 use function explode;
 use function fwrite;
 use function implode;
+use function is_file;
 use function sprintf;
 
 use const PHP_EOL;
@@ -75,20 +78,54 @@ final readonly class NativeSiteGate
             return 1;
         }
 
-        if (!$nativeSiteSetup->reachable) {
-            fwrite($stdout, sprintf(self::DEFERRAL, $nativeSiteSetup->database) . PHP_EOL);
+        if (!is_file($root . '/' . NativeSiteScript::PATH) || !$nativeSiteSetup->reachable) {
+            fwrite($stdout, $this->deferral($root, $nativeSiteSetup) . PHP_EOL);
 
             return 0;
         }
 
+        $steps = $this->steps($root, $stderr);
         $workDir = $root . '/.native-site';
-        $processResult = $this->nativeSiteBuilder->build($root, $workDir);
+        $processResult = $steps === []
+            ? null
+            : $this->nativeSiteBuilder->build($root, $workDir);
 
-        if ($processResult->exitCode !== 0) {
-            return $this->buildFailed($processResult, $stderr);
+        return match (true) {
+            $processResult === null => 1,
+            $processResult->exitCode !== 0 => $this->buildFailed($processResult, $stderr),
+            default => $this->compare($root, $workDir, $nativeSiteSetup, $steps, $stdout, $stderr),
+        };
+    }
+
+    /**
+     * @param string   $root   Repo-root absolute path.
+     * @param resource $stderr Stream a bad script is reported to.
+     *
+     * @return list<NativeSiteStep> The script's steps; none when it is malformed, which is reported.
+     */
+    private function steps(string $root, mixed $stderr): array
+    {
+        try {
+            return $this->nativeSiteScript->steps($root);
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            fwrite($stderr, 'gate:23 — ' . $invalidArgumentException->getMessage() . PHP_EOL);
+
+            return [];
         }
+    }
 
-        return $this->compare($root, $workDir, $nativeSiteSetup, $stdout, $stderr);
+    /**
+     * @param string          $root            Repo-root absolute path.
+     * @param NativeSiteSetup $nativeSiteSetup Where the sites run.
+     *
+     * @return string Why the gate defers: no script (#130), or no database.
+     */
+    private function deferral(string $root, NativeSiteSetup $nativeSiteSetup): string
+    {
+        return is_file($root . '/' . NativeSiteScript::PATH)
+            ? sprintf(self::DEFERRAL, $nativeSiteSetup->database)
+            : 'gate:23 — deferring the native site: ' . NativeSiteScript::PATH . ' is missing; write the requests both sites must '
+                . 'answer alike there (aic.native-site/1), one step a line.';
     }
 
     /**
@@ -108,11 +145,12 @@ final readonly class NativeSiteGate
     }
 
     /**
-     * @param string          $root            Repo-root absolute path.
-     * @param string          $workDir         Where the compiled site is.
-     * @param NativeSiteSetup $nativeSiteSetup Where the sites run.
-     * @param resource        $stdout          Stream the summary is written to.
-     * @param resource        $stderr          Stream failures are written to.
+     * @param string               $root            Repo-root absolute path.
+     * @param string               $workDir         Where the compiled site is.
+     * @param NativeSiteSetup      $nativeSiteSetup Where the sites run.
+     * @param list<NativeSiteStep> $steps           The script.
+     * @param resource             $stdout          Stream the summary is written to.
+     * @param resource             $stderr          Stream failures are written to.
      *
      * @return int The exit code.
      */
@@ -120,11 +158,10 @@ final readonly class NativeSiteGate
         string $root,
         string $workDir,
         NativeSiteSetup $nativeSiteSetup,
+        array $steps,
         mixed $stdout,
         mixed $stderr,
     ): int {
-        $steps = $this->nativeSiteScript->steps();
-
         if (!$this->startSites($root, $workDir, $nativeSiteSetup)) {
             $this->serverLauncher->stopAll();
             fwrite($stderr, 'gate:23 — a site did not start; see ' . $workDir . '/php.log and native.log.' . PHP_EOL);

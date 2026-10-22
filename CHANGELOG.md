@@ -150,6 +150,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **An app gets every gate from `aic/gates`** (#130, part 2 of #116). A project is either AIC's own repository or an app, decided from the tree, and the gates read each one's roots. An app runs every gate but 22, 28 and 29, and gate:21 probes only its own classes.
+  - **The app's root files:** `vendor/bin/aic-gate init` writes the eight root files from `gates/stubs/` (the tools' configs with the app's paths, `pint.json`, `captainhook.json`). It appends the ignore lines and prints the lines composer.json carries; it never writes composer.json. A second run writes nothing, and it refuses in AIC.
+  - **gate:30, suite files:** the root files are the package's stubs, `phpcs.xml.dist` with one root per module on disk, and composer.json carries the suite's scripts and plugins. In AIC it holds `pint.json`, `captainhook.json` and the `gate:N` aliases.
+  - **gate:23's script is data:** `config/native-site.json` (`aic.native-site/1`, one step a line) holds the requests both sites must answer alike. AIC's 69 steps moved there; without the file, gate:23 defers. In an app it compiles the site with the framework from `vendor/`, since `bootstrap/serve.php` names framework classes no app class reaches.
+  - **The house rule:** `gate-suite` lets a run add a step to `config/native-site.json` but not change or remove one, and it walls the stubs.
+  - **The proof:** a scratch app with no `framework/`, `workflow/` or `gates/` ran 28 gates green. One planted violation per gate family failed its gate: style, types, layers, templates, the shell, native, dependencies, docs, secrets, and gate:30 twice.
+
 - **The gate suite is the dev package `aic/gates`** (#116, part 1). An app on AIC copied `gates/` and every tool config by hand, and nothing kept the copy current. `gates/` is now a package, required by path like `aic/workflow`, that holds every gate.
   - **One command:** `vendor/bin/aic-gate` runs the suite, `aic-gate N` runs one gate, `--numbers` and `--list` name them, `tools` installs gitleaks, semgrep and shellcheck, and `serve` serves the compiled site. The list is `Gates\Application\GateSuite`: each gate's description, scope (`aic` for 22, 28 and 29) and command.
   - **Same commands as before:** `composer run gate` and `build` call the package, and each `composer run gate:N` is the one-line alias `aic-gate N`. The runner's output is unchanged byte for byte, so the engine reads the same lines, and it names the gates from `aic-gate --numbers`.

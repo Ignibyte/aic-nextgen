@@ -117,6 +117,12 @@ write a ticket and start it with `bin/aic workflow:run <number>`.
 
 This repository holds the package's own source, so init refuses to run here.
 
+The gates come the same way: `composer require --dev aic/gates:0.1.x-dev`, then
+`vendor/bin/aic-gate init`, which writes the tools' root configs and prints the scripts and plugins
+for composer.json. Write gate:23's requests in `config/native-site.json`, then `composer run gate`
+runs every gate an app has (all but 22, 28 and 29). This repository's own root configs are its
+own, so this init refuses here too.
+
 ## Working on AIC
 
 `CONSTITUTION.md` holds the binding rules. Work goes through four phases (Plan, Code, Quality

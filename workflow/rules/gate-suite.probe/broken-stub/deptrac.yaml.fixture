@@ -1,0 +1,6 @@
+imports:
+  - vendor/aic/gates/config/deptrac.yaml
+
+deptrac:
+  paths:
+    - ./modules

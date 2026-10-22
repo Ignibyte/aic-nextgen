@@ -29,12 +29,14 @@ use const STDOUT;
 final readonly class ShellcheckGate
 {
     /**
-     * @param ProcessRunner $processRunner Seam wrapping `proc_open`.
-     * @param bool          $isCi          Resolved CI flag (true when running under a CI runner) — passed at the wrapper boundary.
+     * @param ProcessRunner  $processRunner  Seam wrapping `proc_open`.
+     * @param bool           $isCi           Resolved CI flag (true when running under a CI runner) — passed at the wrapper boundary.
+     * @param ProjectProfile $projectProfile The script folders, by the project's profile (#130).
      */
     public function __construct(
         private ProcessRunner $processRunner,
         private bool $isCi = false,
+        private ProjectProfile $projectProfile = new ProjectProfile(),
     ) {
     }
 
@@ -101,7 +103,7 @@ final readonly class ShellcheckGate
     {
         $scripts = [];
 
-        foreach (['.claude/hooks', 'bin', 'gates/bin', 'workflow/bin', 'workflow/probes'] as $dir) {
+        foreach ($this->projectProfile->roots($root)->scriptFolders as $dir) {
             $iterator = new GlobIterator($root . '/' . $dir . '/*.sh', GlobIterator::CURRENT_AS_PATHNAME | FilesystemIterator::SKIP_DOTS);
 
             foreach ($iterator as $match) {

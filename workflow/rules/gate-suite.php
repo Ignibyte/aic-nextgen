@@ -11,7 +11,9 @@ declare(strict_types=1);
  * this repo: the runner, the entries, the build, the code and the base configs,
  * #116), to a gate entry at the root, or to a tool's configuration breaks; in
  * phpcs.xml.dist only an added `<element key="modules/<m>/src" value="App\<M>"/>`
- * holds; in composer.json only the keys the suite owns are compared (the
+ * holds; in config/native-site.json, gate:23's steps, a removed or changed
+ * line breaks and an added one holds, so a run may add its new route's step
+ * (#130); in composer.json only the keys the suite owns are compared (the
  * scripts, captainhook's settings, the allowed plugins, the aic/gates
  * constraint), so a module's PSR-4 line and a dependency stay free (gates 0 to
  * 4 judge those). Exit 0 holds, 1 breaks (each reason a line), 4 when no such
@@ -86,6 +88,26 @@ foreach ($input->changed as $change) {
             }
 
             $breaks[] = 'phpcs.xml.dist gained "' . $line . '"; only a module\'s root may be added.';
+        }
+
+        continue;
+    }
+
+    if ($path === 'config/native-site.json') {
+        $examined += 1;
+        $steps = static fn (string $text): array => array_count_values(array_map(
+            static fn (string $line): string => rtrim(trim($line), ','),
+            explode("\n", $text),
+        ));
+        $before = $steps($base);
+        $after = $steps($head);
+
+        foreach ($before as $line => $count) {
+            if (!(($after[$line] ?? 0) < $count)) {
+                continue;
+            }
+
+            $breaks[] = 'config/native-site.json lost or changed the line "' . $line . '"; a run may only add steps.';
         }
 
         continue;

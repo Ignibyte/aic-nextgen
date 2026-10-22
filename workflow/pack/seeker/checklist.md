@@ -54,11 +54,12 @@ it; a build writer special-cased for one module. HIGH.
 
 The gates hold: no baseline file and no suppression comment.
 
-Judge: any change to a gate or a tool's configuration or rule code (`phpstan.neon`, `psalm.xml`,
-`phpcs.xml.dist`, `deptrac.yaml`, `rector.php`, `pint.json`, `semgrep.yml`, `phpmd.xml`, the
-gate scripts in `composer.json`, `gates/`, `bin/gate-*`), to `config/raw-html.php`, to
-`config/workflow.php`, or to a house rule or its probe, that the spec's decisions do not record
-with a reason. A module's PSR-4 line and its PHPCS root are free. HIGH; CRITICAL when the change
+Judge: any change to a tool's root configuration (`phpstan.neon`, `phpstan-architecture.neon`,
+`psalm.xml`, `phpcs.xml.dist`, `deptrac.yaml`, `rector.php`, `pint.json`, `captainhook.json`),
+to composer.json's gate scripts or allowed plugins, a removed or changed step in
+`config/native-site.json`, or a change to `config/raw-html.php`, `config/workflow.php`, or a house
+rule or its probe, that the spec's decisions do not record with a reason. A module's PSR-4 line,
+its PHPCS root and an added step are free. HIGH; CRITICAL when the change
 quiets a finding the run itself causes.
 
 ## A7 — A static guard for every new invariant
