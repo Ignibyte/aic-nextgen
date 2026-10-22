@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Container\Exception\ContainerException;
 use AIC\Form\Application\FormTokens;
 use AIC\Module\Application\HandlerContext;
 use AIC\Queue\Application\PostgresQueue;
@@ -34,6 +35,8 @@ final readonly class SiteHandlersPart2
     }
 
     /**
+     * @throws ContainerException When a called constructor or service fails.
+     *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array

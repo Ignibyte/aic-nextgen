@@ -13,6 +13,7 @@ use function in_array;
 use function max;
 use function preg_match_all;
 use function preg_replace;
+use function str_contains;
 use function str_pad;
 use function str_replace;
 use function strlen;
@@ -189,7 +190,11 @@ final class TemplateMethods
                 } . "\n";
         }
 
-        return "    /**\n" . ($lines === '' ? '' : $lines . "     *\n")
+        $throws = str_contains(implode(', ', $parameters), 'RenderPass $renderPass')
+            ? "     * @throws UnknownComponent When a child has no registered template.\n     *\n"
+            : '';
+
+        return "    /**\n" . ($lines === '' ? '' : $lines . "     *\n") . $throws
             . '     * @return ' . $return . "\n     */\n";
     }
 

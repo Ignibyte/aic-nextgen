@@ -11,6 +11,7 @@ use App\Site\Service\TickSource;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
 use function ctype_digit;
 use function is_string;
 use function max;
@@ -31,8 +32,11 @@ final readonly class TickEvents implements Stream
     #[Override]
     public function stream(ServerRequestInterface $serverRequest): StreamResponse
     {
-        $count = $serverRequest->getQueryParams()['count'] ?? '3';
-        $ticks = is_string($count) && ctype_digit($count)
+        $query = $serverRequest->getQueryParams();
+        $count = array_key_exists('count', $query) && is_string($query['count'])
+            ? $query['count']
+            : '3';
+        $ticks = ctype_digit($count)
             ? (int) $count
             : 3;
         $seen = $serverRequest->getHeaderLine('Last-Event-ID');

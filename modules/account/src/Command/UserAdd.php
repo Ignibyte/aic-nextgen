@@ -11,6 +11,7 @@ use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Database\Contracts\QueryException;
 use App\Account\Repository\UserRepository;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -32,7 +33,8 @@ final readonly class UserAdd implements Command
     /**
      * @param CommandInput $commandInput The login, then the password.
      *
-     * @throws QueryException When the user cannot be stored.
+     * @throws QueryException           When the user cannot be stored.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return CommandResponse What was done, or the usage.
      */

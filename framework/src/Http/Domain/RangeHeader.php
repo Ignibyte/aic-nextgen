@@ -39,8 +39,7 @@ final readonly class RangeHeader
         }
 
         // trim() hands elephc typed strings: it reads array elements as mixed.
-        $first = trim($match[1]);
-        $last = trim($match[2]);
+        [$first, $last] = self::endpoints($match);
 
         if ($first === '') {
             return $last === ''
@@ -49,6 +48,16 @@ final readonly class RangeHeader
         }
 
         return self::fromFirst((int) $first, $last, $size, $byteRange);
+    }
+
+    /**
+     * @param array<array-key, string> $captures The range pattern's captures.
+     *
+     * @return array{string, string} The first and last byte, empty when omitted.
+     */
+    private static function endpoints(array $captures): array
+    {
+        return [trim($captures[1] ?? ''), trim($captures[2] ?? '')];
     }
 
     /**

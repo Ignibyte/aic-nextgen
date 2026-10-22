@@ -10,6 +10,7 @@ use AIC\Auth\Application\RequireAuthenticationMiddleware;
 use AIC\Module\Application\HandlerContext;
 use App\Account\Repository\UserRepository;
 use App\Account\Service\AccessRules;
+use InvalidArgumentException;
 use Psr\Http\Server\MiddlewareInterface;
 
 /**
@@ -27,6 +28,8 @@ final readonly class AccountMiddleware
     }
 
     /**
+     * @throws InvalidArgumentException When a called constructor or service fails.
+     *
      * @return list<MiddlewareInterface> The module's middleware after the session, in order.
      */
     public function afterSession(): array

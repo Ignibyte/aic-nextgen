@@ -6,6 +6,7 @@ namespace AIC\Module\Application;
 
 use AIC\Component\Application\Renderer;
 use AIC\Config\Domain\AppConfig;
+use AIC\Container\Exception\ContainerException;
 use AIC\Controller\Application\PageHandlers;
 use AIC\Controller\Application\Psr7ResponseWriter;
 use AIC\Database\Contracts\Database;
@@ -43,6 +44,8 @@ final readonly class HandlerContexts
 
     /**
      * @param WebWiring $webWiring The modules' plugins, schedules, protected prefixes and templates.
+     *
+     * @throws ContainerException When a registered service cannot be resolved.
      *
      * @return HandlerContext The context.
      */

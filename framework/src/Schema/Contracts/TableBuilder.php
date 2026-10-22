@@ -106,6 +106,8 @@ interface TableBuilder
     public function index(array $columns): self;
 
     /**
+     * @api
+     *
      * @param string   $column        The referring column, on this table.
      * @param string   $table         The table it refers to.
      * @param string   $foreignColumn The column it refers to there, its primary key or a unique column.

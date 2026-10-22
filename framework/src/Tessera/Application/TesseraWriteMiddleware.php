@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace AIC\Tessera\Application;
 
-use AIC\Database\Contracts\QueryException;
 use AIC\Form\Contracts\FormToken;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Session\Application\RequestSession;
 use AIC\Tessera\Domain\RecordedWrite;
 use AIC\Tessera\Domain\TesseraRequest;
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use RuntimeException;
 
 use function explode;
 use function hash;
@@ -60,7 +61,8 @@ final readonly class TesseraWriteMiddleware implements MiddlewareInterface
      * @param ServerRequestInterface  $request The request, its CSRF token checked.
      * @param RequestHandlerInterface $handler The rest of the stack.
      *
-     * @throws QueryException When the ids cannot be read or written.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     * @throws RuntimeException         When the underlying operation fails.
      *
      * @return ResponseInterface The write's answer, the first answer again, 409 or 400.
      */
@@ -92,6 +94,8 @@ final readonly class TesseraWriteMiddleware implements MiddlewareInterface
     /**
      * @param ResponseInterface $response A write's answer.
      *
+     * @throws RuntimeException When the underlying operation fails.
+     *
      * @return RecordedWrite It as it is kept.
      */
     private function recorded(ResponseInterface $response): RecordedWrite
@@ -114,6 +118,8 @@ final readonly class TesseraWriteMiddleware implements MiddlewareInterface
 
     /**
      * @param RecordedWrite $recordedWrite The first write's answer.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface It again; 409 when the first never settled.
      */
@@ -150,6 +156,8 @@ final readonly class TesseraWriteMiddleware implements MiddlewareInterface
     /**
      * @param int    $status  400 or 409.
      * @param string $message Why.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface A plain answer Tessera reads as a failed write.
      */

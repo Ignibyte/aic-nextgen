@@ -10,6 +10,7 @@ use Gates\Domain\ModuleDefinition;
 use Gates\Domain\WiredObject;
 use Gates\Domain\WiringRoots;
 use InvalidArgumentException;
+use Throwable;
 
 use function array_key_exists;
 use function array_map;
@@ -58,7 +59,7 @@ final readonly class ContextClassSource
         final readonly class {class}
         {
         {constructor}    /**
-             * @return {returnDoc} {what}
+        {throws}     * @return {returnDoc} {what}
              */
             public function {method}(): array
             {
@@ -82,12 +83,16 @@ final readonly class ContextClassSource
         PHP;
 
     /**
-     * @param PhpClassFile $phpClassFile Lays out the file.
-     * @param CallSource   $callSource   Writes the code that builds each object.
+     * @param PhpClassFile           $phpClassFile           Lays out the file.
+     * @param CallSource             $callSource             Writes the code that builds each object.
+     * @param ConstructionExceptions $constructionExceptions Follows the calls' exception contracts.
+     * @param ExceptionDocs          $exceptionDocs          Writes the generated exception documentation.
      */
     public function __construct(
         private PhpClassFile $phpClassFile = new PhpClassFile(),
         private CallSource $callSource = new CallSource(),
+        private ConstructionExceptions $constructionExceptions = new ConstructionExceptions(),
+        private ExceptionDocs $exceptionDocs = new ExceptionDocs(),
     ) {
     }
 
@@ -107,19 +112,38 @@ final readonly class ContextClassSource
             '{context}' => $this->phpClassFile->short($contextClass->roots->context),
             '{property}' => $contextClass->roots->property,
         ]);
-        $body = strtr(self::TEMPLATE, [
-            '{body}' => implode("\n", $lines),
-            '{class}' => $contextClass->class,
-            '{constructor}' => $rooted ? $constructor . "\n" : '',
-            '{method}' => $contextClass->method,
-            '{returnDoc}' => $contextClass->returnDoc,
-            '{what}' => $contextClass->what,
-        ]);
+        $exceptions = $this->constructionExceptions->types($contextClass);
+        $body = $this->declaration($contextClass, $rooted ? $constructor . "\n" : '', $lines, $exceptions);
         $from = 'modules/' . $moduleDefinition->name . '/' . $moduleDefinition->name . '.module.php';
-        $classes = [...($rooted ? [$contextClass->roots->context] : []), ...$contextClass->docTypes, ...$classes];
+        $classes = [...($rooted ? [$contextClass->roots->context] : []), ...$contextClass->docTypes, ...$classes, ...$exceptions];
         $docblock = $this->phpClassFile->generated($from, $contextClass->what);
 
         return $this->phpClassFile->file('App\\Generated', $classes, [], $docblock, $body);
+    }
+
+    /**
+     * @param ContextClass                  $contextClass The generated class's shape.
+     * @param string                        $constructor  Its optional context constructor.
+     * @param list<string>                  $lines        The method body.
+     * @param list<class-string<Throwable>> $exceptions   Its actual propagated exception types.
+     *
+     * @return string The generated class declaration.
+     */
+    private function declaration(
+        ContextClass $contextClass,
+        string $constructor,
+        array $lines,
+        array $exceptions,
+    ): string {
+        return strtr(self::TEMPLATE, [
+            '{body}' => implode("\n", $lines),
+            '{class}' => $contextClass->class,
+            '{constructor}' => $constructor,
+            '{method}' => $contextClass->method,
+            '{returnDoc}' => $contextClass->returnDoc,
+            '{throws}' => $this->exceptionDocs->block($exceptions),
+            '{what}' => $contextClass->what,
+        ]);
     }
 
     /**

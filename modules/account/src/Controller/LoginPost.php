@@ -14,6 +14,7 @@ use AIC\Form\Application\PostedFields;
 use AIC\Form\Domain\SameOriginPath;
 use App\Account\Form\LoginForm;
 use App\Site\Service\HtmlLayout;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -42,6 +43,7 @@ final readonly class LoginPost implements Page
      * @param ServerRequestInterface $serverRequest The posted form, with its session.
      *
      * @throws QueryException When the user cannot be read.
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return PageResponse 303 to `next` or /account, or the form again as 422.
      */

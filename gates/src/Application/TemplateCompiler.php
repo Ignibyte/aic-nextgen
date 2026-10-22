@@ -141,9 +141,23 @@ final readonly class TemplateCompiler
             . ".html.php by composer run build (#97, #98):\n * edit the template and run composer run build, never this file.\n */\n"
             . 'final readonly class ' . $component . "Template\n{\n"
             . (str_contains($parts, 'self::text(') ? "    use RendersMarkup;\n\n" : '')
-            . "    /**\n" . $docblock . "     *\n     * @return string Its markup.\n     */\n"
+            . "    /**\n" . $docblock . "     *\n"
+            . $this->renderThrows($takesPass)
+            . "     * @return string Its markup.\n     */\n"
             . '    public function render(' . $component . ' $' . $variable . ($takesPass ? ', RenderPass $renderPass' : '')
             . "): string\n    {\n";
+    }
+
+    /**
+     * @param bool $takesPass Whether rendering writes child components.
+     *
+     * @return string The exception contract for a render pass, empty otherwise.
+     */
+    private function renderThrows(bool $takesPass): string
+    {
+        return $takesPass
+            ? "     * @throws UnknownComponent When a child has no registered template.\n     *\n"
+            : '';
     }
 
     /**

@@ -77,6 +77,8 @@ final readonly class NoteViews
     }
 
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return PageDocument The 404 page for a note that does not exist.
      */
     public function notFound(): PageDocument

@@ -18,6 +18,7 @@ use function ftell;
 use function fwrite;
 use function get_resource_type;
 use function in_array;
+use function is_resource;
 use function str_replace;
 use function stream_get_contents;
 use function stream_get_meta_data;
@@ -118,11 +119,13 @@ final class Stream implements StreamInterface
     #[Override]
     public function close(): void
     {
-        if ($this->handle !== []) {
-            fclose($this->handle[0]);
+        $handle = $this->detach();
+
+        if (!is_resource($handle)) {
+            return;
         }
 
-        $this->detach();
+        fclose($handle);
     }
 
     /**
@@ -267,7 +270,7 @@ final class Stream implements StreamInterface
     #[Override]
     public function read(int $length): string
     {
-        $this->assertReadable();
+        $handles = $this->readableHandles();
 
         if ($length < 0) {
             throw new RuntimeException('A read length must not be negative.');
@@ -277,7 +280,7 @@ final class Stream implements StreamInterface
             return '';
         }
 
-        return self::requireString(fread($this->handle[0], $length), 'Unable to read from the stream.');
+        return self::requireString(fread($handles[0], $length), 'Unable to read from the stream.');
     }
 
     /**
@@ -288,10 +291,10 @@ final class Stream implements StreamInterface
     #[Override]
     public function getContents(): string
     {
-        $this->assertReadable();
+        $handles = $this->readableHandles();
 
         return self::requireString(
-            stream_get_contents($this->handle[0]),
+            stream_get_contents($handles[0]),
             'Unable to read the rest of the stream.',
         );
     }

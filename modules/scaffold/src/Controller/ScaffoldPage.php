@@ -8,6 +8,7 @@ use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use App\Scaffold\Component\ScaffoldCard;
 use App\Site\Service\HtmlLayout;
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -26,6 +27,8 @@ final readonly class ScaffoldPage implements Page
 
     /**
      * @param ServerRequestInterface $serverRequest The request; the page is the same for every one.
+     *
+     * @throws InvalidArgumentException When the page layout is invalid.
      *
      * @return PageResponse The page.
      */

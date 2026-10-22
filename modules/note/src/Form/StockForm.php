@@ -12,6 +12,7 @@ use AIC\Component\Domain\Form;
 use AIC\Component\Domain\FormField;
 use AIC\Component\Domain\Input;
 use AIC\Form\Application\FormTokens;
+use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -32,6 +33,8 @@ final readonly class StockForm
      * @param ServerRequestInterface $serverRequest The request, with its session.
      * @param StockEntry             $stockEntry    The values to show.
      * @param string                 $error         Why the last post was refused; empty for none.
+     *
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return Form The form.
      */

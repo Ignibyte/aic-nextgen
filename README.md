@@ -2,9 +2,8 @@
 
 The fresh start of AIC (Absolute Insanity, AI): a slim, opinionated PHP 8.5 framework that
 compiles natively with elephc and runs as the compiled `elephc --web` server, one `aic/framework`
-package with a namespace per system. It is being
-built by porting what earns its place from old AIC (`Ignibyte/aic`) and will replace it at
-cutover.
+package with a namespace per system. It is built by porting what earns its place from old AIC
+(`Ignibyte/aic`). AIC stays in `Ignibyte/aic-nextgen`; old AIC is the archive.
 
 The root is AIC's fixture app, the site every gate holds to code: four modules under
 `modules/`. `site` has the home page, greetings, jobs, schedules and notifications,
@@ -12,8 +11,8 @@ Server-Sent Events, downloads, `/api/status` and `/health`. `note` has notes wit
 templates and signed forms, and stock items with a date, a price and a flag. `account` has
 sign-in, sessions and uploads. `scaffold` is what the `bin/aic make:*` commands make (pages, an
 API, components, a block, a command, a job and a migration), held byte for byte by gate:31. The
-compiled binary serves the app, and PHP serves the same app as the reference. The ten-module demo it was cut from is the tag `demo-reference`; it is rebuilt as an
-app of its own in `Ignibyte/aic-demo` (#128, #129).
+compiled binary serves the app, and PHP serves the same app as the reference. The ten-module demo it was cut from is the tag `demo-reference`.
+The proof app will be Lotline, built fresh in `/srv/stacks/aic-demo` with the packaged workflow and gates (#128, #132).
 
 **Architecture:** [framework/docs/README.md](framework/docs/README.md), the pages an app's agent
 reads before building on AIC (the kinds, the modules, the systems, the conventions, the gates).
@@ -50,6 +49,10 @@ The app secret signs envelopes and comes only from the environment (`AIC_APP_SEC
 more); the app does not boot without it. DDEV keeps `.ddev/config.local.yaml` out of git, and
 gate:23 makes a fresh secret for each run.
 
+Invalid typed configuration returns a plain HTTP 500 at boot. The console prints the failure
+without a stack trace and exits 1. Method exception contracts remain checked by ordinary Psalm;
+the reason for disabling its incompatible global-scope check is beside the setting (#133).
+
 `ddev start` prints the URL of the interpreted reference. On the Z690 dev box it is
 `https://aic-nextgen.ddev.site:8843` (the router's ports there are 8880 and 8843).
 
@@ -80,12 +83,15 @@ forwards the rest. Without a proxy, the app's `/assets/{file}` route answers the
 ```bash
 vendor/bin/aic-gate tools   # once: gitleaks (pinned, into tools/), semgrep, shellcheck
 composer run gate           # every gate, on the host; ends with one gate-summary line
-composer run gate:8         # one gate alone (gate:0 to gate:27)
+composer run gate:8         # one gate alone (gate:0 to gate:31)
 composer run gate:21        # the native gate: every runtime class through elephc
 ```
 
 The gates are static analysis only: PHPStan level 10, Psalm with taint analysis, PHPMD, PHPCS,
 Pint, Rector, Deptrac and phpat for the architecture, semgrep, gitleaks and the composer checks.
+Gate:13 currently runs taint analysis only. Ordinary analysis is being repaired in three parts:
+runtime (#133), gates (#134), then workflow and enforcement of both passes (#135). The full
+ordinary diagnostic now has no runtime findings; pending tooling findings retain its failing exit.
 A component template (`*.html.php`) is plain PHP read only; gate:25 holds it to that grammar, and
 the class tools skip it. `composer run build` compiles it into a class beside its component, which
 every gate checks, and writes the lookup the Renderer finds each component's template through: a

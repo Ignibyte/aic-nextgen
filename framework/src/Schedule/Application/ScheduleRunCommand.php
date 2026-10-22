@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Database\Contracts\QueryException;
+use InvalidArgumentException;
 use JsonException;
 use Override;
 
@@ -32,8 +33,9 @@ final readonly class ScheduleRunCommand implements Command
     /**
      * @param CommandInput $commandInput Nothing: the command takes no arguments.
      *
-     * @throws JsonException  When a payload cannot be encoded.
-     * @throws QueryException When the ledger or the queue fails.
+     * @throws JsonException            When a payload cannot be encoded.
+     * @throws QueryException           When the ledger or the queue fails.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return CommandResponse How many jobs it queued; the usage, exit 2, when given arguments.
      */

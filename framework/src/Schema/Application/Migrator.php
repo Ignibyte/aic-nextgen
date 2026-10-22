@@ -7,6 +7,7 @@ namespace AIC\Schema\Application;
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
 use AIC\Schema\Contracts\Migration;
+use InvalidArgumentException;
 
 use function array_key_exists;
 use function hash;
@@ -36,7 +37,8 @@ final readonly class Migrator
     }
 
     /**
-     * @throws QueryException When the ledger cannot be read or made, or a migration fails (it is rolled back).
+     * @throws QueryException           When the ledger cannot be read or made, or a migration fails (it is rolled back).
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return list<string> The versions applied now, in order.
      */
@@ -87,7 +89,8 @@ final readonly class Migrator
     /**
      * @param Migration $migration A pending migration.
      *
-     * @throws QueryException When it fails; it is rolled back first.
+     * @throws QueryException           When it fails; it is rolled back first.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      */
     private function apply(Migration $migration): void
     {
@@ -115,6 +118,8 @@ final readonly class Migrator
     /**
      * @param Migration $migration A migration.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return list<string> Its statements, compiled.
      */
     private function statements(Migration $migration): array
@@ -126,7 +131,8 @@ final readonly class Migrator
     }
 
     /**
-     * @throws QueryException When the ledger cannot be looked for or made.
+     * @throws QueryException           When the ledger cannot be looked for or made.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      */
     private function provisionLedger(): void
     {

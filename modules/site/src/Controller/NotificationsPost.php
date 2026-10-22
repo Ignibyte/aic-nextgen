@@ -11,6 +11,7 @@ use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\PostedFields;
 use AIC\Notification\Application\Notifier;
 use AIC\Notification\Contracts\Notification;
+use InvalidArgumentException;
 use JsonException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -34,8 +35,9 @@ final readonly class NotificationsPost implements Page
     /**
      * @param ServerRequestInterface $serverRequest The posted form, with its `message`.
      *
-     * @throws JsonException  When a payload cannot be encoded.
-     * @throws QueryException When a job cannot be queued.
+     * @throws JsonException            When a payload cannot be encoded.
+     * @throws QueryException           When a job cannot be queued.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return PageResponse 303 to /notifications.
      */

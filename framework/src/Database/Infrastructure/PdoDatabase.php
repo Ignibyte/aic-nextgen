@@ -14,9 +14,8 @@ use PDOException;
 use PDOStatement;
 
 use function array_filter;
-use function array_merge;
+use function array_keys;
 use function is_array;
-use function is_null;
 use function is_scalar;
 use function is_string;
 
@@ -58,16 +57,16 @@ final class PdoDatabase implements Database
         $pdoStatement = $this->run($sql, $params);
 
         try {
-            $row = $pdoStatement->fetch(PDO::FETCH_ASSOC);
+            $row = self::row($pdoStatement);
         } catch (PDOException $pdoException) {
             throw self::failure($pdoException);
         }
 
-        if (!is_array($row)) {
+        if (!$row instanceof Row) {
             throw new QueryException('The query returned no row.');
         }
 
-        return self::row(array_filter($row, is_scalar(...)), array_filter($row, is_null(...)));
+        return $row;
     }
 
     /**
@@ -83,20 +82,17 @@ final class PdoDatabase implements Database
     {
         $pdoStatement = $this->run($sql, $params);
 
-        try {
-            $fetched = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $pdoException) {
-            throw self::failure($pdoException);
-        }
-
         $rows = [];
 
-        foreach ($fetched as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+        try {
+            $row = self::row($pdoStatement);
 
-            $rows[] = self::row(array_filter($row, is_scalar(...)), array_filter($row, is_null(...)));
+            while ($row instanceof Row) {
+                $rows[] = $row;
+                $row = self::row($pdoStatement);
+            }
+        } catch (PDOException $pdoException) {
+            throw self::failure($pdoException);
         }
 
         return $rows;
@@ -206,21 +202,50 @@ final class PdoDatabase implements Database
     }
 
     /**
-     * A fetched row's values, split by the caller into scalars and nulls and
-     * kept here under string keys: a Row holds nothing else, so any other value
-     * or key PDO gives is left out.
+     * Fetch and narrow a row at the PDO boundary. Unsupported values and keys
+     * are omitted; no unchecked driver value reaches a Row.
      *
-     * @param array<array-key, scalar> $scalars The row's scalar values.
-     * @param array<array-key, null>   $nulls   The row's nulls.
+     * @param PDOStatement $pdoStatement The executed query.
      *
-     * @return Row The row.
+     * @throws PDOException When the next row cannot be fetched.
+     *
+     * @return Row|null The next row, or null at the end of the result.
      */
-    private static function row(array $scalars, array $nulls): Row
+    private static function row(PDOStatement $pdoStatement): ?Row
     {
-        return new Row(array_merge(
-            array_filter($scalars, is_string(...), ARRAY_FILTER_USE_KEY),
-            array_filter($nulls, is_string(...), ARRAY_FILTER_USE_KEY),
-        ));
+        $row = $pdoStatement->fetch(PDO::FETCH_ASSOC);
+
+        if (!is_array($row)) {
+            return null;
+        }
+
+        $values = [];
+
+        foreach (array_keys(array_filter($row, is_string(...), ARRAY_FILTER_USE_KEY)) as $key) {
+            $name = self::name($key);
+
+            if (!is_scalar($row[$key]) && $row[$key] !== null) {
+                continue;
+            }
+
+            $values[$name] = $row[$key];
+        }
+
+        return new Row($values);
+    }
+
+    /**
+     * @param string|int $key A key after the driver row's name filter.
+     *
+     * @throws QueryException When an unsupported numeric key reaches the normalizer.
+     *
+     * @return string The column name.
+     */
+    private static function name(string|int $key): string
+    {
+        return is_string($key)
+            ? $key
+            : throw new QueryException('A fetched column must have a string name.');
     }
 
     /**

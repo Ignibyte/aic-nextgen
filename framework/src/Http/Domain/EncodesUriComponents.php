@@ -51,7 +51,7 @@ trait EncodesUriComponents
     {
         return preg_replace_callback(
             '/(?:[^' . $allowed . '%]++|%(?![A-Fa-f0-9]{2}))/',
-            static fn (array $matches): string => rawurlencode($matches[0]),
+            static fn (array $matches): string => rawurlencode($matches[0] ?? ''),
             $value,
         ) ?? $value;
     }

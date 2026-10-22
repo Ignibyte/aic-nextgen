@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Container\Exception\ContainerException;
 use AIC\Database\Contracts\Database;
 use AIC\Notification\Contracts\MailTransport;
 use AIC\Notification\Domain\MailConfig;
@@ -58,6 +59,8 @@ final readonly class ConsoleContext
 
     /**
      * @param string $type A plugin type.
+     *
+     * @throws ContainerException When a registered service cannot be resolved.
      *
      * @return list<object> The plugins tagged under it, in registration order.
      */

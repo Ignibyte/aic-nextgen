@@ -7,6 +7,7 @@ namespace App\Note\Service;
 use App\Note\Form\PostedNote;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
 use function ctype_digit;
 use function is_array;
 use function is_string;
@@ -26,9 +27,12 @@ final readonly class NoteRequest
      */
     public function noteId(ServerRequestInterface $serverRequest): int
     {
-        $attribute = $serverRequest->getAttribute('id');
+        $attributes = $serverRequest->getAttributes();
+        $attribute = array_key_exists('id', $attributes) && is_string($attributes['id'])
+            ? $attributes['id']
+            : '';
 
-        return is_string($attribute) && ctype_digit($attribute)
+        return ctype_digit($attribute)
             ? (int) $attribute
             : 0;
     }
@@ -54,12 +58,8 @@ final readonly class NoteRequest
     private function field(ServerRequestInterface $serverRequest, string $name): string
     {
         $body = $serverRequest->getParsedBody();
-        $value = is_array($body)
-            ? $body[$name] ?? ''
-            : '';
-
-        return is_string($value)
-            ? trim($value)
+        return is_array($body) && array_key_exists($name, $body) && is_string($body[$name])
+            ? trim($body[$name])
             : '';
     }
 

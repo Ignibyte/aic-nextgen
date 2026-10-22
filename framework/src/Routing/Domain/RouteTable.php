@@ -37,6 +37,7 @@ final readonly class RouteTable
      *
      * @throws RouteNotFoundException    When no route's pattern fits the path.
      * @throws MethodNotAllowedException When the fitting routes answer other methods only.
+     * @throws LogicException            When the required application state is unavailable.
      *
      * @return RouteMatch The matched route and its parameters.
      */

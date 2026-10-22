@@ -10,6 +10,7 @@ use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -29,6 +30,8 @@ final readonly class DatabasePing implements Command
 
     /**
      * @param CommandInput $commandInput The setting's name, first.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return CommandResponse The answer.
      */

@@ -6,6 +6,7 @@ namespace AIC\Tessera\Application;
 
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Tessera\Domain\TesseraRequest;
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -30,6 +31,8 @@ final readonly class TesseraProtocolMiddleware implements MiddlewareInterface
     /**
      * @param ServerRequestInterface  $request The request.
      * @param RequestHandlerInterface $handler The rest of the stack.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The refusal, or the rest of the stack's answer.
      */

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Contracts\ServiceRegistry;
+use AIC\Container\Exception\ContainerException;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
 use AIC\Module\Application\CommandWiring;
@@ -14,6 +15,7 @@ use AIC\Module\Application\PluginWiring;
 use AIC\Module\Application\RootlessJobWiring;
 use AIC\Schedule\Domain\Schedule;
 use AIC\Schema\Contracts\Migration;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -32,6 +34,8 @@ final readonly class ConsoleModules implements CommandWiring, ConsoleWiring, Plu
     }
 
     /**
+     * @throws InvalidArgumentException When a called constructor or service fails.
+     *
      * @return list<Schedule> The modules' schedules.
      */
     #[Override]
@@ -42,6 +46,8 @@ final readonly class ConsoleModules implements CommandWiring, ConsoleWiring, Plu
 
     /**
      * @param ConsoleContext $consoleContext The console's roots.
+     *
+     * @throws ContainerException When a called constructor or service fails.
      *
      * @return array<string, Command> The modules' commands by name.
      */

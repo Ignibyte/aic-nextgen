@@ -18,14 +18,22 @@ trait StreamChecks
 {
     /**
      * @throws RuntimeException When the stream is unusable or not readable.
+     *
+     * @return non-empty-list<resource> The readable handle, independent of later stream state.
      */
-    private function assertReadable(): void
+    private function readableHandles(): array
     {
-        $this->assertUsable();
+        $handles = $this->handle;
+
+        if ($handles === []) {
+            throw new RuntimeException('The stream is closed or detached.');
+        }
 
         if (!$this->readable) {
             throw new RuntimeException('The stream cannot be read.');
         }
+
+        return $handles;
     }
 
     /**

@@ -15,6 +15,7 @@ use AIC\Http\Domain\RangeHeader;
 use AIC\Http\Domain\RangeKind;
 use AIC\Routing\Domain\RouteNotFoundException;
 use AIC\Tessera\Domain\TesseraRequest;
+use InvalidArgumentException;
 use JsonException;
 use JsonSerializable;
 use Override;
@@ -50,7 +51,8 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
      * @param int    $status The status.
      * @param Layout $layout The page.
      *
-     * @throws UnknownComponent When no template renders one of its components.
+     * @throws UnknownComponent         When no template renders one of its components.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The HTML response, varied.
      */
@@ -67,7 +69,8 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
      * @param Layout       $layout  The page.
      * @param list<string> $targets The regions and component paths Tessera asked for.
      *
-     * @throws UnknownComponent When no template renders one of its components.
+     * @throws UnknownComponent         When no template renders one of its components.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The response, `text/vnd.tessera+html` with `Tessera-Protocol: 0`, varied; the whole
      *                           document when the page has no such target.
@@ -92,6 +95,8 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
      * @param int    $status   A redirect status.
      * @param string $location Where to go.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return ResponseInterface The redirect, with an empty body.
      */
     #[Override]
@@ -108,7 +113,8 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
      * @param int              $status           The status.
      * @param JsonSerializable $jsonSerializable The body to encode.
      *
-     * @throws JsonException When the body does not encode.
+     * @throws JsonException            When the body does not encode.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The JSON response.
      */
@@ -159,6 +165,8 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
     /**
      * @param EventSource $eventSource Gives the events.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return ResponseInterface The `text/event-stream` response, not cached and not buffered by a proxy
      *                           (`X-Accel-Buffering: no`, which nginx in front of php-fpm honours), its body
      *                           pulling the events.
@@ -176,6 +184,8 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
     /**
      * @param string $location Where the browser loads in full.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return ResponseInterface A `303` to it carrying `Tessera-Full-Visit`, which the redirect middleware keeps for Tessera.
      */
     #[Override]
@@ -186,6 +196,8 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
 
     /**
      * @param ResponseInterface $response A page's response.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface It with `Vary` on Tessera's request headers (protocol 8), since the same URL answers both.
      */
@@ -199,6 +211,8 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
      * @param string    $mediaType    Its `Content-Type`.
      * @param string    $downloadName The name the browser saves it as.
      * @param ByteRange $byteRange    The part to send.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The 206 response with the part.
      */
@@ -217,6 +231,8 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
     /**
      * @param ResponseInterface $response     A file's response.
      * @param string            $downloadName The name the browser saves it as; empty to show it inline.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The response with `Accept-Ranges`, and `Content-Disposition` for a named download.
      */

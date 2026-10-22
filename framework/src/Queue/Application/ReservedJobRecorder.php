@@ -61,7 +61,7 @@ final readonly class ReservedJobRecorder implements JobRecorder
             return;
         }
 
-        $backoff = self::BACKOFF * 2 ** ($this->reservedJob->attempts - 1);
+        $backoff = self::backoff($this->reservedJob->attempts);
         $this->postgresQueue->release($this->reservedJob->id, max($delaySeconds, $backoff));
     }
 
@@ -74,5 +74,15 @@ final readonly class ReservedJobRecorder implements JobRecorder
     public function fail(string $reason): void
     {
         $this->postgresQueue->bury($this->reservedJob, $reason);
+    }
+
+    /**
+     * @param int $attempt The attempt that will be retried.
+     *
+     * @return int The exponential delay in whole seconds.
+     */
+    private static function backoff(int $attempt): int
+    {
+        return (int) ((float) self::BACKOFF * (2.0 ** (float) ($attempt - 1)));
     }
 }

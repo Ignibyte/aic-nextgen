@@ -6,6 +6,7 @@ namespace App\Generated;
 
 use AIC\Component\Application\ComponentTemplates;
 use AIC\Container\Contracts\ServiceRegistry;
+use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
 use AIC\Module\Application\HandlerWiring;
 use AIC\Module\Application\MiddlewareWiring;
@@ -14,6 +15,7 @@ use AIC\Module\Application\WebWiring;
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use AIC\Schedule\Domain\Schedule;
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -38,6 +40,8 @@ final readonly class WebModules implements HandlerWiring, MiddlewareWiring, Plug
     }
 
     /**
+     * @throws InvalidArgumentException When a called constructor or service fails.
+     *
      * @return list<Schedule> The modules' schedules.
      */
     #[Override]
@@ -67,6 +71,9 @@ final readonly class WebModules implements HandlerWiring, MiddlewareWiring, Plug
     /**
      * @param HandlerContext $handlerContext The roots and the kind wrappers.
      *
+     * @throws ContainerException       When a called constructor or service fails.
+     * @throws InvalidArgumentException When a called constructor or service fails.
+     *
      * @return array<string, RequestHandlerInterface> The modules' handlers by id.
      */
     #[Override]
@@ -77,6 +84,8 @@ final readonly class WebModules implements HandlerWiring, MiddlewareWiring, Plug
 
     /**
      * @param HandlerContext $handlerContext The roots.
+     *
+     * @throws InvalidArgumentException When a called constructor or service fails.
      *
      * @return list<MiddlewareInterface> The modules' middleware after the session, in build order.
      */

@@ -10,6 +10,7 @@ use AIC\Controller\Contracts\ResponseWriter;
 use AIC\Controller\Domain\PageDocument;
 use AIC\Form\Application\FormTokens;
 use AIC\Tessera\Domain\TesseraRequest;
+use LogicException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -38,6 +39,8 @@ final readonly class PageHandler implements RequestHandlerInterface
 
     /**
      * @param ServerRequestInterface $request The request.
+     *
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return ResponseInterface The response.
      */

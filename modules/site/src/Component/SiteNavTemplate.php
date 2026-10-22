@@ -6,6 +6,7 @@ namespace App\Site\Component;
 
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\KeyedComponent;
+use AIC\Component\Exception\UnknownComponent;
 
 /**
  * SiteNav's markup, compiled from SiteNav.html.php by composer run build (#97, #98):
@@ -16,6 +17,8 @@ final readonly class SiteNavTemplate
     /**
      * @param SiteNav    $siteNav    The component.
      * @param RenderPass $renderPass The pass that writes its children.
+     *
+     * @throws UnknownComponent When a child has no registered template.
      *
      * @return string Its markup.
      */
@@ -28,6 +31,8 @@ final readonly class SiteNavTemplate
      * @param RenderPass     $renderPass     The pass that writes its children.
      * @param KeyedComponent $keyedComponent A loop's variable.
      *
+     * @throws UnknownComponent When a child has no registered template.
+     *
      * @return string Markup from SiteNav.html.php.
      */
     private function part0(RenderPass $renderPass, KeyedComponent $keyedComponent): string
@@ -38,6 +43,8 @@ final readonly class SiteNavTemplate
     /**
      * @param SiteNav    $siteNav    The component.
      * @param RenderPass $renderPass The pass that writes its children.
+     *
+     * @throws UnknownComponent When a child has no registered template.
      *
      * @return string Markup from SiteNav.html.php.
      */
@@ -55,6 +62,8 @@ final readonly class SiteNavTemplate
     /**
      * @param SiteNav    $siteNav    The component.
      * @param RenderPass $renderPass The pass that writes its children.
+     *
+     * @throws UnknownComponent When a child has no registered template.
      *
      * @return string Markup from SiteNav.html.php.
      */

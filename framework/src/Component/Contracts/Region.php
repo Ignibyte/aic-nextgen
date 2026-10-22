@@ -42,6 +42,8 @@ final readonly class Region
     /**
      * @param list<Component> $components Components to follow its own.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return self The region holding both, in order.
      */
     public function append(array $components): self

@@ -36,6 +36,8 @@ final readonly class TableDraft implements TableBuilder
     /**
      * @param string $name The column.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return self The builder.
      */
     #[Override]
@@ -65,6 +67,8 @@ final readonly class TableDraft implements TableBuilder
     /**
      * @param string $name The column.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return self The builder.
      */
     #[Override]
@@ -77,6 +81,8 @@ final readonly class TableDraft implements TableBuilder
 
     /**
      * @param string $name The column, a whole number.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return self The builder.
      */
@@ -91,6 +97,8 @@ final readonly class TableDraft implements TableBuilder
     /**
      * @param string $name The column, a 64-bit whole number.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return self The builder.
      */
     #[Override]
@@ -104,6 +112,8 @@ final readonly class TableDraft implements TableBuilder
     /**
      * @param string $name The column, a point in time with its time zone.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return self The builder.
      */
     #[Override]
@@ -116,6 +126,8 @@ final readonly class TableDraft implements TableBuilder
 
     /**
      * @param string $name The column, a calendar date with no time or zone.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return self The builder.
      */
@@ -146,6 +158,8 @@ final readonly class TableDraft implements TableBuilder
 
     /**
      * @param string $name The column, true or false.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return self The builder.
      */

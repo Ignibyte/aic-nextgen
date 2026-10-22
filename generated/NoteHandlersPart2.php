@@ -14,6 +14,7 @@ use App\Note\Form\StockForm;
 use App\Note\Repository\StockRepository;
 use App\Note\Service\StockList;
 use App\Site\Service\HtmlLayout;
+use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -31,6 +32,8 @@ final readonly class NoteHandlersPart2
     }
 
     /**
+     * @throws InvalidArgumentException When a called constructor or service fails.
+     *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array

@@ -8,6 +8,7 @@ use AIC\Form\Contracts\FormToken;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Session\Application\RequestSession;
 use AIC\Tessera\Domain\TesseraRequest;
+use InvalidArgumentException;
 use LogicException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
@@ -81,6 +82,8 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
     /**
      * @param int    $status  403, 419 or 400.
      * @param string $message What went wrong, for a person.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The refusal, as plain text.
      */

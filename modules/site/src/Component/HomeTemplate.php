@@ -6,6 +6,7 @@ namespace App\Site\Component;
 
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\RendersMarkup;
+use AIC\Component\Exception\UnknownComponent;
 use App\Site\Entity\HomeDemo;
 use App\Site\Entity\HomeFact;
 
@@ -20,6 +21,8 @@ final readonly class HomeTemplate
     /**
      * @param Home       $home       The component.
      * @param RenderPass $renderPass The pass that writes its children.
+     *
+     * @throws UnknownComponent When a child has no registered template.
      *
      * @return string Its markup.
      */
@@ -152,6 +155,8 @@ final readonly class HomeTemplate
      * @param Home       $home       The component.
      * @param RenderPass $renderPass The pass that writes its children.
      *
+     * @throws UnknownComponent When a child has no registered template.
+     *
      * @return string Markup from Home.html.php.
      */
     private function part8(Home $home, RenderPass $renderPass): string
@@ -164,6 +169,8 @@ final readonly class HomeTemplate
     /**
      * @param Home       $home       The component.
      * @param RenderPass $renderPass The pass that writes its children.
+     *
+     * @throws UnknownComponent When a child has no registered template.
      *
      * @return string Markup from Home.html.php.
      */

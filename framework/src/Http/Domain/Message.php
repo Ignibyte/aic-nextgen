@@ -10,12 +10,12 @@ use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
 
 use function array_key_exists;
+use function array_keys;
 use function explode;
 use function implode;
 use function is_array;
-use function is_float;
-use function is_int;
-use function is_string;
+use function is_bool;
+use function is_scalar;
 use function strtolower;
 
 /**
@@ -161,12 +161,16 @@ abstract class Message implements MessageInterface
     {
         $values = [];
 
-        foreach (is_array($value) ? $value : [$value] as $entry) {
-            $values[] = match (true) {
-                is_string($entry) => $entry,
-                is_int($entry), is_float($entry) => (string) $entry,
-                default => throw new InvalidArgumentException('A header value must be a string or a number.'),
-            };
+        $entries = is_array($value)
+            ? $value
+            : [$value];
+
+        foreach (array_keys($entries) as $key) {
+            if (!is_scalar($entries[$key]) || is_bool($entries[$key])) {
+                throw new InvalidArgumentException('A header value must be a string or a number.');
+            }
+
+            $values[] = (string) $entries[$key];
         }
 
         $new = clone $this;

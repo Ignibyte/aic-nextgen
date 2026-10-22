@@ -16,6 +16,7 @@ use AIC\Schedule\Domain\Schedule;
 use App\Site\Component\LineList;
 use App\Site\Service\HtmlLayout;
 use App\Site\Service\ScheduleLines;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -46,6 +47,7 @@ final readonly class JobsPage implements Page
      * @param ServerRequestInterface $serverRequest The request, with its session.
      *
      * @throws QueryException When the queue cannot be read.
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return PageResponse The page.
      */

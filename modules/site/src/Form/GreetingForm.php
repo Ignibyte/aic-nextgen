@@ -11,6 +11,7 @@ use AIC\Component\Domain\Form;
 use AIC\Component\Domain\FormField;
 use AIC\Component\Domain\Input;
 use AIC\Form\Application\FormTokens;
+use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -31,6 +32,8 @@ final readonly class GreetingForm
      * @param ServerRequestInterface $serverRequest The request, with its session.
      * @param string                 $value         The name to show in the field.
      * @param string                 $error         The error to show; empty for none.
+     *
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return Form The form.
      */

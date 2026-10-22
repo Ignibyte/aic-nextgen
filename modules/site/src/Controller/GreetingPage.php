@@ -10,9 +10,11 @@ use AIC\Module\Attribute\Tagged;
 use App\Site\Component\Greetings;
 use App\Site\Service\Greeter;
 use App\Site\Service\HtmlLayout;
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
 use function is_string;
 
 /**
@@ -35,14 +37,16 @@ final readonly class GreetingPage implements Page
     /**
      * @param ServerRequestInterface $serverRequest The request, with the `name` attribute.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return PageResponse The greeting.
      */
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $attribute = $serverRequest->getAttribute('name');
-        $name = is_string($attribute)
-            ? $attribute
+        $attributes = $serverRequest->getAttributes();
+        $name = array_key_exists('name', $attributes) && is_string($attributes['name'])
+            ? $attributes['name']
             : '';
         $greetings = [];
 

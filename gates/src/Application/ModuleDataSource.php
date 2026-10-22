@@ -42,7 +42,7 @@ final readonly class ModuleDataSource
         final readonly class {class}
         {
             /**
-             * @return {returnDoc} {what}
+        {throws}     * @return {returnDoc} {what}
              */
             public function all(): array
             {
@@ -73,7 +73,9 @@ final readonly class ModuleDataSource
 
         $docblock = $this->doc($moduleDefinition, 'its schedules.');
 
-        return $this->phpClassFile->file('App\\Generated', [Schedule::class, Cadence::class], [], $docblock, $source);
+        $classes = [Schedule::class, Cadence::class, InvalidArgumentException::class];
+
+        return $this->phpClassFile->file('App\\Generated', $classes, [], $docblock, $source);
     }
 
     /**
@@ -142,6 +144,9 @@ final readonly class ModuleDataSource
             '{class}' => $moduleDefinition->studlyName() . $suffix,
             '{returnDoc}' => $returnDoc,
             '{return}' => $return,
+            '{throws}' => $suffix === 'Schedules'
+                ? "     * @throws InvalidArgumentException When a schedule cadence is invalid.\n     *\n"
+                : '',
             '{what}' => $what,
         ]);
     }

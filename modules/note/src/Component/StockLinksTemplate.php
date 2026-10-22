@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Note\Component;
 
 use AIC\Component\Application\RenderPass;
+use AIC\Component\Exception\UnknownComponent;
 
 /**
  * StockLinks's markup, compiled from StockLinks.html.php by composer run build (#97, #98):
@@ -16,6 +17,8 @@ final readonly class StockLinksTemplate
      * @param StockLinks $stockLinks The component.
      * @param RenderPass $renderPass The pass that writes its children.
      *
+     * @throws UnknownComponent When a child has no registered template.
+     *
      * @return string Its markup.
      */
     public function render(StockLinks $stockLinks, RenderPass $renderPass): string
@@ -26,6 +29,8 @@ final readonly class StockLinksTemplate
     /**
      * @param StockLinks $stockLinks The component.
      * @param RenderPass $renderPass The pass that writes its children.
+     *
+     * @throws UnknownComponent When a child has no registered template.
      *
      * @return string Markup from StockLinks.html.php.
      */

@@ -12,6 +12,7 @@ use AIC\Component\Domain\Form;
 use AIC\Component\Domain\FormEncoding;
 use AIC\Component\Domain\FormField;
 use AIC\Form\Application\FormTokens;
+use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -31,6 +32,8 @@ final readonly class UploadForm
     /**
      * @param ServerRequestInterface $serverRequest The request, with its session.
      * @param string                 $error         Why the last upload was refused; empty for none.
+     *
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return Form The form.
      */

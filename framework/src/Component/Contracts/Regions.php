@@ -68,6 +68,8 @@ final readonly class Regions
     /**
      * @param string $name A region's name.
      *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
      * @return Region The region of that name the page filled, or an empty one.
      */
     public function region(string $name): Region

@@ -8,6 +8,7 @@ use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use App\Site\Component\Ticks;
 use App\Site\Service\HtmlLayout;
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -28,6 +29,8 @@ final readonly class TicksPage implements Page
 
     /**
      * @param ServerRequestInterface $serverRequest The request; the page is the same for every one.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return PageResponse The page.
      */

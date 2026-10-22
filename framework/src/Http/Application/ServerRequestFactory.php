@@ -14,6 +14,7 @@ use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 
 use function array_filter;
+use function array_keys;
 use function is_scalar;
 use function is_string;
 
@@ -51,11 +52,31 @@ final readonly class ServerRequestFactory implements ServerRequestFactoryInterfa
             throw new InvalidArgumentException('A URI must be a string or a UriInterface.');
         }
 
+        $params = [];
+
+        foreach (array_keys(array_filter($serverParams, is_string(...), ARRAY_FILTER_USE_KEY)) as $key) {
+            if (!is_scalar($serverParams[$key])) {
+                continue;
+            }
+
+            $params[self::name($key)] = $serverParams[$key];
+        }
+
         return new ServerRequest(
             method: $method,
             uri: $this->uriFactory->createUri((string) $uri),
             stream: $this->streamFactory->createStream(),
-            serverParams: array_filter(array_filter($serverParams, is_scalar(...)), is_string(...), ARRAY_FILTER_USE_KEY),
+            serverParams: $params,
         );
+    }
+
+    /**
+     * @param string|int $key A key retained by the server parameter name filter.
+     *
+     * @return string Its name in the typed server parameter map.
+     */
+    private static function name(string|int $key): string
+    {
+        return (string) $key;
     }
 }

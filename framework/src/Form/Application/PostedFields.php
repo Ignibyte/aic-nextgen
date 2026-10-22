@@ -6,6 +6,7 @@ namespace AIC\Form\Application;
 
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
 use function is_array;
 use function is_string;
 
@@ -24,12 +25,8 @@ final readonly class PostedFields
     public function value(ServerRequestInterface $serverRequest, string $name): string
     {
         $body = $serverRequest->getParsedBody();
-        $value = is_array($body)
-            ? $body[$name] ?? ''
-            : '';
-
-        return is_string($value)
-            ? $value
+        return is_array($body) && array_key_exists($name, $body) && is_string($body[$name])
+            ? $body[$name]
             : '';
     }
 }

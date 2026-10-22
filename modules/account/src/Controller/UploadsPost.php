@@ -13,9 +13,11 @@ use AIC\Form\Exception\RefusedUpload;
 use AIC\Session\Application\RequestSession;
 use App\Account\Form\UploadForm;
 use App\Site\Service\HtmlLayout;
+use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use RuntimeException;
 
 /**
  * POST /uploads: checks the uploaded file (#44). An accepted one is noted in
@@ -41,6 +43,9 @@ final readonly class UploadsPost implements Page
     /**
      * @param ServerRequestInterface $serverRequest The posted form, with its session.
      *
+     * @throws LogicException   When the required application state is unavailable.
+     * @throws RuntimeException When the underlying operation fails.
+     *
      * @return PageResponse 303 to /uploads, or the form again as 422.
      */
     #[Override]
@@ -59,6 +64,9 @@ final readonly class UploadsPost implements Page
     /**
      * @param ServerRequestInterface $serverRequest The posted form.
      * @param UploadedFileInterface  $uploadedFile  Its file.
+     *
+     * @throws LogicException   When the required application state is unavailable.
+     * @throws RuntimeException When the underlying operation fails.
      *
      * @return PageResponse 303 when the check accepts it, else the form again as 422.
      */
@@ -80,6 +88,8 @@ final readonly class UploadsPost implements Page
     /**
      * @param ServerRequestInterface $serverRequest The posted form.
      * @param string                 $reason        Why the file was refused.
+     *
+     * @throws LogicException When the required application state is unavailable.
      *
      * @return PageDocument The form again, with the reason, as 422.
      */
