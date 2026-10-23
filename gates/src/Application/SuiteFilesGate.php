@@ -33,13 +33,15 @@ final readonly class SuiteFilesGate
     private const array AIC_STUBS = ['captainhook.json', 'pint.json'];
 
     /**
-     * @param SuiteStubs     $suiteStubs     The stubs.
-     * @param SuiteComposer  $suiteComposer  composer.json's shipped lines.
-     * @param ProjectProfile $projectProfile Which stubs the project holds.
+     * @param SuiteStubs            $suiteStubs     The stubs.
+     * @param SuiteComposer         $suiteComposer  composer.json's shipped lines.
+     * @param array<string, string> $registrations  Expected custom registration XML by absolute package path.
+     * @param ProjectProfile        $projectProfile Which stubs the project holds.
      */
     public function __construct(
         private SuiteStubs $suiteStubs,
         private SuiteComposer $suiteComposer,
+        private array $registrations,
         private ProjectProfile $projectProfile = new ProjectProfile(),
     ) {
     }
@@ -56,7 +58,11 @@ final readonly class SuiteFilesGate
         $names = $this->projectProfile->profile($root) === GateProfile::Aic
             ? self::AIC_STUBS
             : SuiteStubs::NAMES;
-        $findings = [...$this->stubFindings($root, $names), ...$this->suiteComposer->findings($this->composer($root))];
+        $findings = [
+            ...$this->stubFindings($root, $names),
+            ...$this->suiteComposer->findings($this->composer($root)),
+            ...$this->registrationFindings(),
+        ];
 
         foreach ($findings as $finding) {
             fwrite($stderr, 'gate:30 — ' . $finding . PHP_EOL);
@@ -64,7 +70,8 @@ final readonly class SuiteFilesGate
 
         fwrite(
             $findings === [] ? $stdout : $stderr,
-            'gate:30 — suite files: ' . count($names) . " stub(s) and composer.json's scripts and plugins checked, "
+            'gate:30 — suite files: ' . count($names) . ' stub(s), composer.json and '
+                . count($this->registrations) . ' registration(s) checked, '
                 . count($findings) . ' finding(s).' . PHP_EOL,
         );
 
@@ -111,6 +118,24 @@ final readonly class SuiteFilesGate
             }
 
             $findings[] = $name . $state . '; run vendor/bin/aic-gate init.';
+        }
+
+        return $findings;
+    }
+
+    /**
+     * @return list<string> Missing, unreadable or stale generated package registrations.
+     */
+    private function registrationFindings(): array
+    {
+        $findings = [];
+
+        foreach ($this->registrations as $path => $expected) {
+            if (is_file($path) && file_get_contents($path) === $expected) {
+                continue;
+            }
+
+            $findings[] = $path . ' is missing or stale; rebuild aic/gates from its source or reinstall the package.';
         }
 
         return $findings;

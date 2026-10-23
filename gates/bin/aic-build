@@ -48,26 +48,31 @@ use App\Generated\ConsoleModules;
 use Gates\Application\AssetBundle;
 use Gates\Application\BuildOutputs;
 use Gates\Application\ModuleBuild;
+use Gates\Application\ProjectProfile;
 use Gates\Application\PublicAssetOrphans;
 use Gates\Application\SurfaceManifest;
 use Gates\Application\TemplateBuild;
 use Gates\Application\TemplateCompiler;
 use Gates\Application\TemplatesSource;
 use Gates\Application\TesseraBuild;
+use Gates\Domain\GateProfile;
+use Gates\Infrastructure\ProjectConfig;
 use Gates\Infrastructure\ProjectRoot;
 use Gates\Infrastructure\SystemProcessRunner;
+use Gates\Phpmd\RuleRegistration;
+use Gates\Sniffs\SniffRegistration;
 use Gates\Templates\PlainTemplateReader;
 
 require __DIR__ . '/project.php';
 
 $root = (new ProjectRoot())->path();
-$appConfig = require $root . '/config/app.php';
-$databaseConfig = require $root . '/config/database.php';
-$mailConfig = require $root . '/config/mail.php';
-
-if (!$appConfig instanceof AppConfig || !$databaseConfig instanceof DatabaseConfig || !$mailConfig instanceof MailConfig) {
-    fwrite(\STDERR, "aic-build: config/app.php, config/database.php or config/mail.php returned the wrong type.\n");
-
+try {
+    $projectConfig = new ProjectConfig();
+    $appConfig = $projectConfig->read($root . '/config/app.php', AppConfig::class);
+    $databaseConfig = $projectConfig->read($root . '/config/database.php', DatabaseConfig::class);
+    $mailConfig = $projectConfig->read($root . '/config/mail.php', MailConfig::class);
+} catch (RuntimeException $runtimeException) {
+    fwrite(\STDERR, 'aic-build: ' . $runtimeException->getMessage() . "\n");
     exit(1);
 }
 
@@ -124,6 +129,12 @@ try {
     $outputs = [
         $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleKernel->commands(), $consoleKernel->jobs(), $consoleKernel->schedules(), $modules),
     ] + (new AssetBundle($root))->outputs($modules) + $templates + $tessera;
+    // Only the package's source checkout owns these outputs; an app never writes vendor/.
+    if ((new ProjectProfile())->profile($root) === GateProfile::Aic) {
+        $outputs[$root . '/gates/config/phpcs-custom.xml'] = (new SniffRegistration())->source();
+        $outputs[$root . '/gates/config/phpmd-custom.xml'] = (new RuleRegistration())->source();
+    }
+
 } catch (InvalidArgumentException|RuntimeException $exception) {
     fwrite(\STDERR, 'aic-build: ' . $exception->getMessage() . "\n");
 

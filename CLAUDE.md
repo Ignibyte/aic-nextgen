@@ -369,10 +369,17 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   `vendor/bin/aic-gate init` writes each that is missing or differs (`phpcs.xml.dist` with one
   root per module), appends the ignore lines, prints composer.json's lines and never writes it;
   it refuses here. gate:30 (`SuiteFilesGate`) holds the stubs and composer.json's suite lines; in
-  AIC it holds `pint.json`, `captainhook.json` and the `gate:N` aliases.
-- phpat runs only rule classes registered with the `phpat.test` tag in
-  `phpstan-architecture.neon`; a rule class that is not listed never runs. AIC's own PHPStan rules
-  live in `gates/src/PhpStan` and are listed under `rules:` in `phpstan.neon`.
+  AIC it holds `pint.json`, `captainhook.json` and the `gate:N` aliases. In both profiles it also
+  compares `config/phpcs-custom.xml` and `config/phpmd-custom.xml` inside the installed
+  `aic/gates` package with their writers. The AIC source build writes these two files; app builds leave the package alone.
+- The base NEON files include `phpstan-rules.php` and `phpstan-architecture-rules.php` in
+  `gates/config/`. These PHP configs register the actual rule classes and constructor factories;
+  PHPat services keep the `phpat.test` tag, and their attributed callables return every named rule.
+  A class that is not registered never runs. XML registration writers reference the actual custom
+  PHPCS/PHPMD classes; changing a writer requires `composer run build` and fresh gate:30 output.
+- Root and shipped Rector configs call `RectorSetup` with their own root and source paths.
+  Psalm's configured bootstrap loads the installed PHPCS autoloader and token definitions so
+  analysis reads the real declarations.
 - PHPMD holds old AIC's Constitution limits (method <= 30 lines, class <= 300, <= 15 methods,
   coupling <= 15). Raise one only when code needs it, with the reason beside the value.
 - A new gate or rule is done only when it has been seen to fail on a planted violation.

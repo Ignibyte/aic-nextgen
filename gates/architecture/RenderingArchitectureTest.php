@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Architecture;
 
 use PHPat\Selector\Selector;
+use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 
@@ -16,11 +17,22 @@ use PHPat\Test\PHPat;
 final class RenderingArchitectureTest
 {
     /**
+     * @return array<string, Rule> Every architecture rule under its existing name.
+     */
+    #[TestRule]
+    public function __invoke(): array
+    {
+        return [
+            'testRenderTreeHoldsNoMarkup' => $this->testRenderTreeHoldsNoMarkup(),
+        ];
+    }
+
+    /**
      * `Region`, `Regions` and every `Layout` never depend on `Html`.
      *
      * @return Rule The rule.
      */
-    public function testRenderTreeHoldsNoMarkup(): Rule
+    private function testRenderTreeHoldsNoMarkup(): Rule
     {
         return PHPat::rule()
             ->classes(

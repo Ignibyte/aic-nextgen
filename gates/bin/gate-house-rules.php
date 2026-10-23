@@ -20,7 +20,14 @@ use Gates\Infrastructure\ProjectRoot;
 require __DIR__ . '/project.php';
 
 $root = (new ProjectRoot())->path();
-$work = sys_get_temp_dir() . '/aic-gate-house-rules-' . getmypid();
+$pid = getmypid();
+
+if ($pid === false) {
+    file_put_contents('php://stderr', "gate:28 — cannot determine the process identity.\n");
+    exit(1);
+}
+
+$work = sys_get_temp_dir() . '/aic-gate-house-rules-' . $pid;
 $ruleProbes = new RuleProbes(
     new ProbeFixtures($root, $work),
     new PhpRuleExecutor($root, new LocalProcess($root)),

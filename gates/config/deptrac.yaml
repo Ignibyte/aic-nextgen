@@ -108,6 +108,10 @@ deptrac:
       collectors:
         - type: classLike
           value: '^(PHP_CodeSniffer|SlevomatCodingStandard)\\'
+    - name: RectorVendor
+      collectors:
+        - type: classLike
+          value: '^Rector\\'
     # Composer's runtime API: where an installed package is (#116).
     - name: ComposerVendor
       collectors:
@@ -142,6 +146,7 @@ deptrac:
       - PsrVendor
       - WorkflowParsing
       - ComposerVendor
+      - RectorVendor
     # The app builds on the framework's seams, never on its Infrastructure.
     App:
       - Contracts

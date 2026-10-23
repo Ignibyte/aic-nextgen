@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Real tool registrations and checked launchers** (#140, final part of #134). PHPStan consumes PHP rule registrations and actual constructor factories; attributed PHPat callables retain all twelve named constraints. PHPCS and PHPMD consume custom XML generated from the classes they register.
+  - The AIC build writes the two custom XML files; gate:30 checks them in both profiles, and app builds leave installed packages unchanged. Psalm loads real PHPCS class/token declarations. Typed Rector setup preserves every original builder property; configuration, autoloader, HOME, PID and worktree boundaries validate their actual values.
+  - All 183 gate-tool findings are now removed across #138/#139/#140. Complete ordinary Psalm still exits 2 with 271 workflow findings and zero runtime/gates findings; #135 owns the remaining fixes and both-mode enforcement. All 151 workflow expectations and 32 gates pass without deferrals. A relocated App profile and all nineteen custom/architecture rule plants pass their controls; valid runtime outputs remain unchanged.
+
 - **Generator and template type boundaries** (#139, second part of #134). Wiring writers retain class names and tuple/list shapes; template lowering checks AST expressions, names and regex captures before use. Missing factory receivers and parser/reflection failures receive located refusals with their original causes.
   - Valid generated wiring, templates, surface, assets and wiki output remain byte-identical across real builds. Generator exception contracts describe writer failures without adding them to generated runtime methods.
   - Complete ordinary Psalm removes all 55 findings in the 19 source files. Its report still exits 2 with 43 gate and 271 workflow findings; both-mode enforcement follows in #135. All 151 workflow expectations and 32 gates pass without deferrals, including 72 fresh native site comparisons.

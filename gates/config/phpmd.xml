@@ -100,11 +100,4 @@
     <rule ref="rulesets/unusedcode.xml">
         <exclude name="UnusedFormalParameter"/>
     </rule>
-    <rule name="UnusedFormalParameter"
-          message="Avoid unused parameters such as '{0}'."
-          class="Gates\Phpmd\KindAwareUnusedFormalParameter"
-          externalInfoUrl="https://phpmd.org/rules/unusedcode.html#unusedformalparameter">
-        <description>Avoid unused parameters, except the one a kind or Block interface dictates (#56, #58).</description>
-        <priority>3</priority>
-    </rule>
 </ruleset>

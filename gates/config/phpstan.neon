@@ -9,6 +9,7 @@
 # phpstan/extension-installer from aic/gates' require.
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
+    - phpstan-rules.php
 
 parameters:
     level: 10
@@ -159,17 +160,3 @@ parameters:
             allowIn:
                 - %currentWorkingDirectory%/config/*.php
                 - %currentWorkingDirectory%/gates/bin/gate-*.php
-
-# AIC's own rules (gate:8), each seen to fail on a planted violation.
-rules:
-    # A plugin implements its type: tag(Type::class, Service::class) (#5).
-    - Gates\PhpStan\TaggedServiceTypeRule
-    # Components only (#99): the Renderer alone makes an Html, the writer alone
-    # reads one, a controller carries no markup and returns only its kind's
-    # response, and the render tree takes data, never markup.
-    - Gates\PhpStan\HtmlConstructionRule
-    - Gates\PhpStan\HtmlMarkupReadRule
-    - Gates\PhpStan\HtmlMarkupCallableRule
-    - Gates\PhpStan\ControllerMarkupLiteralRule
-    - Gates\PhpStan\ControllerReturnTypeRule
-    - Gates\PhpStan\RenderTreeInputRule
