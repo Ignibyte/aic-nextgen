@@ -152,7 +152,13 @@ final class TemplateLowering
     {
         return match (true) {
             $stmt instanceof InlineHTML => [new TemplateNode(TemplateNodeKind::Text, $stmt->value)],
-            $stmt instanceof Echo_ => [$this->echo($stmt->exprs[0], $scope, $loops > 0)],
+            $stmt instanceof Echo_ => [$this->echo(
+                $stmt->exprs[0] ?? throw new InvalidArgumentException(
+                    TemplateRefusal::NotCompilable->value . ': an echo has no expression',
+                ),
+                $scope,
+                $loops > 0,
+            )],
             default => (new TemplateFlow($this))->lower($stmt, $scope, $loops),
         };
     }

@@ -144,14 +144,16 @@ final readonly class TemplateConditions
         $default = [];
 
         foreach ($switch->cases as $case) {
-            if (!$case->cond instanceof Expr) {
+            $condition = $case->cond;
+
+            if (!$condition instanceof Expr) {
                 $default = $this->closed($case->stmts);
 
                 continue;
             }
 
-            $this->sameType($case->cond, $templateType, $scope);
-            $pending[] = $case->cond;
+            $this->sameType($condition, $templateType, $scope);
+            $pending[] = $condition;
 
             if ($case->stmts === []) {
                 continue;

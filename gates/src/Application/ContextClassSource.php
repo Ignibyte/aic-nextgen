@@ -160,7 +160,7 @@ final readonly class ContextClassSource
 
         foreach ($contextClass->entries as $contextEntry) {
             $state = $this->locals($contextEntry->wiredObject->arguments, $state, $contextClass->roots, $moduleDefinition);
-            $state[2][] = $contextEntry->wiredObject->class;
+            $state = [$state[0], $state[1], [...$state[2], $contextEntry->wiredObject->class], $state[3]];
         }
 
         $entries = array_map(
@@ -223,9 +223,7 @@ final readonly class ContextClassSource
         ModuleDefinition $moduleDefinition,
     ): array {
         if ($wiredObject->root === WiredObject::TAGGED) {
-            $state[2][] = $wiredObject->class;
-
-            return $state;
+            return [$state[0], $state[1], [...$state[2], $wiredObject->class], $state[3]];
         }
 
         if ($wiredObject->root !== '' || array_key_exists($wiredObject->class, $state[0])) {
@@ -275,6 +273,8 @@ final readonly class ContextClassSource
      * @param ContextEntry          $contextEntry An entry.
      * @param array<string, string> $locals       The local's name by class.
      * @param WiringRoots           $wiringRoots  The side's context.
+     *
+     * @throws InvalidArgumentException When a factory product has no factory receiver.
      *
      * @return string Its array entry: its key, the object, wrapped when it is a controller.
      */

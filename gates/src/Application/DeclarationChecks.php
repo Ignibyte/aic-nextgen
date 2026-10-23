@@ -18,9 +18,7 @@ use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionMethod;
 
-use function array_filter;
 use function class_exists;
-use function count;
 use function enum_exists;
 use function interface_exists;
 use function is_a;
@@ -107,9 +105,17 @@ final readonly class DeclarationChecks
     private function checkRoute(ModuleDefinition $moduleDefinition, string $class): void
     {
         $this->checkOwned($moduleDefinition, $class, 'route');
-        $kinds = array_filter([Page::class, Api::class, Stream::class], static fn (string $kind): bool => is_a($class, $kind, true));
+        $kinds = 0;
 
-        if (count($kinds) !== 1) {
+        foreach ([Page::class, Api::class, Stream::class] as $kind) {
+            if (!is_a($class, $kind, true)) {
+                continue;
+            }
+
+            $kinds += 1;
+        }
+
+        if ($kinds !== 1) {
             throw $this->refusal($moduleDefinition, 'route ' . $class . ' must be exactly one of Page, Api or Stream');
         }
     }
@@ -138,7 +144,7 @@ final readonly class DeclarationChecks
     /**
      * @param ModuleDefinition $moduleDefinition The module.
      * @param string           $class            A block, plugin or migration.
-     * @param string           $type             What it must implement.
+     * @param class-string     $type             What it must implement.
      * @param string           $what             What it was declared as, for the message.
      *
      * @throws InvalidArgumentException When it is not the module's, does not implement the type, or has a required constructor parameter.

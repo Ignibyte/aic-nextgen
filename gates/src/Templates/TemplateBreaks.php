@@ -10,7 +10,6 @@ use PhpParser\Node\Stmt\Else_;
 use PhpParser\Node\Stmt\If_;
 
 use function array_any;
-use function array_values;
 
 /**
  * Finds a `break` that would leave a `switch` (#97): one in a case's own
@@ -48,6 +47,22 @@ final readonly class TemplateBreaks
             $stmts = [...$stmts, ...$elseIf->stmts];
         }
 
-        return array_values($stmts);
+        return $this->sequential($stmts);
+    }
+
+    /**
+     * @param array<array-key, Stmt> $stmts Statements in traversal order.
+     *
+     * @return list<Stmt> Their values with sequential indices.
+     */
+    private function sequential(array $stmts): array
+    {
+        $ordered = [];
+
+        foreach ($stmts as $stmt) {
+            $ordered[] = $stmt;
+        }
+
+        return $ordered;
     }
 }

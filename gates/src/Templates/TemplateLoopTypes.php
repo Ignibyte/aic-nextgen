@@ -8,12 +8,12 @@ use Gates\Domain\TemplateRefusal;
 use Gates\Domain\TemplateType;
 use Gates\Domain\TemplateTypeKind;
 use InvalidArgumentException;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
 
-use function array_find_key;
 use function is_string;
 use function lcfirst;
 
@@ -26,16 +26,6 @@ use function lcfirst;
  */
 final readonly class TemplateLoopTypes
 {
-    /**
-     * The scalar element types, by the parameter type they become.
-     */
-    private const array SCALARS = [
-        'bool' => TemplateTypeKind::Bool,
-        'float' => TemplateTypeKind::Float,
-        'int' => TemplateTypeKind::Int,
-        'string' => TemplateTypeKind::String,
-    ];
-
     /**
      * @param Foreach_         $foreach          The loop.
      * @param TemplateType     $templateType     The type of what it loops over.
@@ -51,24 +41,21 @@ final readonly class TemplateLoopTypes
         $element = $templateType->only(TemplateTypeKind::List)
             ? $templateType->element
             : null;
+        $value = $this->variableName($foreach->valueVar);
 
-        if (
-            !$element instanceof TemplateType
-            || !$foreach->valueVar instanceof Variable
-            || !is_string($foreach->valueVar->name)
-        ) {
+        if (!$element instanceof TemplateType || !is_string($value)) {
             throw new InvalidArgumentException(TemplateRefusal::LoopType->value . ': foreach loops over a property typed list<T>');
         }
 
         $bound = [];
         $parameters = [];
+        $key = $this->variableName($foreach->keyVar);
 
-        if ($foreach->keyVar instanceof Variable && is_string($foreach->keyVar->name)) {
-            $bound[$foreach->keyVar->name] = new TemplateType([TemplateTypeKind::Int]);
-            $parameters[] = 'int $' . $foreach->keyVar->name;
+        if (is_string($key)) {
+            $bound[$key] = new TemplateType([TemplateTypeKind::Int]);
+            $parameters[] = 'int $' . $key;
         }
 
-        $value = $foreach->valueVar->name;
         $bound[$value] = $element;
         $parameters[] = $this->parameterType($element, $value, $templateLowering) . ' $' . $value;
 
@@ -85,11 +72,16 @@ final readonly class TemplateLoopTypes
         $bound = [];
 
         foreach ($for->init as $init) {
-            if (!($init instanceof Assign) || !($init->var instanceof Variable) || !is_string($init->var->name)) {
+            $variable = $init instanceof Assign
+                ? $init->var
+                : null;
+            $name = $this->variableName($variable);
+
+            if (!is_string($name)) {
                 continue;
             }
 
-            $bound[$init->var->name] = new TemplateType([TemplateTypeKind::Int]);
+            $bound[$name] = new TemplateType([TemplateTypeKind::Int]);
         }
 
         return $bound;
@@ -110,12 +102,15 @@ final readonly class TemplateLoopTypes
             return $this->classParameter($templateType->class, $name, $templateLowering);
         }
 
-        return array_find_key(
-            self::SCALARS,
-            static fn (TemplateTypeKind $templateTypeKind): bool => $templateType->only($templateTypeKind),
-        ) ?? throw new InvalidArgumentException(
-            TemplateRefusal::LoopType->value . ": a list's element is one class, or a string, int, float or bool",
-        );
+        return match (true) {
+            $templateType->only(TemplateTypeKind::Bool) => 'bool',
+            $templateType->only(TemplateTypeKind::Float) => 'float',
+            $templateType->only(TemplateTypeKind::Int) => 'int',
+            $templateType->only(TemplateTypeKind::String) => 'string',
+            default => throw new InvalidArgumentException(
+                TemplateRefusal::LoopType->value . ": a list's element is one class, or a string, int, float or bool",
+            ),
+        };
     }
 
     /**
@@ -138,5 +133,21 @@ final readonly class TemplateLoopTypes
         }
 
         return $short;
+    }
+
+    /**
+     * @param Expr|null $expr A possible named loop variable.
+     *
+     * @return string|null Its checked name; null for computed or absent variables.
+     */
+    private function variableName(?Expr $expr): ?string
+    {
+        $name = $expr instanceof Variable
+            ? $expr->name
+            : null;
+
+        return is_string($name)
+            ? $name
+            : null;
     }
 }

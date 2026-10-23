@@ -5,18 +5,20 @@ declare(strict_types=1);
 namespace Gates\Templates;
 
 use AIC\Component\Contracts\Component;
+use Gates\Domain\RegexCaptures;
 use Gates\Domain\TemplateRefusal;
 use Gates\Domain\TemplateType;
 use Gates\Domain\TemplateTypeKind;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionEnum;
+use ReflectionException;
 use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionType;
 use ReflectionUnionType;
-use UnitEnum;
 
+use function array_key_exists;
 use function basename;
 use function class_exists;
 use function enum_exists;
@@ -25,7 +27,6 @@ use function get_debug_type;
 use function in_array;
 use function interface_exists;
 use function is_a;
-use function preg_match;
 use function str_replace;
 use function ucwords;
 
@@ -36,6 +37,8 @@ use function ucwords;
  */
 final readonly class TemplateClassTypes
 {
+    use RegexCaptures;
+
     /**
      * Builtin type names, by the kind they are.
      */
@@ -77,21 +80,9 @@ final readonly class TemplateClassTypes
             );
         }
 
-        $file = (string) (new ReflectionClass($component))->getFileName();
+        $this->owned($component, $path);
 
-        if (preg_match('#^modules/([a-z0-9_]+)/templates/components/#', $path, $match) !== 1) {
-            return $file;
-        }
-
-        $expected = 'App\\' . str_replace('_', '', ucwords($match[1], '_')) . '\\Component\\' . basename($path, '.html.php');
-
-        if ($component !== $expected) {
-            throw new InvalidArgumentException(
-                TemplateRefusal::ComponentType->value . ": a component template renders its module's own " . $expected,
-            );
-        }
-
-        return $file;
+        return (string) (new ReflectionClass($component))->getFileName();
     }
 
     /**
@@ -107,18 +98,18 @@ final readonly class TemplateClassTypes
         $class = $this->owner($templateType, $name);
 
         if (enum_exists($class) && in_array($name, ['name', 'value'], true)) {
-            return $this->enumMember(new ReflectionEnum($class), $name);
+            return $this->enumMember((new ReflectionEnum($class))->getBackingType(), $name);
         }
 
-        $reflectionClass = new ReflectionClass($class);
+        $reflectionProperty = $this->declaredProperty($class, $name);
 
-        if (!$reflectionClass->hasProperty($name) || !$reflectionClass->getProperty($name)->isPublic()) {
+        if (!$reflectionProperty->isPublic()) {
             throw new InvalidArgumentException(
                 TemplateRefusal::Property->value . ': ' . $class . '::$' . $name . ' is not a public property',
             );
         }
 
-        return $this->reflected($reflectionClass->getProperty($name));
+        return $this->reflected($reflectionProperty);
     }
 
     /**
@@ -139,9 +130,74 @@ final readonly class TemplateClassTypes
             throw new InvalidArgumentException(TemplateRefusal::ClassName->value . ': ' . $class . '::' . $name . ' does not exist');
         }
 
-        $value = (new ReflectionClass($class))->getConstant($name);
+        return new TemplateType([$this->constantKind($class, $name)]);
+    }
 
-        return new TemplateType([self::BUILTINS[explode('|', get_debug_type($value))[0]] ?? TemplateTypeKind::Unknown]);
+    /**
+     * @param class-string $component The validated component class.
+     * @param string       $path      Its template's relative path.
+     *
+     * @throws InvalidArgumentException When the template names a different module's component.
+     */
+    private function owned(string $component, string $path): void
+    {
+        $match = self::regexMatch('#^modules/([a-z0-9_]+)/templates/components/#', $path);
+
+        if (!array_key_exists(1, $match)) {
+            return;
+        }
+
+        $expected = 'App\\' . str_replace('_', '', ucwords($match[1], '_')) . '\\Component\\' . basename($path, '.html.php');
+
+        if ($component !== $expected) {
+            throw new InvalidArgumentException(
+                TemplateRefusal::ComponentType->value . ": a component template renders its module's own " . $expected,
+            );
+        }
+    }
+
+    /**
+     * @param class-string $class The existing owning class.
+     * @param string       $name  A declared property's name.
+     *
+     * @throws InvalidArgumentException When reflection cannot find the property.
+     *
+     * @return ReflectionProperty The property to inspect.
+     */
+    private function declaredProperty(string $class, string $name): ReflectionProperty
+    {
+        try {
+            return (new ReflectionClass($class))->getProperty($name);
+        } catch (ReflectionException $reflectionException) {
+            throw new InvalidArgumentException(
+                TemplateRefusal::Property->value . ': ' . $class . '::$' . $name . ' is not a public property',
+                0,
+                $reflectionException,
+            );
+        }
+    }
+
+    /**
+     * @param class-string $class The owning class or interface.
+     * @param string       $name  Its constant's name.
+     *
+     * @throws InvalidArgumentException When reflection cannot read the constant.
+     *
+     * @return TemplateTypeKind The constant's value type, or unknown for an unsupported value.
+     */
+    private function constantKind(string $class, string $name): TemplateTypeKind
+    {
+        try {
+            $type = get_debug_type((new ReflectionClass($class))->getConstant($name));
+        } catch (ReflectionException $reflectionException) {
+            throw new InvalidArgumentException(
+                TemplateRefusal::ClassName->value . ': ' . $class . '::' . $name . ' does not exist',
+                0,
+                $reflectionException,
+            );
+        }
+
+        return self::BUILTINS[explode('|', $type)[0]] ?? TemplateTypeKind::Unknown;
     }
 
     /**
@@ -216,19 +272,17 @@ final readonly class TemplateClassTypes
     }
 
     /**
-     * @param ReflectionEnum<UnitEnum> $reflectionEnum An enum.
-     * @param string                   $name           `name` or `value`.
+     * @param ReflectionType|null $reflectionType The enum's backing type, or null when unbacked.
+     * @param string              $name           `name` or `value`.
      *
      * @return TemplateType A string for `name`; the backing type for `value`.
      */
-    private function enumMember(ReflectionEnum $reflectionEnum, string $name): TemplateType
+    private function enumMember(?ReflectionType $reflectionType, string $name): TemplateType
     {
-        $backing = $reflectionEnum->getBackingType();
-
-        if ($name === 'name' || !$backing instanceof ReflectionNamedType) {
+        if ($name === 'name' || !$reflectionType instanceof ReflectionNamedType) {
             return new TemplateType([$name === 'name' ? TemplateTypeKind::String : TemplateTypeKind::Unknown]);
         }
 
-        return new TemplateType([self::BUILTINS[$backing->getName()] ?? TemplateTypeKind::Unknown]);
+        return new TemplateType([self::BUILTINS[$reflectionType->getName()] ?? TemplateTypeKind::Unknown]);
     }
 }
