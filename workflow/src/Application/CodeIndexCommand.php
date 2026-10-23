@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use InvalidArgumentException;
 use Override;
 
 use function in_array;
@@ -30,6 +31,8 @@ final readonly class CodeIndexCommand implements Command
 
     /**
      * @param CommandInput $commandInput `--full`, or nothing.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse The counts; exit 1 when it cannot build, 2 for another argument.
      */

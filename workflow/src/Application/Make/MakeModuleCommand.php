@@ -13,6 +13,7 @@ use AIC\Workflow\Domain\Console\ParsedArguments;
 use AIC\Workflow\Domain\Make\MadeFile;
 use AIC\Workflow\Domain\Make\MakeRecipe;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use InvalidArgumentException;
 use Override;
 
 use function array_map;
@@ -43,6 +44,8 @@ final readonly class MakeModuleCommand implements Command
 
     /**
      * @param CommandInput $commandInput The line.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse What it wrote.
      */

@@ -12,6 +12,7 @@ use AIC\Workflow\Domain\Console\InspectAnswer;
 use AIC\Workflow\Domain\Console\ParsedArguments;
 use AIC\Workflow\Domain\Console\SurfaceView;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use InvalidArgumentException;
 use Override;
 
 use function array_filter;
@@ -45,6 +46,8 @@ final readonly class RouteListCommand implements Command
 
     /**
      * @param CommandInput $commandInput The module and the kind, both optional.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse The routes; exit 1 for an unknown module, 2 for a misread line.
      */

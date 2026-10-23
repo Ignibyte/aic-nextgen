@@ -141,7 +141,7 @@ final readonly class WikiIndexPage
     }
 
     /**
-     * @param list<array<string, string>> $entries Commands or jobs.
+     * @param list<array{class: string, kind: string, module: string, name: string}> $entries Commands or jobs.
      *
      * @return list<list<string>> Each one's name, module and class.
      */

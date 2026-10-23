@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Domain\CodeAnswer;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -29,6 +30,8 @@ final readonly class CodeSearchCommand implements Command
 
     /**
      * @param CommandInput $commandInput The text.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse The matches; exit 2 with no text.
      */

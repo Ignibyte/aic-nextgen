@@ -10,6 +10,7 @@ use AIC\Workflow\Domain\InstallLine;
 use AIC\Workflow\Domain\InstallReport;
 use AIC\Workflow\Domain\PackFile;
 use AIC\Workflow\Domain\PackRole;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function array_map;
 use function in_array;
@@ -44,6 +45,8 @@ final readonly class PackFileStep
      * @param InstallForce   $installForce  What the operator forces.
      * @param InstallReport  $installReport The report so far.
      *
+     * @throws WorkflowRefusal When the called file or index operation refuses.
+     *
      * @return InstallReport The report with a line per file, and the lock after them.
      */
     public function apply(array $packFiles, InstallForce $installForce, InstallReport $installReport): InstallReport
@@ -74,6 +77,8 @@ final readonly class PackFileStep
      * @param InstallForce  $installForce  What the operator forces.
      * @param InstallReport $installReport The report so far.
      *
+     * @throws WorkflowRefusal When the called file or index operation refuses.
+     *
      * @return InstallReport The report after it.
      */
     private function owned(PackFile $packFile, InstallForce $installForce, InstallReport $installReport): InstallReport
@@ -94,6 +99,8 @@ final readonly class PackFileStep
      * @param PackFile      $packFile      A write-once row.
      * @param InstallReport $installReport The report so far.
      *
+     * @throws WorkflowRefusal When the called file or index operation refuses.
+     *
      * @return InstallReport The report after it.
      */
     private function writeOnce(PackFile $packFile, InstallReport $installReport): InstallReport
@@ -111,6 +118,8 @@ final readonly class PackFileStep
      * @param string        $path          A path the lock lists and the pack no longer ships.
      * @param InstallForce  $installForce  What the operator forces.
      * @param InstallReport $installReport The report so far.
+     *
+     * @throws WorkflowRefusal When the called file or index operation refuses.
      *
      * @return InstallReport The report after it.
      */

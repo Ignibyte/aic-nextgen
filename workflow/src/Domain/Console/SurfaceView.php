@@ -15,13 +15,13 @@ use function str_starts_with;
 final readonly class SurfaceView
 {
     /**
-     * @param list<array<string, string>> $routes    Each route: `handler`, `kind`, `method`, `module`, `path`.
-     * @param list<array<string, string>> $commands  Each command: `class`, `kind`, `module`, `name`.
-     * @param list<array<string, string>> $jobs      Each job: `class`, `kind`, `module`, `name`.
-     * @param list<array<string, string>> $schedules Each schedule: `cadence`, `job`, `module`, `name`.
-     * @param list<SurfaceModule>         $modules   The modules, in build order.
-     * @param list<SurfaceKind>           $kinds     The kinds, entry kinds first.
-     * @param bool                        $stale     Whether a module manifest is newer than the surface.
+     * @param list<array{handler: string, kind: string, method: string, module: string, path: string}> $routes    The routes.
+     * @param list<array{class: string, kind: string, module: string, name: string}>                   $commands  The commands.
+     * @param list<array{class: string, kind: string, module: string, name: string}>                   $jobs      The jobs.
+     * @param list<array{cadence: string, job: string, module: string, name: string}>                  $schedules The schedules.
+     * @param list<SurfaceModule>                                                                      $modules   The modules.
+     * @param list<SurfaceKind>                                                                        $kinds     The kinds.
+     * @param bool                                                                                     $stale     Whether manifests changed.
      */
     public function __construct(
         public array $routes,

@@ -15,6 +15,7 @@ use AIC\Workflow\Domain\Make\MakeRecipe;
 use AIC\Workflow\Domain\Make\ManifestCall;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Closure;
+use InvalidArgumentException;
 
 use function array_key_exists;
 use function array_map;
@@ -57,6 +58,8 @@ final readonly class MakeRun
      * @param CommandUsage                         $commandUsage What the make takes.
      * @param Closure(ParsedArguments): MakeRecipe $recipe       Names the module and builds the files.
      *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
+     *
      * @return CommandResult What it wrote; exit 0, 1 refused, 2 a misread line or a bad name.
      */
     public function run(CommandInput $commandInput, CommandUsage $commandUsage, Closure $recipe): CommandResult
@@ -75,7 +78,8 @@ final readonly class MakeRun
      * @param CommandUsage                         $commandUsage What the make takes.
      * @param Closure(ParsedArguments): MakeRecipe $recipe       Names the module and builds the files.
      *
-     * @throws WorkflowRefusal At the first thing that keeps it from writing.
+     * @throws WorkflowRefusal          At the first thing that keeps it from writing.
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResult What it wrote.
      */
@@ -84,9 +88,10 @@ final readonly class MakeRun
         $parsedArguments = $this->consoleArguments->parse($commandInput, $commandUsage);
         $makeRecipe = $recipe($parsedArguments);
         $this->makePlanner->check($makeRecipe);
-        $files = $makeRecipe->call === null
+        $call = $makeRecipe->call;
+        $files = $call === null
             ? $makeRecipe->files
-            : [...$makeRecipe->files, $this->edited($makeRecipe->manifest(), $makeRecipe->call)];
+            : [...$makeRecipe->files, $this->edited($makeRecipe->manifest(), $call)];
         $dry = array_key_exists('dry-run', $parsedArguments->flags);
         $json = array_key_exists('json', $parsedArguments->flags);
 

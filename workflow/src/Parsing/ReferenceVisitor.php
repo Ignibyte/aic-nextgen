@@ -98,10 +98,10 @@ final class ReferenceVisitor extends NodeVisitorAbstract
      */
     private function refers(FullyQualified $fullyQualified): null
     {
-        $parent = $fullyQualified->getAttribute('parent');
-        $declared = $parent instanceof ClassLike || $parent instanceof TraitUse || $parent instanceof New_;
+        $parent = [$fullyQualified->getAttribute('parent')];
+        $declared = $parent[0] instanceof ClassLike || $parent[0] instanceof TraitUse || $parent[0] instanceof New_;
 
-        if (!$declared && !$parent instanceof FuncCall && !$parent instanceof ConstFetch) {
+        if (!$declared && !$parent[0] instanceof FuncCall && !$parent[0] instanceof ConstFetch) {
             $this->symbolSink->edge($fullyQualified->toString(), 'refers');
         }
 

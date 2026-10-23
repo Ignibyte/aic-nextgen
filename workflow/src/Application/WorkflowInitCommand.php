@@ -10,6 +10,7 @@ use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Domain\InstallForce;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use InvalidArgumentException;
 use Override;
 
 use function array_filter;
@@ -49,6 +50,8 @@ final readonly class WorkflowInitCommand implements Command
 
     /**
      * @param CommandInput $commandInput Nothing, `--force`, or `--force=<path>[,<path>...]`.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse A line per path, the settings as the engine reads them, and the next step; exit 2 when
      *                         refused.

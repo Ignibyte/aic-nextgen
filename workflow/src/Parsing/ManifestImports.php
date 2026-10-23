@@ -6,6 +6,7 @@ namespace AIC\Workflow\Parsing;
 
 use AIC\Workflow\Exception\WorkflowRefusal;
 use PhpParser\Error;
+use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\ParserFactory;
 
@@ -73,15 +74,13 @@ final readonly class ManifestImports
         $statements = [];
 
         foreach ($stmts as $stmt) {
-            if (!$stmt instanceof Use_ || $stmt->type !== Use_::TYPE_NORMAL || $stmt->uses === []) {
+            $statement = $this->statement($stmt);
+
+            if ($statement === null) {
                 continue;
             }
 
-            $statements[] = [
-                'end' => $stmt->getEndFilePos(),
-                'name' => $stmt->uses[0]->name->toString(),
-                'start' => $stmt->getStartFilePos(),
-            ];
+            $statements[] = $statement;
         }
 
         return $statements;
@@ -96,5 +95,23 @@ final readonly class ManifestImports
     private function sorted(string $left, string $right): int
     {
         return strcasecmp(str_replace('\\', ' ', ltrim($left, '\\')), str_replace('\\', ' ', ltrim($right, '\\')));
+    }
+
+    /**
+     * @param Stmt $stmt One top-level statement.
+     *
+     * @return array{name: string, start: int, end: int}|null Its first class import, when present.
+     */
+    private function statement(Stmt $stmt): ?array
+    {
+        if (!$stmt instanceof Use_ || $stmt->type !== Use_::TYPE_NORMAL) {
+            return null;
+        }
+
+        $use = $stmt->uses[0] ?? null;
+
+        return $use === null
+            ? null
+            : ['end' => $stmt->getEndFilePos(), 'name' => $use->name->toString(), 'start' => $stmt->getStartFilePos()];
     }
 }

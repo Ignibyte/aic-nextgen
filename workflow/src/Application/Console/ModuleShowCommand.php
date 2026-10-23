@@ -16,10 +16,11 @@ use AIC\Workflow\Domain\Console\ParsedArguments;
 use AIC\Workflow\Domain\Console\SurfaceModule;
 use AIC\Workflow\Domain\Console\SurfaceView;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use InvalidArgumentException;
 use Override;
 
-use function array_column;
 use function array_filter;
+use function array_key_exists;
 use function array_map;
 use function array_unique;
 use function array_values;
@@ -55,6 +56,8 @@ final readonly class ModuleShowCommand implements Command
 
     /**
      * @param CommandInput $commandInput The module's name.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse The module; exit 1 when there is none of that name.
      */
@@ -104,6 +107,8 @@ final readonly class ModuleShowCommand implements Command
      * @param SurfaceView $surfaceView The surface.
      * @param string      $module      The module that exports it.
      *
+     * @throws WorkflowRefusal When the called file or index operation refuses.
+     *
      * @return list<string> The other modules whose classes refer to it, sorted.
      */
     private function users(string $class, SurfaceView $surfaceView, string $module): array
@@ -122,22 +127,24 @@ final readonly class ModuleShowCommand implements Command
      * @param SurfaceModule                              $surfaceModule The module.
      * @param array<string, list<array<string, string>>> $entries       Its routes, commands, jobs and schedules.
      *
+     * @throws WorkflowRefusal When the called file or index operation refuses.
+     *
      * @return list<string> Its manifest, then the file of every class it names, as the index knows them.
      */
     private function files(SurfaceModule $surfaceModule, array $entries): array
     {
         $name = $surfaceModule->name;
         $classes = [
-            ...array_column($entries['routes'] ?? [], 'handler'),
-            ...array_column($entries['commands'] ?? [], 'class'),
-            ...array_column($entries['jobs'] ?? [], 'class'),
+            ...self::classes($entries['routes'] ?? [], 'handler'),
+            ...self::classes($entries['commands'] ?? [], 'class'),
+            ...self::classes($entries['jobs'] ?? [], 'class'),
             ...$surfaceModule->blocks,
             ...$surfaceModule->migrations,
             ...$surfaceModule->exports,
             ...$surfaceModule->factories,
-            ...array_column($surfaceModule->plugins, 'class'),
-            ...array_column($surfaceModule->bindings, 'class'),
-            ...array_column($surfaceModule->middleware, 'class'),
+            ...self::classes($surfaceModule->plugins, 'class'),
+            ...self::classes($surfaceModule->bindings, 'class'),
+            ...self::classes($surfaceModule->middleware, 'class'),
         ];
         $files = ['modules/' . $name . '/' . $name . '.module.php'];
 
@@ -183,14 +190,16 @@ final readonly class ModuleShowCommand implements Command
     }
 
     /**
-     * @param list<array<string, string>> $entries Routes, commands, jobs or schedules.
-     * @param string                      $module  A module.
+     * @template T of array<string, string>
      *
-     * @return list<array<string, string>> The ones it declares.
+     * @param list<T> $entries Routes, commands, jobs or schedules.
+     * @param string  $module  A module.
+     *
+     * @return list<T> The ones it declares, in surface order.
      */
     private static function owned(array $entries, string $module): array
     {
-        return array_values(array_filter($entries, static fn (array $entry): bool => $entry['module'] === $module));
+        return array_values(array_filter($entries, static fn (array $entry): bool => ($entry['module'] ?? '') === $module));
     }
 
     /**
@@ -207,5 +216,26 @@ final readonly class ModuleShowCommand implements Command
         }
 
         return $exports;
+    }
+
+    /**
+     * @param list<array<string, string>> $entries Rows naming classes.
+     * @param string                      $field   The class field to project.
+     *
+     * @return list<string> Present class names in row order.
+     */
+    private static function classes(array $entries, string $field): array
+    {
+        $classes = [];
+
+        foreach ($entries as $entry) {
+            if (!array_key_exists($field, $entry)) {
+                continue;
+            }
+
+            $classes[] = $entry[$field];
+        }
+
+        return $classes;
     }
 }

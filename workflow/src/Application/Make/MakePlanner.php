@@ -10,8 +10,6 @@ use AIC\Workflow\Domain\Make\MakeRecipe;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Closure;
 
-use function array_column;
-use function array_filter;
 use function array_key_exists;
 use function hash;
 use function in_array;
@@ -178,9 +176,17 @@ final readonly class MakePlanner
     {
         $surfaceView = $this->surfaceSource->view()
             ?? throw new WorkflowRefusal('build/surface.json is missing: run composer run build.');
-        $framework = array_filter($surfaceView->commands, static fn (array $row): bool => ($row['module'] ?? '') === 'framework');
+        $framework = [];
 
-        return [...array_column($framework, 'name'), ...($this->workflowCommands)()];
+        foreach ($surfaceView->commands as $command) {
+            if ($command['module'] !== 'framework') {
+                continue;
+            }
+
+            $framework[] = $command['name'];
+        }
+
+        return [...$framework, ...($this->workflowCommands)()];
     }
 
     /**

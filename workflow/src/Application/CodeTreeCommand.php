@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Domain\CodeAnswer;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -29,6 +30,8 @@ final readonly class CodeTreeCommand implements Command
 
     /**
      * @param CommandInput $commandInput A module, a system or a path; nothing for the overview.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse The answer; exit 1 when nothing has that name, 2 for more than one argument.
      */

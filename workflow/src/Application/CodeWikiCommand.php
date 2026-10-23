@@ -10,6 +10,7 @@ use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Domain\CodeAnswer;
 use Closure;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -33,6 +34,8 @@ final readonly class CodeWikiCommand implements Command
 
     /**
      * @param CommandInput $commandInput A module or a class; nothing for the index.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse The page; exit 1 when nothing has that name, 2 for more than one argument.
      */

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Wiki;
 
+use AIC\Workflow\Domain\RegexCaptures;
+
+use function array_key_exists;
 use function explode;
 use function mb_strtolower;
 use function preg_match;
-use function preg_match_all;
 use function preg_replace;
 use function str_replace;
 
@@ -19,6 +21,8 @@ use function str_replace;
  */
 final readonly class WikiArchitecture
 {
+    use RegexCaptures;
+
     /**
      * @param string $kinds `kinds.md`'s text.
      *
@@ -26,10 +30,9 @@ final readonly class WikiArchitecture
      */
     public function kinds(string $kinds): array
     {
-        preg_match_all('/^###\\s+(\\w+)\\s*$/m', $kinds, $matches);
         $anchors = [];
 
-        foreach ($matches[1] as $kind) {
+        foreach (self::regexColumn('/^###\\s+(\\w+)\\s*$/m', $kinds, 1) as $kind) {
             $anchors[$kind] = self::slug($kind);
         }
 
@@ -48,9 +51,11 @@ final readonly class WikiArchitecture
 
         foreach (explode("\n", $systems) as $line) {
             $section = self::section($line, $section);
-            preg_match_all('/`AIC\\\\(\\w+)`/', $section === '' ? '' : $line, $matches);
+            $subject = $section === ''
+                ? ''
+                : $line;
 
-            foreach ($matches[1] as $namespace) {
+            foreach (self::regexColumn('/`AIC\\\\(\\w+)`/', $subject, 1) as $namespace) {
                 $anchors[$namespace] = $section;
             }
         }
@@ -66,7 +71,9 @@ final readonly class WikiArchitecture
      */
     private static function section(string $line, string $section): string
     {
-        if (preg_match('/^##\\s+(.+?)\\s*$/', $line, $match) !== 1) {
+        $match = self::regexMatch('/^##\\s+(.+?)\\s*$/', $line);
+
+        if (!array_key_exists(1, $match)) {
             return $section;
         }
 

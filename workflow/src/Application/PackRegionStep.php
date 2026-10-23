@@ -10,6 +10,7 @@ use AIC\Workflow\Domain\InstallLine;
 use AIC\Workflow\Domain\InstallReport;
 use AIC\Workflow\Domain\PackFile;
 use AIC\Workflow\Domain\PackRole;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
  * The pack's regions (#105): the `AGENTS.md` block and the `CLAUDE.md`
@@ -43,6 +44,8 @@ final readonly class PackRegionStep
      * @param InstallForce   $installForce  What the operator forces.
      * @param InstallReport  $installReport The report so far.
      *
+     * @throws WorkflowRefusal When the called file or index operation refuses.
+     *
      * @return InstallReport The report with a line per region, and the lock after them.
      */
     public function apply(array $packFiles, InstallForce $installForce, InstallReport $installReport): InstallReport
@@ -62,6 +65,8 @@ final readonly class PackRegionStep
      * @param PackFile      $packFile      A region's row.
      * @param InstallForce  $installForce  What the operator forces.
      * @param InstallReport $installReport The report so far.
+     *
+     * @throws WorkflowRefusal When the called file or index operation refuses.
      *
      * @return InstallReport The report after it.
      */

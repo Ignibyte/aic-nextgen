@@ -14,6 +14,7 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 use function array_any;
 use function microtime;
 use function round;
+use function sprintf;
 
 /**
  * The probe sweep (#119): each scenario in its own throwaway app, one at a
@@ -112,7 +113,7 @@ final readonly class ProbeSweep
             $this->scratchProject->remove($probeApp);
         }
 
-        $this->probeOutput->line('scenario ' . $name . ': ' . round(microtime(true) - $started) . ' s, the app '
+        $this->probeOutput->line('scenario ' . $name . ': ' . sprintf('%s', round(microtime(true) - $started)) . ' s, the app '
             . ($kept ? 'kept at ' . $probeApp->root : 'removed'));
     }
 

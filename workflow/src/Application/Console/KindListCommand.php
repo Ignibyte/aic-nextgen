@@ -12,6 +12,7 @@ use AIC\Workflow\Domain\Console\InspectAnswer;
 use AIC\Workflow\Domain\Console\ParsedArguments;
 use AIC\Workflow\Domain\Console\SurfaceKind;
 use AIC\Workflow\Domain\Console\SurfaceView;
+use InvalidArgumentException;
 use Override;
 
 use function array_filter;
@@ -40,6 +41,8 @@ final readonly class KindListCommand implements Command
 
     /**
      * @param CommandInput $commandInput No arguments.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse The kinds.
      */
