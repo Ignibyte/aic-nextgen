@@ -1,0 +1,30 @@
+---
+ticket: 1
+browser_testable: No
+---
+
+## Acceptance Criteria
+
+| # | Target | Met |
+|---|---|---|
+| 1 | The home page's uploads link says each file is checked by its content | [ ] |
+
+## Design
+
+One label in the home page's list of pages changes; the page reads it as before.
+
+### File Manifest
+
+| File | Change | Purpose |
+|---|---|---|
+| `modules/site/src/Controller/HomePage.php` | modify | The label |
+| `CHANGELOG.md` | modify | The fix, named |
+
+### Locked-In Decisions
+
+1. Only the label's text changes.
+
+## Entry Points
+
+| Kind | Method | Path or name | Class | Module | Status | Example |
+|---|---|---|---|---|---|---|

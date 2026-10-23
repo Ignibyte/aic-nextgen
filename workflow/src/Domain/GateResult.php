@@ -14,7 +14,7 @@ final readonly class GateResult
      * @param string     $name       The gate, such as `gate:21`.
      * @param GateStatus $gateStatus Its verdict.
      * @param string     $summary    Why: its deferral line, or what failed.
-     * @param string     $transcript Its section of the output, capped.
+     * @param string     $transcript Its complete observed section of the output.
      */
     public function __construct(
         public string $name,

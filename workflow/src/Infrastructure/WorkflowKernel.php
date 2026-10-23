@@ -42,6 +42,7 @@ final readonly class WorkflowKernel implements WorkflowContext
         return [
             ...(new HoldKernel($this))->commands(),
             ...(new InstallKernel($this->root))->commands(),
+            ...(new LogKernel($this->root))->commands(),
             ...(new SeekerKernel($this, $this->root))->commands(),
             ...(new CodeKernel($this->root))->commands(),
             'workflow:run' => new WorkflowRunCommand($this),

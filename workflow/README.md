@@ -68,6 +68,36 @@ engine run. The engine runs and records its own gates. At `inspection-due`, disp
 `aic-seeker` role with `Inspect the open run.`. File its returned Seeker Inspection section
 unchanged. A parent-written, changed, stale or duplicate ledger does not replace that return.
 
+## Read stored gate diagnostics
+
+`bin/aic workflow:logs gate:8` reads one stored gate result from the open run, or the latest
+archived run. It selects the latest matching record unless selectors specify the phase and
+attempt. Use `gate` for the aggregate suite output, including abnormal execution and timeouts.
+
+```sh
+bin/aic workflow:logs gate:8 --phase=code --attempt=1
+bin/aic workflow:logs gate --run=run-ID --phase=code --attempt=1 --json
+bin/aic workflow:logs gate:8 --from-line=1 --lines=100 --json
+```
+
+Full stored output is the default. JSON uses the existing `aic.console/1` envelope and keeps
+exact transcript bytes when they are valid UTF-8. Plain text remains available for other byte
+sequences. Explicit line windows preserve original endings and identify the returned range
+and continuation. JSON also reports total lines and bytes. `output_complete` describes whether
+the selection contains every stored byte. `transcript_complete` separately describes capture
+provenance: new captures retain all observed output, while historical records report unknown
+completeness. It does not claim a timed-out process finished or that discarded bytes were recovered.
+
+Each returned record identifies its run, phase, attempt, gate, outcome, fault, subject hash and
+adjudication time. Freshness is not re-evaluated by inspection. The fixed project database opens
+with SQLite read-only flags. The command creates no database, migrates no schema, reruns no
+gate and accepts no SQL or database path. Exit 0 returns stored evidence, exit 1 means unavailable
+evidence or output, and exit 2 rejects malformed selectors.
+
+A seeker pending beside failed prerequisites was not actionable. Environment-only recovery
+permits its first inspection-due report. An unchanged repeat of that actionable report still
+becomes an operator hold. Ordinary repeated faults and retry limits retain their existing behavior.
+
 ## What the native guards judge
 
 The adapter reads actual tool and lifecycle fields. It checks every add, update, delete and

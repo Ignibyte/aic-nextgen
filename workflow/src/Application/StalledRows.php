@@ -51,12 +51,30 @@ final readonly class StalledRows
         $rows = [];
 
         foreach ($phaseReport->rows as $checkRow) {
-            $rows[] = $previous instanceof PhaseReport && self::stalled($checkRow, $previous, $key)
+            $rows[] = $previous instanceof PhaseReport
+                && self::actionable($checkRow, $previous, $phaseReport)
+                && self::stalled($checkRow, $previous, $key)
                 ? self::held($checkRow, $previous)
                 : $checkRow;
         }
 
         return new PhaseReport($phaseReport->phase, $phaseReport->attempt, $rows, $key);
+    }
+
+    /**
+     * @param CheckRow    $checkRow A row that may repeat.
+     * @param PhaseReport $before   The previous report.
+     * @param PhaseReport $after    The fresh report.
+     *
+     * @return bool Whether both reports permitted the inspection, or this is another kind of work.
+     */
+    private static function actionable(CheckRow $checkRow, PhaseReport $before, PhaseReport $after): bool
+    {
+        if ($checkRow->check !== 'seeker' || $checkRow->checkStatus !== CheckStatus::Due) {
+            return true;
+        }
+
+        return $before->inspectionOnly() && $after->inspectionOnly();
     }
 
     /**

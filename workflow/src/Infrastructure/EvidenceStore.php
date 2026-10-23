@@ -87,7 +87,8 @@ final readonly class EvidenceStore implements EvidenceLog
     public function record(string $runId, Phase $phase, int $attempt, CheckRecord $checkRecord): void
     {
         $this->write(
-            'INSERT INTO check_result (run_id, phase, attempt, name, state, fault, summary, subject_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO check_result (run_id, phase, attempt, name, state, fault, summary, subject_hash, transcript_complete) '
+                . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 $runId,
                 $phase->value,
@@ -97,8 +98,10 @@ final readonly class EvidenceStore implements EvidenceLog
                 $checkRecord->fault->value,
                 $checkRecord->summary,
                 $checkRecord->subjectHash,
+                $checkRecord->transcriptComplete ? 1 : 0,
             ],
             $checkRecord->transcript,
+            $checkRecord->transcriptComplete,
         );
     }
 
@@ -114,7 +117,9 @@ final readonly class EvidenceStore implements EvidenceLog
     public function latest(string $runId, string $name): ?CheckRecord
     {
         $row = $this->first(
-            'SELECT name, state, fault, summary, subject_hash FROM check_result WHERE run_id = ? AND name = ? ORDER BY id DESC LIMIT 1',
+            "SELECT c.name, c.state, c.fault, c.summary, c.subject_hash, c.transcript_complete, COALESCE(t.output, '') AS output "
+                . 'FROM check_result c LEFT JOIN transcript t ON t.check_id = c.id '
+                . 'WHERE c.run_id = ? AND c.name = ? ORDER BY c.id DESC LIMIT 1',
             [$runId, $name],
         );
 
@@ -207,16 +212,17 @@ final readonly class EvidenceStore implements EvidenceLog
      * @param string           $sql        An insert.
      * @param list<string|int> $parameters Its values.
      * @param string           $transcript The verdict's output, kept beside it when there is one.
+     * @param bool             $complete   Whether an empty transcript is a complete observed capture.
      *
      * @throws WorkflowRefusal When it cannot be written.
      */
-    private function write(string $sql, array $parameters, string $transcript = ''): void
+    private function write(string $sql, array $parameters, string $transcript = '', bool $complete = false): void
     {
         try {
             $pdo = $this->evidenceSchema->open($this->root . '/' . RunStateFile::DIRECTORY);
             $this->evidenceSchema->statement($pdo, $sql, $parameters);
 
-            if ($transcript !== '') {
+            if ($transcript !== '' || $complete) {
                 $this->evidenceSchema->statement(
                     $pdo,
                     'INSERT INTO transcript (check_id, output) VALUES (?, ?)',

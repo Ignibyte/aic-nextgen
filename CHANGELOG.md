@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Workflow failure diagnostics and inspection recovery** (#144, #145). Add read-only `workflow:logs` with exact selectors, full stored output, JSON metadata and explicit line windows. Retain all observed per-gate and abnormal aggregate output. Schema 4 records capture provenance and leaves historical completeness unknown.
+  - Allow the first independent inspection after prerequisite recovery. Unchanged actionable repeats, ordinary faults and retry limits retain their holds.
+  - The dependency checker recognizes namespaced internal classes through their actual required extension without user autoload. The existing import policy requires ordinary imports for PHP's Pdo namespace; both import rules remain enabled.
+  - All 171 workflow expectations and 32 gates pass with zero deferrals. A genuine Codex run proves failure inspection, environment-only recovery and the counted independent return. Both Psalm passes exit zero, native site comparisons pass 72/72 and all 65 original output hashes remain identical.
+
 - **Both Psalm analysis modes enforced** (#135, closes #131). Gate 13 always attempts full-project ordinary analysis followed by explicit taint analysis against the same config and working directory. It retains complete separate output streams and actual exits; either failure or launch error fails the gate without skipping the other attempt.
   - Root and shipped XML default to ordinary mode. Method exception and unused-code checking stay enabled; the approved return-type setting records that PHPStan level 10 already holds return types.
   - Workflow probes analyze real installed-package callers, and scenario 06 expects the ordinary unused-code failure alongside its prior four failures. Real AIC/App clean, type, unused, taint and combined controls prove both modes; all 152 workflow expectations, 26 focused controls and 32 gates pass with zero deferrals. All 65 valid output hashes remain identical.

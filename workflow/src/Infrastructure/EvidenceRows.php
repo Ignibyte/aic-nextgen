@@ -9,6 +9,8 @@ use AIC\Workflow\Domain\CheckState;
 use AIC\Workflow\Domain\Fault;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
+use function in_array;
+
 /**
  * Reads the evidence store's rows back into values (#101).
  */
@@ -19,7 +21,7 @@ final readonly class EvidenceRows
      *
      * @throws WorkflowRefusal When it holds a state or fault this engine does not know.
      *
-     * @return CheckRecord The verdict, without its transcript.
+     * @return CheckRecord The verdict, its transcript and capture provenance.
      */
     public function record(JsonReader $jsonReader): CheckRecord
     {
@@ -29,7 +31,25 @@ final readonly class EvidenceRows
             $this->fault($jsonReader->string('fault')),
             $jsonReader->string('summary'),
             $jsonReader->string('subject_hash'),
+            $jsonReader->string('output'),
+            $this->complete($jsonReader->int('transcript_complete')),
         );
+    }
+
+    /**
+     * @param int $complete The stored capture provenance.
+     *
+     * @throws WorkflowRefusal When it is not a stored boolean.
+     *
+     * @return bool Whether every observed byte was retained.
+     */
+    private function complete(int $complete): bool
+    {
+        if (!in_array($complete, [0, 1], true)) {
+            throw new WorkflowRefusal('var/workflow/evidence.sqlite holds unknown transcript completeness.');
+        }
+
+        return $complete === 1;
     }
 
     /**

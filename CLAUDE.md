@@ -16,11 +16,19 @@ The architecture set an app's agent reads, shipped in `aic/framework`, is
 
 ## Status
 
-Current takeover order (Chad, 2026-10-22): upstream elephc tickets are parked. Finish AIC's
-remaining Codex workflow verification and delivery (#136), then build Lotline fresh
-in `/srv/stacks/aic-demo` (#128, #132). The separate ten-module demo rebuild (#129) is superseded.
-Old `/srv/stacks/lotline` is product and design reference; its code is not carried over.
-The app installer now selects Claude or Codex. Genuine Codex proof and delivery remain under #136.
+Current order (Chad, 2026-10-23): upstream elephc tickets are parked. Codex integration
+(#136) is delivered. Finish workflow recovery (#144, #145), then the other framework fixes and
+declared themes (#146–#149) before further Lotline work (#128, #132). The Lotline bootstrap is
+held and unmerged in `/srv/stacks/aic-demo`; its resident agent stays open in the same tmux
+conversation. Restore it only after actual process loss. The separate demo rebuild (#129)
+is superseded. Old `/srv/stacks/lotline` is product and design reference; its source is not copied.
+
+Approved theme direction: declarations live in module manifests. The site module declares the
+active theme, HTML/page templates, named regions and assets. Feature modules declare their
+component-to-template mappings. Author `themes/<name>/layouts/html.tpl.php` and `page.tpl.php`,
+with module-owned component `.tpl.php` files. Compile templates into `generated/templates/`
+and public assets into `public/assets/`. No separate theme registry or runtime discovery.
+This migration is pending; the existing build shape described below remains until its delivery.
 
 #133 runtime, #134 gate tooling, #141/#142/#143 workflow source repairs, #135 dual-pass enforcement
 and #137 bounded teardown are delivered.
@@ -30,7 +38,7 @@ output; either failure fails the gate. Method exception and unused-code checks r
 PHPStan level 10 holds return types; the approved `restrictReturnTypes=false` reason is in
 root/shipped XML. Typed config failures stay handled at boot, with the approved global-scope
 exception policy documented. Environment access stays config-only under PHPStan and semgrep.
-Codex enforcement still requires #136 before fresh Lotline.
+Both clients use the installed workflow. Native Codex usage and measured limits are in `workflow/README.md`.
 
 M0, M1 and M2 are done (2026-10-19).
 - **M0:** the workspace (#1), the gate suite (#2), the four-phase workflow (#3) and the native gate (#14).
@@ -184,12 +192,20 @@ Background work is a job; the HTTP server's processes are its workers.
   engine, a second package that is dev-only (`require-dev`, a path repository like the
   framework's; Chad, 2026-10-22). `bin/aic` lists its commands when it is installed:
   `workflow:run <ticket>` (one phase per call, plan → code → check → complete),
-  `workflow:status`, `workflow:ask "<question>"` (the agent's, #117), and `workflow:reset` and
+  `workflow:status`, `workflow:logs gate[:N]` (#144), `workflow:ask "<question>"` (the agent's, #117),
+  and `workflow:reset` and
   `workflow:answer advance|stay|"<answer>"` (the operator's, from a terminal only). An app opts in
   with `config/workflow.php`. The engine alone writes `var/workflow/` (gitignored): `run.json`,
   the append-only `events.jsonl` (`workflow/schema/run-event.v1.json`) and `history/`. phpat
   keeps runtime code off it and it off everything but the Command kind; gate:21 does not probe
   it, since it runs interpreted.
+  - **Stored diagnostics** (#144): `workflow:logs gate:N` reads full stored output for the
+    open/latest archived run. Select `gate` for the aggregate, including abnormal execution.
+    Optional run/phase/attempt selectors and explicit line windows work with `--json`.
+    Read-only lookup never creates or migrates evidence, reruns gates or establishes freshness.
+    Selection completeness and capture provenance are separate; old capped output stays unknown.
+    After prerequisite recovery the seeker's first actionable inspection is due (#145); an
+    unchanged repeat still holds. See `workflow/README.md` for command and exit semantics.
   - **Its checks** (#101), each a `PhaseCheck` registered in `WorkflowChecks`: at plan the spec
     must read as a contract and is frozen with the gate list; at code, check and complete the
     engine runs `composer run gate`, the freeze, the declaration audit (exact paths from the
