@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Both Psalm analysis modes enforced** (#135, closes #131). Gate 13 always attempts full-project ordinary analysis followed by explicit taint analysis against the same config and working directory. It retains complete separate output streams and actual exits; either failure or launch error fails the gate without skipping the other attempt.
+  - Root and shipped XML default to ordinary mode. Method exception and unused-code checking stay enabled; the approved return-type setting records that PHPStan level 10 already holds return types.
+  - Workflow probes analyze real installed-package callers, and scenario 06 expects the ordinary unused-code failure alongside its prior four failures. Real AIC/App clean, type, unused, taint and combined controls prove both modes; all 152 workflow expectations, 26 focused controls and 32 gates pass with zero deferrals. All 65 valid output hashes remain identical.
+
 - **Workflow console, surface and authoring contracts** (#143, final source child of #135). Surface readers construct checked literal field shapes, carried through console and wiki output. Command flags, nullable manifest calls and AST nodes use their actual checked values; edits retain their byte order and diagnostics.
   - Real command and installer failures are documented through existing callers. Installer ownership and agent-shell force refusals remain intact. Header separators use the actual column count, and elapsed text preserves the original numeric formatting.
   - All 104 remaining ordinary findings are removed: the complete approved diagnostic exits 0 with zero findings. All 151 workflow expectations, 235 focused controls and 32 gates pass with zero deferrals; all 65 valid output hashes remain identical. Public gate:13 remains taint-only until #135 delivers both full-project passes.

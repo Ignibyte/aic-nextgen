@@ -33,6 +33,17 @@ Root Rector configs call the package's typed setup with their own root and paths
 bootstrap loads PHPCS's installed autoloader and token definitions, since PHPCS does not expose
 those declarations through Composer's class map.
 
+Gate 13 runs two complete project analyses against the same root `psalm.xml` and working
+directory: ordinary first, then `--taint-analysis`. Both are attempted even when the first
+fails. Their complete stdout and stderr are preserved, each mode reports its actual exit,
+and either failure fails the gate. A process error is reported separately, without claiming
+an observed exit, and does not skip the other attempt.
+
+Root and shipped configs default `runTaintAnalysis` to false so pass one is ordinary. The
+second pass explicitly enables taint. Method exception and unused-code checks remain on;
+the approved `restrictReturnTypes` setting is false because PHPStan level 10 holds return
+types. Its reason and the typed-startup/global-exception policy are recorded in the XML.
+
 ## The rules every gate shares
 
 - **No baselines and no suppressions.** A finding is fixed in the source. No baseline file, no
@@ -63,7 +74,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 10 | PHPMD | every ruleset: methods up to 30 lines, classes up to 300, 15 methods, coupling 15 | split the class or the method |
 | 11 | PHPCS | PSR-12 and slevomat, lines up to 140 | `vendor/bin/phpcbf` on the file (never on a template) |
 | 12 | Deptrac | the layer ladder in every namespace (see [systems.md](systems.md#the-layer-ladder)) | move the class to the right layer, or depend on a contract |
-| 13 | Psalm | error level 1, taint analysis, unused code | type the value; validate input before it reaches a sink |
+| 13 | Psalm | full ordinary error level 1, then full taint analysis; unused code | type the value; validate input before it reaches a sink |
 | 14 | phpcpd | no copy-paste of 4 lines or 50 tokens | extract the shared part |
 | 15 | semgrep | the house ruleset: no env outside config, no static state, no singletons, no eval, no `mixed` in generics | restructure; state lives in wired objects |
 | 16 | no dynamic require | no `require` or `include` of a computed path in runtime code | use a literal path or the build |

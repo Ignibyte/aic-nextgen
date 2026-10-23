@@ -6,7 +6,7 @@ declare(strict_types=1);
  * The app builder's PHP (#119), run by scratch-app.sh in a new app:
  *
  * - `scratch-app.php strip <package-copy>`: the app's composer.json requires
- *   aic/workflow by path from the copy; PHPStan reads the package and the
+ *   aic/workflow by path from the copy; PHPStan and Psalm read the package and the
  *   sweep's scenarios from the copy (the framework methods only it calls, and
  *   the step values only the scenarios build, stay used); the other tool
  *   configs, and the AIC roots in aic/gates' ProjectProfile (#130), lose the
@@ -28,9 +28,13 @@ $neon = (string) file_get_contents('phpstan.neon');
 $neon = (string) preg_replace('#^(\\s*- )workflow/(src|bin|rules|probes/sweep)$#m', '$1' . $package . '/workflow/$2', $neon);
 file_put_contents('phpstan.neon', $neon);
 
+$xmlPackage = htmlspecialchars($package);
+$psalm = str_replace('name="workflow/', 'name="' . $xmlPackage . '/workflow/', (string) file_get_contents('psalm.xml'));
+file_put_contents('psalm.xml', $psalm);
+
 foreach (['phpstan.neon', 'psalm.xml', 'phpcs.xml.dist', 'rector.php', 'deptrac.yaml'] as $config) {
     $lines = explode("\n", (string) file_get_contents($config));
-    $kept = array_filter($lines, static fn (string $line): bool => str_contains($line, $package) || preg_match($own, $line) !== 1);
+    $kept = array_filter($lines, static fn (string $line): bool => str_contains($line, $package) || str_contains($line, $xmlPackage) || preg_match($own, $line) !== 1);
     file_put_contents($config, implode("\n", $kept));
 }
 

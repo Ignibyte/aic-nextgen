@@ -109,9 +109,9 @@ final readonly class GateSuite
             ['bin', 'deptrac', 'analyse', '--no-progress', '--fail-on-uncovered'],
         ],
         13 => [
-            'Psalm level 1 with taint analysis.',
+            'Psalm level 1 and taint analysis, both over the full project.',
             'app',
-            ['bin', 'psalm', '--no-progress', '--show-info=true', '--no-cache', '--no-diff'],
+            ['php', 'gate-psalm.php'],
         ],
         14 => [
             'phpcpd: no copy-paste (min 4 lines, 50 tokens).',

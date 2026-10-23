@@ -23,11 +23,14 @@ in `/srv/stacks/aic-demo` (#128, #132). The separate ten-module demo rebuild (#1
 Old `/srv/stacks/lotline` is product and design reference; its code is not carried over.
 The existing workflow hooks target Claude Code; Codex enforcement must be proved by #136.
 
-#133: complete ordinary analysis has no runtime findings; 183 gates and 275 workflow findings
-remain visible, with exit 2. Gate:13 is still taint-only until #135. Typed config failures are
-handled at boot; Psalm keeps method exception checking and records the approved reason for
-disabling global-scope exception checking. Environment access stays config-only under PHPStan
-and semgrep. Generated wiring, renderers and scaffold output own their exception contracts.
+#133 runtime, #134 gate tooling and #141/#142/#143 workflow source repairs are delivered.
+Complete approved ordinary analysis has zero findings. Gate:13 now runs ordinary analysis
+then explicit taint analysis over the same full project, reporting both outcomes and all
+output; either failure fails the gate. Method exception and unused-code checks remain on.
+PHPStan level 10 holds return types; the approved `restrictReturnTypes=false` reason is in
+root/shipped XML. Typed config failures stay handled at boot, with the approved global-scope
+exception policy documented. Environment access stays config-only under PHPStan and semgrep.
+Codex enforcement still requires #136 before fresh Lotline.
 
 M0, M1 and M2 are done (2026-10-19).
 - **M0:** the workspace (#1), the gate suite (#2), the four-phase workflow (#3) and the native gate (#14).
@@ -331,7 +334,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 |---|---|---|---|
 | 0 | composer audit (installed packages) | 11 | PHPCS, PSR-12 + slevomat |
 | 1 | composer-normalize | 12 | Deptrac, the layer ladder per system |
-| 2 | runtime require allow-list | 13 | Psalm level 1, taint analysis |
+| 2 | runtime require allow-list | 13 | Psalm full ordinary and taint passes |
 | 3 | require-checker | 14 | phpcpd (copy-paste) |
 | 4 | composer-unused | 15 | semgrep, `gates/config/semgrep.yml` |
 | 5 | no baselines, no suppressions | 16 | no runtime-dynamic require |
