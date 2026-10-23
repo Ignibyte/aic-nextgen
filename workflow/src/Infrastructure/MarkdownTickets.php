@@ -67,12 +67,13 @@ final readonly class MarkdownTickets implements TicketSource
         $path = $this->file($id);
         $fields = $this->fields($this->lines($path));
         $status = (new TicketStatuses())->named($fields['status'] ?? '');
+        $title = $fields['title'] ?? '';
 
-        if (!$status instanceof TicketStatus || ($fields['number'] ?? '') !== $id || ($fields['title'] ?? '') === '') {
+        if (!$status instanceof TicketStatus || ($fields['number'] ?? '') !== $id || $title === '') {
             throw new WorkflowRefusal($this->relative($path) . ' is not a ticket: it needs a number, a title and a known status.');
         }
 
-        return new Ticket($id, (int) $id, $fields['title'], $status, $this->relative($path));
+        return new Ticket($id, (int) $id, $title, $status, $this->relative($path));
     }
 
     /**
@@ -130,7 +131,11 @@ final readonly class MarkdownTickets implements TicketSource
             ? false
             : file_get_contents($path);
 
-        if (!is_string($text) || !str_starts_with($text, "---\n")) {
+        if ($text === false) {
+            throw new WorkflowRefusal($this->relative($path) . ' is not a ticket file the workflow can read.');
+        }
+
+        if (!str_starts_with($text, "---\n")) {
             throw new WorkflowRefusal($this->relative($path) . ' is not a ticket file the workflow can read.');
         }
 
@@ -201,12 +206,12 @@ final readonly class MarkdownTickets implements TicketSource
      */
     private static function decoded(string $raw): string
     {
-        $decoded = str_starts_with($raw, '"')
+        $decoded = [str_starts_with($raw, '"')
             ? json_decode($raw)
-            : $raw;
+            : $raw];
 
-        return is_string($decoded)
-            ? $decoded
+        return is_string($decoded[0])
+            ? $decoded[0]
             : $raw;
     }
 }

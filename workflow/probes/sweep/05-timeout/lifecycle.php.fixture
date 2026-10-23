@@ -54,11 +54,17 @@ function surviving(array $rows): array
     return $states;
 }
 
+/* proc_pid_stat(5): Z is zombie, X is dead, and historic x is dead. Other states remain live. */
+function liveState(string $state): bool
+{
+    return !in_array($state, ['Z', 'X', 'x'], true);
+}
+
 function cleanup(array $rows): void
 {
     foreach ($rows as $row) {
         $current = identity($row['pid']);
-        if ($current !== null && $current['start'] === $row['start'] && $current['state'] !== 'Z') {
+        if ($current !== null && $current['start'] === $row['start'] && liveState($current['state'])) {
             posix_kill($row['pid'], 9);
         }
     }
@@ -116,7 +122,7 @@ try {
     $elapsed = (hrtime(true) - $start) / 1_000_000_000;
     $rows = workers($receipt, $nonce);
     $states = surviving($rows);
-    $running = array_filter($states, static fn (string $state): bool => !str_ends_with($state, ':Z'));
+    $running = array_filter($states, static fn (string $state): bool => liveState(substr($state, -1)));
     $roles = array_column($rows, 'role');
     $required = in_array($mode, ['grandchild', 'early'], true) ? ['root', 'leaf', 'sleeper'] : ['root', 'sleeper'];
     $observed = !$timed || array_diff($required, $roles) === [];
@@ -132,7 +138,7 @@ try {
     // A sleeping sentinel can change R/S state while remaining the same owned live process.
     if ($sentinelRow !== null) {
         $current = identity($sentinelRow['pid']);
-        $sentinelAlive = $current !== null && $current['start'] === $sentinelRow['start'] && $current['state'] !== 'Z';
+        $sentinelAlive = $current !== null && $current['start'] === $sentinelRow['start'] && liveState($current['state']);
     }
     $pass = $result->exitCode === $exit && $elapsed < 2.5 && $observed && $running === [] && $bytes && $sentinelAlive;
     echo json_encode(['mode' => $mode, 'exit' => $result->exitCode, 'elapsed' => $elapsed, 'bytes' => strlen($result->output),

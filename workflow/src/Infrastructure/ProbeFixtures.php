@@ -8,6 +8,7 @@ use AIC\Workflow\Application\RuleFixtures;
 use AIC\Workflow\Domain\HouseRule;
 use AIC\Workflow\Domain\RuleCase;
 use AIC\Workflow\Domain\RuleChange;
+use AIC\Workflow\Exception\WorkflowRefusal;
 use FilesystemIterator;
 use Override;
 use RecursiveDirectoryIterator;
@@ -41,6 +42,8 @@ use const GLOB_ONLYDIR;
  */
 final readonly class ProbeFixtures implements RuleFixtures
 {
+    use DirectoryEntries;
+
     /**
      * What a laid-out file's name ends in, so no tool reads a case as code.
      */
@@ -60,6 +63,8 @@ final readonly class ProbeFixtures implements RuleFixtures
 
     /**
      * @param HouseRule $houseRule The rule.
+     *
+     * @throws WorkflowRefusal When the fixture directory cannot be prepared.
      *
      * @return list<RuleCase>|null Its cases; null when it ships no probe directory.
      */
@@ -86,6 +91,8 @@ final readonly class ProbeFixtures implements RuleFixtures
      * @param HouseRule $houseRule The rule.
      * @param string    $probe     Its probe directory.
      * @param string    $name      A case.
+     *
+     * @throws WorkflowRefusal When the fixture directory cannot be prepared.
      *
      * @return RuleCase The case, laid out.
      */
@@ -132,6 +139,8 @@ final readonly class ProbeFixtures implements RuleFixtures
      * @param string $from   An overlay file.
      * @param string $target Its place in the head tree.
      * @param bool   $delete Whether it is a deletion marker.
+     *
+     * @throws WorkflowRefusal When the fixture directory cannot be prepared.
      */
     private function overlay(string $from, string $target, bool $delete): void
     {
@@ -148,6 +157,8 @@ final readonly class ProbeFixtures implements RuleFixtures
     /**
      * @param string $from   A fixture tree.
      * @param string $target Where its files go, `.fixture` stripped.
+     *
+     * @throws WorkflowRefusal When the fixture directory cannot be prepared.
      */
     private function copyTree(string $from, string $target): void
     {
@@ -215,10 +226,10 @@ final readonly class ProbeFixtures implements RuleFixtures
             return [];
         }
 
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS), $mode) as $file) {
-            $found = $file instanceof SplFileInfo
-                ? [...$found, $file]
-                : $found;
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS), $mode);
+
+        foreach (self::directoryEntries($files) as $file) {
+            $found[] = $file;
         }
 
         return $found;

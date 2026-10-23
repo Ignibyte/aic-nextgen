@@ -125,9 +125,9 @@ final readonly class RunStateFile implements RunStore
             $runs[] = [(int) filemtime($archive), $archive];
         }
 
-        usort($runs, static fn (array $one, array $other): int => [$other[0], $other[1]] <=> [$one[0], $one[1]]);
+        usort($runs, self::newest(...));
 
-        return array_map(static fn (array $run): string => $run[1], $runs);
+        return array_map(self::archivePath(...), $runs);
     }
 
     /**
@@ -161,5 +161,26 @@ final readonly class RunStateFile implements RunStore
     private function path(string $name): string
     {
         return $this->root . '/' . self::DIRECTORY . '/' . $name;
+    }
+
+    /**
+     * @param array{int, string} $one   A timestamp and path.
+     * @param array{int, string} $other Another timestamp and path.
+     *
+     * @return int The newest-first order, descending path for equal timestamps.
+     */
+    private static function newest(array $one, array $other): int
+    {
+        return [$other[0], $other[1]] <=> [$one[0], $one[1]];
+    }
+
+    /**
+     * @param array{int, string} $run A timestamp and path.
+     *
+     * @return string The archived file's path.
+     */
+    private static function archivePath(array $run): string
+    {
+        return $run[1];
     }
 }

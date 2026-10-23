@@ -84,12 +84,12 @@ final readonly class JsonProbeAnswers implements ProbeJson
     {
         $first = strpos($output, '{');
         $last = strrpos($output, '}');
-        $decoded = $first === false || $last === false
+        $decoded = [$first === false || $last === false
             ? null
-            : json_decode(substr($output, $first, $last - $first + 1));
+            : json_decode(substr($output, $first, $last - $first + 1))];
 
-        return $decoded instanceof stdClass
-            ? new JsonReader($decoded, $what)
+        return $decoded[0] instanceof stdClass
+            ? new JsonReader($decoded[0], $what)
             : null;
     }
 }

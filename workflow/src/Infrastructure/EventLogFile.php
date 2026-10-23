@@ -171,13 +171,13 @@ final readonly class EventLogFile implements EventLog
     private function seqIn(array $lines): int
     {
         for ($index = count($lines) - 1; $index >= 0; $index -= 1) {
-            $decoded = json_decode(trim($lines[$index]), true);
-            $seq = is_array($decoded)
-                ? $decoded['seq'] ?? null
-                : null;
+            $decoded = [json_decode(trim($lines[$index]), true)];
+            $seq = [is_array($decoded[0])
+                ? $decoded[0]['seq'] ?? null
+                : null];
 
-            if (is_int($seq)) {
-                return $seq;
+            if (is_int($seq[0])) {
+                return $seq[0];
             }
         }
 

@@ -9,6 +9,7 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 use function array_filter;
+use function array_key_exists;
 use function array_unique;
 use function array_values;
 use function bin2hex;
@@ -129,7 +130,7 @@ final readonly class LocalHost implements RunHost
     }
 
     /**
-     * @param list<string> $arguments A git command that lists paths.
+     * @param non-empty-list<string> $arguments A git command that lists paths.
      *
      * @throws WorkflowRefusal When it fails.
      *
@@ -157,6 +158,12 @@ final readonly class LocalHost implements RunHost
         );
 
         if (!is_resource($process)) {
+            return null;
+        }
+
+        if (!array_key_exists(1, $pipes)) {
+            proc_close($process);
+
             return null;
         }
 

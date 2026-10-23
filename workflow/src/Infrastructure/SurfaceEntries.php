@@ -60,13 +60,13 @@ final readonly class SurfaceEntries implements SurfaceSource
             return [];
         }
 
-        $document = json_decode($text);
+        $document = [json_decode($text)];
 
-        if (!$document instanceof stdClass) {
+        if (!$document[0] instanceof stdClass) {
             throw new WorkflowRefusal(self::PATH . ' is not a JSON object.');
         }
 
-        return $this->read(new JsonReader($document, self::PATH));
+        return $this->read(new JsonReader($document[0], self::PATH));
     }
 
     /**
@@ -125,10 +125,10 @@ final readonly class SurfaceEntries implements SurfaceSource
      */
     private function manifestReader(string $text): JsonReader
     {
-        $document = json_decode($text);
+        $document = [json_decode($text)];
 
-        return $document instanceof stdClass
-            ? new JsonReader($document, self::PATH)
+        return $document[0] instanceof stdClass
+            ? new JsonReader($document[0], self::PATH)
             : throw new WorkflowRefusal(self::PATH . ' is not a JSON object.');
     }
 

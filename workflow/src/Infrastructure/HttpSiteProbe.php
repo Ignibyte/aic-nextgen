@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace AIC\Workflow\Infrastructure;
 
 use AIC\Workflow\Application\SiteProbe;
+use AIC\Workflow\Domain\RegexCaptures;
 use AIC\Workflow\Domain\RenderedAnswer;
 use Override;
 
+use function array_key_exists;
+use function array_map;
 use function file_get_contents;
 use function http_get_last_response_headers;
-use function preg_match;
 use function restore_error_handler;
 use function set_error_handler;
 use function stream_context_create;
@@ -24,6 +26,8 @@ use function trim;
  */
 final readonly class HttpSiteProbe implements SiteProbe
 {
+    use RegexCaptures;
+
     /**
      * @param string $url An absolute URL.
      *
@@ -41,7 +45,13 @@ final readonly class HttpSiteProbe implements SiteProbe
             restore_error_handler();
         }
 
-        return $this->answer(http_get_last_response_headers() ?? []);
+        $headers = [];
+
+        foreach (array_map(static fn (string $header): string => $header, http_get_last_response_headers() ?? []) as $header) {
+            $headers[] = $header;
+        }
+
+        return $this->answer($headers);
     }
 
     /**
@@ -55,7 +65,8 @@ final readonly class HttpSiteProbe implements SiteProbe
         $contentType = '';
 
         foreach ($headers as $header) {
-            $status = preg_match('#^HTTP/\\S+\\s+(\\d{3})#', $header, $matches) === 1
+            $matches = self::regexMatch('#^HTTP/\\S+\\s+(\\d{3})#', $header);
+            $status = array_key_exists(1, $matches)
                 ? (int) $matches[1]
                 : $status;
             $contentType = $this->contentType($header) ?? $contentType;
@@ -73,7 +84,9 @@ final readonly class HttpSiteProbe implements SiteProbe
      */
     private function contentType(string $header): ?string
     {
-        return preg_match('/^content-type:(.*)$/i', $header, $matches) === 1
+        $matches = self::regexMatch('/^content-type:(.*)$/i', $header);
+
+        return array_key_exists(1, $matches)
             ? strtolower(trim($matches[1]))
             : null;
     }

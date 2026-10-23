@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace AIC\Workflow\Infrastructure;
 
 use AIC\Workflow\Application\SeekerChecklist;
+use AIC\Workflow\Domain\RegexCaptures;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 use function file_get_contents;
 use function is_file;
 use function is_string;
-use function preg_match_all;
 use function realpath;
 use function str_starts_with;
 use function strlen;
@@ -25,6 +25,8 @@ use function substr;
  */
 final readonly class SeekerChecklistFile implements SeekerChecklist
 {
+    use RegexCaptures;
+
     /**
      * The checklist inside the package.
      */
@@ -55,15 +57,15 @@ final readonly class SeekerChecklistFile implements SeekerChecklist
             ? file_get_contents($path)
             : false;
 
-        $found = is_string($text)
-            ? preg_match_all('/^## ([A-Z]\\d+) — /m', $text, $matches)
-            : false;
+        $items = is_string($text)
+            ? self::regexColumn('/^## ([A-Z]\\d+) — /m', $text, 1)
+            : [];
 
-        if ($found === false || $found === 0) {
+        if ($items === []) {
             throw new WorkflowRefusal('the seeker checklist (' . $this->path() . ') is missing or names no item; reinstall aic/workflow.');
         }
 
-        return $matches[1];
+        return $items;
     }
 
     /**

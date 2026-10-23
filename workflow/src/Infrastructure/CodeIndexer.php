@@ -15,7 +15,6 @@ use PDO;
 use PDOException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use SplFileInfo;
 
 use function array_diff_assoc;
 use function array_diff_key;
@@ -41,6 +40,8 @@ use function substr;
  */
 final readonly class CodeIndexer implements CodeIndex
 {
+    use DirectoryEntries;
+
     /**
      * The installed framework's sources, in an app.
      */
@@ -211,8 +212,10 @@ final readonly class CodeIndexer implements CodeIndex
         $paths = [];
         $flags = FilesystemIterator::SKIP_DOTS | FilesystemIterator::FOLLOW_SYMLINKS;
 
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, $flags)) as $file) {
-            if (!($file instanceof SplFileInfo) || !str_ends_with($file->getFilename(), '.php')) {
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, $flags));
+
+        foreach (self::directoryEntries($files) as $file) {
+            if (!str_ends_with($file->getFilename(), '.php')) {
                 continue;
             }
 
