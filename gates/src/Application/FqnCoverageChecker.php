@@ -28,6 +28,8 @@ use function str_starts_with;
  *   3. Manifest's own PSR-4 prefix hit (intra-package use).
  *   4. Declared-prefix hit. The app's `AIC\…` uses pass here, through its
  *      `aic/framework` require.
+ *   5. A namespaced internal class whose actual extension is required also passes.
+ *      Extension types are already loaded, so coverage never invokes user autoload.
  */
 final readonly class FqnCoverageChecker
 {
@@ -51,7 +53,8 @@ final readonly class FqnCoverageChecker
             return in_array($fqn, $allowlistedFqns, true) || self::extensionDeclared($fqn, $declaredPackages);
         }
 
-        return $this->isQualifiedCovered($fqn, $allowlistedFqns, $ownPrefixes, $declaredPrefixes);
+        return $this->isQualifiedCovered($fqn, $allowlistedFqns, $ownPrefixes, $declaredPrefixes)
+            || self::extensionDeclared($fqn, $declaredPackages);
     }
 
     /**
@@ -131,14 +134,14 @@ final readonly class FqnCoverageChecker
     }
 
     /**
-     * @param string       $fqn              An unqualified class or interface name.
+     * @param string       $fqn              An already-loaded class or interface name.
      * @param list<string> $declaredPackages Every package name in the manifest's require: block.
      *
      * @return bool Whether it is built in and its extension is required as `ext-<name>`.
      */
     private static function extensionDeclared(string $fqn, array $declaredPackages): bool
     {
-        if (!class_exists($fqn) && !interface_exists($fqn)) {
+        if (!class_exists($fqn, false) && !interface_exists($fqn, false)) {
             return false;
         }
 

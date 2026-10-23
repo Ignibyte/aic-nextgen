@@ -11,7 +11,7 @@ use PDOStatement;
 
 /**
  * The evidence store's file and schema (#101): `var/workflow/evidence.sqlite`
- * at version 3 (#102 added the guard's columns, #103 the seeker's tables),
+ * at version 4 (#144 added observed transcript completeness),
  * forward-only. A store from a newer engine is refused rather than read
  * wrong. Its statements are prepared and executed here, failing
  * loudly.
@@ -21,7 +21,7 @@ final readonly class EvidenceSchema
     /**
      * The version this engine writes and reads.
      */
-    private const int VERSION = 3;
+    private const int VERSION = 4;
 
     /**
      * Version 1: what planning froze, each verdict, each verdict's output, and the guard's ledger.
@@ -110,6 +110,14 @@ final readonly class EvidenceSchema
         SQL;
 
     /**
+     * Version 4 (#144): historical captures have unknown completeness; only new full captures assert it.
+     */
+    private const string TRANSCRIPT_PROVENANCE = <<<'SQL'
+        ALTER TABLE check_result ADD COLUMN transcript_complete INTEGER NOT NULL DEFAULT 0 CHECK (transcript_complete IN (0, 1));
+        PRAGMA user_version = 4;
+        SQL;
+
+    /**
      * @param AtomicFile       $atomicFile       Makes the state directory.
      * @param SqliteStatements $sqliteStatements Runs its statements.
      */
@@ -124,7 +132,7 @@ final readonly class EvidenceSchema
      *
      * @throws WorkflowRefusal When the store cannot be opened, or a newer engine wrote it.
      *
-     * @return PDO The store, at version 3.
+     * @return PDO The store, at version 4.
      */
     public function open(string $directory): PDO
     {
@@ -139,7 +147,9 @@ final readonly class EvidenceSchema
                 throw new WorkflowRefusal('var/workflow/evidence.sqlite is at version ' . $version . ", past this engine's.");
             }
 
-            foreach ([1 => self::TABLES, 2 => self::GUARD_COLUMNS, 3 => self::SEEKER_TABLES] as $step => $sql) {
+            $migrations = [1 => self::TABLES, 2 => self::GUARD_COLUMNS, 3 => self::SEEKER_TABLES, 4 => self::TRANSCRIPT_PROVENANCE];
+
+            foreach ($migrations as $step => $sql) {
                 $this->migrate($pdo, $version, $step, $sql);
             }
         } catch (PDOException $pdoException) {

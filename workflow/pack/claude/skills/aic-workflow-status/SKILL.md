@@ -28,3 +28,11 @@ starts one.
 The run's state lives in `var/workflow/`, which only the engine writes. Read it through this
 command, never by editing the files there. To go on, use the
 [continue skill](../aic-workflow-continue/SKILL.md).
+
+Read stored gate diagnostics with `bin/aic workflow:logs gate:<N>`.
+Use `gate` for an aggregate suite failure.
+Optional selectors are `--run=<id>`, `--phase=<phase>` and `--attempt=<N>`.
+Use `--json` for the exact stored transcript and metadata.
+Optional `--from-line=1 --lines=100` selects a declared window.
+Read its continuation metadata. Historical capture completeness may be unknown.
+This command does not rerun checks or write the evidence database.

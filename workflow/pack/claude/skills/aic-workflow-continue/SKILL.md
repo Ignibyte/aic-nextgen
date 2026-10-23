@@ -24,7 +24,16 @@ Each blocked row has a `check`, a `why` and a `remedy`. Fix the cause the `why` 
 again without a change only repeats the verdict, and a row that repeats with nothing changed
 becomes the operator's: the run then waits on them (`held`). A gate that fails at one phase more times than
 the settings allow (3 unless the operator changed it) stops running, and the run then waits on
-the operator. Read a failing gate's output in its row before you touch code.
+the operator. Read a failed gate through `bin/aic workflow:logs gate:<N>` before changing code.
+Use `--phase=<phase> --attempt=<N>` for a selected attempt.
+Use `--json` for the exact stored output and its metadata.
+Use `--from-line=1 --lines=100` for an explicit line window with continuation metadata.
+Use `bin/aic workflow:logs gate` for aggregate failures or timeouts.
+Never rerun a gate only to read its previous output. Never query the protected database directly.
+
+A pending seeker beside failed prerequisites is not an actionable inspection.
+After recovery, the first `inspection-due` report permits dispatch.
+An unchanged repeat of that actionable report still causes an operator hold.
 
 The phases and their skills:
 

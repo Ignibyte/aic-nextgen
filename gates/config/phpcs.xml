@@ -263,6 +263,7 @@
                 <element value="PHPStan"/>
                 <element value="PhpParser"/>
                 <element value="Random"/>
+                <element value="Pdo"/>
                 <element value="Rector"/>
                 <element value="Composer"/>
                 <element value="PHPMD"/>

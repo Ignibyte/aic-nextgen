@@ -58,6 +58,16 @@ the manifest, the spec's frozen rows are still there, every declared entry point
 declared (and nothing undeclared was added), and the house rules hold. Fix each blocked row and
 run again.
 
+Read a failed gate's stored output with `bin/aic workflow:logs gate:<N>` before changing code.
+Use `--phase=code --attempt=<N>` to inspect a specific attempt.
+Use `--json` to retain the exact stored transcript and its metadata.
+Use `--from-line=1 --lines=100` for an explicit line window.
+Read its continuation metadata when more lines remain.
+Use `bin/aic workflow:logs gate` for aggregate suite failures, including timeouts.
+The command does not rerun gates or write the evidence database.
+Historical capture completeness can be unknown. Do not call an old tail complete.
+Do not query the protected database directly.
+
 When everything else passes, code answers `inspection-due`: an independent reader checks the
 change once before it leaves code.
 

@@ -37,11 +37,6 @@ final readonly class GateSummary
     use RegexCaptures;
 
     /**
-     * The characters of a gate's output kept as its transcript, from its end.
-     */
-    private const int TRANSCRIPT = 4_000;
-
-    /**
      * @param ProcessResult $processResult The run.
      * @param list<string>  $gates         The gate names frozen at plan.
      *
@@ -184,7 +179,7 @@ final readonly class GateSummary
      * @param string $gate   A gate.
      * @param string $output The run's output.
      *
-     * @return string Its section, from its `=== gate:N ===` heading to the next, its last characters only.
+     * @return string Its complete observed section, after its heading and before the next heading or verdict.
      */
     private function transcript(string $gate, string $output): string
     {
@@ -201,13 +196,9 @@ final readonly class GateSummary
             ? strpos($output, "\ngate-result:", $start)
             : $end;
 
-        $section = $end === false
+        return $end === false
             ? substr($output, $start)
             : substr($output, $start, $end - $start);
-
-        return strlen($section) > self::TRANSCRIPT
-            ? substr($section, -self::TRANSCRIPT)
-            : $section;
     }
 
     /**

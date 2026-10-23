@@ -12,12 +12,13 @@ namespace AIC\Workflow\Domain;
 final readonly class CheckRecord
 {
     /**
-     * @param string     $name        What a criterion cites: `gate`, `gate:21`, `composition`, `rendered GET /path`.
-     * @param CheckState $checkState  What it found.
-     * @param Fault      $fault       Whose a fault is.
-     * @param string     $summary     Why.
-     * @param string     $subjectHash The tree it judged.
-     * @param string     $transcript  Its output, capped; empty when it has none.
+     * @param string     $name               What a criterion cites: `gate`, `gate:21`, `composition`, `rendered GET /path`.
+     * @param CheckState $checkState         What it found.
+     * @param Fault      $fault              Whose a fault is.
+     * @param string     $summary            Why.
+     * @param string     $subjectHash        The tree it judged.
+     * @param string     $transcript         Its stored output; empty when it has none.
+     * @param bool       $transcriptComplete Whether every observed output byte was retained.
      */
     public function __construct(
         public string $name,
@@ -26,6 +27,7 @@ final readonly class CheckRecord
         public string $summary,
         public string $subjectHash,
         public string $transcript = '',
+        public bool $transcriptComplete = false,
     ) {
     }
 
