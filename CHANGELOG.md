@@ -44,6 +44,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Native Codex app workflow** (#136). `workflow:init --client=codex` installs shared skills, a native independent seeker role, committed ownership and six native callbacks. Claude remains the default. Init retains edited files and unrelated hooks, with the existing preflight and operator-only force rules.
+  - Operator readiness checks the actual installed pack and trusted enabled callback definitions. Native identity, patch paths and MCP destinations pass the existing workflow walls. Inspected shells run at the project root with closed input and no tty; a separate approval callback rechecks supported MCP requests.
+  - Structured browser actions work for the primary agent at Check. Explicit absolute artifact filenames pass the same file walls; unsafe browser code, file transfer, unsupported mutations and shell escalation stay held. Client hook startup failures can still fail open; usage and limits are documented in `workflow/README.md`.
+
 - **`bin/aic workflow:probe`, the probe sweep** (#119, split from #104). The engine's planted cases, replayed in throwaway apps so a workflow change is checked against every one of them, not re-proved by hand.
   - **The scenarios:** `workflow/probes/sweep/<nn-name>/scenario.php`, each a `ProbeScenario` of steps:
     - plants written, deleted or replaced as the operator (a text to replace that is not there once is a failure, so a stale plant never reads as a catch);

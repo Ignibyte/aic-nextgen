@@ -9,12 +9,15 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Domain\InstallForce;
+use AIC\Workflow\Domain\InstallRequest;
+use AIC\Workflow\Domain\WorkflowClient;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use InvalidArgumentException;
 use Override;
 
 use function array_filter;
 use function array_values;
+use function count;
 use function explode;
 use function str_starts_with;
 use function substr;
@@ -38,7 +41,8 @@ final readonly class WorkflowInitCommand implements Command
     /**
      * Why an argument other than `--force` is refused.
      */
-    private const string UNKNOWN = '" is not an argument init takes: it takes --force or --force=<path>[,<path>...].';
+    private const string UNKNOWN = '" is not an argument init takes: it takes '
+        . '--client=claude|codex, --force or --force=<path>[,<path>...].';
 
     /**
      * @param InstallContext $installContext The installer's parts.
@@ -60,35 +64,59 @@ final readonly class WorkflowInitCommand implements Command
     public function command(CommandInput $commandInput): CommandResponse
     {
         try {
-            $installReport = $this->installContext->packInstaller()->install($this->force($commandInput));
+            $installRequest = $this->request($commandInput);
+            $installReport = $this->installContext->packInstaller($installRequest->workflowClient)->install($installRequest->installForce);
             $settings = $this->installContext->installHost()->settings();
         } catch (WorkflowRefusal $workflowRefusal) {
             return new CommandResult(['workflow:init — ' . $workflowRefusal->getMessage()], 2);
         }
 
-        return new CommandResult([...$installReport->texts(), '', ...$settings, '', ...self::NEXT], 0);
+        return new CommandResult([...$installReport->texts(), '', ...$settings, '', ...$this->next($installRequest->workflowClient)], 0);
     }
 
     /**
      * @param CommandInput $commandInput The arguments.
      *
-     * @throws WorkflowRefusal When one is neither form of `--force`.
+     * @throws WorkflowRefusal When a client or force argument is invalid.
      *
-     * @return InstallForce What they force.
+     * @return InstallRequest Checked client and force choices.
      */
-    private function force(CommandInput $commandInput): InstallForce
+    private function request(CommandInput $commandInput): InstallRequest
     {
-        $installForce = new InstallForce();
-        $index = 0;
-        $argument = $commandInput->argument($index, '');
+        $arguments = $commandInput->arguments();
+        $clients = array_values(array_filter($arguments, static fn (string $argument): bool => str_starts_with($argument, '--client=')));
 
-        while ($argument !== '') {
-            $installForce = $this->read($argument, $installForce);
-            $index += 1;
-            $argument = $commandInput->argument($index, '');
+        if (count($clients) > 1) {
+            throw new WorkflowRefusal('--client is selected once.');
         }
 
-        return $installForce;
+        $installForce = new InstallForce();
+
+        foreach ($arguments as $argument) {
+            if (str_starts_with($argument, '--client=')) {
+                continue;
+            }
+
+            $installForce = $this->read($argument, $installForce);
+        }
+
+        return new InstallRequest($this->client($clients), $installForce);
+    }
+
+    /**
+     * @param list<string> $clients The selected client option, or none for Claude.
+     *
+     * @throws WorkflowRefusal When the option names no supported client.
+     *
+     * @return WorkflowClient The selected client.
+     */
+    private function client(array $clients): WorkflowClient
+    {
+        return match ($clients[0] ?? '--client=claude') {
+            '--client=claude' => WorkflowClient::Claude,
+            '--client=codex' => WorkflowClient::Codex,
+            default => throw new WorkflowRefusal('--client must be claude or codex.'),
+        };
     }
 
     /**
@@ -125,5 +153,21 @@ final readonly class WorkflowInitCommand implements Command
         return $paths === []
             ? throw new WorkflowRefusal('--force= names no path; name one, or use --force for every owned path.')
             : $paths;
+    }
+
+    /**
+     * @param WorkflowClient $workflowClient The installed client.
+     *
+     * @return list<string> The supported next actions.
+     */
+    private function next(WorkflowClient $workflowClient): array
+    {
+        return $workflowClient === WorkflowClient::Claude
+            ? self::NEXT
+            : [
+            'Next: commit the installed .codex lock, native role, hooks and .agents skills.',
+            'Review the project and exact hook definitions with Codex /hooks.',
+            'Run bin/aic workflow:codex-check before a fresh Codex session.',
+        ];
     }
 }

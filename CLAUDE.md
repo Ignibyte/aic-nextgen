@@ -17,13 +17,13 @@ The architecture set an app's agent reads, shipped in `aic/framework`, is
 ## Status
 
 Current takeover order (Chad, 2026-10-22): upstream elephc tickets are parked. Finish AIC's
-ordinary Psalm repair (#131: runtime #133, gates #134, workflow and both passes #135),
-bounded process teardown (#137), and Codex workflow support (#136), then build Lotline fresh
+remaining Codex workflow verification and delivery (#136), then build Lotline fresh
 in `/srv/stacks/aic-demo` (#128, #132). The separate ten-module demo rebuild (#129) is superseded.
 Old `/srv/stacks/lotline` is product and design reference; its code is not carried over.
-The existing workflow hooks target Claude Code; Codex enforcement must be proved by #136.
+The app installer now selects Claude or Codex. Genuine Codex proof and delivery remain under #136.
 
-#133 runtime, #134 gate tooling and #141/#142/#143 workflow source repairs are delivered.
+#133 runtime, #134 gate tooling, #141/#142/#143 workflow source repairs, #135 dual-pass enforcement
+and #137 bounded teardown are delivered.
 Complete approved ordinary analysis has zero findings. Gate:13 now runs ordinary analysis
 then explicit taint analysis over the same full project, reporting both outcomes and all
 output; either failure fails the gate. Method exception and unused-code checks remain on.
@@ -239,7 +239,7 @@ Background work is a job; the HTTP server's processes are its workers.
     only and refuses a second counted ledger. `seeker_inspection` and `seeker_finding` (evidence
     schema v3) and `seeker.filed` keep the record. The guard refuses every write made inside an
     `aic-seeker`. `workflow/probes/seeker-checklist.sh` counts what the seeker catches per item.
-  - **The installer** (#105): `bin/aic workflow:init [--force[=<path>,...]]` needs no config and
+  - **The installer** (#105): `bin/aic workflow:init [--client=claude|codex] [--force[=<path>,...]]` needs no config and
     refuses in this repo (the package's own source). `PackManifest` is the one list of what it
     writes from `workflow/pack/` (`claude/` stands for `.claude/`, since gate:19 skips `.claude`):
     the `aic-workflow-*` skills and `/aic:workflow:*` commands, `config/workflow.php` once,
@@ -248,6 +248,14 @@ Background work is a job; the HTTP server's processes are its workers.
     `.claude/aic-workflow.lock` (committed) hashes what init wrote, so edits are kept;
     `--force` is the operator's, from a terminal. The guard walls the pack's files and the lock.
     The pack is written for an app: semgrep keeps AIC's own process and `claude/` links out of it.
+    Claude remains the default. Explicit Codex installation exports the shared skills to `.agents/skills`,
+    installs `.codex/agents/aic-seeker.toml`, merges six native callbacks into `.codex/hooks.json`,
+    and owns its instructions through `.codex/aic-workflow.lock`. The operator reviews the exact
+    definitions in Codex `/hooks` and runs `bin/aic workflow:codex-check` before launch, outside
+    the tool sandbox. Native hooks bind actual parent/child identity, judge every patch path and
+    run approved shells at the project root without interactive child input. Client startup
+    failures can fail open; [workflow/README.md](workflow/README.md) states the coverage and limits.
+    These app hooks do not enforce this maintainer checkout's manual phases.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 - **Modules** (#90, #92, #93): `modules/<name>/<name>.module.php` returns a fluent
   `AIC\Module\Contracts\ModuleManifest`, naming only what the module has:

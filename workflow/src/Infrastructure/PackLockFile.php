@@ -24,7 +24,7 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * `.claude/aic-workflow.lock` (#105): committed with the project, so a fresh
+ * The selected client's workflow lock (#105), committed with the project, so a fresh
  * clone still knows what init wrote (Droost kept its lock in an ignored
  * directory, and a clone lost it). JSON, `{"schema": ..., "files": {path:
  * "sha256:<hex>"}}`, keys sorted.
@@ -38,9 +38,11 @@ final readonly class PackLockFile implements PackLockStore
 
     /**
      * @param ProjectFiles $projectFiles The project's files.
+     * @param string       $path         The selected client's lock.
      */
     public function __construct(
         private ProjectFiles $projectFiles,
+        private string $path = PackManifest::LOCK,
     ) {
     }
 
@@ -52,13 +54,13 @@ final readonly class PackLockFile implements PackLockStore
     #[Override]
     public function load(): PackLock
     {
-        $obstacle = $this->projectFiles->obstacle(PackManifest::LOCK);
+        $obstacle = $this->projectFiles->obstacle($this->path);
 
         if ($obstacle !== '') {
             throw new WorkflowRefusal($obstacle . '; init writes only regular files, so move it aside first.');
         }
 
-        $text = $this->projectFiles->read(PackManifest::LOCK);
+        $text = $this->projectFiles->read($this->path);
 
         return $text === null
             ? new PackLock()
@@ -84,13 +86,13 @@ final readonly class PackLockFile implements PackLockStore
 
         $text = json_encode(['schema' => PackLock::SCHEMA, 'files' => $files], $flags) . "\n";
 
-        if ($this->projectFiles->read(PackManifest::LOCK) === $text) {
-            return new InstallLine(InstallAction::Current, PackManifest::LOCK);
+        if ($this->projectFiles->read($this->path) === $text) {
+            return new InstallLine(InstallAction::Current, $this->path);
         }
 
-        $this->projectFiles->write(PackManifest::LOCK, $text);
+        $this->projectFiles->write($this->path, $text);
 
-        return new InstallLine(InstallAction::Wrote, PackManifest::LOCK, "commit it: it tells your edits from init's writes");
+        return new InstallLine(InstallAction::Wrote, $this->path, "commit it: it tells your edits from init's writes");
     }
 
     /**
@@ -105,18 +107,18 @@ final readonly class PackLockFile implements PackLockStore
         try {
             $object = json_decode($text, false, 8, JSON_THROW_ON_ERROR);
         } catch (JsonException $jsonException) {
-            throw new WorkflowRefusal(PackManifest::LOCK . self::BROKEN, 0, $jsonException);
+            throw new WorkflowRefusal($this->path . self::BROKEN, 0, $jsonException);
         }
 
         if (!$object instanceof stdClass) {
-            throw new WorkflowRefusal(PackManifest::LOCK . self::BROKEN);
+            throw new WorkflowRefusal($this->path . self::BROKEN);
         }
 
-        $jsonReader = new JsonReader($object, PackManifest::LOCK);
+        $jsonReader = new JsonReader($object, $this->path);
         $jsonReader->only(['schema', 'files']);
 
         if ($jsonReader->string('schema') !== PackLock::SCHEMA) {
-            throw new WorkflowRefusal(PackManifest::LOCK . self::BROKEN);
+            throw new WorkflowRefusal($this->path . self::BROKEN);
         }
 
         return $this->hashes($jsonReader->object('files'));
@@ -137,7 +139,7 @@ final readonly class PackLockFile implements PackLockStore
             $hash = $jsonReader->string($path);
 
             if (preg_match('/^sha256:[0-9a-f]{64}$/', $hash) !== 1) {
-                throw new WorkflowRefusal(PackManifest::LOCK . self::BROKEN);
+                throw new WorkflowRefusal($this->path . self::BROKEN);
             }
 
             $packLock = $packLock->with($path, $hash);

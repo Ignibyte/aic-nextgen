@@ -12,6 +12,7 @@ use AIC\Workflow\Domain\Guard\GuardVerdict;
 use AIC\Workflow\Domain\Guard\HookCall;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\RunState;
+use AIC\Workflow\Domain\WorkflowClient;
 
 use function in_array;
 use function str_starts_with;
@@ -63,7 +64,7 @@ final readonly class GuardHook
             ? $hookCall->tool
             : '';
 
-        if ($verb === 'record' && (in_array($tool, self::WALLED, true) || str_starts_with($tool, 'mcp__'))) {
+        if ($verb === 'record' && $this->legacy($hookCall) && $this->owned($tool)) {
             return new GuardVerdict();
         }
 
@@ -71,6 +72,26 @@ final readonly class GuardHook
         $this->ledger($verb, $guardVerdict, $guardScene, $hookCall ?? new HookCall($tool, [], '', '', ''));
 
         return $guardVerdict;
+    }
+
+    /**
+     * @param string $tool The actual tool name.
+     *
+     * @return bool Whether another legacy callback owns its ledger row.
+     */
+    private function owned(string $tool): bool
+    {
+        return in_array($tool, self::WALLED, true) || str_starts_with($tool, 'mcp__');
+    }
+
+    /**
+     * @param HookCall|null $hookCall The actual call, when readable.
+     *
+     * @return bool Whether legacy callbacks must deduplicate their records.
+     */
+    private function legacy(?HookCall $hookCall): bool
+    {
+        return $hookCall instanceof HookCall && $hookCall->workflowClient === WorkflowClient::Claude;
     }
 
     /**

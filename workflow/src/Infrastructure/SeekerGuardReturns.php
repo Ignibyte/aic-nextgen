@@ -42,12 +42,7 @@ final readonly class SeekerGuardReturns implements SeekerReturns
     #[Override]
     public function wired(): bool
     {
-        $path = $this->root . '/' . PackManifest::SETTINGS;
-        $text = is_file($path)
-            ? file_get_contents($path)
-            : false;
-
-        return is_string($text) && preg_match('/aic-guard\\.sh[^\\n]*\\sreturned"/', $text) === 1;
+        return $this->callback(PackManifest::SETTINGS) || $this->callback('.codex/hooks.json');
     }
 
     /**
@@ -66,5 +61,20 @@ final readonly class SeekerGuardReturns implements SeekerReturns
         );
 
         return array_values(array_map(static fn (GuardRow $guardRow): string => $guardRow->digest, $returns));
+    }
+
+    /**
+     * @param string $settings The installed client wiring path.
+     *
+     * @return bool Whether it names the guard's native or legacy return callback.
+     */
+    private function callback(string $settings): bool
+    {
+        $path = $this->root . '/' . $settings;
+        $text = is_file($path)
+            ? file_get_contents($path)
+            : false;
+
+        return is_string($text) && preg_match('/aic-(?:codex-)?guard\\.sh[^\\n]*\\sreturned"/', $text) === 1;
     }
 }

@@ -209,10 +209,10 @@ final readonly class HookMerge
     private function verb(stdClass $hook): string
     {
         $command = [get_object_vars($hook)['command'] ?? null];
-        $guard = is_string($command[0]) && str_contains($command[0], 'aic-guard.sh');
+        $guard = is_string($command[0]) && (str_contains($command[0], 'aic-guard.sh') || str_contains($command[0], 'aic-codex-guard.sh'));
 
         $match = $guard
-            ? self::regexMatch('/\\s(edit|shell|record|stop|returned)\\s*$/', $command[0])
+            ? self::regexMatch('/\\s(edit|shell|record|stop|returned|pre|start|permission)\\s*$/', $command[0])
             : [];
 
         return array_key_exists(1, $match)

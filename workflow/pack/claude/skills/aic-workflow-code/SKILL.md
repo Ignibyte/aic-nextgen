@@ -43,7 +43,7 @@ another file, add its row to the manifest first; the run records it as declared 
 The gates and the tools' configuration (the root files aic/gates ships, which the operator restores
 with `vendor/bin/aic-gate init` between runs), baselines and suppressions; and what the hook
 walls whatever the manifest says: `config/workflow.php`, `var/workflow/` (but the spec), `var/index/` (the code index),
-`.claude/settings.json`, the workflow's skills, commands and lock in `.claude/`, `AGENTS.md` and
+`.claude/settings.json`, `.codex/`, the installed `.agents/` skills, the workflow's skills, commands and lock in `.claude/`, `AGENTS.md` and
 `CLAUDE.md`. Nothing outside the project and nothing under `vendor/` is written either, even through a
 symlink: the hook judges where a write really lands. A gate that fails is fixed in the code. A house rule holds each run to this too.
 
@@ -61,8 +61,8 @@ run again.
 When everything else passes, code answers `inspection-due`: an independent reader checks the
 change once before it leaves code.
 
-1. Dispatch the `aic-seeker` agent with the Agent tool, in the foreground (not a fork, not in the
-   background), with the prompt `Inspect the open run.` and nothing else. It takes its scope
+1. Dispatch the installed `aic-seeker` with your client's subagent tool. In Codex, select its native role.
+   Use the prompt `Inspect the open run.` and nothing else. Wait for its actual return. It takes its scope
    from `bin/aic workflow:seeker-brief`, not from you.
 2. Pipe the `## Seeker Inspection` section it returns, unchanged, into
    `bin/aic workflow:seeker-report` (a heredoc is fine). Never write a ledger yourself and never

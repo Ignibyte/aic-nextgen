@@ -32,7 +32,7 @@ They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs
 | `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
 | `gates/` | `aic/gates`, the gate suite (#116): a dev-only package with every gate's code and entry, the runner, the build (`vendor/bin/aic-build`, behind `composer run build`; `--check` is gate:24) and each tool's base config. `vendor/bin/aic-gate --list` names the gates and `aic-gate N` runs one |
 | `build/surface.json` | The app's surface: every route (method, path, handler, kind) and console command (name, class, kind) |
-| `workflow/` | `aic/workflow`, the agent workflow's engine (`AIC\Workflow\`): a dev-only package. `bin/aic workflow:run <ticket>` runs one phase of a ticket per call; `workflow:status` shows the run; `workflow:reset` is the operator's, from a terminal. At each phase exit the engine runs the gates and the spec's audits itself (#101) and keeps the verdicts in `var/workflow/evidence.sqlite`. `workflow/bin/aic-guard.sh`, wired by `workflow/pack/hooks.json`, is the Claude Code hook that holds the agent to the open run (#102). House rules (`workflow/rules/`, #104) judge each run's change from files frozen at begin; gate:28 holds them to their probes. `bin/aic code:tree`, `code:search`, `code:refs` and `code:index` answer from the code index in `var/index/code.sqlite` (#106). Plan cannot pass until its grounding check finds every declared path and class real and the run's own lookups show the agent looked (#118). `bin/aic route:list`, `command:list`, `job:list`, `schedule:list`, `module:list`, `module:show <name>` and `kind:list` answer what the app declares from `build/surface.json`, as text or with `--json` (#109). `bin/aic make:module`, `make:page`, `make:api`, `make:component`, `make:block`, `make:command`, `make:job` and `make:migration` write a new class that passes every gate and add its manifest call (#122). `bin/aic workflow:probe` replays the engine's planted cases in throwaway apps, from `workflow/probes/sweep/`, and exits 0 only when every expectation held (#119). `bin/aic workflow:init` installs it in an app (#105; `workflow/pack/`). Once per run, at code, an independent `aic-seeker` subagent checks the run's change against the AIC checklist; `bin/aic workflow:seeker-brief` gives it its scope (the diff plus one hop) and `bin/aic workflow:seeker-report` files its ledger, whose findings are advisory (#103, #127). Its state is `var/workflow/` (gitignored) |
+| `workflow/` | `aic/workflow`, the agent workflow's engine (`AIC\Workflow\`): a dev-only package. `bin/aic workflow:run <ticket>` runs one phase of a ticket per call; `workflow:status` shows the run; `workflow:reset` is the operator's, from a terminal. At each phase exit the engine runs the gates and the spec's audits itself (#101) and keeps the verdicts in `var/workflow/evidence.sqlite`. `workflow/bin/aic-guard.sh` supplies Claude Code callbacks (#102); the explicit Codex installer uses `workflow/bin/aic-codex-guard.sh` and `workflow/pack/codex/hooks.json` (#136). Both adapt calls to the open run's walls. House rules (`workflow/rules/`, #104) judge each run's change from files frozen at begin; gate:28 holds them to their probes. `bin/aic code:tree`, `code:search`, `code:refs` and `code:index` answer from the code index in `var/index/code.sqlite` (#106). Plan cannot pass until its grounding check finds every declared path and class real and the run's own lookups show the agent looked (#118). `bin/aic route:list`, `command:list`, `job:list`, `schedule:list`, `module:list`, `module:show <name>` and `kind:list` answer what the app declares from `build/surface.json`, as text or with `--json` (#109). `bin/aic make:module`, `make:page`, `make:api`, `make:component`, `make:block`, `make:command`, `make:job` and `make:migration` write a new class that passes every gate and add its manifest call (#122). `bin/aic workflow:probe` replays the engine's planted cases in throwaway apps, from `workflow/probes/sweep/`, and exits 0 only when every expectation held (#119). `bin/aic workflow:init` installs it in an app (#105; `workflow/pack/`). Once per run, at code, an independent `aic-seeker` subagent checks the run's change against the AIC checklist; `bin/aic workflow:seeker-brief` gives it its scope (the diff plus one hop) and `bin/aic workflow:seeker-report` files its ledger, whose findings are advisory (#103, #127). Its state is `var/workflow/` (gitignored) |
 | `.ddev/` | DDEV: nginx-fpm serving the interpreted reference, and Postgres 17 |
 
 ## Bring it up
@@ -108,29 +108,43 @@ Conventional Commits.
 
 ## The workflow in an app
 
-An app built on aic/framework gets the gated workflow with one command, once `aic/workflow` is in its
-`require-dev` (`composer require --dev aic/workflow:0.1.x-dev`):
+An app that requires `aic/workflow` for development can select its client explicitly:
 
 ```bash
-bin/aic workflow:init
+composer require --dev aic/workflow:0.1.x-dev
+bin/aic workflow:init --client=codex
 ```
 
-It writes the agent's skills and commands into `.claude/` (`aic-workflow-*`,
-`/aic:workflow:start`) and the `aic-seeker` agent, `config/workflow.php` (once; every setting written out with its comment),
-`tickets/README.md` (the ticket format), a block in `AGENTS.md` and an `@AGENTS.md` import in
-`CLAUDE.md`, and the guard's hooks with the Stop cap in `.claude/settings.json`. It ends with the
-settings as the engine reads them. Commit what it wrote, `.claude/aic-workflow.lock` included:
-the lock is how the next init tells your edits from its own writes. Run it again after upgrading
-the package: unedited files are upgraded, edited ones kept, and only the operator's
-`--force[=<path>]` from a terminal takes the shipped bytes back. Then set `site` to the app's URL,
-write a ticket and start it with `bin/aic workflow:run <number>`.
+Codex gets `.agents/skills/`, its native `aic-seeker` role and hooks under `.codex/`, a committed
+`.codex/aic-workflow.lock`, and managed `AGENTS.md` instructions. The operator reviews the folder
+and exact hook definitions through Codex `/hooks`, then checks readiness from the operator
+terminal before launching a fresh session:
 
-This repository holds the package's own source, so init refuses to run here.
+```bash
+bin/aic workflow:codex-check
+```
+
+The check uses the actual client's trusted, enabled callback metadata and the installed pack's
+ownership. It can fail inside a tool sandbox that cannot write client state, so perform it
+before launch. Start Codex at the app root. Its inspected shell commands run there without
+interactive child input; use an explicit `cd` in the command for another directory. The native
+seeker takes the engine's scope, and its unchanged actual return binds the review receipt.
+Client callback startup failures can still fail open; see [workflow installation and limits](workflow/README.md).
+
+Omitting `--client` keeps Claude Code as the default; `--client=claude` is its explicit form.
+It installs `.claude/` skills, commands, agent and hooks with the existing Stop cap. Both clients
+write `config/workflow.php` once and the ticket format. Init preserves unrelated hooks and
+edited owned files, upgrades unchanged files, and allows reviewed `--force[=<path>]` only from
+the operator terminal. Commit what it writes, including the selected client's lock. Set `site`
+to the app's URL, write a ticket and start it with `bin/aic workflow:run <number>`.
+
+This repository holds the package's own source, so init refuses here. Its maintainer phases
+remain manual; installing an app pack does not retrofit hooks into this maintainer session.
 
 The gates come the same way: `composer require --dev aic/gates:0.1.x-dev`, then
 `vendor/bin/aic-gate init`, which writes the tools' root configs and prints the scripts and plugins
 for composer.json. Write gate:23's requests in `config/native-site.json`, then `composer run gate`
-runs every gate an app has (all but 22, 28 and 29). This repository's own root configs are its
+runs every gate an app has (all but 22, 28, 29 and 31). This repository's own root configs are its
 own, so this init refuses here too.
 
 ## Working on AIC

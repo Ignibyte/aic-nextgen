@@ -12,7 +12,6 @@ use AIC\Workflow\Application\RunStore;
 use AIC\Workflow\Application\SeekerBrief;
 use AIC\Workflow\Application\SeekerFiling;
 use AIC\Workflow\Application\WorkflowContext;
-use AIC\Workflow\Application\WorkflowInitCommand;
 use AIC\Workflow\Application\WorkflowRunCommand;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
@@ -42,10 +41,10 @@ final readonly class WorkflowKernel implements WorkflowContext
     {
         return [
             ...(new HoldKernel($this))->commands(),
-            'workflow:init' => new WorkflowInitCommand(new InstallParts($this->root)),
-            'workflow:run' => new WorkflowRunCommand($this),
+            ...(new InstallKernel($this->root))->commands(),
             ...(new SeekerKernel($this, $this->root))->commands(),
             ...(new CodeKernel($this->root))->commands(),
+            'workflow:run' => new WorkflowRunCommand($this),
         ];
     }
 

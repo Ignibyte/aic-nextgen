@@ -45,6 +45,12 @@ final readonly class ProjectProfile
         'bin/aic',
         // The agent's commands, skills and hooks, and the workflow's pack and lock (#105).
         '.claude/*',
+        // Native Codex instructions, roles and operator controls (#136).
+        '.agents/skills/*',
+        '.codex/agents/*',
+        '.codex/config.toml',
+        '.codex/hooks.json',
+        '.codex/aic-workflow.lock',
         // The tickets a run works, in an app with the workflow installed (#105).
         'tickets/*',
         // DDEV, the interpreted reference and Postgres.
