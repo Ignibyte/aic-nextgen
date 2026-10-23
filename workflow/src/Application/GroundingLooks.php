@@ -9,6 +9,7 @@ use AIC\Workflow\Domain\CodeSymbol;
 use AIC\Workflow\Domain\DeclaredEntry;
 use AIC\Workflow\Domain\FileChange;
 use AIC\Workflow\Domain\ManifestRow;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function array_any;
 use function array_filter;
@@ -54,6 +55,8 @@ final readonly class GroundingLooks
      * @param list<CodeQuery>     $codeQueries  This run's lookups at plan, oldest first.
      * @param list<ManifestRow>   $manifestRows The File Manifest.
      * @param list<DeclaredEntry> $entries      The Entry Points.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return list<string> Each reason the plan has not looked; none when it has.
      */
@@ -128,6 +131,8 @@ final readonly class GroundingLooks
     /**
      * @param list<DeclaredEntry> $entries The Entry Points.
      * @param list<string>        $files   The files the answered lookups printed.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return list<string> Rule 3 for classes: each existing one whose file no lookup printed.
      */

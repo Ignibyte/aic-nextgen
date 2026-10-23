@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Workflow engine, guard and seeker contracts** (#142, second source child of #135). Checked phase snapshots, fixed-width entry rows and regex captures retain valid transitions, gate summaries, shell parsing and seeker ledger bytes. Actual exception contracts follow their existing callers.
+  - Write protection preserves hard, soft and off decisions, symlink and vendor boundaries. Unreadable PHP scripts, grant versions and autoload paths refuse. Standalone rules retain strict comparisons of the gate suite's owned values.
+  - All 83 scoped ordinary findings are removed; the complete report still exits 2 with 104 workflow findings for #143 and zero runtime/gates findings. All 151 workflow expectations, 153 focused controls and 32 gates pass with zero deferrals. All 65 valid build output hashes remain identical; parent #135 still owns final both-mode enforcement.
+
 - **Workflow file, JSON and hook boundaries** (#141, first source child of #135). Readers check native values before use, preserve numeric-looking JSON names as strings, and keep strict refusals separate from optional-value fallbacks and malformed ledger skips. Guard rows use explicit checked fields; failed JSON encoding does not append a blank ledger record.
   - Checked regex and directory boundaries preserve capture/traversal order. Archive callbacks retain actual timestamp/path tuples; fixture directory failures propagate to the existing Held result. The code-index composition exposes its existing interface.
   - All 84 scoped findings are removed. Complete ordinary Psalm still exits 2 with 187 workflow findings and zero runtime/gates findings; #142/#143 and final both-mode enforcement in #135 remain. All 151 workflow expectations, 69 focused controls and 32 gates pass without deferrals; 65 valid output hashes remain identical.

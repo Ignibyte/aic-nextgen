@@ -80,16 +80,18 @@ final readonly class RunState
      */
     public function advanceTo(Phase $phase): self
     {
-        if (!$this->currentPhase instanceof Phase) {
+        $current = $this->currentPhase;
+
+        if (!$current instanceof Phase) {
             throw new LogicException('Run ' . $this->runStart->runId . ' has ended; it cannot advance.');
         }
 
-        if ($this->currentPhase->next() !== $phase) {
-            throw new LogicException('Run ' . $this->runStart->runId . ' is at ' . $this->currentPhase->value . '; ' . $phase->value
+        if ($current->next() !== $phase) {
+            throw new LogicException('Run ' . $this->runStart->runId . ' is at ' . $current->value . '; ' . $phase->value
                 . ' is not the next phase.');
         }
 
-        $runPhases = $this->passed($this->currentPhase)->with($phase, PhaseStatus::Active);
+        $runPhases = $this->passed($current)->with($phase, PhaseStatus::Active);
 
         return new self(
             $this->runStart,

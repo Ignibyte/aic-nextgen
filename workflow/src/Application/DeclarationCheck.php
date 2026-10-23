@@ -8,6 +8,7 @@ use AIC\Workflow\Domain\CheckRow;
 use AIC\Workflow\Domain\Findings;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\RunState;
+use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 use function array_diff;
@@ -68,6 +69,8 @@ final readonly class DeclarationCheck implements PhaseCheck
 
     /**
      * @param RunState $runState The run.
+     *
+     * @throws WorkflowRefusal When a called boundary reports its documented failure.
      *
      * @return CheckRow Passed when every change is declared; failed, naming the rest, otherwise.
      */

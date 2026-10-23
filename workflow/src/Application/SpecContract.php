@@ -131,7 +131,7 @@ final readonly class SpecContract
         $rows = [];
 
         foreach ($this->markdownSections->rows(self::MANIFEST) ?? [] as $row) {
-            $path = trim($row[0], ' `');
+            $path = trim($row[0] ?? '', ' `');
 
             if ($path === '') {
                 continue;
@@ -152,11 +152,13 @@ final readonly class SpecContract
         $entries = [];
 
         foreach ($this->markdownSections->rows(self::ENTRIES) ?? [] as $row) {
-            if ($this->entryProblems($row) !== []) {
+            $cells = array_map(static fn (string $cell): string => trim($cell, ' `'), $row);
+
+            if (count($cells) !== 7 || $this->entryProblems($row) !== []) {
                 continue;
             }
 
-            $entries[] = $this->entry(array_map(static fn (string $cell): string => trim($cell, ' `'), $row));
+            $entries[] = $this->entry([$cells[0], $cells[1], $cells[2], $cells[3], $cells[4], $cells[5], $cells[6]]);
         }
 
         return $entries;
@@ -246,7 +248,7 @@ final readonly class SpecContract
     }
 
     /**
-     * @param list<string> $cells A valid entry-point row's cells, without backticks.
+     * @param array{string, string, string, string, string, string, string} $cells A valid entry-point row's cells, without backticks.
      *
      * @return DeclaredEntry The entry.
      */

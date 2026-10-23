@@ -9,6 +9,7 @@ use AIC\Workflow\Domain\CheckStatus;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\QuestionAnswer;
 use AIC\Workflow\Domain\RunState;
+use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 use function array_any;
@@ -48,6 +49,8 @@ final readonly class ConfirmCheck implements PhaseCheck
 
     /**
      * @param RunState $runState The run at the phase.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return CheckRow Passed when no confirmation is due or it was given on this tree; asked otherwise.
      */

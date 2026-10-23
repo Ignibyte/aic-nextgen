@@ -51,6 +51,8 @@ final readonly class BrowserCheck implements PhaseCheck
     /**
      * @param RunState $runState The run, at check.
      *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
+     *
      * @return CheckRow Passed when the work is not browser-testable, or its evidence is there; failed otherwise.
      */
     #[Override]

@@ -8,6 +8,7 @@ use AIC\Workflow\Domain\CheckRow;
 use AIC\Workflow\Domain\CheckStatus;
 use AIC\Workflow\Domain\PhaseReport;
 use AIC\Workflow\Domain\RunState;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function array_any;
 use function in_array;
@@ -38,6 +39,8 @@ final readonly class StalledRows
     /**
      * @param RunState    $runState    The run, before the report is kept.
      * @param PhaseReport $phaseReport A fresh report of its current phase.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return PhaseReport The report stamped with its key, each stalled row held.
      */

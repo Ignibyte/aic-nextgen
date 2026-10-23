@@ -11,6 +11,7 @@ use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Domain\RunState;
 use AIC\Workflow\Domain\RunSummary;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -29,6 +30,8 @@ final readonly class WorkflowStatusCommand implements Command
 
     /**
      * @param CommandInput $commandInput None.
+     *
+     * @throws InvalidArgumentException When a called boundary reports its documented failure.
      *
      * @return CommandResponse The run's summary; exit 2 when refused.
      */

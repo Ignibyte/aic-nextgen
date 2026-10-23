@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Guard;
 
+use AIC\Workflow\Domain\RegexCaptures;
+
 use function array_shift;
 use function explode;
 use function implode;
@@ -22,6 +24,8 @@ use const PREG_SET_ORDER;
  */
 final readonly class ShellTokens
 {
+    use RegexCaptures;
+
     /**
      * One token: blank space, an operator, a word, or a stray character.
      */
@@ -75,12 +79,14 @@ final readonly class ShellTokens
     private function token(array $match): array
     {
         foreach (['op', 'word', 'stray'] as $kind) {
-            if (($match[$kind] ?? '') !== '') {
-                return [$kind, $match[$kind]];
+            $text = $match[$kind] ?? '';
+
+            if ($text !== '') {
+                return [$kind, $text];
             }
         }
 
-        return ['space', $match[0]];
+        return ['space', $match[0] ?? ''];
     }
 
     /**
@@ -114,9 +120,7 @@ final readonly class ShellTokens
      */
     private function delimiters(string $line): array
     {
-        return preg_match_all(self::HEREDOC, $line, $matches) === false
-            ? []
-            : $matches[2];
+        return self::regexColumn(self::HEREDOC, $line, 2);
     }
 
     /**

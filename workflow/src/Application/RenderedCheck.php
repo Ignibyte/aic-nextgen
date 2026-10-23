@@ -11,6 +11,7 @@ use AIC\Workflow\Domain\Findings;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\RenderedAnswer;
 use AIC\Workflow\Domain\RunState;
+use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 use function array_any;
@@ -77,6 +78,8 @@ final readonly class RenderedCheck implements PhaseCheck
 
     /**
      * @param RunState $runState The run.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return CheckRow Passed when every declared GET route answered as declared; failed, naming each that did not; held
      *                  for the operator when routes are declared and no site is set (#105).

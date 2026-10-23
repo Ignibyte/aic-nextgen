@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application;
 
+use AIC\Workflow\Domain\RegexCaptures;
 use AIC\Workflow\Domain\SeekerFinding;
 use AIC\Workflow\Domain\SeekerSeverity;
 use AIC\Workflow\Domain\SeekerStatus;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
+use function array_key_exists;
 use function array_map;
 use function array_slice;
 use function count;
@@ -29,6 +31,8 @@ use function trim;
  */
 final readonly class SeekerLedgerCells
 {
+    use RegexCaptures;
+
     /**
      * What a broken row's refusal tells the seeker.
      */
@@ -121,7 +125,9 @@ final readonly class SeekerLedgerCells
      */
     private function cited(string $cell, array $ids): array
     {
-        if (preg_match('/^([A-Z]\\d+):\\s*(.+)$/', $cell, $match) !== 1 || !in_array($match[1], $ids, true)) {
+        $match = self::regexMatch('/^([A-Z]\\d+):\\s*(.+)$/', $cell);
+
+        if (!array_key_exists(1, $match) || !array_key_exists(2, $match) || !in_array($match[1], $ids, true)) {
             throw new WorkflowRefusal('the finding "' . $cell . '" does not open with a checklist id and a colon, such as "A1: ...".');
         }
 

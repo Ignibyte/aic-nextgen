@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use LogicException;
 use Override;
 
 /**
@@ -29,6 +30,8 @@ final readonly class WorkflowAnswerCommand implements Command
 
     /**
      * @param CommandInput $commandInput The option and the note, or the answer.
+     *
+     * @throws LogicException When the phase invariant or the response arguments are invalid.
      *
      * @return CommandResponse What was recorded, then the phase's outcome after an advance; exit 2 when refused.
      */

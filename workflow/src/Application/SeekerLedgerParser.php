@@ -119,12 +119,7 @@ final readonly class SeekerLedgerParser
         foreach ($lines as $line) {
             $trimmed = trim($line);
             $observing = $observing || str_starts_with($trimmed, '### ');
-            $parts = match (true) {
-                $observing => [...$parts, 'observations' => $parts['observations'] + (str_starts_with($trimmed, '- ') ? 1 : 0)],
-                $trimmed === '(no findings)' => [...$parts, 'sentinel' => true],
-                str_starts_with($trimmed, '|') => [...$parts, 'rows' => [...$parts['rows'], ...$this->row($trimmed)]],
-                default => [...$parts, 'preamble' => [...$parts['preamble'], $trimmed]],
-            };
+            $parts = $this->part($parts, $trimmed, $observing);
         }
 
         return $parts;
@@ -183,5 +178,39 @@ final readonly class SeekerLedgerParser
         }
 
         return '';
+    }
+
+    /**
+     * @param array{preamble: list<string>, rows: list<string>, sentinel: bool, observations: int} $parts     The state so far.
+     * @param string                                                                               $line      One trimmed ledger line.
+     * @param bool                                                                                 $observing Observation mode.
+     *
+     * @return array{preamble: list<string>, rows: list<string>, sentinel: bool, observations: int} The state after this line.
+     */
+    private function part(array $parts, string $line, bool $observing): array
+    {
+        if ($observing) {
+            $parts['observations'] += str_starts_with($line, '- ')
+                ? 1
+                : 0;
+
+            return $parts;
+        }
+
+        if ($line === '(no findings)') {
+            $parts['sentinel'] = true;
+
+            return $parts;
+        }
+
+        if (str_starts_with($line, '|')) {
+            $parts['rows'] = [...$parts['rows'], ...$this->row($line)];
+
+            return $parts;
+        }
+
+        $parts['preamble'][] = $line;
+
+        return $parts;
     }
 }

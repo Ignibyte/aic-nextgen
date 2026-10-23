@@ -10,6 +10,7 @@ use AIC\Workflow\Domain\Guard\GuardRow;
 use AIC\Workflow\Domain\Guard\GuardScene;
 use AIC\Workflow\Domain\Guard\GuardVerdict;
 use AIC\Workflow\Domain\Guard\HookCall;
+use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\RunState;
 
 use function in_array;
@@ -114,7 +115,7 @@ final readonly class GuardHook
         $this->guardLedger->append(new GuardRow(
             $this->utcTime->now(),
             $run,
-            $phase->value ?? '',
+            $phase instanceof Phase ? $phase->value : '',
             $verb,
             $hookCall->tool,
             $guardVerdict->verdict,

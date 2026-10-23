@@ -18,7 +18,13 @@ use AIC\Component\Contracts\RawHtmlGrant;
 
 $input = json_decode((string) file_get_contents('php://stdin'));
 
-if (!$input instanceof stdClass || !is_array($input->changed ?? null) || !is_string($input->autoload ?? null)) {
+$fields = $input instanceof stdClass
+    ? get_object_vars($input)
+    : [];
+$changes = [$fields['changed'] ?? null];
+$autoload = [$fields['autoload'] ?? null];
+
+if (!$input instanceof stdClass || !is_array($changes[0]) || !is_string($autoload[0])) {
     file_put_contents('php://stderr', "raw-html-grants: the input is not an aic.house-rule/1 object.\n");
 
     exit(3);
@@ -26,9 +32,10 @@ if (!$input instanceof stdClass || !is_array($input->changed ?? null) || !is_str
 
 $change = null;
 
-foreach ($input->changed as $candidate) {
-    $change = $candidate instanceof stdClass && ($candidate->path ?? null) === 'config/raw-html.php'
-        ? $candidate
+foreach (array_keys($changes[0]) as $changeAt) {
+    $candidate = [$changes[0][$changeAt]];
+    $change = $candidate[0] instanceof stdClass && ($candidate[0]->path ?? null) === 'config/raw-html.php'
+        ? $candidate[0]
         : $change;
 }
 
@@ -38,7 +45,15 @@ if (!$change instanceof stdClass) {
     exit(4);
 }
 
-require $input->autoload;
+$autoloadPath = $autoload[0];
+
+if (!is_file($autoloadPath) || !is_readable($autoloadPath)) {
+    file_put_contents('php://stderr', "raw-html-grants: the project autoloader cannot be read.\n");
+
+    exit(3);
+}
+
+require $autoloadPath;
 
 $index = static function (array $grants): ?array {
     $byClass = [];
@@ -54,16 +69,24 @@ $index = static function (array $grants): ?array {
     return $byClass;
 };
 $load = static function (?string $file) use ($index): ?array {
-    $grants = $file !== null && is_file($file)
-        ? require $file
-        : [];
+    if ($file === null) {
+        return [];
+    }
 
-    return is_array($grants)
-        ? $index($grants)
+    if (!is_file($file) || !is_readable($file)) {
+        return null;
+    }
+
+    $grants = [require $file];
+
+    return is_array($grants[0])
+        ? $index($grants[0])
         : null;
 };
-$before = $load(is_string($change->base ?? null) ? $change->base : null);
-$after = $load(is_string($change->head ?? null) ? $change->head : null);
+$base = [get_object_vars($change)['base'] ?? null];
+$head = [get_object_vars($change)['head'] ?? null];
+$before = $load(is_string($base[0]) ? $base[0] : null);
+$after = $load(is_string($head[0]) ? $head[0] : null);
 
 if ($before === null || $after === null) {
     echo "a version of config/raw-html.php does not return a list of RawHtmlGrant.\n";

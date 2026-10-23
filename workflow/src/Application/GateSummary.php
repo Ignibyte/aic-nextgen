@@ -8,23 +8,22 @@ use AIC\Workflow\Domain\GateResult;
 use AIC\Workflow\Domain\GateRun;
 use AIC\Workflow\Domain\GateStatus;
 use AIC\Workflow\Domain\ProcessResult;
+use AIC\Workflow\Domain\RegexCaptures;
 
 use function array_count_values;
 use function array_diff;
+use function array_key_exists;
 use function array_keys;
 use function explode;
 use function implode;
 use function in_array;
 use function preg_match;
-use function preg_match_all;
 use function preg_quote;
 use function rtrim;
 use function str_starts_with;
 use function strlen;
 use function strpos;
 use function substr;
-
-use const PREG_SET_ORDER;
 
 /**
  * Reads a `composer run gate` (#101): the runner's `gate-result:` lines and
@@ -35,6 +34,8 @@ use const PREG_SET_ORDER;
  */
 final readonly class GateSummary
 {
+    use RegexCaptures;
+
     /**
      * The characters of a gate's output kept as its transcript, from its end.
      */
@@ -93,10 +94,13 @@ final readonly class GateSummary
      */
     private function results(string $output): array
     {
-        preg_match_all('/^gate-result: (gate:\\d+) (passed|deferred|failed)$/m', $output, $matches, PREG_SET_ORDER);
         $results = [];
 
-        foreach ($matches as $match) {
+        foreach (self::regexRows('/^gate-result: (gate:\\d+) (passed|deferred|failed)$/m', $output) as $match) {
+            if (!array_key_exists(1, $match) || !array_key_exists(2, $match)) {
+                continue;
+            }
+
             $results[$match[1]] = $match[2];
         }
 
@@ -113,16 +117,13 @@ final readonly class GateSummary
      */
     private function problem(int $exitCode, string $summary, array $results, array $gates): string
     {
-        $counts = array_count_values($results) + ['deferred' => 0, 'failed' => 0, 'passed' => 0];
         $missing = array_diff($gates, array_keys($results));
 
         return match (true) {
             !in_array($exitCode, [0, 1], true) => 'it exited ' . $exitCode . '.',
             $summary === '' => 'it printed no gate-summary line.',
             $missing !== [] => implode(', ', $missing) . ' printed no result.',
-            preg_match('/^gate-summary: ' . $counts['passed'] . ' passed, ' . $counts['deferred'] . ' deferred/', $summary) !== 1,
-            ($counts['failed'] > 0) !== (preg_match('/, ' . $counts['failed'] . ' failed \\(/', $summary) === 1),
-            ($exitCode === 1) !== ($counts['failed'] > 0) => 'its results disagree with "' . $summary . '" or exit ' . $exitCode . '.',
+            !$this->consistent($exitCode, $summary, $results) => 'its results disagree with "' . $summary . '" or exit ' . $exitCode . '.',
             default => '',
         };
     }
@@ -172,14 +173,11 @@ final readonly class GateSummary
      */
     private function why(string $gate, GateStatus $gateStatus, string $output): string
     {
-        if (
-            $gateStatus === GateStatus::Deferred
-            && preg_match('/^' . preg_quote($gate, '/') . ' — (.*deferring.*)$/m', $output, $line) === 1
-        ) {
-            return $gate . ' deferred: ' . $line[1];
-        }
+        $line = self::regexMatch('/^' . preg_quote($gate, '/') . ' — (.*deferring.*)$/m', $output);
 
-        return $gate . ' ' . $gateStatus->value . '.';
+        return $gateStatus === GateStatus::Deferred && array_key_exists(1, $line)
+            ? $gate . ' deferred: ' . $line[1]
+            : $gate . ' ' . $gateStatus->value . '.';
     }
 
     /**
@@ -210,5 +208,24 @@ final readonly class GateSummary
         return strlen($section) > self::TRANSCRIPT
             ? substr($section, -self::TRANSCRIPT)
             : $section;
+    }
+
+    /**
+     * @param int                   $exitCode The actual runner exit.
+     * @param string                $summary  Its final summary line.
+     * @param array<string, string> $results  Its parsed result statuses.
+     *
+     * @return bool Whether all counts and the exit agree with that summary.
+     */
+    private function consistent(int $exitCode, string $summary, array $results): bool
+    {
+        $counts = array_count_values($results);
+        $passed = $counts['passed'] ?? 0;
+        $deferred = $counts['deferred'] ?? 0;
+        $failed = $counts['failed'] ?? 0;
+        $prefix = preg_match('/^gate-summary: ' . $passed . ' passed, ' . $deferred . ' deferred/', $summary) === 1;
+        $failures = preg_match('/, ' . $failed . ' failed \\(/', $summary) === 1;
+
+        return $prefix && (($failed > 0) === $failures) && (($exitCode === 1) === ($failed > 0));
     }
 }

@@ -98,7 +98,7 @@ final readonly class WriteScope
 
         $problem = $this->problem($relative, $runState, $phase);
 
-        return $problem === []
+        return $problem === null
             ? new GuardVerdict()
             : $this->lever($guardScene->enforcement(), $problem[0], $problem[1], $guardScene);
     }
@@ -117,7 +117,7 @@ final readonly class WriteScope
 
         return match (true) {
             str_starts_with($absolute, '/dev/') => null,
-            $leaves !== [] => new GuardVerdict('refuse', $leaves[0], $leaves[1]),
+            $leaves !== null => new GuardVerdict('refuse', $leaves[0], $leaves[1]),
             $waits !== '' => new GuardVerdict('refuse', 'question-waits', $waits),
             default => null,
         };
@@ -126,10 +126,10 @@ final readonly class WriteScope
     /**
      * @param string $absolute Where a write is aimed, absolute.
      *
-     * @return array{}|array{string, string} The rule and its words when the write really lands outside the project or under
-     *                                       its `vendor/`; empty when it lands in the project.
+     * @return array{string, string}|null The rule and its words when the write really lands outside the project or under
+     *                                    its `vendor/`; null when it lands in the project.
      */
-    private function leaves(string $absolute): array
+    private function leaves(string $absolute): ?array
     {
         $landed = $this->pathResolver->landed($absolute);
         $root = $this->pathResolver->landed($this->root);
@@ -140,7 +140,7 @@ final readonly class WriteScope
 
         return self::underVendor(substr($landed, strlen($root) + 1))
             ? ['vendor', sprintf(self::VENDOR, $absolute)]
-            : [];
+            : null;
     }
 
     /**
@@ -170,14 +170,14 @@ final readonly class WriteScope
      * @param RunState $runState The open run.
      * @param Phase    $phase    Its phase.
      *
-     * @return array{}|array{string, string} The rule and its words when the phase may not write there; empty when it may.
+     * @return array{string, string}|null The rule and its words when the phase may not write there; null when it may.
      */
-    private function problem(string $relative, RunState $runState, Phase $phase): array
+    private function problem(string $relative, RunState $runState, Phase $phase): ?array
     {
         $spec = $runState->runStart->specPath;
 
         if ($relative === $spec) {
-            return [];
+            return null;
         }
 
         if ($phase === Phase::Plan) {
@@ -189,7 +189,7 @@ final readonly class WriteScope
         }
 
         return in_array($relative, $this->declared($spec), true)
-            ? []
+            ? null
             : ['scope:' . $phase->value, $relative . self::UNDECLARED];
     }
 
@@ -211,11 +211,14 @@ final readonly class WriteScope
         $run = $runState instanceof RunState
             ? $runState->runStart->runId
             : '';
-        $phase = $guardScene->phase()->value ?? '';
+        $phase = $guardScene->phase();
+        $phaseName = $phase instanceof Phase
+            ? $phase->value
+            : '';
 
         return match ($enforcement) {
             Enforcement::Hard => new GuardVerdict('refuse', $rule, $message),
-            Enforcement::Soft => new GuardVerdict('nudge', $rule, $this->guardLedger->warned($run, $phase, $rule) ? '' : $message),
+            Enforcement::Soft => new GuardVerdict('nudge', $rule, $this->guardLedger->warned($run, $phaseName, $rule) ? '' : $message),
             Enforcement::Off => new GuardVerdict(),
         };
     }

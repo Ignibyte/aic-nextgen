@@ -8,6 +8,8 @@ use function array_key_exists;
 use function preg_match;
 use function preg_match_all;
 
+use const PREG_SET_ORDER;
+
 /**
  * Private workflow regex reads with explicit match and capture availability.
  */
@@ -42,5 +44,20 @@ trait RegexCaptures
         return $count !== false && array_key_exists($group, $columns)
             ? $columns[$group]
             : [];
+    }
+
+    /**
+     * @param non-empty-string $pattern A pattern without capture offsets.
+     * @param string           $subject The input to scan.
+     *
+     * @return list<array<array-key, string>> Capture rows in source order, empty on a failed match.
+     */
+    private static function regexRows(string $pattern, string $subject): array
+    {
+        $count = preg_match_all($pattern, $subject, $rows, PREG_SET_ORDER);
+
+        return $count === false
+            ? []
+            : $rows;
     }
 }

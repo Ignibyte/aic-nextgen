@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -27,6 +28,8 @@ final readonly class WorkflowSeekerBriefCommand implements Command
 
     /**
      * @param CommandInput $commandInput None.
+     *
+     * @throws InvalidArgumentException When a called boundary reports its documented failure.
      *
      * @return CommandResponse The brief; exit 2 when refused.
      */

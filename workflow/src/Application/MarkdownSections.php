@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application;
 
+use AIC\Workflow\Domain\RegexCaptures;
+
+use function array_key_exists;
 use function array_map;
 use function array_search;
 use function array_slice;
 use function explode;
-use function preg_match;
 use function preg_split;
 use function str_replace;
 use function str_starts_with;
@@ -20,6 +22,8 @@ use function trim;
  */
 final readonly class MarkdownSections
 {
+    use RegexCaptures;
+
     /**
      * @param string $text The document.
      */
@@ -92,7 +96,9 @@ final readonly class MarkdownSections
         $items = [];
 
         foreach ($this->lines($heading) ?? [] as $line) {
-            if (preg_match('/^\\s*(?:[-*]|\\d+\\.)\\s+(.+)$/', $line, $matches) !== 1) {
+            $matches = self::regexMatch('/^\\s*(?:[-*]|\\d+\\.)\\s+(.+)$/', $line);
+
+            if (!array_key_exists(1, $matches)) {
                 continue;
             }
 

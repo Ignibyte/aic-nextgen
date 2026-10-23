@@ -22,7 +22,12 @@ declare(strict_types=1);
 
 $input = json_decode((string) file_get_contents('php://stdin'));
 
-if (!$input instanceof stdClass || !is_array($input->changed ?? null)) {
+$fields = $input instanceof stdClass
+    ? get_object_vars($input)
+    : [];
+$changes = [$fields['changed'] ?? null];
+
+if (!$input instanceof stdClass || !is_array($changes[0])) {
     file_put_contents('php://stderr', "gate-suite: the input is not an aic.house-rule/1 object.\n");
 
     exit(3);
@@ -46,15 +51,17 @@ $lines = static fn (string $text): array => array_count_values(array_map(trim(..
 $breaks = [];
 $examined = 0;
 
-foreach ($input->changed as $change) {
-    $path = $change instanceof stdClass && is_string($change->path ?? null)
-        ? $change->path
+foreach (array_keys($changes[0]) as $changeAt) {
+    $change = [$changes[0][$changeAt]];
+    $pathValue = [$change[0] instanceof stdClass ? get_object_vars($change[0])['path'] ?? null : null];
+    $path = is_string($pathValue[0])
+        ? $pathValue[0]
         : '';
-    $base = $change instanceof stdClass
-        ? $read($change->base ?? null)
+    $base = $change[0] instanceof stdClass
+        ? $read($change[0]->base ?? null)
         : '';
-    $head = $change instanceof stdClass
-        ? $read($change->head ?? null)
+    $head = $change[0] instanceof stdClass
+        ? $read($change[0]->head ?? null)
         : '';
 
     if (in_array($path, $fixed, true) || str_starts_with($path, 'bin/gate-') || str_starts_with($path, 'gates/')) {
@@ -118,19 +125,19 @@ foreach ($input->changed as $change) {
     }
 
     $examined += 1;
-    $before = json_decode($base, true);
-    $after = json_decode($head, true);
+    $before = [json_decode($base, true)];
+    $after = [json_decode($head, true)];
 
     foreach ($owned as $keys) {
         $was = $before;
         $now = $after;
 
         foreach ($keys as $key) {
-            $was = $at($was, $key);
-            $now = $at($now, $key);
+            $was = [$at($was[0], $key)];
+            $now = [$at($now[0], $key)];
         }
 
-        if ($was === $now) {
+        if ($was[0] === $now[0]) {
             continue;
         }
 

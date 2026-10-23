@@ -154,7 +154,9 @@ final readonly class PhpWall
             return $this->reaches($script);
         }
 
-        return $this->reaches($script . "\n" . file_get_contents($path));
+        $text = file_get_contents($path);
+
+        return $text === false || $this->reaches($script . "\n" . $text);
     }
 
     /**
