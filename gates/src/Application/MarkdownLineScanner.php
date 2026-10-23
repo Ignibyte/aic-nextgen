@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\RegexCaptures;
+
+use function array_key_exists;
 use function array_pad;
 use function dirname;
 use function explode;
@@ -13,7 +16,6 @@ use function mb_strtoupper;
 use function mb_substr;
 use function mb_trim;
 use function preg_match;
-use function preg_match_all;
 use function preg_replace;
 use function realpath;
 use function sprintf;
@@ -33,6 +35,8 @@ use const DIRECTORY_SEPARATOR;
  */
 final readonly class MarkdownLineScanner
 {
+    use RegexCaptures;
+
     /**
      * Scan every line of `$contents`, folding findings into `$report`.
      *
@@ -135,7 +139,9 @@ final readonly class MarkdownLineScanner
      */
     private function detectTodoMarker(string $relative, int $lineNumber, string $line, string $stripped): ?string
     {
-        if (preg_match('/\\((TODO|WIP)\\)/i', $stripped, $matches) !== 1) {
+        $matches = self::regexMatch('/\\((TODO|WIP)\\)/i', $stripped);
+
+        if (!array_key_exists(1, $matches)) {
             return null;
         }
 
@@ -160,15 +166,15 @@ final readonly class MarkdownLineScanner
      */
     private function detectDeadLinks(string $root, string $file, string $relative, string $stripped): array
     {
-        $linkCount = preg_match_all('/\\[[^\\]]*\\]\\(([^)]+)\\)/', $stripped, $linkMatches);
+        $linkTargets = self::regexColumn('/\\[[^\\]]*\\]\\(([^)]+)\\)/', $stripped, 1);
 
-        if ($linkCount === false || $linkCount === 0) {
+        if ($linkTargets === []) {
             return [];
         }
 
         $deadLinks = [];
 
-        foreach ($linkMatches[1] as $linkTarget) {
+        foreach ($linkTargets as $linkTarget) {
             $deadLink = $this->checkLinkTarget($root, $file, $relative, $linkTarget);
 
             if ($deadLink === null) {

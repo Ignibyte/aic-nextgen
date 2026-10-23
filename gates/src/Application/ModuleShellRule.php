@@ -106,7 +106,7 @@ final readonly class ModuleShellRule implements ModuleRule
         $violations = [];
 
         foreach ($moduleTree->prefixes as $prefix => $folders) {
-            if (!str_starts_with($prefix, 'App\\') || $folders === [($allowed[$prefix] ?? null)]) {
+            if (!str_starts_with($prefix, 'App\\') || $this->mapsTo($folders, $allowed[$prefix] ?? null)) {
                 continue;
             }
 
@@ -118,6 +118,17 @@ final readonly class ModuleShellRule implements ModuleRule
         }
 
         return $violations;
+    }
+
+    /**
+     * @param list<string> $folders  A prefix's configured folders.
+     * @param string|null  $expected Its allowed folder, when the prefix is known.
+     *
+     * @return bool Whether it maps only to the allowed folder.
+     */
+    private function mapsTo(array $folders, ?string $expected): bool
+    {
+        return $expected !== null && $folders === [$expected];
     }
 
     /**

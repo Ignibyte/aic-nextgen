@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\MarkdownDocument;
+use Gates\Domain\RegexCaptures;
 
 use function array_column;
 use function array_diff;
+use function array_key_exists;
 use function in_array;
-use function preg_match;
 use function sprintf;
 
 /**
@@ -19,6 +20,8 @@ use function sprintf;
  */
 final readonly class DocsKindChecks
 {
+    use RegexCaptures;
+
     /**
      * @param MarkdownDocument $markdownDocument `kinds.md`.
      * @param list<string>     $kinds            The entry kinds.
@@ -52,7 +55,9 @@ final readonly class DocsKindChecks
         $rows = [];
 
         foreach ($markdownDocument->firstCells() as [, $cell]) {
-            if (preg_match('#^`src/(\\w+)/`$#', $cell, $match) !== 1) {
+            $match = self::regexMatch('#^`src/(\\w+)/`$#', $cell);
+
+            if (!array_key_exists(1, $match)) {
                 continue;
             }
 

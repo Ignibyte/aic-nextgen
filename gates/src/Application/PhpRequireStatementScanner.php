@@ -147,9 +147,9 @@ final readonly class PhpRequireStatementScanner
      * Decide whether the (array) token at `$index` is an include-family
      * CONSTRUCT (not an identifier usage) whose operand is runtime-dynamic.
      *
-     * @param array<int, array{int, string, int}|string> $tokens Full token stream.
-     * @param int                                        $index  Index of the candidate token.
-     * @param array{int, string, int}                    $token  The candidate token itself.
+     * @param array<int, array{0: int, 1: string, 2: int}|string> $tokens Full token stream.
+     * @param int                                                 $index  Index of the candidate token.
+     * @param array{0: int, 1: string, 2: int}                    $token  The candidate token itself.
      */
     private function isDynamicIncludeSite(array $tokens, int $index, array $token): bool
     {
@@ -168,8 +168,8 @@ final readonly class PhpRequireStatementScanner
      * Decide whether the include token at `$index` is really an identifier —
      * a method named `require`, or a `self::require()` call.
      *
-     * @param array<int, array{int, string, int}|string> $tokens Full token stream.
-     * @param int                                        $index  Index of the include token.
+     * @param array<int, array{0: int, 1: string, 2: int}|string> $tokens Full token stream.
+     * @param int                                                 $index  Index of the include token.
      */
     private function isIdentifierUsage(array $tokens, int $index): bool
     {
@@ -190,8 +190,8 @@ final readonly class PhpRequireStatementScanner
      * Walk the operand expression following the include token and decide
      * whether every part of it is compile-time-constant.
      *
-     * @param array<int, array{int, string, int}|string> $tokens Full token stream.
-     * @param int                                        $index  Index of the include token.
+     * @param array<int, array{0: int, 1: string, 2: int}|string> $tokens Full token stream.
+     * @param int                                                 $index  Index of the include token.
      */
     private function operandIsStatic(array $tokens, int $index): bool
     {
@@ -214,7 +214,7 @@ final readonly class PhpRequireStatementScanner
      * terminator with everything seen static; `false` marks the operand
      * dynamic (variable, function call, interpolation, …).
      *
-     * @param array{int, string, int}|string $token Token from the stream.
+     * @param array{0: int, 1: string, 2: int}|string $token Token from the stream.
      */
     private function operandTokenVerdict(array|string $token): ?bool
     {
@@ -238,7 +238,7 @@ final readonly class PhpRequireStatementScanner
     /**
      * Decide whether a token carries no syntactic weight.
      *
-     * @param array{int, string, int}|string $token Token from the stream.
+     * @param array{0: int, 1: string, 2: int}|string $token Token from the stream.
      */
     private function isInsignificant(array|string $token): bool
     {

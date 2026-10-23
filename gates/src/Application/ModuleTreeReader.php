@@ -6,16 +6,17 @@ namespace Gates\Application;
 
 use Gates\Domain\ModuleTree;
 use Gates\Domain\ProcessRunner;
+use Gates\Domain\RegexCaptures;
 use Gates\Domain\SourceSymbols;
 use InvalidArgumentException;
 use RuntimeException;
 
 use function array_filter;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_values;
 use function explode;
-use function preg_match_all;
 use function realpath;
 use function sort;
 use function str_ends_with;
@@ -24,8 +25,6 @@ use function str_starts_with;
 use function strlen;
 use function substr;
 use function trim;
-
-use const PREG_SET_ORDER;
 
 /**
  * Reads what gate:26 checks into one `ModuleTree` (#94): the modules through
@@ -37,6 +36,8 @@ use const PREG_SET_ORDER;
  */
 final readonly class ModuleTreeReader
 {
+    use RegexCaptures;
+
     /**
      * @param ProcessRunner         $processRunner         Runs git.
      * @param TemplateBuild         $templateBuild         Lists the generated template classes.
@@ -135,6 +136,8 @@ final readonly class ModuleTreeReader
     /**
      * @param string $root The repo root.
      *
+     * @throws InvalidArgumentException When a template cannot be compiled.
+     *
      * @return list<string> The generated template classes under `modules/`, relative.
      */
     private function templateClasses(string $root): array
@@ -165,12 +168,16 @@ final readonly class ModuleTreeReader
             throw new RuntimeException('cannot read composer.json.');
         }
 
-        preg_match_all('/"(App\\\\\\\\(?:\\w+\\\\\\\\)*)"\\s*:\\s*("[^"]*"|\\[[^\\]]*\\])/', $composer, $matches, PREG_SET_ORDER);
+        $matches = self::regexRows('/"(App\\\\\\\\(?:\\w+\\\\\\\\)*)"\\s*:\\s*("[^"]*"|\\[[^\\]]*\\])/', $composer);
         $prefixes = [];
 
         foreach ($matches as $match) {
-            preg_match_all('/"([^"]*)"/', $match[2], $folders);
-            $prefixes[str_replace('\\\\', '\\', $match[1])] = $folders[1];
+            if (!array_key_exists(1, $match) || !array_key_exists(2, $match)) {
+                continue;
+            }
+
+            $folders = self::regexColumn('/"([^"]*)"/', $match[2], 1);
+            $prefixes[str_replace('\\\\', '\\', $match[1])] = $folders;
         }
 
         return $prefixes;

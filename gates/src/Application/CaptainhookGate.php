@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\ProcessRunner;
+use JsonException;
 
 use function count;
 use function file_get_contents;
@@ -52,6 +53,8 @@ final readonly class CaptainhookGate
      * @param string   $root   Repo-root absolute path.
      * @param resource $stdout Stream success/preview lines are written to.
      * @param resource $stderr Stream failure messages are written to.
+     *
+     * @throws JsonException When captainhook.json is malformed.
      */
     public function run(string $root, mixed $stdout = STDOUT, mixed $stderr = STDERR): int
     {

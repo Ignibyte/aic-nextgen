@@ -7,6 +7,7 @@ namespace Gates\Application;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\CommandInput;
 use AIC\Workflow\Application\Make\MakeNames;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function array_diff;
 use function array_filter;
@@ -68,6 +69,8 @@ final readonly class MakeScaffoldGate
      * @param resource $stdout Where the summary goes.
      * @param resource $stderr Where each finding goes.
      *
+     * @throws WorkflowRefusal When scaffold naming fails.
+     *
      * @return int 0 when the committed module is what the makes make, 1 otherwise.
      */
     public function run(string $root, mixed $stdout = STDOUT, mixed $stderr = STDERR): int
@@ -102,7 +105,8 @@ final readonly class MakeScaffoldGate
 
         foreach (ScaffoldSequence::LINES as $line) {
             $collectedLines = new CollectedLines();
-            $command = $this->commands[$line[0]] ?? null;
+            $name = $line[0];
+            $command = $this->commands[$name] ?? null;
             $exit = $command instanceof Command
                 ? $command->command(new CommandInput(array_slice($line, 1)))->writeTo($collectedLines)
                 : 127;
@@ -118,6 +122,8 @@ final readonly class MakeScaffoldGate
     }
 
     /**
+     * @throws WorkflowRefusal When scaffold naming fails.
+     *
      * @return list<string> Each of `make:module`'s printed lines for `scaffold` that is not the build's.
      */
     private function lines(): array

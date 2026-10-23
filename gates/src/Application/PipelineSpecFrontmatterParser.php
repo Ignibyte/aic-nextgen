@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\RegexCaptures;
+
+use function array_key_exists;
 use function count;
 use function explode;
 use function mb_ltrim;
 use function mb_substr;
 use function mb_trim;
-use function preg_match;
 use function str_starts_with;
 
 /**
@@ -27,6 +29,8 @@ use function str_starts_with;
  */
 final readonly class PipelineSpecFrontmatterParser
 {
+    use RegexCaptures;
+
     /**
      * Split a markdown file into its YAML frontmatter and body.
      *
@@ -97,7 +101,9 @@ final readonly class PipelineSpecFrontmatterParser
             return $state;
         }
 
-        if (preg_match('/^(\\w+)\\s*:\\s*(.*)$/', $line, $matches) === 1) {
+        $matches = self::regexMatch('/^(\\w+)\\s*:\\s*(.*)$/', $line);
+
+        if (array_key_exists(1, $matches) && array_key_exists(2, $matches)) {
             $key = $matches[1];
             $fields = $state['fields'];
             $fields[$key] = mb_trim($matches[2]);

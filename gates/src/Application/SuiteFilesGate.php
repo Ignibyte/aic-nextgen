@@ -80,12 +80,11 @@ final readonly class SuiteFilesGate
      */
     private function composer(string $root): stdClass
     {
-        $composer = is_file($root . '/composer.json')
-            ? json_decode((string) file_get_contents($root . '/composer.json'))
-            : null;
+        $decoded = [is_file($root . '/composer.json')
+            ? json_decode((string) file_get_contents($root . '/composer.json')) : null];
 
-        return $composer instanceof stdClass
-            ? $composer
+        return $decoded[0] instanceof stdClass
+            ? $decoded[0]
             : new stdClass();
     }
 

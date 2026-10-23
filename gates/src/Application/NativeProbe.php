@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Closure;
 use Gates\Domain\NativeProbeResult;
 use Gates\Domain\NativeProbeStatus;
 use Gates\Domain\ProcessPool;
@@ -12,7 +13,6 @@ use RuntimeException;
 
 use function array_combine;
 use function array_filter;
-use function array_find;
 use function array_intersect_key;
 use function array_keys;
 use function array_map;
@@ -270,13 +270,30 @@ final readonly class NativeProbe
     private function firstError(string $output): string
     {
         $lines = explode("\n", $output);
-        $error = array_find(
+        $error = $this->firstLine(
             $lines,
             static fn (string $line): bool => preg_match(self::ERROR_LINE, $line) === 1,
         );
-        $first = array_find($lines, static fn (string $line): bool => mb_trim($line) !== '');
+        $first = $this->firstLine($lines, static fn (string $line): bool => mb_trim($line) !== '');
 
         return $this->clip($error ?? $first ?? 'compiler failed with no output');
+    }
+
+    /**
+     * @param list<string>          $lines   Compiler output lines.
+     * @param Closure(string): bool $matches The wanted line's condition.
+     *
+     * @return string|null The first matching line.
+     */
+    private function firstLine(array $lines, Closure $matches): ?string
+    {
+        foreach ($lines as $line) {
+            if ($matches($line)) {
+                return $line;
+            }
+        }
+
+        return null;
     }
 
     /**

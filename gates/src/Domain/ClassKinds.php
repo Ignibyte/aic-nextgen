@@ -117,7 +117,7 @@ final readonly class ClassKinds
             $rows[] = [$kind, $interface, $folder];
         }
 
-        usort($rows, static fn (array $one, array $other): int => self::rank($one[0]) <=> self::rank($other[0]));
+        usort($rows, self::compareRows(...));
 
         return [...$rows, ...array_map(static fn (array $kind): array => [$kind[0], '', $kind[1]], $this->suffixKinds())];
     }
@@ -212,6 +212,17 @@ final readonly class ClassKinds
         }
 
         return $kinds;
+    }
+
+    /**
+     * @param array{string, string, string} $one   A kind, contract and folder.
+     * @param array{string, string, string} $other Another row.
+     *
+     * @return int The entry-kind ordering of the rows.
+     */
+    private static function compareRows(array $one, array $other): int
+    {
+        return self::rank($one[0]) <=> self::rank($other[0]);
     }
 
     /**

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\StringValues;
 use JsonException;
 
+use function array_key_exists;
 use function file_get_contents;
 use function is_array;
 use function is_file;
@@ -26,6 +28,8 @@ use const JSON_THROW_ON_ERROR;
  */
 final readonly class RequireCheckerAllowlist
 {
+    use StringValues;
+
     /**
      * PHP core / SPL / standard-extension classes that are always covered.
      */
@@ -128,25 +132,16 @@ final readonly class RequireCheckerAllowlist
      */
     private function parseSymbolWhitelist(string $raw): array
     {
-        $decoded = json_decode($raw, true, flags: JSON_THROW_ON_ERROR);
-        $entries = is_array($decoded)
-            ? ($decoded['symbol-whitelist'] ?? null)
-            : null;
+        $decoded = [json_decode($raw, true, flags: JSON_THROW_ON_ERROR)];
 
-        if (!is_array($entries)) {
+        if (!is_array($decoded[0])) {
             return [];
         }
 
-        $whitelist = [];
+        $manifest = $decoded[0];
 
-        foreach ($entries as $entry) {
-            if (!is_string($entry)) {
-                continue;
-            }
-
-            $whitelist[] = $entry;
-        }
-
-        return $whitelist;
+        return array_key_exists('symbol-whitelist', $manifest) && is_array($manifest['symbol-whitelist'])
+                ? self::strings($manifest['symbol-whitelist'])
+                : [];
     }
 }

@@ -6,13 +6,13 @@ namespace Gates\Infrastructure;
 
 use Gates\Domain\NativeSiteSetup;
 use Gates\Domain\ProcessRunner;
+use Gates\Domain\RegexCaptures;
 
 use function array_key_exists;
 use function bin2hex;
 use function fclose;
 use function is_resource;
 use function is_string;
-use function preg_match;
 use function random_bytes;
 use function stream_socket_get_name;
 use function stream_socket_server;
@@ -29,6 +29,8 @@ use const PHP_BINARY;
  */
 final readonly class LocalNativeSiteSetup
 {
+    use RegexCaptures;
+
     /**
      * @param ProcessRunner $processRunner Runs `ddev describe` and the console.
      * @param string        $php           The PHP binary the console runs under.
@@ -70,9 +72,7 @@ final readonly class LocalNativeSiteSetup
     {
         $processResult = $this->processRunner->run(['ddev', 'describe', '-j'], $root);
 
-        return preg_match('/"published_port":\\s*([1-9]\\d*)/', $processResult->stdout, $match) === 1
-            ? (int) $match[1]
-            : 5_432;
+        return (int) (self::regexMatch('/"published_port":\\s*([1-9]\\d*)/', $processResult->stdout)[1] ?? 5_432);
     }
 
     /**
@@ -100,8 +100,8 @@ final readonly class LocalNativeSiteSetup
         $name = stream_socket_get_name($server, false);
         fclose($server);
 
-        return is_string($name) && preg_match('/:(\\d+)$/', $name, $match) === 1
-            ? (int) $match[1]
+        return is_string($name)
+            ? (int) (self::regexMatch('/:(\\d+)$/', $name)[1] ?? 18_090)
             : 18_090;
     }
 }

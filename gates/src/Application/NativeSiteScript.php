@@ -9,6 +9,8 @@ use InvalidArgumentException;
 use stdClass;
 
 use function array_is_list;
+use function array_key_exists;
+use function array_keys;
 use function get_object_vars;
 use function is_array;
 use function is_bool;
@@ -56,8 +58,8 @@ final readonly class NativeSiteScript
 
         $read = [];
 
-        foreach ($steps as $index => $step) {
-            $read[] = $this->step($index, $step instanceof stdClass ? $step : new stdClass());
+        foreach (array_keys($steps) as $index) {
+            $read[] = $this->step($index, $steps[$index] instanceof stdClass ? $steps[$index] : new stdClass());
         }
 
         return $read;
@@ -72,13 +74,11 @@ final readonly class NativeSiteScript
      */
     private function script(string $root): stdClass
     {
-        $script = json_decode($this->quietFileReader->read($root . '/' . self::PATH) ?? '');
-        $schema = $script instanceof stdClass
-            ? get_object_vars($script)['schema'] ?? null
-            : null;
+        $decoded = [json_decode($this->quietFileReader->read($root . '/' . self::PATH) ?? '')];
 
-        return $script instanceof stdClass && $schema === 'aic.native-site/1'
-            ? $script
+        return $decoded[0] instanceof stdClass
+            && (get_object_vars($decoded[0])['schema'] ?? null) === 'aic.native-site/1'
+            ? $decoded[0]
             : throw new InvalidArgumentException(self::PATH . ' is not an aic.native-site/1 object.');
     }
 
@@ -114,10 +114,10 @@ final readonly class NativeSiteScript
      */
     private function text(int $index, stdClass $step, string $field): string
     {
-        $value = get_object_vars($step)[$field] ?? null;
+        $fields = get_object_vars($step);
 
-        return is_string($value)
-            ? $value
+        return array_key_exists($field, $fields) && is_string($fields[$field])
+            ? $fields[$field]
             : throw $this->wrong($index, $field, 'string');
     }
 
@@ -131,10 +131,10 @@ final readonly class NativeSiteScript
      */
     private function number(int $index, stdClass $step): int
     {
-        $value = get_object_vars($step)['status'] ?? null;
+        $fields = get_object_vars($step);
 
-        return is_int($value)
-            ? $value
+        return array_key_exists('status', $fields) && is_int($fields['status'])
+            ? $fields['status']
             : throw $this->wrong($index, 'status', 'integer');
     }
 
@@ -148,10 +148,10 @@ final readonly class NativeSiteScript
      */
     private function flag(int $index, stdClass $step): bool
     {
-        $value = get_object_vars($step)['captures'] ?? null;
+        $fields = get_object_vars($step);
 
-        return is_bool($value)
-            ? $value
+        return array_key_exists('captures', $fields) && is_bool($fields['captures'])
+            ? $fields['captures']
             : throw $this->wrong($index, 'captures', 'boolean');
     }
 

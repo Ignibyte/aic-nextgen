@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\MarkdownDocument;
+use Gates\Domain\RegexCaptures;
 
 use function array_diff;
 use function array_key_exists;
@@ -23,6 +24,8 @@ use function sprintf;
  */
 final readonly class DocsInventoryChecks
 {
+    use RegexCaptures;
+
     /**
      * @param MarkdownDocument $markdownDocument The README.
      * @param list<string>     $pages            Every page's file name.
@@ -112,7 +115,9 @@ final readonly class DocsInventoryChecks
         $seen = [];
 
         foreach ($markdownDocument->code() as [$line, $span]) {
-            if (!array_key_exists($line, $sections) || preg_match('/^AIC\\\\(\\w+)$/', $span, $match) !== 1) {
+            $match = self::regexMatch('/^AIC\\\\(\\w+)$/', $span);
+
+            if (!array_key_exists($line, $sections) || !array_key_exists(1, $match)) {
                 continue;
             }
 

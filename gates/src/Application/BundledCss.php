@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\RegexCaptures;
 use InvalidArgumentException;
 
 use function preg_match;
-use function preg_match_all;
 use function rtrim;
 use function str_starts_with;
 
@@ -20,6 +20,8 @@ use function str_starts_with;
  */
 final readonly class BundledCss
 {
+    use RegexCaptures;
+
     /**
      * @param string $path     The file, relative to the repo root (`modules/site/assets/site.css`).
      * @param string $contents Its CSS.
@@ -34,9 +36,9 @@ final readonly class BundledCss
             throw new InvalidArgumentException($path . ' uses @import, which a joined stylesheet ignores; inline the rules.');
         }
 
-        preg_match_all('/url\\(\\s*[\'"]?([^\'")]*)/i', $contents, $matches);
+        $urls = self::regexColumn('/url\\(\\s*[\'"]?([^\'")]*)/i', $contents, 1);
 
-        foreach ($matches[1] as $url) {
+        foreach ($urls as $url) {
             if (!$this->absolute($url)) {
                 throw new InvalidArgumentException(
                     $path . ' has url(' . $url . '), which would resolve against /assets/; use /assets/<module>/<file>, a data: URL or #.',

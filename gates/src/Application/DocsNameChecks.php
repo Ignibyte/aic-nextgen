@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\MarkdownDocument;
+use Gates\Domain\RegexCaptures;
 
 use function array_filter;
 use function class_exists;
@@ -13,7 +14,6 @@ use function enum_exists;
 use function in_array;
 use function interface_exists;
 use function is_dir;
-use function preg_match_all;
 use function sprintf;
 use function str_replace;
 use function str_starts_with;
@@ -28,6 +28,8 @@ use function trait_exists;
  */
 final readonly class DocsNameChecks
 {
+    use RegexCaptures;
+
     /**
      * The namespace roots, longest prefix first, as composer.json maps them.
      */
@@ -68,10 +70,10 @@ final readonly class DocsNameChecks
         $checked = 0;
 
         foreach ($markdownDocument->code() as [$line, $span]) {
-            preg_match_all('/AIC(?:\\\\\\w+)+/', $span, $matches);
-            $checked += count($matches[0]);
+            $names = self::regexColumn('/AIC(?:\\\\\\w+)+/', $span, 0);
+            $checked += count($names);
 
-            foreach (array_filter($matches[0], fn (string $name): bool => !$this->resolves($name)) as $name) {
+            foreach (array_filter($names, fn (string $name): bool => !$this->resolves($name)) as $name) {
                 $findings[] = sprintf(
                     '%s:%d: %s is no class, interface, enum, trait or namespace; fix the name.',
                     $markdownDocument->page,
@@ -113,11 +115,11 @@ final readonly class DocsNameChecks
      */
     private function scripts(string $text): array
     {
-        preg_match_all('/(?<![\\w:-])gate:\\d+\\b/', $text, $gates);
-        preg_match_all('/composer run ([\\w:-]+)/', $text, $runs);
+        $gates = self::regexColumn('/(?<![\\w:-])gate:\\d+\\b/', $text, 0);
+        $runs = self::regexColumn('/composer run ([\\w:-]+)/', $text, 1);
         $missing = [];
 
-        foreach ([...$gates[0], ...$runs[1]] as $script) {
+        foreach ([...$gates, ...$runs] as $script) {
             if (in_array($script, $this->scripts, true)) {
                 continue;
             }
@@ -125,7 +127,7 @@ final readonly class DocsNameChecks
             $missing[] = $script;
         }
 
-        return [count($gates[0]) + count($runs[1]), $missing];
+        return [count($gates) + count($runs), $missing];
     }
 
     /**

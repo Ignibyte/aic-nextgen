@@ -7,16 +7,20 @@ namespace Gates\Application;
 use AIC\Module\Contracts\ModuleManifest;
 use Gates\Domain\ClassKinds;
 use Gates\Domain\MarkdownDocument;
+use Gates\Domain\RegexCaptures;
+use LogicException;
 use ReflectionClass;
 use ReflectionMethod;
 
 use function array_diff;
+use function array_key_exists;
 use function array_keys;
 use function basename;
 use function count;
 use function fwrite;
 use function glob;
 use function is_array;
+use function is_string;
 use function json_decode;
 use function preg_match;
 use function sprintf;
@@ -35,6 +39,8 @@ use const STDOUT;
  */
 final readonly class ArchitectureDocsGate
 {
+    use RegexCaptures;
+
     /**
      * The pages the checks read, beside any others the README lists.
      */
@@ -62,6 +68,8 @@ final readonly class ArchitectureDocsGate
      * @param string   $root   The repo root.
      * @param resource $stdout Where the summary goes.
      * @param resource $stderr Where the findings go.
+     *
+     * @throws LogicException When a required page was not checked before inventory comparison.
      *
      * @return int The exit code: 0 when the docs hold to the code.
      */
@@ -115,17 +123,23 @@ final readonly class ArchitectureDocsGate
      * @param array<string, MarkdownDocument> $pages   Every page, by file name.
      * @param list<string>                    $scripts composer.json's script names.
      *
+     * @throws LogicException When a required page was not checked before inventory comparison.
+     *
      * @return list<string> The findings of D1 to D5.
      */
     private function inventoryFindings(string $root, array $pages, array $scripts): array
     {
         return [
-            ...$this->docsInventoryChecks->unlinked($pages['README.md'], array_keys($pages)),
-            ...$this->docsInventoryChecks->gates($pages['gates.md'], self::gateNumbers($scripts), $this->constitutionRows($root)),
-            ...$this->docsInventoryChecks->namespaces($pages['systems.md'], self::folders($root)),
-            ...$this->docsKindChecks->kinds($pages['kinds.md'], $this->classKinds->entryKinds()),
-            ...$this->docsKindChecks->folders($pages['modules.md'], ClassKinds::FOLDERS),
-            ...$this->docsKindChecks->declarations($pages['modules.md'], self::declarations()),
+            ...$this->docsInventoryChecks->unlinked(self::page($pages, 'README.md'), array_keys($pages)),
+            ...$this->docsInventoryChecks->gates(
+                self::page($pages, 'gates.md'),
+                self::gateNumbers($scripts),
+                $this->constitutionRows($root),
+            ),
+            ...$this->docsInventoryChecks->namespaces(self::page($pages, 'systems.md'), self::folders($root)),
+            ...$this->docsKindChecks->kinds(self::page($pages, 'kinds.md'), $this->classKinds->entryKinds()),
+            ...$this->docsKindChecks->folders(self::page($pages, 'modules.md'), ClassKinds::FOLDERS),
+            ...$this->docsKindChecks->declarations(self::page($pages, 'modules.md'), self::declarations()),
         ];
     }
 
@@ -186,15 +200,22 @@ final readonly class ArchitectureDocsGate
      */
     private function scripts(string $root): array
     {
-        $composer = json_decode($this->quietFileReader->read($root . '/composer.json') ?? '', true);
+        $decoded = [json_decode($this->quietFileReader->read($root . '/composer.json') ?? '', true)];
         $names = [];
+        $scripts = is_array($decoded[0])
+            ? $decoded[0]['scripts'] ?? null
+            : null;
 
-        if (!is_array($composer) || !is_array($composer['scripts'] ?? null)) {
+        if (!is_array($scripts)) {
             return $names;
         }
 
-        foreach (array_keys($composer['scripts']) as $name) {
-            $names[] = (string) $name;
+        foreach (array_keys($scripts) as $name) {
+            if (!is_string($name)) {
+                continue;
+            }
+
+            $names[] = $name;
         }
 
         return $names;
@@ -248,7 +269,9 @@ final readonly class ArchitectureDocsGate
         $numbers = [];
 
         foreach ($scripts as $script) {
-            if (preg_match('/^gate:(\\d+)$/', $script, $match) !== 1) {
+            $match = self::regexMatch('/^gate:(\\d+)$/', $script);
+
+            if (!array_key_exists(1, $match)) {
                 continue;
             }
 
@@ -291,5 +314,18 @@ final readonly class ArchitectureDocsGate
         }
 
         return $methods;
+    }
+
+    /**
+     * @param array<string, MarkdownDocument> $pages Every readable page.
+     * @param string                          $name  A required page's name.
+     *
+     * @throws LogicException When required-page validation was bypassed.
+     *
+     * @return MarkdownDocument The required page.
+     */
+    private static function page(array $pages, string $name): MarkdownDocument
+    {
+        return $pages[$name] ?? throw new LogicException('Required architecture page was not checked: ' . $name);
     }
 }

@@ -271,7 +271,8 @@ final class NoBaselinesGate
         return new RecursiveIteratorIterator(
             new RecursiveCallbackFilterIterator(
                 new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS),
-                static fn (SplFileInfo $current): bool => !$current->isDir() || !in_array($current->getFilename(), self::SKIP_DIRS, true),
+                static fn (SplFileInfo|string $current): bool => $current instanceof SplFileInfo
+                    && (!$current->isDir() || !in_array($current->getFilename(), self::SKIP_DIRS, true)),
             ),
         );
     }

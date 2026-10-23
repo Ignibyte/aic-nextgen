@@ -10,6 +10,7 @@ use stdClass;
 use function array_key_exists;
 use function array_keys;
 use function get_object_vars;
+use function is_string;
 use function json_encode;
 use function str_starts_with;
 
@@ -103,7 +104,7 @@ final readonly class SuiteComposer
         $findings = [];
 
         foreach (array_keys(get_object_vars($scripts)) as $name) {
-            if (!str_starts_with((string) $name, 'gate') || array_key_exists($name, $expected)) {
+            if (!$this->gateScript($name) || array_key_exists($name, $expected)) {
                 continue;
             }
 
@@ -111,6 +112,16 @@ final readonly class SuiteComposer
         }
 
         return $findings;
+    }
+
+    /**
+     * @param int|string $name A script key from decoded JSON.
+     *
+     * @return bool Whether its string name belongs to the gate namespace.
+     */
+    private function gateScript(int|string $name): bool
+    {
+        return is_string($name) && str_starts_with($name, 'gate');
     }
 
     /**
@@ -142,10 +153,10 @@ final readonly class SuiteComposer
      */
     private function member(stdClass $object, string $key): stdClass
     {
-        $member = get_object_vars($object)[$key] ?? null;
+        $fields = get_object_vars($object);
 
-        return $member instanceof stdClass
-            ? $member
+        return array_key_exists($key, $fields) && $fields[$key] instanceof stdClass
+            ? $fields[$key]
             : new stdClass();
     }
 

@@ -6,20 +6,20 @@ namespace Gates\Infrastructure;
 
 use Gates\Domain\HttpClient;
 use Gates\Domain\HttpExchange;
+use Gates\Domain\RegexCaptures;
+use Gates\Domain\StringValues;
 use Override;
 
+use function array_key_exists;
 use function basename;
 use function explode;
 use function file_get_contents;
 use function http_clear_last_response_headers;
 use function http_get_last_response_headers;
-use function is_array;
 use function mb_strtolower;
 use function mb_trim;
-use function preg_match;
 use function restore_error_handler;
 use function set_error_handler;
-use function str_contains;
 use function str_starts_with;
 use function stream_context_create;
 use function strlen;
@@ -33,6 +33,9 @@ use function urldecode;
  */
 final readonly class StreamHttpClient implements HttpClient
 {
+    use RegexCaptures;
+    use StringValues;
+
     /**
      * The prefix that makes a step's form a multipart body (#44).
      */
@@ -75,9 +78,15 @@ final readonly class StreamHttpClient implements HttpClient
             restore_error_handler();
         }
 
-        $headers = http_get_last_response_headers();
+        return self::exchange(self::headers(), $body === false ? '' : $body);
+    }
 
-        return self::exchange(is_array($headers) ? $headers : [], $body === false ? '' : $body);
+    /**
+     * @return list<string> The wrapper's response header lines.
+     */
+    private static function headers(): array
+    {
+        return self::strings(http_get_last_response_headers() ?? []);
     }
 
     /**
@@ -92,7 +101,9 @@ final readonly class StreamHttpClient implements HttpClient
         $fields = [];
 
         foreach ($headers as $header) {
-            if (preg_match('#^HTTP/\\S+\\s+(\\d{3})#', $header, $match) === 1) {
+            $match = self::regexMatch('#^HTTP/\\S+\\s+(\\d{3})#', $header);
+
+            if (array_key_exists(1, $match)) {
                 $status = (int) $match[1];
 
                 continue;
@@ -116,12 +127,13 @@ final readonly class StreamHttpClient implements HttpClient
      */
     private static function withField(array $fields, string $line): array
     {
-        if (!str_contains($line, ':')) {
+        $parts = explode(':', $line, 2);
+
+        if (!array_key_exists(1, $parts)) {
             return $fields;
         }
 
-        [$name, $value] = explode(':', $line, 2);
-        $fields[mb_strtolower(mb_trim($name))] = mb_trim($value);
+        $fields[mb_strtolower(mb_trim($parts[0]))] = mb_trim($parts[1]);
 
         return $fields;
     }
