@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application;
 
+use function array_map;
 use function array_slice;
 use function explode;
 use function hash;
@@ -72,7 +73,7 @@ final readonly class SeekerDigest
      */
     private function until(array $lines): array
     {
-        $section = [rtrim($lines[0])];
+        $section = array_map(rtrim(...), array_slice($lines, 0, 1));
 
         foreach (array_slice($lines, 1) as $line) {
             if (str_starts_with($line, '## ')) {

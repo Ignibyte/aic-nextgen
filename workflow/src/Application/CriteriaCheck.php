@@ -8,12 +8,12 @@ use AIC\Workflow\Domain\CheckRecord;
 use AIC\Workflow\Domain\CheckRow;
 use AIC\Workflow\Domain\Findings;
 use AIC\Workflow\Domain\Phase;
+use AIC\Workflow\Domain\RegexCaptures;
 use AIC\Workflow\Domain\RunState;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 use function preg_match;
-use function preg_match_all;
 
 /**
  * Criteria verification at complete (#101, Droost's `CriteriaVerification`
@@ -24,6 +24,8 @@ use function preg_match_all;
  */
 final readonly class CriteriaCheck implements PhaseCheck
 {
+    use RegexCaptures;
+
     /**
      * What a `Met` cell may cite.
      */
@@ -60,6 +62,8 @@ final readonly class CriteriaCheck implements PhaseCheck
 
     /**
      * @param RunState $runState The run, at complete.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return CheckRow Passed when every criterion cites a fresh green check; failed, naming each that does not.
      */
@@ -173,8 +177,6 @@ final readonly class CriteriaCheck implements PhaseCheck
      */
     private function citations(string $met): array
     {
-        return preg_match_all(self::CITATION, $met, $matches) === false
-            ? []
-            : $matches[0];
+        return self::regexColumn(self::CITATION, $met, 0);
     }
 }

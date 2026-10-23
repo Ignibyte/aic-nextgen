@@ -57,6 +57,8 @@ final readonly class HouseRuleCheck implements PhaseCheck
     /**
      * @param RunState $runState The run.
      *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
+     *
      * @return CheckRow The rule's row.
      */
     #[Override]

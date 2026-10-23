@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Workflow\Application;
 
 use AIC\Workflow\Domain\RunState;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function hash;
 
@@ -28,6 +29,8 @@ final readonly class ProgressKey
 
     /**
      * @param RunState $runState The run.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return string An xxh128 over the subject and the spec's sha256 (empty spec when it is missing).
      */

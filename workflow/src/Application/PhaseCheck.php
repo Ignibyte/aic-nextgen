@@ -7,6 +7,7 @@ namespace AIC\Workflow\Application;
 use AIC\Workflow\Domain\CheckRow;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\RunState;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
  * A check the engine runs at one phase (#100), its row holding the phase or
@@ -21,6 +22,8 @@ interface PhaseCheck
 
     /**
      * @param RunState $runState The run, at that phase.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return CheckRow What it found.
      */

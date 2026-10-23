@@ -73,6 +73,8 @@ final readonly class GroundingCheck implements PhaseCheck
     /**
      * @param RunState $runState The run, at plan.
      *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
+     *
      * @return CheckRow Passed when the plan is grounded; failed naming every reason; held when the engine cannot look.
      */
     #[Override]

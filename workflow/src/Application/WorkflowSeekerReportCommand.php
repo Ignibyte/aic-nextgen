@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -28,6 +29,8 @@ final readonly class WorkflowSeekerReportCommand implements Command
 
     /**
      * @param CommandInput $commandInput None: the ledger comes on standard input.
+     *
+     * @throws InvalidArgumentException When a called boundary reports its documented failure.
      *
      * @return CommandResponse What was filed; exit 2 when refused.
      */

@@ -14,6 +14,7 @@ use AIC\Workflow\Domain\RunOutcome;
 use AIC\Workflow\Domain\RunState;
 use AIC\Workflow\Domain\TicketStatus;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use LogicException;
 
 /**
  * The run engine (#100): begins a run on a ticket, then works its current
@@ -49,6 +50,7 @@ final readonly class RunEngine
      * @param string $ticketId The ticket to begin a run on, when none is open; empty to work the open run.
      *
      * @throws WorkflowRefusal When there is no run and no ticket, the ticket cannot run, or a run is open on another.
+     * @throws LogicException  When the run phase violates its invariant.
      *
      * @return RunOutcome What this call did.
      */
@@ -78,6 +80,7 @@ final readonly class RunEngine
      * @param list<string> $notes    Notes so far.
      *
      * @throws WorkflowRefusal When the run cannot be saved or archived.
+     * @throws LogicException  When the run phase violates its invariant.
      *
      * @return RunOutcome What working its phase did.
      */
@@ -135,6 +138,7 @@ final readonly class RunEngine
      * @param list<string> $notes       Notes so far.
      *
      * @throws WorkflowRefusal When the run cannot be saved.
+     * @throws LogicException  When a called boundary reports its documented failure.
      *
      * @return RunOutcome The run, at the next phase.
      */
@@ -159,6 +163,7 @@ final readonly class RunEngine
      * @param list<string> $notes       Notes so far.
      *
      * @throws WorkflowRefusal When the run cannot be saved or archived.
+     * @throws LogicException  When a called boundary reports its documented failure.
      *
      * @return RunOutcome The run, completed and archived.
      */
@@ -183,6 +188,8 @@ final readonly class RunEngine
     /**
      * @param RunState $runState The run.
      * @param Phase    $phase    Its current phase.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return list<CheckRow> Each check due at the phase's row, in order.
      */

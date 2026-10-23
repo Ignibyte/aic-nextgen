@@ -10,6 +10,7 @@ use AIC\Workflow\Domain\RunState;
 use function array_any;
 use function array_keys;
 use function in_array;
+use function is_string;
 use function str_contains;
 use function str_starts_with;
 use function strlen;
@@ -75,7 +76,7 @@ final readonly class ProtectedPaths
 
         return array_any(
             $this->entries(),
-            fn (string $why, string $entry): bool => $why !== '' && ($this->under($entry, $absolute) || $this->under($entry, $landed)),
+            fn (string $why, int|string $entry): bool => $this->entryHolds($why, $entry, $absolute, $landed),
         );
     }
 
@@ -110,7 +111,7 @@ final readonly class ProtectedPaths
     }
 
     /**
-     * @param list<string>          $paths   A path as spelled and as landed.
+     * @param array{string, string} $paths   A path as spelled and as landed.
      * @param array<string, string> $entries The protected paths and their words.
      *
      * @return string The words of the first entry either path lies under; empty when none.
@@ -204,5 +205,18 @@ final readonly class ProtectedPaths
     private function under(string $path, string $entry): bool
     {
         return $path === $entry || str_starts_with($path, $entry . '/');
+    }
+
+    /**
+     * @param string     $why      The entry's protection reason.
+     * @param int|string $entry    A native array callback key.
+     * @param string     $absolute The directory as spelled.
+     * @param string     $landed   Where that directory lands.
+     *
+     * @return bool Whether a named protected entry lies under either directory.
+     */
+    private function entryHolds(string $why, int|string $entry, string $absolute, string $landed): bool
+    {
+        return is_string($entry) && $why !== '' && ($this->under($entry, $absolute) || $this->under($entry, $landed));
     }
 }

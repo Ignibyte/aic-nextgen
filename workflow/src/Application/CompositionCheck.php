@@ -64,6 +64,8 @@ final readonly class CompositionCheck implements PhaseCheck
     /**
      * @param RunState $runState The run.
      *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
+     *
      * @return CheckRow Passed when the surface is as declared; failed, naming each difference, otherwise.
      */
     #[Override]

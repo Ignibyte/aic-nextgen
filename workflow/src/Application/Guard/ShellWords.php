@@ -250,12 +250,24 @@ final readonly class ShellWords
     {
         return (string) preg_replace_callback(
             '/\'([^\']*)\'|"((?:\\\\.|[^"\\\\])*)"|\\\\(.)/s',
-            static fn (array $match): string => match (true) {
-                str_starts_with($match[0], "'") => $match[1],
-                str_starts_with($match[0], '"') => (string) preg_replace('/\\\\([\\\\"$`\\n])/', '$1', $match[2] ?? ''),
-                default => $match[3] ?? '',
-            },
+            self::unquote(...),
             $raw,
         );
+    }
+
+    /**
+     * @param array<array-key, string> $match One quoted or escaped token's captures.
+     *
+     * @return string Its shell literal value.
+     */
+    private static function unquote(array $match): string
+    {
+        $token = $match[0] ?? '';
+
+        return match (true) {
+            str_starts_with($token, "'") => $match[1] ?? '',
+            str_starts_with($token, '"') => (string) preg_replace('/\\\\([\\\\"$`\\n])/', '$1', $match[2] ?? ''),
+            default => $match[3] ?? '',
+        };
     }
 }

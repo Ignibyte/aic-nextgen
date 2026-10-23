@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -28,6 +29,8 @@ final readonly class WorkflowAskCommand implements Command
 
     /**
      * @param CommandInput $commandInput The question, as one argument or as words.
+     *
+     * @throws InvalidArgumentException When a called boundary reports its documented failure.
      *
      * @return CommandResponse What to do next; exit 2 when refused.
      */

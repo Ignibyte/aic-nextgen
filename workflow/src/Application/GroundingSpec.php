@@ -6,6 +6,7 @@ namespace AIC\Workflow\Application;
 
 use AIC\Workflow\Domain\CodeQuery;
 use AIC\Workflow\Domain\RunState;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function array_count_values;
 use function array_map;
@@ -42,6 +43,8 @@ final readonly class GroundingSpec
      * @param RunState        $runState    The run.
      * @param list<CodeQuery> $codeQueries Its lookups at plan.
      *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
+     *
      * @return list<string> Every reason the plan is not grounded; none when it is.
      */
     public function reasons(RunState $runState, array $codeQueries): array
@@ -65,6 +68,8 @@ final readonly class GroundingSpec
     /**
      * @param RunState        $runState    The run, its plan grounded.
      * @param list<CodeQuery> $codeQueries Its lookups at plan.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return string The lookups by command, the rows and entry points resolved, and a note per created class with a twin.
      */

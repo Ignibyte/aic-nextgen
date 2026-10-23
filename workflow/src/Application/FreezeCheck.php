@@ -60,6 +60,8 @@ final readonly class FreezeCheck implements PhaseCheck
     /**
      * @param RunState $runState The run.
      *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
+     *
      * @return CheckRow Passed, noting late rows; failed on a breach, a missing freeze or a missing spec.
      */
     #[Override]

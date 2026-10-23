@@ -8,6 +8,7 @@ use AIC\Workflow\Domain\CheckRow;
 use AIC\Workflow\Domain\Findings;
 use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\RunState;
+use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 use function array_key_exists;
@@ -54,6 +55,8 @@ final readonly class RuleFreezeCheck implements PhaseCheck
 
     /**
      * @param RunState $runState The run.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return CheckRow Passed when the rule files are as they were frozen; failed, naming each that is not.
      */

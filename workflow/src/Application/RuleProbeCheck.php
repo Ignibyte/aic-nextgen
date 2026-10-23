@@ -84,7 +84,7 @@ final readonly class RuleProbeCheck implements PhaseCheck
      * @param RunState  $runState  The run.
      * @param HouseRule $houseRule A rule.
      *
-     * @throws WorkflowRefusal When its result cannot be recorded.
+     * @throws WorkflowRefusal When probe setup, subject hashing or result recording refuses.
      *
      * @return list<string> What keeps its probe from passing.
      */

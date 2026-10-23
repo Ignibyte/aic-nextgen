@@ -8,6 +8,7 @@ use AIC\Workflow\Domain\CodeSymbol;
 use AIC\Workflow\Domain\DeclaredEntry;
 use AIC\Workflow\Domain\FileChange;
 use AIC\Workflow\Domain\ManifestRow;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function array_any;
 use function array_count_values;
@@ -59,6 +60,8 @@ final readonly class GroundingRules
      * @param list<ManifestRow>   $manifestRows The File Manifest.
      * @param list<DeclaredEntry> $entries      The Entry Points.
      *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
+     *
      * @return list<string> Each reason a row or an entry is not real; none when all are.
      */
     public function real(array $manifestRows, array $entries): array
@@ -86,6 +89,8 @@ final readonly class GroundingRules
 
     /**
      * @param string $class A class's full name.
+     *
+     * @throws WorkflowRefusal When a called boundary reports its documented failure.
      *
      * @return CodeSymbol|null The class-like the index holds under exactly that name; null when none.
      */
@@ -124,6 +129,8 @@ final readonly class GroundingRules
     /**
      * @param list<ManifestRow> $manifestRows The File Manifest.
      *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
+     *
      * @return list<string> A note per created class whose short name the index already holds as another class.
      */
     public function twins(array $manifestRows): array
@@ -154,6 +161,8 @@ final readonly class GroundingRules
     /**
      * @param string $class A class a create row makes.
      *
+     * @throws WorkflowRefusal When a called boundary reports its documented failure.
+     *
      * @return list<string> A note per other class the index holds under its short name.
      */
     private function twinsOf(string $class): array
@@ -173,6 +182,8 @@ final readonly class GroundingRules
 
     /**
      * @param ManifestRow $manifestRow A row.
+     *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return list<string> Why it is not real; none when it is.
      */
@@ -204,6 +215,8 @@ final readonly class GroundingRules
      * @param string            $class        An Entry Points class.
      * @param list<ManifestRow> $manifestRows The File Manifest.
      *
+     * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
+     *
      * @return list<string> Why it is not real; none when it exists or a create row makes it.
      */
     private function entry(string $class, array $manifestRows): array
@@ -229,6 +242,8 @@ final readonly class GroundingRules
 
     /**
      * @param string $path A row's path.
+     *
+     * @throws WorkflowRefusal When a called boundary reports its documented failure.
      *
      * @return bool Whether the rebuilt index holds it: a file git lists.
      */

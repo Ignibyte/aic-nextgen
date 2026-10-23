@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Workflow\Application;
 
 use AIC\Workflow\Domain\RunState;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function array_any;
 use function str_starts_with;
@@ -34,6 +35,8 @@ final readonly class RunSubject
 
     /**
      * @param RunState $runState The run.
+     *
+     * @throws WorkflowRefusal When a called boundary reports its documented failure.
      *
      * @return string The tree's subject hash now.
      */
