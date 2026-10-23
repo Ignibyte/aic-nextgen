@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <!-- Typed config files propagate failures to the HTTP/CLI startup boundary.
      Global-scope exception checking cannot model those includes; method exception contracts remain checked. -->
+<!-- PHPStan level 10 holds return types; Chad approved restrictReturnTypes=false on 2026-10-22 (#131). -->
 <psalm
+    restrictReturnTypes="false"
     autoloader="vendor/aic/gates/config/psalm-autoload.php"
     errorLevel="1"
     findUnusedCode="true"
@@ -18,7 +20,7 @@
     reportMixedIssues="true"
     sealAllProperties="true"
     sealAllMethods="true"
-    runTaintAnalysis="true"
+    runTaintAnalysis="false"
     usePhpDocPropertiesWithoutMagicCall="true"
     usePhpDocMethodsWithoutMagicCall="true"
     memoizeMethodCallResults="true"
@@ -26,7 +28,6 @@
     addParamDefaultToDocblockType="true"
     disableSuppressAll="true"
     inferPropertyTypesFromConstructor="true"
-    restrictReturnTypes="true"
     cacheDirectory=".psalm-cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"

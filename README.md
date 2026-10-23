@@ -52,6 +52,9 @@ gate:23 makes a fresh secret for each run.
 Invalid typed configuration returns a plain HTTP 500 at boot. The console prints the failure
 without a stack trace and exits 1. Method exception contracts remain checked by ordinary Psalm;
 the reason for disabling its incompatible global-scope check is beside the setting (#133).
+Gate 13 runs ordinary analysis and then explicit taint analysis over the full project. Both
+results and complete output are reported, and either failure fails the gate. PHPStan level 10
+holds return types; the approved Psalm return-type policy is recorded in both configs.
 
 `ddev start` prints the URL of the interpreted reference. On the Z690 dev box it is
 `https://aic-nextgen.ddev.site:8843` (the router's ports there are 8880 and 8843).
@@ -87,11 +90,11 @@ composer run gate:8         # one gate alone (gate:0 to gate:31)
 composer run gate:21        # the native gate: every runtime class through elephc
 ```
 
-The gates are static analysis only: PHPStan level 10, Psalm with taint analysis, PHPMD, PHPCS,
+The gates are static analysis only: PHPStan level 10, both ordinary and taint Psalm analysis, PHPMD, PHPCS,
 Pint, Rector, Deptrac and phpat for the architecture, semgrep, gitleaks and the composer checks.
-Gate:13 currently runs taint analysis only. Ordinary analysis is being repaired in three parts:
-runtime (#133), gates (#134), then workflow and enforcement of both passes (#135). The full
-ordinary diagnostic now has no runtime findings; pending tooling findings retain its failing exit.
+Runtime, gate-tooling and workflow source repairs are complete (#133–#135). Gate:13 now requires
+both full-project Psalm passes to succeed. A failing ordinary result cannot be hidden by a
+clean taint result, and either process error fails the gate.
 A component template (`*.html.php`) is plain PHP read only; gate:25 holds it to that grammar, and
 the class tools skip it. `composer run build` compiles it into a class beside its component, which
 every gate checks, and writes the lookup the Renderer finds each component's template through: a
