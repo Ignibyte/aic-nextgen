@@ -241,24 +241,24 @@ final readonly class TemplateCompiler
      */
     private function groups(array $pieces): array
     {
-        $groups = [[]];
-        $index = 0;
+        $groups = [];
+        $group = [];
         $lines = 0;
 
         foreach ($pieces as $piece) {
             $height = substr_count($piece, "\n") + 1;
 
-            if ($groups[$index] !== [] && $lines + $height > self::LINES - 1) {
-                $index += 1;
-                $groups[$index] = [];
+            if ($group !== [] && $lines + $height > self::LINES - 1) {
+                $groups[] = $group;
+                $group = [];
                 $lines = 0;
             }
 
-            $groups[$index][] = $piece;
+            $group[] = $piece;
             $lines += $height;
         }
 
-        return $groups;
+        return [...$groups, $group];
     }
 
     /**

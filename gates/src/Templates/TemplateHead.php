@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Gates\Templates;
 
+use Gates\Domain\RegexCaptures;
 use Gates\Domain\TemplateRefusal;
 use Gates\Domain\TemplateViolation;
 use PhpParser\Comment\Doc;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Nop;
 
+use function array_key_exists;
 use function basename;
 use function count;
 use function lcfirst;
-use function preg_match;
 use function sprintf;
 use function str_starts_with;
 use function substr;
@@ -28,6 +29,8 @@ use function substr;
  */
 final readonly class TemplateHead
 {
+    use RegexCaptures;
+
     /**
      * The docblock: a fully qualified class and a variable.
      */
@@ -68,9 +71,13 @@ final readonly class TemplateHead
     {
         $first = $stmts[0] ?? null;
 
-        return $first instanceof Nop && preg_match(self::DOC, $this->doc($first), $match) === 1
-            ? $match[1]
-            : '';
+        if (!$first instanceof Nop) {
+            return '';
+        }
+
+        $match = self::regexMatch(self::DOC, $this->doc($first));
+
+        return $match[1] ?? '';
     }
 
     /**
@@ -81,9 +88,10 @@ final readonly class TemplateHead
     private function doc(Nop $nop): string
     {
         $comments = $nop->getComments();
+        $first = $comments[0] ?? null;
 
-        return count($comments) === 1 && $comments[0] instanceof Doc
-            ? $comments[0]->getText()
+        return count($comments) === 1 && $first instanceof Doc
+            ? $first->getText()
             : '';
     }
 
@@ -96,8 +104,13 @@ final readonly class TemplateHead
      */
     private function typed(string $source, string $doc, string $short): bool
     {
-        return str_starts_with($source, '<?php /** @var ')
-            && preg_match(self::DOC, $doc, $match) === 1
+        if (!str_starts_with($source, '<?php /** @var ')) {
+            return false;
+        }
+
+        $match = self::regexMatch(self::DOC, $doc);
+
+        return array_key_exists(2, $match) && array_key_exists(3, $match)
             && $match[2] === $short
             && $match[3] === lcfirst($short);
     }

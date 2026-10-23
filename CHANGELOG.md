@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Generator and template type boundaries** (#139, second part of #134). Wiring writers retain class names and tuple/list shapes; template lowering checks AST expressions, names and regex captures before use. Missing factory receivers and parser/reflection failures receive located refusals with their original causes.
+  - Valid generated wiring, templates, surface, assets and wiki output remain byte-identical across real builds. Generator exception contracts describe writer failures without adding them to generated runtime methods.
+  - Complete ordinary Psalm removes all 55 findings in the 19 source files. Its report still exits 2 with 43 gate and 271 workflow findings; both-mode enforcement follows in #135. All 151 workflow expectations and 32 gates pass without deferrals, including 72 fresh native site comparisons.
+
 - **Bounded workflow timeouts** (#137). One monotonic deadline covers command startup, input and execution. The runner verifies an isolated POSIX process group before launch, allows up to 250ms for termination, then forces that group to stop and drains output for up to another 250ms before reaping.
   - Nonblocking input/output prevents blocked input or closed output from bypassing the deadline. Actual exit codes, complete observed output and normal background server startup are preserved. The workflow package now declares `ext-posix`; a command deliberately starting a different session is outside this process-group boundary.
   - The timeout scenario now measures elapsed calls and owned worker identities, checks private pipe inheritance and an unrelated sentinel, and replaces global process matching. All 151 workflow expectations and 32 gates pass without deferrals.

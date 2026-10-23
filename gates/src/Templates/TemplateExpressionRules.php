@@ -112,17 +112,19 @@ final readonly class TemplateExpressionRules
      */
     private function variable(Variable $variable, TemplateScope $templateScope): ?array
     {
-        if (!is_string($variable->name)) {
+        $name = $variable->name;
+
+        if (!is_string($name)) {
             return [TemplateRefusal::VariableVariable, 'a variable is named, never computed'];
         }
 
-        if (in_array($variable->name, $this->templateGrammar->superglobals(), true)) {
+        if (in_array($name, $this->templateGrammar->superglobals(), true)) {
             return [TemplateRefusal::Superglobal, 'a template reads only its component; the component passes the value in'];
         }
 
-        return $templateScope->has($variable->name)
+        return $templateScope->has($name)
             ? null
-            : [TemplateRefusal::NotInScope, '$' . $variable->name . ' is neither the component variable nor a loop variable'];
+            : [TemplateRefusal::NotInScope, '$' . $name . ' is neither the component variable nor a loop variable'];
     }
 
     /**

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Gates\Templates;
 
-use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\ConstExprParser;
@@ -15,7 +14,6 @@ use PHPStan\PhpDocParser\ParserConfig;
 use ReflectionMethod;
 use ReflectionProperty;
 
-use function array_find;
 use function is_string;
 
 /**
@@ -62,16 +60,25 @@ final readonly class TemplateDocParser
             return null;
         }
 
+        return $this->parameterType($docComment, '$' . $reflectionProperty->getName());
+    }
+
+    /**
+     * @param string $docComment The promoting constructor's docblock.
+     * @param string $parameter  The promoted parameter's name.
+     *
+     * @return TypeNode|null Its declared type when the tag exists.
+     */
+    private function parameterType(string $docComment, string $parameter): ?TypeNode
+    {
         $phpDocNode = $this->phpDocParser->parse(new TokenIterator($this->lexer->tokenize($docComment)));
-        $parameter = '$' . $reflectionProperty->getName();
 
-        $paramTagValueNode = array_find(
-            $phpDocNode->getParamTagValues(),
-            static fn (ParamTagValueNode $paramTagValueNode): bool => $paramTagValueNode->parameterName === $parameter,
-        );
+        foreach ($phpDocNode->getParamTagValues() as $paramTagValueNode) {
+            if ($paramTagValueNode->parameterName === $parameter) {
+                return $paramTagValueNode->type;
+            }
+        }
 
-        return $paramTagValueNode instanceof ParamTagValueNode
-            ? $paramTagValueNode->type
-            : null;
+        return null;
     }
 }

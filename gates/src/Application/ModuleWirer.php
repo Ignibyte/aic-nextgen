@@ -12,10 +12,10 @@ use AIC\Module\Contracts\ModuleRoute;
 use Gates\Domain\ModuleDefinition;
 use Gates\Domain\WiredModule;
 use Gates\Domain\WiredObject;
+use Gates\Domain\WiringScope;
 use InvalidArgumentException;
 
-use function array_map;
-use function array_unique;
+use function array_key_exists;
 use function array_values;
 
 /**
@@ -67,19 +67,41 @@ final readonly class ModuleWirer
     {
         $wiringScope = $this->wiringScopes->scope($moduleDefinition, $modules, $this->wiringContexts->web());
         [$commands, $jobs] = $this->console($moduleDefinition, $modules);
-        $wire = fn (string $class): WiredObject => $this->autowirer->wire($class, $wiringScope);
-        $routes = $moduleDefinition->declared(ModuleRoute::class);
-        $handlers = array_map(static fn (ModuleRoute $moduleRoute): string => $moduleRoute->handler, $routes);
-        $controllers = array_map($wire, array_values(array_unique($handlers)));
+        $controllers = $this->controllers($moduleDefinition, $wiringScope);
         $middleware = [];
 
         foreach ($moduleDefinition->declared(ModuleMiddleware::class) as $moduleMiddleware) {
             $middleware[] = match ($moduleMiddleware->position) {
-                MiddlewarePosition::AfterSession => $wire($moduleMiddleware->middleware),
+                MiddlewarePosition::AfterSession => $this->autowirer->wire($moduleMiddleware->middleware, $wiringScope),
             };
         }
 
         return new WiredModule($moduleDefinition, $controllers, $middleware, $commands, $jobs);
+    }
+
+    /**
+     * @param ModuleDefinition $moduleDefinition The checked route declarations.
+     * @param WiringScope      $wiringScope      The web roots and services.
+     *
+     * @throws InvalidArgumentException When a controller cannot be wired.
+     *
+     * @return list<WiredObject> Controllers once each, in their first declaration order.
+     */
+    private function controllers(ModuleDefinition $moduleDefinition, WiringScope $wiringScope): array
+    {
+        $controllers = [];
+
+        foreach ($moduleDefinition->declared(ModuleRoute::class) as $moduleRoute) {
+            $handler = $moduleRoute->handler;
+
+            if (array_key_exists($handler, $controllers)) {
+                continue;
+            }
+
+            $controllers[$handler] = $this->autowirer->wire($handler, $wiringScope);
+        }
+
+        return array_values($controllers);
     }
 
     /**

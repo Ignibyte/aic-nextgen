@@ -24,6 +24,7 @@ use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use AIC\Schedule\Domain\Schedule;
 use AIC\Schema\Contracts\Migration;
+use InvalidArgumentException;
 use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -221,6 +222,8 @@ final readonly class FacadeSource
      * @param list<string>          $rootless   Those that take no context (`ModuleJobs` when no job reads a root).
      * @param array<string, string> $sources    The freshly generated aggregators.
      *
+     * @throws InvalidArgumentException When a generated aggregator declares an unresolved exception type.
+     *
      * @return array<string, string> `WebModules` and `ConsoleModules`, by file name.
      */
     public function files(array $aggregates, array $rootless, array $sources): array
@@ -248,10 +251,12 @@ final readonly class FacadeSource
     }
 
     /**
-     * @param array<string, array{class-string, string, list<class-string>}> $parts      The optional parts.
-     * @param list<string>                                                   $aggregates The aggregators generated.
-     * @param list<string>                                                   $rootless   Those that take no context.
-     * @param array<string, string>                                          $sources    The freshly generated aggregators.
+     * @param array<string, array{class-string, string, non-empty-list<class-string>}> $parts      The optional parts.
+     * @param list<string>                                                             $aggregates The aggregators generated.
+     * @param list<string>                                                             $rootless   Those that take no context.
+     * @param array<string, string>                                                    $sources    The freshly generated aggregators.
+     *
+     * @throws InvalidArgumentException When a generated aggregator declares an unresolved exception type.
      *
      * @return list<array{class-string, string, list<class-string>}> The parts whose aggregator exists, each rootless
      *                                                               one as its context-free sibling.
@@ -266,8 +271,7 @@ final readonly class FacadeSource
             }
 
             $exceptions = $this->exceptionDocs->source($sources[$aggregate . '.php'] ?? '');
-            $part[1] = $this->exceptionDocs->append($part[1], $exceptions);
-            $part[2] = [...$part[2], ...$exceptions];
+            $part = [$part[0], $this->exceptionDocs->append($part[1], $exceptions), [...$part[2], ...$exceptions]];
 
             $present[] = in_array($aggregate, $rootless, true)
                 ? $this->rootless($part)
@@ -278,8 +282,8 @@ final readonly class FacadeSource
     }
 
     /**
-     * @param array{class-string, string, list<class-string>} $part An optional part that passes its aggregator the
-     *                                                              context.
+     * @param array{class-string, string, non-empty-list<class-string>} $part An optional part that passes its aggregator the
+     *                                                                        context.
      *
      * @return array{class-string, string, list<class-string>} Its context-free sibling: the sibling interface, the
      *                                                         method without the context parameter, and the types
@@ -305,9 +309,11 @@ final readonly class FacadeSource
     /**
      * @param string                                                $class    The facade's short name.
      * @param string                                                $kernel   The kernel that takes it, for its docblock.
-     * @param list<class-string>                                    $classes  Its required interface and the types it names.
+     * @param non-empty-list<class-string>                          $classes  Its required interface and the types it names.
      * @param string                                                $required Its required methods.
      * @param list<array{class-string, string, list<class-string>}> $parts    Its optional parts.
+     *
+     * @throws InvalidArgumentException When imported class names conflict.
      *
      * @return string The class file.
      */

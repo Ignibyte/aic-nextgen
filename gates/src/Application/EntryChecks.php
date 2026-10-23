@@ -92,7 +92,7 @@ final readonly class EntryChecks
     /**
      * @param ModuleDefinition $moduleDefinition The module.
      * @param string           $class            A declared command, job or middleware.
-     * @param string           $type             What it must implement.
+     * @param class-string     $type             What it must implement.
      * @param bool             $framework        Whether the framework's own class is allowed too.
      *
      * @throws InvalidArgumentException When it is not a class of the module (or the framework) implementing the type.

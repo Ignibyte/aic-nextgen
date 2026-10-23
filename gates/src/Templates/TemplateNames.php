@@ -41,9 +41,14 @@ final readonly class TemplateNames
      */
     public function print(Expr $expr, array $scope): array
     {
-        $clone = (new NodeTraverser(new CloningVisitor()))->traverse([$expr])[0];
+        $clone = (new NodeTraverser(new CloningVisitor()))->traverse([$expr])[0] ?? null;
+
+        if (!$clone instanceof Expr) {
+            throw new InvalidArgumentException(TemplateRefusal::NotCompilable->value . ': the expression did not survive its clone');
+        }
+
         $templateNameVisitor = new TemplateNameVisitor($this->templateEmpty, $scope);
-        $rewritten = (new NodeTraverser($templateNameVisitor, new TemplateStepVisitor()))->traverse([$clone])[0];
+        $rewritten = (new NodeTraverser($templateNameVisitor, new TemplateStepVisitor()))->traverse([$clone])[0] ?? null;
 
         if (!$rewritten instanceof Expr) {
             throw new InvalidArgumentException(TemplateRefusal::NotCompilable->value . ': the expression did not survive its rewrite');

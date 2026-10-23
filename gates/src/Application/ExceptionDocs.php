@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\RegexCaptures;
 use InvalidArgumentException;
 use ReflectionMethod;
 use Throwable;
 
 use function array_any;
 use function array_filter;
+use function array_key_exists;
 use function array_map;
 use function array_unique;
 use function array_values;
@@ -23,7 +25,6 @@ use function is_string;
 use function ltrim;
 use function max;
 use function method_exists;
-use function preg_match_all;
 use function str_pad;
 use function str_starts_with;
 use function strlen;
@@ -31,14 +32,14 @@ use function strpos;
 use function strrpos;
 use function substr;
 
-use const PREG_SET_ORDER;
-
 /**
  * Exception contracts used by generated wiring: read the called method's
  * declaration, resolve its names, and keep the smallest equivalent union.
  */
 final readonly class ExceptionDocs
 {
+    use RegexCaptures;
+
     /**
      * @param string $class  The class whose method the generated code calls.
      * @param string $method The called method, including __construct.
@@ -151,14 +152,14 @@ final readonly class ExceptionDocs
      */
     private function read(string $doc, string $source, string $namespace): array
     {
-        preg_match_all('/@throws\\s+([\\\\\\w|]+)/', $doc, $matches);
+        $names = self::regexColumn('/@throws\\s+([\\\\\\w|]+)/', $doc, 1);
         $types = [];
 
-        if ($matches[1] === []) {
+        if ($names === []) {
             return [];
         }
 
-        foreach (explode('|', implode('|', $matches[1])) as $name) {
+        foreach (explode('|', implode('|', $names)) as $name) {
             $type = $this->resolve($name, $source, $namespace);
 
             if (!is_a($type, Throwable::class, true)) {
@@ -184,18 +185,35 @@ final readonly class ExceptionDocs
             return ltrim($name, '\\');
         }
 
-        preg_match_all('/^use ([\\\\\\w]+)(?: as (\\w+))?;/m', $source, $matches, PREG_SET_ORDER);
-
-        foreach ($matches as $match) {
-            $qualified = $match[1];
-            $alias = $match[2] ?? $this->short($qualified);
-
+        foreach ($this->imports($source) as [$alias, $qualified]) {
             if ($name === $alias || str_starts_with($name, $alias . '\\')) {
                 return $qualified . substr($name, strlen($alias));
             }
         }
 
         return ltrim($namespace . '\\' . $name, '\\');
+    }
+
+    /**
+     * @param string $source PHP source with flat class imports.
+     *
+     * @return list<array{string, string}> Each alias and its qualified name.
+     */
+    private function imports(string $source): array
+    {
+        $matches = self::regexRows('/^use ([\\\\\\w]+)(?: as (\\w+))?;/m', $source);
+        $imports = [];
+
+        foreach ($matches as $match) {
+            if (!array_key_exists(1, $match)) {
+                continue;
+            }
+
+            $qualified = $match[1];
+            $imports[] = [$match[2] ?? $this->short($qualified), $qualified];
+        }
+
+        return $imports;
     }
 
     /**

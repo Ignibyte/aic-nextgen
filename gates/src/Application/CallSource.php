@@ -45,6 +45,8 @@ final readonly class CallSource
      * @param array<string, string> $locals      The local's name by class.
      * @param WiringRoots           $wiringRoots The side's context.
      *
+     * @throws InvalidArgumentException When a factory product has no factory receiver.
+     *
      * @return string Its assignment: `new X(...)`, or the factory's method for a factory's product.
      */
     public function statement(string $name, WiredObject $wiredObject, array $locals, WiringRoots $wiringRoots): string
@@ -59,12 +61,16 @@ final readonly class CallSource
      * @param array<string, string> $locals      The local's name by class.
      * @param WiringRoots           $wiringRoots The side's context.
      *
+     * @throws InvalidArgumentException When a factory product has no factory receiver.
+     *
      * @return string It built in place, on one line: `new X(...)`, or the factory's method on the factory.
      */
     public function inline(WiredObject $wiredObject, array $locals, WiringRoots $wiringRoots): string
     {
         if ($wiredObject->method !== '') {
-            $factory = $wiredObject->arguments[0];
+            $factory = $wiredObject->arguments[0] ?? throw new InvalidArgumentException(
+                'A factory product has no factory receiver: ' . $wiredObject->class,
+            );
             $receiver = $locals[$factory->class] ?? '(' . $this->inline($factory, $locals, $wiringRoots) . ')';
 
             return $receiver . '->' . $wiredObject->method . '()';
@@ -86,6 +92,8 @@ final readonly class CallSource
      * @param array<string, string> $locals      The local's name by class.
      * @param WiringRoots           $wiringRoots The side's context.
      * @param string                $suffix      What comes after it.
+     *
+     * @throws InvalidArgumentException When a factory product has no factory receiver.
      *
      * @return string The code.
      */
@@ -136,6 +144,8 @@ final readonly class CallSource
      * @param WiredObject           $wiredObject An argument.
      * @param array<string, string> $locals      The local's name by class.
      * @param WiringRoots           $wiringRoots The side's context.
+     *
+     * @throws InvalidArgumentException When a factory product has no factory receiver.
      *
      * @return string It as code: a local, a root from the context, a plugin list, or the service built in place.
      */

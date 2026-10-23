@@ -11,7 +11,6 @@ use function count;
 use function implode;
 use function in_array;
 use function max;
-use function preg_match_all;
 use function preg_replace;
 use function str_contains;
 use function str_pad;
@@ -27,6 +26,8 @@ use function substr;
  */
 final class TemplateMethods
 {
+    use RegexCaptures;
+
     /**
      * A PHP string literal, single- or double-quoted.
      */
@@ -159,11 +160,11 @@ final class TemplateMethods
      */
     private function used(array $scope, string $code): array
     {
-        preg_match_all('/\\$(\\w+)/', (string) preg_replace(self::LITERAL, '', $code), $matches);
+        $variables = self::regexColumn('/\\$(\\w+)/', (string) preg_replace(self::LITERAL, '', $code), 1);
 
         return array_values(array_filter(
             $scope,
-            static fn (string $parameter): bool => in_array(self::variable($parameter), $matches[1], true),
+            static fn (string $parameter): bool => in_array(self::variable($parameter), $variables, true),
         ));
     }
 

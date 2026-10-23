@@ -6,18 +6,22 @@ namespace Gates\Templates;
 
 use AIC\Component\Contracts\Layout;
 use Gates\Domain\TemplateReader;
+use Gates\Domain\TemplateRefusal;
 use Gates\Domain\TemplateType;
 use Gates\Domain\TemplateTypeKind;
 use Gates\Domain\TemplateUnit;
 use Gates\Domain\TemplateViolation;
 use InvalidArgumentException;
 use Override;
+use PhpParser\Error;
+use PhpParser\Node\Stmt;
 
 use function array_map;
 use function dirname;
 use function implode;
 use function is_a;
 use function lcfirst;
+use function max;
 use function preg_match;
 use function strrpos;
 use function substr;
@@ -64,7 +68,7 @@ final readonly class PlainTemplateReader implements TemplateReader
             )));
         }
 
-        [$stmts] = $this->templateSyntax->parse($source);
+        $stmts = $this->statements($path, $source);
         $this->templateHead->component($path, $source, $stmts);
         $component = $this->templateHead->componentClass($stmts);
         $short = substr($component, (int) strrpos($component, '\\') + 1);
@@ -80,6 +84,30 @@ final readonly class PlainTemplateReader implements TemplateReader
         }
 
         return new TemplateUnit($component, dirname($file) . '/' . $short . 'Template.php', $nodes);
+    }
+
+    /**
+     * @param string $path   The template's relative path.
+     * @param string $source Its previously validated PHP source.
+     *
+     * @throws InvalidArgumentException When a parser failure prevents reading its statements.
+     *
+     * @return list<Stmt> Its statements, or a located syntax refusal.
+     */
+    private function statements(string $path, string $source): array
+    {
+        try {
+            return $this->templateSyntax->parse($source)[0];
+        } catch (Error $error) {
+            $templateViolation = new TemplateViolation(
+                $path,
+                max(1, $error->getStartLine()),
+                TemplateRefusal::Syntax,
+                $error->getRawMessage(),
+            );
+
+            throw new InvalidArgumentException($templateViolation->message(), 0, $error);
+        }
     }
 
     /**
