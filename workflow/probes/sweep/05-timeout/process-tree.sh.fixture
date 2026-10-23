@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Finite, per-call workers. Every role records its own kernel start identity.
+set -eu
+mode=$1
+receipt=$2
+nonce=$3
+
+record() {
+    local role=$1 pid=${2:-$BASHPID} line rest
+    local -a fields
+    IFS= read -r line < "/proc/$pid/stat"
+    rest=${line##*) }
+    read -r -a fields <<< "$rest"
+    printf '%s %s %s %s %s %s %s\n' "$nonce" "$role" "$pid" "${fields[19]}" "${fields[1]}" "${fields[2]}" "${fields[3]}" >> "$receipt"
+}
+
+if [[ $mode == leaf ]]; then
+    trap '' TERM
+    record leaf
+    sleep 8 &
+    record sleeper "$!"
+    wait
+    exit 0
+fi
+
+record root
+printf 'ready-%s\n' "$nonce"
+case "$mode" in
+    ignore|sentinel) trap '' TERM ;;
+    grandchild|early)
+        bash "$0" leaf "$receipt" "$nonce" &
+        if [[ $mode == early ]]; then exit 0; fi
+        wait
+        exit 0
+        ;;
+    closed) exec 1>&- 2>&- ;;
+    input) : ;;
+    *) exit 64 ;;
+esac
+sleep 8 &
+record sleeper "$!"
+wait
