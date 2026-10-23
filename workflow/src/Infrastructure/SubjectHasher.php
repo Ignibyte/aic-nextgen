@@ -72,10 +72,24 @@ final readonly class SubjectHasher implements SubjectHashing
 
         return match (true) {
             str_starts_with($path, '/') || str_contains('/' . $path . '/', '/../') => 'outside',
-            is_link($file) => 'link ' . readlink($file),
+            is_link($file) => self::link($file),
             is_dir($file) => 'directory',
             is_file($file) => (string) hash_file('xxh128', $file),
             default => 'deleted',
         };
+    }
+
+    /**
+     * @param string $file A symbolic link.
+     *
+     * @return string Its target fingerprint, or a distinct failed-read marker.
+     */
+    private static function link(string $file): string
+    {
+        $target = readlink($file);
+
+        return $target === false
+            ? 'unreadable link'
+            : 'link ' . $target;
     }
 }

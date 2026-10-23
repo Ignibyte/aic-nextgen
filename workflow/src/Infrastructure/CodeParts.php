@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
+use AIC\Workflow\Application\CodeIndex;
 use AIC\Workflow\Application\CodeLines;
 use AIC\Workflow\Application\CodeModuleView;
 use AIC\Workflow\Application\CodeOutline;
@@ -26,9 +27,9 @@ final readonly class CodeParts
     }
 
     /**
-     * @return CodeIndexer The index, kept current.
+     * @return CodeIndex The index, kept current.
      */
-    public function codeIndex(): CodeIndexer
+    public function codeIndex(): CodeIndex
     {
         $localHost = new LocalHost($this->root);
 

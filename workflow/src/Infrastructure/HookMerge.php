@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
+use AIC\Workflow\Domain\RegexCaptures;
 use stdClass;
 
+use function array_key_exists;
 use function array_keys;
 use function get_object_vars;
 use function is_array;
 use function is_string;
 use function json_encode;
-use function preg_match;
 use function str_contains;
 
 use const JSON_THROW_ON_ERROR;
@@ -26,6 +27,8 @@ use const JSON_THROW_ON_ERROR;
  */
 final readonly class HookMerge
 {
+    use RegexCaptures;
+
     /**
      * @param stdClass $settings The project's settings, checked by ClaudeSettingsFile; changed in place.
      * @param stdClass $shipped  The package's `hooks.json`.
@@ -38,8 +41,8 @@ final readonly class HookMerge
         $shippedHooks = $this->object($shipped, 'hooks');
         $tally = ['added' => 0, 'upgraded' => 0, 'same' => 0];
 
-        foreach (array_keys(get_object_vars($shippedHooks)) as $key) {
-            $tally = $this->event($hooks, $this->list($shippedHooks, (string) $key), (string) $key, $tally);
+        foreach ((new JsonReader($shippedHooks, 'shipped hooks'))->keys() as $key) {
+            $tally = $this->event($hooks, $this->list($shippedHooks, $key), $key, $tally);
         }
 
         $settings->hooks = $hooks;
@@ -55,10 +58,10 @@ final readonly class HookMerge
      */
     public function object(stdClass $object, string $key): stdClass
     {
-        $member = get_object_vars($object)[$key] ?? null;
+        $member = [get_object_vars($object)[$key] ?? null];
 
-        return $member instanceof stdClass
-            ? $member
+        return $member[0] instanceof stdClass
+            ? $member[0]
             : new stdClass();
     }
 
@@ -70,16 +73,20 @@ final readonly class HookMerge
      */
     public function list(stdClass $object, string $key): array
     {
-        $member = get_object_vars($object)[$key] ?? null;
+        $member = [get_object_vars($object)[$key] ?? null];
 
         $objects = [];
 
-        foreach (is_array($member) ? $member : [] as $item) {
-            if (!($item instanceof stdClass)) {
+        if (!is_array($member[0])) {
+            return [];
+        }
+
+        foreach (array_keys($member[0]) as $index) {
+            if (!($member[0][$index] instanceof stdClass)) {
                 continue;
             }
 
-            $objects[] = $item;
+            $objects[] = $member[0][$index];
         }
 
         return $objects;
@@ -201,10 +208,14 @@ final readonly class HookMerge
      */
     private function verb(stdClass $hook): string
     {
-        $command = get_object_vars($hook)['command'] ?? null;
-        $guard = is_string($command) && str_contains($command, 'aic-guard.sh');
+        $command = [get_object_vars($hook)['command'] ?? null];
+        $guard = is_string($command[0]) && str_contains($command[0], 'aic-guard.sh');
 
-        return $guard && preg_match('/\\s(edit|shell|record|stop|returned)\\s*$/', $command, $match) === 1
+        $match = $guard
+            ? self::regexMatch('/\\s(edit|shell|record|stop|returned)\\s*$/', $command[0])
+            : [];
+
+        return array_key_exists(1, $match)
             ? $match[1]
             : '';
     }

@@ -6,6 +6,8 @@ namespace AIC\Workflow\Infrastructure\Guard;
 
 use AIC\Workflow\Application\Guard\GuardLedger;
 use AIC\Workflow\Domain\Guard\GuardRow;
+use AIC\Workflow\Exception\WorkflowRefusal;
+use AIC\Workflow\Infrastructure\JsonReader;
 use AIC\Workflow\Infrastructure\RunStateFile;
 use Override;
 use RuntimeException;
@@ -53,11 +55,13 @@ final readonly class GuardLedgerFile implements GuardLedger
     public function append(GuardRow $guardRow): void
     {
         $directory = $this->root . '/' . RunStateFile::DIRECTORY;
-        $line = json_encode($guardRow->toArray(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
+        $encoded = json_encode($guardRow->toArray(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-        if (!is_dir($directory) || is_link($directory) || is_link($this->path())) {
+        if ($encoded === false || !$this->writable($directory)) {
             return;
         }
+
+        $line = $encoded . "\n";
 
         try {
             $splFileObject = new SplFileObject($this->path(), 'a');
@@ -118,12 +122,12 @@ final readonly class GuardLedgerFile implements GuardLedger
      */
     private function line(string $line): ?GuardRow
     {
-        $decoded = $line === ''
+        $decoded = [$line === ''
             ? null
-            : json_decode($line);
+            : json_decode($line)];
 
-        return $decoded instanceof stdClass
-            ? $this->row($decoded)
+        return $decoded[0] instanceof stdClass
+            ? $this->row($decoded[0])
             : null;
     }
 
@@ -135,21 +139,49 @@ final readonly class GuardLedgerFile implements GuardLedger
      */
     private function row(stdClass $line): ?GuardRow
     {
-        $fields = get_object_vars($line);
-        $values = [];
+        $jsonReader = new JsonReader($line, 'guard-calls.jsonl');
 
-        foreach (['at', 'run', 'phase', 'hook', 'tool', 'verdict', 'rule', 'agent'] as $key) {
-            if (!is_string($fields[$key] ?? null)) {
-                return null;
-            }
-
-            $values[] = $fields[$key];
+        try {
+            return new GuardRow(
+                $jsonReader->string('at'),
+                $jsonReader->string('run'),
+                $jsonReader->string('phase'),
+                $jsonReader->string('hook'),
+                $jsonReader->string('tool'),
+                $jsonReader->string('verdict'),
+                $jsonReader->string('rule'),
+                $jsonReader->string('agent'),
+                $this->optional($line, 'subagent'),
+                $this->optional($line, 'digest'),
+            );
+        } catch (WorkflowRefusal) {
+            return null;
         }
+    }
 
-        $subagent = $fields['subagent'] ?? '';
-        $digest = $fields['digest'] ?? '';
+    /**
+     * @param stdClass $line A decoded row.
+     * @param string   $key  An optional string field.
+     *
+     * @return string Its string value, empty when absent or malformed.
+     */
+    private function optional(stdClass $line, string $key): string
+    {
+        $field = [get_object_vars($line)[$key] ?? null];
 
-        return new GuardRow(...$values, ...[is_string($subagent) ? $subagent : '', is_string($digest) ? $digest : '']);
+        return is_string($field[0])
+            ? $field[0]
+            : '';
+    }
+
+    /**
+     * @param string $directory The ledger directory.
+     *
+     * @return bool Whether its directory exists and neither it nor the target is a symlink.
+     */
+    private function writable(string $directory): bool
+    {
+        return is_dir($directory) && !is_link($directory) && !is_link($this->path());
     }
 
     /**

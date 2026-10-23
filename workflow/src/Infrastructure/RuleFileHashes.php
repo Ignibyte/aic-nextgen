@@ -28,6 +28,8 @@ use function substr;
  */
 final readonly class RuleFileHashes implements RuleFiles
 {
+    use DirectoryEntries;
+
     /**
      * @param string          $root       The project's root.
      * @param list<HouseRule> $houseRules The project's rules.
@@ -87,14 +89,35 @@ final readonly class RuleFileHashes implements RuleFiles
         $lines = [];
         $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
 
-        foreach ($files as $file) {
-            $lines[] = $file instanceof SplFileInfo && $file->isFile()
-                ? substr($file->getPathname(), strlen($directory) + 1) . "\0" . hash_file('sha256', $file->getPathname())
-                : '';
+        foreach (self::directoryEntries($files) as $file) {
+            $line = self::line($file, $directory);
+
+            if ($line === null) {
+                return null;
+            }
+
+            $lines[] = $line;
         }
 
         sort($lines);
 
         return hash('sha256', implode("\n", $lines));
+    }
+
+    /**
+     * @param SplFileInfo $file      A directory entry.
+     * @param string      $directory The directory being fingerprinted.
+     *
+     * @return string|null Its relative-path/hash line, empty for a directory, null on an unreadable file.
+     */
+    private static function line(SplFileInfo $file, string $directory): ?string
+    {
+        if (!$file->isFile()) {
+            return '';
+        }
+
+        $digest = hash_file('sha256', $file->getPathname());
+
+        return $digest === false ? null : substr($file->getPathname(), strlen($directory) + 1) . "\0" . $digest;
     }
 }

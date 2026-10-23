@@ -9,18 +9,20 @@ use AIC\Workflow\Application\PackSource;
 use AIC\Workflow\Application\ProjectFiles;
 use AIC\Workflow\Domain\InstallAction;
 use AIC\Workflow\Domain\InstallLine;
+use AIC\Workflow\Domain\RegexCaptures;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use JsonException;
 use Override;
 use stdClass;
 
+use function array_key_exists;
 use function array_values;
 use function get_object_vars;
+use function implode;
 use function intdiv;
 use function is_array;
 use function json_decode;
 use function json_encode;
-use function preg_match;
 use function preg_replace_callback;
 use function str_repeat;
 use function strlen;
@@ -39,6 +41,8 @@ use const JSON_UNESCAPED_UNICODE;
  */
 final readonly class ClaudeSettingsFile implements HookWiring
 {
+    use RegexCaptures;
+
     /**
      * The variable that raises Claude Code's cap on consecutive Stop-hook blocks.
      */
@@ -116,20 +120,20 @@ final readonly class ClaudeSettingsFile implements HookWiring
     private function cap(stdClass $settings, stdClass $shipped): InstallLine
     {
         $env = $this->hookMerge->object($settings, 'env');
-        $value = get_object_vars($env)[self::CAP] ?? null;
-        $shippedValue = get_object_vars($this->hookMerge->object($shipped, 'env'))[self::CAP] ?? null;
+        $value = [get_object_vars($env)[self::CAP] ?? null];
+        $shippedValue = [get_object_vars($this->hookMerge->object($shipped, 'env'))[self::CAP] ?? null];
         $path = PackManifest::SETTINGS . ' env.' . self::CAP;
 
-        if ($value === null) {
-            $env->{self::CAP} = $shippedValue;
+        if ($value[0] === null) {
+            $env->{self::CAP} = $shippedValue[0];
             $settings->env = $env;
 
             return new InstallLine(InstallAction::Wrote, $path, 'the Stop hold is not cut off after nine blocks');
         }
 
-        return $value === $shippedValue
+        return $value[0] === $shippedValue[0]
             ? new InstallLine(InstallAction::Current, $path)
-            : new InstallLine(InstallAction::Kept, $path, "the operator's value, " . json_encode($value, JSON_THROW_ON_ERROR));
+            : new InstallLine(InstallAction::Kept, $path, "the operator's value, " . json_encode($value[0], JSON_THROW_ON_ERROR));
     }
 
     /**
@@ -140,14 +144,17 @@ final readonly class ClaudeSettingsFile implements HookWiring
      */
     private function encode(stdClass $settings, ?string $text): string
     {
-        $unit = $text !== null && preg_match('/^([ \\t]+)\\S/m', $text, $match) === 1
+        $match = $text === null
+            ? []
+            : self::regexMatch('/^([ \\t]+)\\S/m', $text);
+        $unit = array_key_exists(1, $match)
             ? $match[1]
             : '  ';
         $json = json_encode($settings, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         $indented = preg_replace_callback(
             '/^(?: {4})+/m',
-            static fn (array $spaces): string => str_repeat($unit, intdiv(strlen($spaces[0]), 4)),
+            static fn (array $spaces): string => str_repeat($unit, intdiv(strlen(implode('', $spaces)), 4)),
             $json,
         );
 
@@ -164,7 +171,7 @@ final readonly class ClaudeSettingsFile implements HookWiring
         $members = get_object_vars($settings);
 
         foreach (['hooks', 'env'] as $key) {
-            if (($members[$key] ?? null) !== null && !$members[$key] instanceof stdClass) {
+            if (array_key_exists($key, $members) && $members[$key] !== null && !$members[$key] instanceof stdClass) {
                 throw new WorkflowRefusal(PackManifest::SETTINGS . '\'s "' . $key . '" is not an object; mend it by hand, then run init.');
             }
         }
@@ -179,10 +186,10 @@ final readonly class ClaudeSettingsFile implements HookWiring
      */
     private function lists(stdClass $hooks): void
     {
-        foreach (get_object_vars($hooks) as $key => $list) {
-            $event = (string) $key;
+        foreach ((new JsonReader($hooks, 'hooks'))->keys() as $event) {
+            $list = [get_object_vars($hooks)[$event]];
 
-            if (!is_array($list) || $this->hookMerge->list($hooks, $event) !== array_values($list)) {
+            if (!is_array($list[0]) || $this->hookMerge->list($hooks, $event) !== array_values($list[0])) {
                 throw new WorkflowRefusal(PackManifest::SETTINGS . "'s hooks." . $event . ' is not a list of objects; mend it by hand.');
             }
         }
@@ -225,13 +232,13 @@ final readonly class ClaudeSettingsFile implements HookWiring
     private function decode(string $text, string $refuse): stdClass
     {
         try {
-            $object = json_decode($text, false, 64, JSON_THROW_ON_ERROR);
+            $object = [json_decode($text, false, 64, JSON_THROW_ON_ERROR)];
         } catch (JsonException $jsonException) {
             throw new WorkflowRefusal($refuse, 0, $jsonException);
         }
 
-        return $object instanceof stdClass
-            ? $object
+        return $object[0] instanceof stdClass
+            ? $object[0]
             : throw new WorkflowRefusal($refuse);
     }
 }

@@ -81,11 +81,11 @@ final readonly class CodeQueryLog implements CodeQueryLedger
      */
     private function query(string $line, string $runId, Phase $phase): ?CodeQuery
     {
-        $event = json_decode(rtrim($line, "\n"));
+        $event = [json_decode(rtrim($line, "\n"))];
 
         try {
-            $payload = $event instanceof stdClass
-                ? $this->payload(new JsonReader($event, 'events.jsonl'), $runId)
+            $payload = $event[0] instanceof stdClass
+                ? $this->payload(new JsonReader($event[0], 'events.jsonl'), $runId)
                 : null;
 
             return $payload === null || $payload->string('phase') !== $phase->value ? null : new CodeQuery(

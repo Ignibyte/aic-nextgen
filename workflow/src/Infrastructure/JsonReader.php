@@ -194,10 +194,12 @@ final readonly class JsonReader
             throw $this->wrong($key, 'a list of strings');
         }
 
-        foreach ($value as $item) {
-            $strings[] = is_string($item)
-                ? $item
-                : throw $this->wrong($key, 'a list of strings');
+        foreach (array_keys($value) as $index) {
+            if (!is_string($value[$index])) {
+                throw $this->wrong($key, 'a list of strings');
+            }
+
+            $strings[] = $value[$index];
         }
 
         return $strings;
@@ -208,7 +210,7 @@ final readonly class JsonReader
      */
     public function keys(): array
     {
-        return array_map(static fn (int|string $key): string => (string) $key, array_keys(get_object_vars($this->object)));
+        return array_map(self::stringKey(...), array_keys(get_object_vars($this->object)));
     }
 
     /**
@@ -220,5 +222,15 @@ final readonly class JsonReader
     private function wrong(string $key, string $type): WorkflowRefusal
     {
         return new WorkflowRefusal($this->what . '\'s "' . $key . '" is missing or not ' . $type . '.');
+    }
+
+    /**
+     * @param int|string $key A native object property key, including numeric-looking names.
+     *
+     * @return string The property name as text.
+     */
+    private static function stringKey(int|string $key): string
+    {
+        return (string) $key;
     }
 }

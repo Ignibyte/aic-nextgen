@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace AIC\Workflow\Infrastructure;
 
 use AIC\Workflow\Application\CodePaths;
+use AIC\Workflow\Domain\RegexCaptures;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 use stdClass;
 
+use function array_key_exists;
 use function array_keys;
 use function file_exists;
 use function file_get_contents;
@@ -16,7 +18,6 @@ use function get_object_vars;
 use function is_dir;
 use function is_file;
 use function json_decode;
-use function preg_match;
 use function rtrim;
 use function str_ends_with;
 use function str_replace;
@@ -35,6 +36,8 @@ use function ucwords;
  */
 final readonly class CodePsr4 implements CodePaths
 {
+    use RegexCaptures;
+
     /**
      * The manifests read, beside the project's own.
      */
@@ -147,18 +150,18 @@ final readonly class CodePsr4 implements CodePaths
     private function psr4(string $base, string $section): ?JsonReader
     {
         $file = $this->root . '/' . $base . 'composer.json';
-        $composer = is_file($file)
+        $composer = [is_file($file)
             ? json_decode((string) file_get_contents($file))
-            : null;
-        $autoload = $composer instanceof stdClass
-            ? get_object_vars($composer)[$section] ?? null
-            : null;
-        $psr4 = $autoload instanceof stdClass
-            ? get_object_vars($autoload)['psr-4'] ?? null
-            : null;
+            : null];
+        $autoload = [$composer[0] instanceof stdClass
+            ? get_object_vars($composer[0])[$section] ?? null
+            : null];
+        $psr4 = [$autoload[0] instanceof stdClass
+            ? get_object_vars($autoload[0])['psr-4'] ?? null
+            : null];
 
-        return $psr4 instanceof stdClass
-            ? new JsonReader($psr4, $base . 'composer.json')
+        return $psr4[0] instanceof stdClass
+            ? new JsonReader($psr4[0], $base . 'composer.json')
             : null;
     }
 
@@ -225,7 +228,9 @@ final readonly class CodePsr4 implements CodePaths
      */
     private static function module(string $path): string
     {
-        if (preg_match('#^modules/([a-z][a-z0-9_]*)/src/(.+)\\.php$#', $path, $match) !== 1) {
+        $match = self::regexMatch('#^modules/([a-z][a-z0-9_]*)/src/(.+)\\.php$#', $path);
+
+        if (!array_key_exists(1, $match) || !array_key_exists(2, $match)) {
             return '';
         }
 

@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Workflow file, JSON and hook boundaries** (#141, first source child of #135). Readers check native values before use, preserve numeric-looking JSON names as strings, and keep strict refusals separate from optional-value fallbacks and malformed ledger skips. Guard rows use explicit checked fields; failed JSON encoding does not append a blank ledger record.
+  - Checked regex and directory boundaries preserve capture/traversal order. Archive callbacks retain actual timestamp/path tuples; fixture directory failures propagate to the existing Held result. The code-index composition exposes its existing interface.
+  - All 84 scoped findings are removed. Complete ordinary Psalm still exits 2 with 187 workflow findings and zero runtime/gates findings; #142/#143 and final both-mode enforcement in #135 remain. All 151 workflow expectations, 69 focused controls and 32 gates pass without deferrals; 65 valid output hashes remain identical.
+
 - **Real tool registrations and checked launchers** (#140, final part of #134). PHPStan consumes PHP rule registrations and actual constructor factories; attributed PHPat callables retain all twelve named constraints. PHPCS and PHPMD consume custom XML generated from the classes they register.
   - The AIC build writes the two custom XML files; gate:30 checks them in both profiles, and app builds leave installed packages unchanged. Psalm loads real PHPCS class/token declarations. Typed Rector setup preserves every original builder property; configuration, autoloader, HOME, PID and worktree boundaries validate their actual values.
   - All 183 gate-tool findings are now removed across #138/#139/#140. Complete ordinary Psalm still exits 2 with 271 workflow findings and zero runtime/gates findings; #135 owns the remaining fixes and both-mode enforcement. All 151 workflow expectations and 32 gates pass without deferrals. A relocated App profile and all nineteen custom/architecture rule plants pass their controls; valid runtime outputs remain unchanged.

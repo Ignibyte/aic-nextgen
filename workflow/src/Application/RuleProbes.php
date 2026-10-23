@@ -6,6 +6,7 @@ namespace AIC\Workflow\Application;
 
 use AIC\Workflow\Domain\HouseRule;
 use AIC\Workflow\Domain\RuleCase;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function str_starts_with;
 
@@ -30,6 +31,8 @@ final readonly class RuleProbes
 
     /**
      * @param HouseRule $houseRule A rule.
+     *
+     * @throws WorkflowRefusal When the fixture directory cannot be prepared.
      *
      * @return list<string> What keeps its probe from passing, one line each; empty when it bites as it should.
      */

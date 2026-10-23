@@ -64,12 +64,12 @@ final readonly class ProbeScenarioFile implements ProbeScenarios
     public function load(string $name): ProbeScenario
     {
         $path = $this->folder . '/' . $name . '/scenario.php';
-        $probeScenario = is_file($path)
+        $probeScenario = [is_file($path)
             ? require $path
-            : null;
+            : null];
 
-        return $probeScenario instanceof ProbeScenario
-            ? $probeScenario
+        return $probeScenario[0] instanceof ProbeScenario
+            ? $probeScenario[0]
             : throw new WorkflowRefusal('workflow/probes/sweep/' . $name . '/scenario.php returns no ProbeScenario.');
     }
 

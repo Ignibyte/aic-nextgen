@@ -67,13 +67,13 @@ final readonly class ComposerManifest
      */
     public function vendorDir(): string
     {
-        $config = get_object_vars($this->composer() ?? new stdClass())['config'] ?? null;
-        $vendorDir = $config instanceof stdClass
-            ? get_object_vars($config)['vendor-dir'] ?? null
-            : null;
+        $config = [get_object_vars($this->composer() ?? new stdClass())['config'] ?? null];
+        $vendorDir = [$config[0] instanceof stdClass
+            ? get_object_vars($config[0])['vendor-dir'] ?? null
+            : null];
 
-        return is_string($vendorDir) && $vendorDir !== ''
-            ? rtrim($vendorDir, '/')
+        return is_string($vendorDir[0]) && $vendorDir[0] !== ''
+            ? rtrim($vendorDir[0], '/')
             : 'vendor';
     }
 
@@ -97,9 +97,9 @@ final readonly class ComposerManifest
      */
     private function requires(stdClass $composer, string $section): bool
     {
-        $packages = get_object_vars($composer)[$section] ?? null;
+        $packages = [get_object_vars($composer)[$section] ?? null];
 
-        return $packages instanceof stdClass && array_key_exists('aic/workflow', get_object_vars($packages));
+        return $packages[0] instanceof stdClass && array_key_exists('aic/workflow', get_object_vars($packages[0]));
     }
 
     /**
@@ -113,15 +113,15 @@ final readonly class ComposerManifest
             : false;
 
         try {
-            $composer = is_string($text)
+            $composer = [is_string($text)
                 ? json_decode($text, false, 64, JSON_THROW_ON_ERROR)
-                : null;
+                : null];
         } catch (JsonException) {
             return null;
         }
 
-        return $composer instanceof stdClass
-            ? $composer
+        return $composer[0] instanceof stdClass
+            ? $composer[0]
             : null;
     }
 }

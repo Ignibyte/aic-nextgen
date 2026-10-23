@@ -8,6 +8,7 @@ use AIC\Workflow\Domain\Guard\HookCall;
 use stdClass;
 
 use function array_filter;
+use function array_keys;
 use function array_values;
 use function get_object_vars;
 use function implode;
@@ -40,15 +41,15 @@ final readonly class HookPayload
     public function read(string $payload, string $verb, string $root): ?HookCall
     {
         $decoded = json_decode($payload);
-        $input = $decoded instanceof stdClass
+        $input = [$decoded instanceof stdClass
             ? get_object_vars($decoded)['tool_input'] ?? null
-            : null;
+            : null];
 
-        if (!$decoded instanceof stdClass || ($verb !== 'stop' && !$input instanceof stdClass)) {
+        if (!$decoded instanceof stdClass || ($verb !== 'stop' && !$input[0] instanceof stdClass)) {
             return null;
         }
 
-        return $this->call($decoded, $input instanceof stdClass ? $input : new stdClass(), $root);
+        return $this->call($decoded, $input[0] instanceof stdClass ? $input[0] : new stdClass(), $root);
     }
 
     /**
@@ -104,12 +105,16 @@ final readonly class HookPayload
      */
     private function texts(stdClass $response): string
     {
-        $content = get_object_vars($response)['content'] ?? null;
+        $content = [get_object_vars($response)['content'] ?? null];
         $texts = [];
 
-        foreach (is_array($content) ? $content : [] as $block) {
-            $texts[] = $block instanceof stdClass
-                ? $this->text($block, 'text')
+        if (!is_array($content[0])) {
+            return '';
+        }
+
+        foreach (array_keys($content[0]) as $index) {
+            $texts[] = $content[0][$index] instanceof stdClass
+                ? $this->text($content[0][$index], 'text')
                 : '';
         }
 
@@ -139,12 +144,16 @@ final readonly class HookPayload
      */
     private function listed(stdClass $input): array
     {
-        $listed = get_object_vars($input)['paths'] ?? null;
+        $listed = [get_object_vars($input)['paths'] ?? null];
         $paths = [];
 
-        foreach (is_array($listed) ? $listed : [] as $path) {
-            $paths[] = is_string($path)
-                ? $path
+        if (!is_array($listed[0])) {
+            return [];
+        }
+
+        foreach (array_keys($listed[0]) as $index) {
+            $paths[] = is_string($listed[0][$index])
+                ? $listed[0][$index]
                 : '';
         }
 
@@ -159,10 +168,10 @@ final readonly class HookPayload
      */
     private function text(stdClass $input, string $key): string
     {
-        $value = get_object_vars($input)[$key] ?? null;
+        $value = [get_object_vars($input)[$key] ?? null];
 
-        return is_string($value)
-            ? $value
+        return is_string($value[0])
+            ? $value[0]
             : '';
     }
 }
