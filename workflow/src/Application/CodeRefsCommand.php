@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Domain\CodeAnswer;
+use InvalidArgumentException;
 use Override;
 
 /**
@@ -30,6 +31,8 @@ final readonly class CodeRefsCommand implements Command
 
     /**
      * @param CommandInput $commandInput The symbol.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse Its references; exit 1 when the index has no such symbol, 2 with no name.
      */

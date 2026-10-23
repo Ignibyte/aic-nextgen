@@ -100,7 +100,9 @@ final readonly class ConsoleArguments
      */
     private static function flag(string $word, CommandUsage $commandUsage): array
     {
-        [$name, $value] = [...explode('=', substr($word, 2), 2), ''];
+        $parts = explode('=', substr($word, 2), 2);
+        $name = $parts[0];
+        $value = $parts[1] ?? '';
         $valued = in_array($name, $commandUsage->valued, true);
         $switch = $name === 'json' || in_array($name, $commandUsage->switches, true);
 

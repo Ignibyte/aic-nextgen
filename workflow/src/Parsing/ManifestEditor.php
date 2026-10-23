@@ -54,15 +54,7 @@ final readonly class ManifestEditor
         $facts = ['requires' => [], 'route' => [], 'command' => [], 'job' => []];
 
         foreach ($this->calls($this->returned($text, $file)) as $methodCall) {
-            $name = $methodCall->name instanceof Identifier
-                ? $methodCall->name->toString()
-                : '';
-            $facts = match ($name) {
-                'requires' => [...$facts, 'requires' => [...$facts['requires'], ...$this->strings($methodCall)]],
-                'route' => [...$facts, 'route' => [...$facts['route'], $this->route($methodCall)]],
-                'command', 'job' => [...$facts, $name => [...$facts[$name], $this->strings($methodCall)[0] ?? '']],
-                default => $facts,
-            };
+            $facts = $this->take($facts, $methodCall);
         }
 
         $module = $this->module($this->returned($text, $file));
@@ -107,18 +99,21 @@ final readonly class ManifestEditor
     private function returned(string $text, string $file): Expr
     {
         $return = $this->firstReturn($this->parse($text, $file));
+        $expr = $return instanceof Return_
+            ? $return->expr
+            : null;
 
-        if (!$return instanceof Return_ || !$return->expr instanceof Expr) {
+        if (!$return instanceof Return_ || !$expr instanceof Expr) {
             throw new WorkflowRefusal($file . ' returns no ModuleManifest; add the call by hand.');
         }
 
-        if (!$this->root($return->expr) instanceof New_) {
+        if (!$this->root($expr) instanceof New_) {
             throw new WorkflowRefusal(
                 $file . ':' . $return->getStartLine() . ' does not return (new ModuleManifest(\'<name>\'))->…; add the call by hand.',
             );
         }
 
-        return $return->expr;
+        return $expr;
     }
 
     /**
@@ -162,8 +157,11 @@ final readonly class ManifestEditor
      */
     private function manifestNew(New_ $new): bool
     {
-        return $new->class instanceof Name && $new->class->getLast() === 'ModuleManifest'
-            && ($new->args[0] ?? null) instanceof Arg && $new->args[0]->value instanceof String_;
+        $class = $new->class;
+        $argument = $new->args[0] ?? null;
+
+        return $class instanceof Name && $class->getLast() === 'ModuleManifest'
+            && $argument instanceof Arg && $argument->value instanceof String_;
     }
 
     /**
@@ -251,5 +249,36 @@ final readonly class ManifestEditor
         } catch (Error $error) {
             throw new WorkflowRefusal($file . ' does not parse: ' . $error->getMessage(), 0, $error);
         }
+    }
+
+    /**
+     * @param array{requires: list<string>, route: list<string>, command: list<string>, job: list<string>} $facts      The facts so far.
+     * @param MethodCall                                                                                   $methodCall The call.
+     *
+     * @return array{requires: list<string>, route: list<string>, command: list<string>, job: list<string>} The updated facts.
+     */
+    private function take(array $facts, MethodCall $methodCall): array
+    {
+        $name = $methodCall->name instanceof Identifier
+            ? $methodCall->name->toString()
+            : '';
+
+        if ($name === 'requires') {
+            $facts['requires'] = [...$facts['requires'], ...$this->strings($methodCall)];
+
+            return $facts;
+        }
+
+        if ($name === 'route') {
+            $facts['route'][] = $this->route($methodCall);
+
+            return $facts;
+        }
+
+        if ($name === 'command' || $name === 'job') {
+            $facts[$name][] = $this->strings($methodCall)[0] ?? '';
+        }
+
+        return $facts;
     }
 }

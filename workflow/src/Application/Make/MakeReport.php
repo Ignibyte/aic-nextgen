@@ -11,7 +11,9 @@ use AIC\Workflow\Application\ProjectFiles;
 use AIC\Workflow\Domain\Console\CommandUsage;
 use AIC\Workflow\Domain\Make\MadeFile;
 use AIC\Workflow\Domain\Make\MakeRecipe;
+use AIC\Workflow\Domain\Make\ManifestCall;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use InvalidArgumentException;
 
 use function array_map;
 use function explode;
@@ -52,7 +54,8 @@ final readonly class MakeReport
      * @param bool           $dry          Whether it only planned.
      * @param bool           $json         Whether `--json` was given.
      *
-     * @throws WorkflowRefusal When composer.json or phpcs.xml.dist cannot be read.
+     * @throws WorkflowRefusal          When composer.json or phpcs.xml.dist cannot be read.
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResult The answer, exit 0.
      */
@@ -85,6 +88,8 @@ final readonly class MakeReport
      * @param WorkflowRefusal $workflowRefusal Why it wrote nothing.
      * @param bool            $json            Whether `--json` was given.
      *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
+     *
      * @return CommandResult The refusal: exit 2 for a misread line or a bad name, 1 otherwise.
      */
     public function refused(CommandUsage $commandUsage, WorkflowRefusal $workflowRefusal, bool $json): CommandResult
@@ -110,11 +115,15 @@ final readonly class MakeReport
     private function report(MakeRecipe $makeRecipe, array $files, bool $dry): array
     {
         $lines = [];
+        $call = $makeRecipe->call;
+        $callText = $call instanceof ManifestCall
+            ? $call->call
+            : '';
 
         foreach ($files as $file) {
-            $edit = $makeRecipe->call !== null && $file->path === $makeRecipe->manifest();
+            $edit = $call !== null && $file->path === $makeRecipe->manifest();
             $lines = match (true) {
-                $edit => [...$lines, ($dry ? 'would edit ' : 'edited ') . $file->path . ': ' . $makeRecipe->call->call],
+                $edit => [...$lines, ($dry ? 'would edit ' : 'edited ') . $file->path . ': ' . $callText],
                 $dry => [...$lines, 'would write ' . $file->path . ':', ...explode("\n", rtrim($file->contents, "\n"))],
                 default => [...$lines, 'wrote ' . $file->path],
             };

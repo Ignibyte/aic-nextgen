@@ -15,7 +15,6 @@ use function array_unique;
 use function array_values;
 use function count;
 use function explode;
-use function str_contains;
 use function strtolower;
 
 /**
@@ -146,9 +145,9 @@ final readonly class CodeTree
      */
     private function placed(string $area, array $counts): array
     {
-        [$kind, $name] = str_contains($area, ':')
-            ? explode(':', $area, 2)
-            : [$area, ''];
+        $parts = explode(':', $area, 2);
+        $kind = $parts[0];
+        $name = $parts[1] ?? '';
 
         return match ($kind) {
             'system' => ['system', '  ' . $name . ' — ' . $this->counted($counts) . $this->codeOutline->layers($area)],

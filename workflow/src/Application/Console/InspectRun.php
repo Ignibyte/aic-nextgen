@@ -16,6 +16,7 @@ use AIC\Workflow\Domain\Console\SurfaceModule;
 use AIC\Workflow\Domain\Console\SurfaceView;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Closure;
+use InvalidArgumentException;
 
 use function array_slice;
 use function implode;
@@ -53,6 +54,8 @@ final readonly class InspectRun
      * @param CommandInput                                         $commandInput The command line.
      * @param CommandUsage                                         $commandUsage What the command takes.
      * @param Closure(ParsedArguments, SurfaceView): InspectAnswer $answer       Answers it from the surface.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResult The answer and its exit.
      */
@@ -94,6 +97,8 @@ final readonly class InspectRun
      * @param CommandUsage    $commandUsage    The command.
      * @param WorkflowRefusal $workflowRefusal Why it did not answer.
      * @param bool            $json            Whether `--json` was given.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResult The refusal: exit 2 for a misread line, 1 otherwise.
      */

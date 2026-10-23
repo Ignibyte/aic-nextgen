@@ -8,6 +8,7 @@ use AIC\Workflow\Domain\Console\SurfaceKind;
 use AIC\Workflow\Domain\Console\SurfaceModule;
 use AIC\Workflow\Domain\Console\SurfaceView;
 use AIC\Workflow\Exception\WorkflowRefusal;
+use Closure;
 
 /**
  * Reads `build/surface.json` into the inspect commands' view (#109),
@@ -33,10 +34,10 @@ final readonly class SurfaceViewJson
         }
 
         return new SurfaceView(
-            self::rows($jsonReader, 'routes', ['handler', 'kind', 'method', 'module', 'path']),
-            self::rows($jsonReader, 'commands', ['class', 'kind', 'module', 'name']),
-            self::rows($jsonReader, 'jobs', ['class', 'kind', 'module', 'name']),
-            self::rows($jsonReader, 'schedules', ['cadence', 'job', 'module', 'name']),
+            self::rows($jsonReader, 'routes', self::route(...)),
+            self::rows($jsonReader, 'commands', self::named(...)),
+            self::rows($jsonReader, 'jobs', self::named(...)),
+            self::rows($jsonReader, 'schedules', self::schedule(...)),
             $modules,
             self::kinds($jsonReader),
             $stale,
@@ -86,35 +87,128 @@ final readonly class SurfaceViewJson
             $jsonReader->strings('migrations'),
             $jsonReader->strings('factories'),
             $jsonReader->strings('prefixes'),
-            self::rows($jsonReader, 'plugins', ['class', 'type']),
-            self::rows($jsonReader, 'bindings', ['class', 'interface']),
-            self::rows($jsonReader, 'middleware', ['class', 'position']),
+            self::rows($jsonReader, 'plugins', self::plugin(...)),
+            self::rows($jsonReader, 'bindings', self::binding(...)),
+            self::rows($jsonReader, 'middleware', self::middleware(...)),
         );
     }
 
     /**
-     * @param JsonReader   $jsonReader An object.
-     * @param string       $key        The key of a list of objects in it.
-     * @param list<string> $fields     The string fields each object holds.
+     * @template T of array<string, string>
      *
-     * @throws WorkflowRefusal When the list or a field is missing or of another type.
+     * @param JsonReader             $jsonReader An object.
+     * @param string                 $key        The key of an object list.
+     * @param Closure(JsonReader): T $read       Checks one object's fields.
      *
-     * @return list<array<string, string>> Each object's fields.
+     * @throws WorkflowRefusal When the list or a field is missing or has another type.
+     *
+     * @return list<T> The actual checked rows.
      */
-    private static function rows(JsonReader $jsonReader, string $key, array $fields): array
+    private static function rows(JsonReader $jsonReader, string $key, Closure $read): array
     {
         $rows = [];
 
         foreach ($jsonReader->objects($key) as $object) {
-            $row = [];
-
-            foreach ($fields as $field) {
-                $row[$field] = $object->string($field);
-            }
-
-            $rows[] = $row;
+            $rows[] = $read($object);
         }
 
         return $rows;
+    }
+
+    /**
+     * @param JsonReader $jsonReader One row.
+     *
+     * @throws WorkflowRefusal When a required string field is absent or has another type.
+     *
+     * @return array{handler: string, kind: string, method: string, module: string, path: string} Its checked fields in surface order.
+     */
+    private static function route(JsonReader $jsonReader): array
+    {
+        return [
+            'handler' => $jsonReader->string('handler'),
+            'kind' => $jsonReader->string('kind'),
+            'method' => $jsonReader->string('method'),
+            'module' => $jsonReader->string('module'),
+            'path' => $jsonReader->string('path'),
+        ];
+    }
+
+    /**
+     * @param JsonReader $jsonReader One row.
+     *
+     * @throws WorkflowRefusal When a required string field is absent or has another type.
+     *
+     * @return array{class: string, kind: string, module: string, name: string} Its checked fields in surface order.
+     */
+    private static function named(JsonReader $jsonReader): array
+    {
+        return [
+            'class' => $jsonReader->string('class'),
+            'kind' => $jsonReader->string('kind'),
+            'module' => $jsonReader->string('module'),
+            'name' => $jsonReader->string('name'),
+        ];
+    }
+
+    /**
+     * @param JsonReader $jsonReader One row.
+     *
+     * @throws WorkflowRefusal When a required string field is absent or has another type.
+     *
+     * @return array{cadence: string, job: string, module: string, name: string} Its checked fields in surface order.
+     */
+    private static function schedule(JsonReader $jsonReader): array
+    {
+        return [
+            'cadence' => $jsonReader->string('cadence'),
+            'job' => $jsonReader->string('job'),
+            'module' => $jsonReader->string('module'),
+            'name' => $jsonReader->string('name'),
+        ];
+    }
+
+    /**
+     * @param JsonReader $jsonReader One row.
+     *
+     * @throws WorkflowRefusal When a required string field is absent or has another type.
+     *
+     * @return array{class: string, type: string} Its checked fields in surface order.
+     */
+    private static function plugin(JsonReader $jsonReader): array
+    {
+        return [
+            'class' => $jsonReader->string('class'),
+            'type' => $jsonReader->string('type'),
+        ];
+    }
+
+    /**
+     * @param JsonReader $jsonReader One row.
+     *
+     * @throws WorkflowRefusal When a required string field is absent or has another type.
+     *
+     * @return array{class: string, interface: string} Its checked fields in surface order.
+     */
+    private static function binding(JsonReader $jsonReader): array
+    {
+        return [
+            'class' => $jsonReader->string('class'),
+            'interface' => $jsonReader->string('interface'),
+        ];
+    }
+
+    /**
+     * @param JsonReader $jsonReader One row.
+     *
+     * @throws WorkflowRefusal When a required string field is absent or has another type.
+     *
+     * @return array{class: string, position: string} Its checked fields in surface order.
+     */
+    private static function middleware(JsonReader $jsonReader): array
+    {
+        return [
+            'class' => $jsonReader->string('class'),
+            'position' => $jsonReader->string('position'),
+        ];
     }
 }

@@ -12,6 +12,7 @@ use AIC\Workflow\Domain\Console\InspectAnswer;
 use AIC\Workflow\Domain\Console\ParsedArguments;
 use AIC\Workflow\Domain\Console\SurfaceView;
 use Closure;
+use InvalidArgumentException;
 use Override;
 
 use function array_column;
@@ -45,6 +46,8 @@ final readonly class CommandListCommand implements Command
 
     /**
      * @param CommandInput $commandInput No arguments.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse The commands.
      */
@@ -85,8 +88,7 @@ final readonly class CommandListCommand implements Command
     /**
      * @param SurfaceView $surfaceView The surface.
      *
-     * @return array<string, array<string, string>> The workflow's commands the surface does not list, which exist only with the
-     *                                              dev-only workflow installed.
+     * @return array<string, array{class: string, kind: string, name: string, source: string, where: string}> The dev commands.
      */
     private function workflowRows(SurfaceView $surfaceView): array
     {
@@ -107,7 +109,7 @@ final readonly class CommandListCommand implements Command
     /**
      * @param SurfaceView $surfaceView The surface.
      *
-     * @return array<string, array<string, string>> The modules' and the framework's commands, which exist in production.
+     * @return array<string, array{class: string, kind: string, name: string, source: string, where: string}> The runtime commands.
      */
     private static function surfaceRows(SurfaceView $surfaceView): array
     {

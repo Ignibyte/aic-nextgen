@@ -132,7 +132,7 @@ final readonly class WikiManifest
     }
 
     /**
-     * @param list<array<string, string>> $entries Commands.
+     * @param list<array{class: string, kind: string, module: string, name: string}> $entries Commands.
      *
      * @return list<list<string>> Each one's name and class.
      */
@@ -170,10 +170,12 @@ final readonly class WikiManifest
     }
 
     /**
-     * @param list<array<string, string>> $entries Routes, commands, jobs or schedules.
-     * @param string                      $module  A module.
+     * @template T of array<string, string>
      *
-     * @return list<array<string, string>> The ones it declares, in surface order.
+     * @param list<T> $entries Routes, commands, jobs or schedules.
+     * @param string  $module  A module.
+     *
+     * @return list<T> The ones it declares, in surface order.
      */
     private static function owned(array $entries, string $module): array
     {

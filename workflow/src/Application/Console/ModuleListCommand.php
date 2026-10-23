@@ -12,6 +12,7 @@ use AIC\Workflow\Domain\Console\InspectAnswer;
 use AIC\Workflow\Domain\Console\ParsedArguments;
 use AIC\Workflow\Domain\Console\SurfaceModule;
 use AIC\Workflow\Domain\Console\SurfaceView;
+use InvalidArgumentException;
 use Override;
 
 use function array_filter;
@@ -41,6 +42,8 @@ final readonly class ModuleListCommand implements Command
 
     /**
      * @param CommandInput $commandInput No arguments.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResponse The modules.
      */
@@ -122,8 +125,8 @@ final readonly class ModuleListCommand implements Command
     }
 
     /**
-     * @param list<array<string, string>> $entries Commands or jobs.
-     * @param string                      $module  A module.
+     * @param list<array{class: string, kind: string, module: string, name: string}> $entries Commands or jobs.
+     * @param string                                                                 $module  A module.
      *
      * @return int How many of them it declares.
      */

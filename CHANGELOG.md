@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Workflow console, surface and authoring contracts** (#143, final source child of #135). Surface readers construct checked literal field shapes, carried through console and wiki output. Command flags, nullable manifest calls and AST nodes use their actual checked values; edits retain their byte order and diagnostics.
+  - Real command and installer failures are documented through existing callers. Installer ownership and agent-shell force refusals remain intact. Header separators use the actual column count, and elapsed text preserves the original numeric formatting.
+  - All 104 remaining ordinary findings are removed: the complete approved diagnostic exits 0 with zero findings. All 151 workflow expectations, 235 focused controls and 32 gates pass with zero deferrals; all 65 valid output hashes remain identical. Public gate:13 remains taint-only until #135 delivers both full-project passes.
+
 - **Workflow engine, guard and seeker contracts** (#142, second source child of #135). Checked phase snapshots, fixed-width entry rows and regex captures retain valid transitions, gate summaries, shell parsing and seeker ledger bytes. Actual exception contracts follow their existing callers.
   - Write protection preserves hard, soft and off decisions, symlink and vendor boundaries. Unreadable PHP scripts, grant versions and autoload paths refuse. Standalone rules retain strict comparisons of the gate suite's owned values.
   - All 83 scoped ordinary findings are removed; the complete report still exits 2 with 104 workflow findings for #143 and zero runtime/gates findings. All 151 workflow expectations, 153 focused controls and 32 gates pass with zero deferrals. All 65 valid build output hashes remain identical; parent #135 still owns final both-mode enforcement.

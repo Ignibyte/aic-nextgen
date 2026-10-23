@@ -8,6 +8,7 @@ use AIC\Controller\Domain\CommandResult;
 use AIC\Workflow\Domain\CodeAnswer;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Closure;
+use InvalidArgumentException;
 
 /**
  * One code lookup, end to end (#106): the index refreshed first, so no
@@ -31,6 +32,8 @@ final readonly class CodeAsk
      * @param string                $command The command.
      * @param string                $target  What it was asked about.
      * @param Closure(): CodeAnswer $answer  Answers it from the fresh index.
+     *
+     * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
      *
      * @return CommandResult The answer's lines, a note when the lookup was not recorded, and the exit.
      */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Wiki;
 
+use function array_fill;
 use function array_map;
 use function array_slice;
 use function count;
@@ -37,7 +38,7 @@ final readonly class WikiMarkdown
             return ['none'];
         }
 
-        $lines = [self::row($header), self::row(array_map(static fn (): string => '---', $header))];
+        $lines = [self::row($header), self::row(array_fill(0, count($header), '---'))];
 
         foreach (array_slice($rows, 0, self::MAX_ROWS) as $row) {
             $lines[] = self::row($row);
