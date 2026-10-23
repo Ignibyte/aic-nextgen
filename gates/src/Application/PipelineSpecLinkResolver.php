@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\RegexCaptures;
+
 use function array_unique;
 use function array_values;
 use function dirname;
 use function file_exists;
 use function mb_strpos;
-use function preg_match_all;
 use function realpath;
 use function sprintf;
 use function str_ends_with;
@@ -29,6 +30,8 @@ use function substr;
  */
 final readonly class PipelineSpecLinkResolver
 {
+    use RegexCaptures;
+
     /**
      * Validate every internal markdown link resolves to a real file.
      *
@@ -84,14 +87,13 @@ final readonly class PipelineSpecLinkResolver
      */
     private function extractTargets(string $body): array
     {
-        $count = preg_match_all('/\\[[^\\]]+\\]\\(([^)\\s]+)\\)/', $body, $matches);
+        $matches = self::regexColumn('/\\[[^\\]]+\\]\\(([^)\\s]+)\\)/', $body, 1);
 
-        if ($count === false || $count === 0) {
+        if ($matches === []) {
             return [];
         }
 
-        /** @var list<non-empty-string> $captured */
-        $captured = $matches[1];
+        $captured = $matches;
 
         return array_values(array_unique($captured));
     }

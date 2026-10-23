@@ -64,8 +64,8 @@ final readonly class MarkdownTreeWalker
         return new RecursiveIteratorIterator(
             new RecursiveCallbackFilterIterator(
                 new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS),
-                static fn (SplFileInfo $current): bool => !$current->isDir()
-                    || !self::isSkipped($current, $root, $skipDirs, $skipPaths),
+                static fn (SplFileInfo|string $current): bool => $current instanceof SplFileInfo
+                    && (!$current->isDir() || !self::isSkipped($current, $root, $skipDirs, $skipPaths)),
             ),
         );
     }

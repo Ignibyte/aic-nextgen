@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\MarkdownDocument;
+use Gates\Domain\RegexCaptures;
 
 use function implode;
 use function mb_substr_count;
-use function preg_match_all;
 use function preg_quote;
 use function sprintf;
 
@@ -19,6 +19,8 @@ use function sprintf;
  */
 final readonly class DocsWritingChecks
 {
+    use RegexCaptures;
+
     /**
      * no-ai-slop's "banned outright" list (SKILL.md, "Words to cut"), copied as it stands.
      */
@@ -69,9 +71,9 @@ final readonly class DocsWritingChecks
 
         foreach ($markdownDocument->prose() as $line => $text) {
             $dashes += mb_substr_count($text, '—');
-            preg_match_all($pattern, $text, $matches);
+            $words = self::regexColumn($pattern, $text, 1);
 
-            foreach ($matches[1] as $word) {
+            foreach ($words as $word) {
                 $findings[] = sprintf(
                     '%s:%d: "%s" is a banned word (no-ai-slop); say what it does in plain words.',
                     $markdownDocument->page,

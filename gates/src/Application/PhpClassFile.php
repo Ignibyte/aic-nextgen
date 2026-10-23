@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\RegexCaptures;
 use InvalidArgumentException;
 
 use function array_filter;
@@ -12,7 +13,6 @@ use function array_unique;
 use function array_values;
 use function count;
 use function implode;
-use function preg_match;
 use function sort;
 use function sprintf;
 use function strrpos;
@@ -30,6 +30,8 @@ use const SORT_STRING;
  */
 final readonly class PhpClassFile
 {
+    use RegexCaptures;
+
     /**
      * The most classes one class may depend on (PHPMD's coupling between objects).
      */
@@ -99,9 +101,7 @@ final readonly class PhpClassFile
      */
     private function checkFits(array $classes, string $class): void
     {
-        $name = preg_match('/class (\\w+)/', $class, $match) === 1
-            ? $match[1]
-            : 'a generated class';
+        $name = self::regexMatch('/class (\\w+)/', $class)[1] ?? 'a generated class';
 
         if (count($classes) > self::MAX_COUPLING) {
             throw new InvalidArgumentException(sprintf(

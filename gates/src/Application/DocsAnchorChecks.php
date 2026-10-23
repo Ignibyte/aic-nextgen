@@ -12,7 +12,6 @@ use function in_array;
 use function mb_strtolower;
 use function preg_replace;
 use function sprintf;
-use function str_contains;
 use function str_replace;
 
 /**
@@ -82,16 +81,20 @@ final readonly class DocsAnchorChecks
      */
     private function unanswered(string $from, string $target, array $pages): ?array
     {
-        if (!str_contains($target, '#')) {
+        $parts = explode('#', $target, 2);
+
+        if (!array_key_exists(1, $parts)) {
             return null;
         }
 
-        [$page, $anchor] = explode('#', $target, 2);
+        [$page, $anchor] = $parts;
         $page = $page === ''
             ? $from
             : $page;
 
-        return array_key_exists($page, $pages) && !in_array($anchor, $this->anchors($pages[$page]), true)
+        $document = $pages[$page] ?? null;
+
+        return $document instanceof MarkdownDocument && !in_array($anchor, $this->anchors($document), true)
             ? [$page, $anchor]
             : null;
     }

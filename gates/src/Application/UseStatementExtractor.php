@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\RegexCaptures;
+
+use function array_key_exists;
 use function array_slice;
 use function count;
 use function explode;
@@ -31,6 +34,8 @@ use const T_USE;
  */
 final readonly class UseStatementExtractor
 {
+    use RegexCaptures;
+
     /**
      * Extract every fully-qualified-name imported via a top-level `use`.
      *
@@ -162,7 +167,9 @@ final readonly class UseStatementExtractor
      */
     private function parseUseBody(string $body): array
     {
-        if (preg_match('/^([A-Za-z0-9_\\\\]+)\\\\\\{([^}]+)\\}$/', $body, $groupMatch) === 1) {
+        $groupMatch = self::regexMatch('/^([A-Za-z0-9_\\\\]+)\\\\\\{([^}]+)\\}$/', $body);
+
+        if (array_key_exists(1, $groupMatch) && array_key_exists(2, $groupMatch)) {
             return $this->parseGrouped($groupMatch[1], $groupMatch[2]);
         }
 

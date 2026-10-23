@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Gates\Domain;
 
+use function array_key_exists;
 use function explode;
 use function preg_match;
-use function preg_match_all;
 use function preg_replace;
 use function str_contains;
 use function str_starts_with;
@@ -21,6 +21,8 @@ use function trim;
  */
 final readonly class MarkdownDocument
 {
+    use RegexCaptures;
+
     /**
      * The page's lines, numbered from 1.
      *
@@ -87,9 +89,9 @@ final readonly class MarkdownDocument
         }
 
         foreach ($this->outsideFences() as $number => $line) {
-            preg_match_all('/`([^`]+)`/', $line, $matches);
+            $spans = self::regexColumn('/`([^`]+)`/', $line, 1);
 
-            foreach ($matches[1] as $span) {
+            foreach ($spans as $span) {
                 $code[] = [$number, $span];
             }
         }
@@ -105,7 +107,9 @@ final readonly class MarkdownDocument
         $headings = [];
 
         foreach ($this->outsideFences() as $number => $line) {
-            if (preg_match('/^(#{1,6})\\s+(.+?)\\s*$/', $line, $match) !== 1) {
+            $match = self::regexMatch('/^(#{1,6})\\s+(.+?)\\s*$/', $line);
+
+            if (!array_key_exists(1, $match) || !array_key_exists(2, $match)) {
                 continue;
             }
 
@@ -123,9 +127,9 @@ final readonly class MarkdownDocument
         $links = [];
 
         foreach ($this->prose() as $number => $line) {
-            preg_match_all('/\\]\\(([^)\\s]+)\\)/', $line, $matches);
+            $targets = self::regexColumn('/\\]\\(([^)\\s]+)\\)/', $line, 1);
 
-            foreach ($matches[1] as $target) {
+            foreach ($targets as $target) {
                 $links[] = [$number, $target];
             }
         }
@@ -141,10 +145,9 @@ final readonly class MarkdownDocument
         $cells = [];
 
         foreach ($this->outsideFences() as $number => $line) {
-            if (
-                preg_match('/^\\|\\s*([^|]*?)\\s*\\|/', $line, $match) !== 1
-                || preg_match('/^[-:\\s]*$/', $match[1]) === 1
-            ) {
+            $match = self::regexMatch('/^\\|\\s*([^|]*?)\\s*\\|/', $line);
+
+            if (!array_key_exists(1, $match) || preg_match('/^[-:\\s]*$/', $match[1]) === 1) {
                 continue;
             }
 

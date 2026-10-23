@@ -120,7 +120,7 @@ final readonly class PhpSourceCollector
         return new RecursiveIteratorIterator(
             new RecursiveCallbackFilterIterator(
                 new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS),
-                static fn (SplFileInfo $entry): bool => $entry->getFilename() !== 'tests',
+                static fn (SplFileInfo|string $entry): bool => $entry instanceof SplFileInfo && $entry->getFilename() !== 'tests',
             ),
         );
     }

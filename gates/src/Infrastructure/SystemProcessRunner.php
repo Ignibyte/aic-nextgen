@@ -10,6 +10,7 @@ use Gates\Domain\ProcessRunner;
 use Override;
 use RuntimeException;
 
+use function array_key_exists;
 use function bin2hex;
 use function count;
 use function fclose;
@@ -69,6 +70,10 @@ final class SystemProcessRunner implements ProcessRunner
     #[Override]
     public function run(array $command, ?string $cwd = null, array $env = []): ProcessResult
     {
+        if ($command === []) {
+            throw new RuntimeException('Cannot open an empty process command.');
+        }
+
         $envOrInherit = count($env) < 1
             ? null
             : $env;
@@ -119,7 +124,7 @@ final class SystemProcessRunner implements ProcessRunner
      * @param array<string, string>|null            $envOrInherit Resolved env (null inherits the parent's).
      * @param array{stdout: string, stderr: string} $captureFiles Tempfile paths bound to descriptors 1/2.
      *
-     * @return array{process: resource|false, pipes: array<int, resource>, captured: string}
+     * @return array{process: resource|false, pipes: array<array-key, resource>, captured: string}
      */
     private function openProcess(array $command, ?string $cwd, ?array $envOrInherit, array $captureFiles): array
     {
@@ -163,12 +168,15 @@ final class SystemProcessRunner implements ProcessRunner
      * Close stdin pipe, terminate the process, then read both capture files and remove them.
      *
      * @param resource                              $process      Handle returned by `proc_open`.
-     * @param array<int, resource>                  $pipes        Pipe handles (only descriptor 0 — stdin — is a pipe).
+     * @param array<array-key, resource>            $pipes        Pipe handles (only descriptor 0 — stdin — is a pipe).
      * @param array{stdout: string, stderr: string} $captureFiles Tempfile paths to read and clean up.
      */
     private function closeProcessAndReadCaptures(mixed $process, array $pipes, array $captureFiles): ProcessResult
     {
-        fclose($pipes[0]);
+        if (array_key_exists(0, $pipes)) {
+            fclose($pipes[0]);
+        }
+
         $exitCode = proc_close($process);
 
         $stdoutContents = file_get_contents($captureFiles['stdout']);

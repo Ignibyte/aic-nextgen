@@ -39,10 +39,13 @@ final readonly class ModuleReferenceRule implements ModuleRule
         foreach ($moduleTree->symbols as $path => $sourceSymbols) {
             $moduleDefinition = $moduleTree->moduleOf($path);
 
-            if (
-                !($moduleDefinition instanceof ModuleDefinition)
-                || !str_starts_with($path, 'modules/' . $moduleDefinition->name . '/src/')
-            ) {
+            if (!($moduleDefinition instanceof ModuleDefinition)) {
+                continue;
+            }
+
+            $name = $moduleDefinition->name;
+
+            if (!str_starts_with($path, 'modules/' . $name . '/src/')) {
                 continue;
             }
 

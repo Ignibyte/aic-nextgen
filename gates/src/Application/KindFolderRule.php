@@ -99,7 +99,7 @@ final readonly class KindFolderRule implements ModuleRule
         }
 
         return $entry === 'src'
-            ? $this->classPlace($path, $parts, $moduleTree)
+            ? $this->classPlace($path, $name, $moduleTree)
             : null;
     }
 
@@ -115,15 +115,16 @@ final readonly class KindFolderRule implements ModuleRule
     }
 
     /**
-     * @param string       $path       A file under the module's `src/`.
-     * @param list<string> $parts      Its path, split.
-     * @param ModuleTree   $moduleTree The tree, for the file's symbols.
+     * @param string     $path       A file under the module's `src/`.
+     * @param string     $name       The owning module.
+     * @param ModuleTree $moduleTree The tree, for the file's symbols.
      *
      * @return BoundaryViolation|null The breach, if the file is not its kind's class in its kind's folder.
      */
-    private function classPlace(string $path, array $parts, ModuleTree $moduleTree): ?BoundaryViolation
+    private function classPlace(string $path, string $name, ModuleTree $moduleTree): ?BoundaryViolation
     {
-        $source = 'modules/' . $parts[1] . '/src/';
+        $parts = explode('/', $path);
+        $source = 'modules/' . $name . '/src/';
         $folder = count($parts) > 4
             ? $parts[3]
             : '';

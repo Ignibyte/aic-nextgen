@@ -74,7 +74,7 @@ final readonly class ClassReferenceScanner
         $candidates = [];
 
         foreach ($tokens as $index => [$id, $text]) {
-            $previous = $tokens[$index - 1][0] ?? null;
+            $previous = $this->previousToken($tokens, $index);
             $next = $tokens[$index + 1] ?? null;
 
             $declaredNamespace = $this->namespaceName($id, $next);
@@ -93,6 +93,17 @@ final readonly class ClassReferenceScanner
         }
 
         return new SourceSymbols($declared, array_keys($candidates));
+    }
+
+    /**
+     * @param list<array{0: int|string, 1: string}> $tokens Significant tokens.
+     * @param int                                   $index  The current token's position.
+     *
+     * @return int|string|null The previous token's id, absent at the start.
+     */
+    private function previousToken(array $tokens, int $index): int|string|null
+    {
+        return $index === 0 ? null : ($tokens[$index - 1][0] ?? null);
     }
 
     /**

@@ -10,7 +10,6 @@ use Gates\Domain\GateRoots;
 use function file_get_contents;
 use function is_array;
 use function is_file;
-use function is_string;
 use function json_decode;
 
 /**
@@ -108,14 +107,9 @@ final readonly class ProjectProfile
     public function profile(string $root): GateProfile
     {
         $path = $root . '/gates/composer.json';
-        $manifest = is_file($path)
-            ? json_decode((string) file_get_contents($path), true)
-            : null;
-        $name = is_array($manifest)
-            ? $manifest['name'] ?? null
-            : null;
+        $decoded = [is_file($path) ? json_decode((string) file_get_contents($path), true) : null];
 
-        return is_string($name) && $name === 'aic/gates'
+        return is_array($decoded[0]) && ($decoded[0]['name'] ?? null) === 'aic/gates'
             ? GateProfile::Aic
             : GateProfile::App;
     }

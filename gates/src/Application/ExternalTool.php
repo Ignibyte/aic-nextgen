@@ -6,11 +6,9 @@ namespace Gates\Application;
 
 use Gates\Domain\ProcessRunner;
 
-use function array_find;
 use function fwrite;
 use function implode;
 use function is_executable;
-use function is_string;
 use function mb_trim;
 use function sprintf;
 
@@ -43,10 +41,10 @@ final readonly class ExternalTool
      */
     public function locate(string $name, array $candidates): ?string
     {
-        $local = array_find($candidates, static fn (string $candidate): bool => is_executable($candidate));
-
-        if (is_string($local)) {
-            return $local;
+        foreach ($candidates as $candidate) {
+            if (is_executable($candidate)) {
+                return $candidate;
+            }
         }
 
         $processResult = $this->processRunner->run(['/bin/sh', '-c', 'command -v ' . $name]);

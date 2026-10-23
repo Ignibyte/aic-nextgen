@@ -71,6 +71,8 @@ final readonly class RequireAllowlistGate
      * @param string   $root   Repo-root absolute path.
      * @param resource $stdout Stream success messages are written to.
      * @param resource $stderr Stream failure messages are written to.
+     *
+     * @throws JsonException When a manifest is malformed.
      */
     public function run(string $root, mixed $stdout = STDOUT, mixed $stderr = STDERR): int
     {
@@ -103,6 +105,8 @@ final readonly class RequireAllowlistGate
      *
      * @param string   $manifest Absolute path to a `composer.json`.
      * @param resource $stderr   Stream the read-failure message is written to.
+     *
+     * @throws JsonException When the manifest is malformed.
      *
      * @return list<string>|null
      */
@@ -190,8 +194,8 @@ final readonly class RequireAllowlistGate
     }
 
     /**
-     * @param string       $package  A required package.
-     * @param list<string> $patterns Patterns it may match.
+     * @param string                 $package  A required package.
+     * @param list<non-empty-string> $patterns Patterns it may match.
      *
      * @return bool Whether it matches one.
      */

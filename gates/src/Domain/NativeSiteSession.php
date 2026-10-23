@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Gates\Domain;
 
-use function preg_match;
 use function str_contains;
 use function str_ends_with;
 use function str_replace;
@@ -16,6 +15,8 @@ use function str_replace;
  */
 final class NativeSiteSession
 {
+    use RegexCaptures;
+
     /**
      * The session cookie, `name=value`; empty before the first one.
      */
@@ -110,16 +111,14 @@ final class NativeSiteSession
     }
 
     /**
-     * @param string $pattern A pattern with one group.
-     * @param string $body    A page.
-     * @param string $current The value kept so far.
+     * @param non-empty-string $pattern A pattern with one group.
+     * @param string           $body    A page.
+     * @param string           $current The value kept so far.
      *
      * @return string The group's match in the page; the kept value when it has none.
      */
     private static function captured(string $pattern, string $body, string $current): string
     {
-        return preg_match($pattern, $body, $match) === 1
-            ? $match[1]
-            : $current;
+        return self::regexMatch($pattern, $body)[1] ?? $current;
     }
 }
