@@ -12,9 +12,16 @@ declare(strict_types=1);
 
 $aicGatesRoot = getcwd();
 
-if ($aicGatesRoot === false || !is_file($aicGatesRoot . '/vendor/autoload.php')) {
+if ($aicGatesRoot === false) {
     file_put_contents('php://stderr', "aic/gates runs in the project's root, where vendor/autoload.php is.\n");
     exit(2);
 }
 
-require_once $aicGatesRoot . '/vendor/autoload.php';
+$aicGatesAutoload = $aicGatesRoot . '/vendor/autoload.php';
+
+if (!is_file($aicGatesAutoload)) {
+    file_put_contents('php://stderr', "aic/gates runs in the project's root, where vendor/autoload.php is.\n");
+    exit(2);
+}
+
+require_once $aicGatesAutoload;

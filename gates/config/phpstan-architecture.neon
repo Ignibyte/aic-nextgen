@@ -2,6 +2,9 @@
 # classes, on top of gate:8's. phpat runs only the rule classes registered here
 # with the `phpat.test` tag; a rule class that is not listed never runs. A
 # project's phpstan-architecture.neon includes its phpstan.neon and this file.
+includes:
+    - phpstan-architecture-rules.php
+
 parameters:
     phpat:
         # Count dependencies on built-in classes: PHPStan's bundled extension
@@ -10,17 +13,3 @@ parameters:
         # standard classes explicitly (Selector::isStandardClass()).
         ignore_built_in_classes: false
         show_rule_names: true
-
-services:
-    -
-        class: Gates\Architecture\CoreArchitectureTest
-        tags:
-            - phpat.test
-    -
-        class: Gates\Architecture\KindsArchitectureTest
-        tags:
-            - phpat.test
-    -
-        class: Gates\Architecture\RenderingArchitectureTest
-        tags:
-            - phpat.test

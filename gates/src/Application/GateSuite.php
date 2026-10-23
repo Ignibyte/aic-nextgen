@@ -92,7 +92,7 @@ final readonly class GateSuite
                 'phpmd',
                 '{classRoots}',
                 'text',
-                '{config}/phpmd.xml',
+                '{config}/phpmd.xml,{config}/phpmd-custom.xml',
                 '--strict',
                 '--exclude',
                 '*/modules/*/templates/*',
@@ -198,7 +198,7 @@ final readonly class GateSuite
         ],
         30 => [
             "Suite files: the tools' root configs are aic/gates' stubs (phpcs.xml.dist with one root per module), and "
-                . "composer.json carries the suite's scripts and plugins as shipped; aic-gate init restores the files.",
+                . "composer.json carries the suite's scripts and plugins; generated custom tool registrations are fresh.",
             'app',
             ['php', 'gate-suite-files.php'],
         ],

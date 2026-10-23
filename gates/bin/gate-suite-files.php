@@ -8,6 +8,8 @@ use Gates\Application\SuiteFilesGate;
 use Gates\Application\SuiteStubs;
 use Gates\Infrastructure\GatesPackage;
 use Gates\Infrastructure\ProjectRoot;
+use Gates\Phpmd\RuleRegistration;
+use Gates\Sniffs\SniffRegistration;
 
 require __DIR__ . '/project.php';
 
@@ -15,4 +17,9 @@ require __DIR__ . '/project.php';
 $root = (new ProjectRoot())->path();
 $package = (new GatesPackage())->path();
 
-exit((new SuiteFilesGate(new SuiteStubs($package), new SuiteComposer(new GateSuite($root, $package))))->run($root));
+$registrations = [
+    $package . '/config/phpcs-custom.xml' => (new SniffRegistration())->source(),
+    $package . '/config/phpmd-custom.xml' => (new RuleRegistration())->source(),
+];
+
+exit((new SuiteFilesGate(new SuiteStubs($package), new SuiteComposer(new GateSuite($root, $package)), $registrations))->run($root));

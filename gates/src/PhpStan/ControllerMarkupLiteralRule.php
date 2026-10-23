@@ -7,7 +7,7 @@ namespace Gates\PhpStan;
 use Override;
 use PhpParser\Node;
 use PhpParser\Node\InterpolatedStringPart;
-use PhpParser\Node\Scalar;
+use PhpParser\Node\Scalar as ScalarNode;
 use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
@@ -26,22 +26,22 @@ use function str_replace;
  * (`"\x3c"`) or a constant alike, since the rule reads php-parser's decoded
  * value. Markup belongs in a component's template.
  *
- * @implements Rule<scalar>
+ * @implements Rule<ScalarNode>
  */
 final readonly class ControllerMarkupLiteralRule implements Rule
 {
     /**
-     * @return class-string<Scalar> The node this rule inspects.
+     * @return class-string<ScalarNode> The node this rule inspects.
      */
     #[Override]
     public function getNodeType(): string
     {
-        return Scalar::class;
+        return ScalarNode::class;
     }
 
     /**
-     * @param Scalar $node  A literal.
-     * @param Scope  $scope Where it is.
+     * @param ScalarNode $node  A literal.
+     * @param Scope      $scope Where it is.
      *
      * @return list<IdentifierRuleError> One error when a controller's string holds `<`.
      */
@@ -70,18 +70,18 @@ final readonly class ControllerMarkupLiteralRule implements Rule
     }
 
     /**
-     * @param Scalar $scalar A literal.
+     * @param ScalarNode $scalarNode A literal.
      *
      * @return bool Whether its decoded text, or one of its interpolation's parts, holds `<`.
      */
-    private static function holdsMarkup(Scalar $scalar): bool
+    private static function holdsMarkup(ScalarNode $scalarNode): bool
     {
-        if ($scalar instanceof String_) {
-            return str_contains($scalar->value, '<');
+        if ($scalarNode instanceof String_) {
+            return str_contains($scalarNode->value, '<');
         }
 
-        return $scalar instanceof InterpolatedString && array_any(
-            $scalar->parts,
+        return $scalarNode instanceof InterpolatedString && array_any(
+            $scalarNode->parts,
             static fn (Node $part): bool => $part instanceof InterpolatedStringPart && str_contains($part->value, '<'),
         );
     }

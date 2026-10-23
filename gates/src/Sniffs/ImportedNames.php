@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Gates\Sniffs;
 
+use Gates\Domain\RegexCaptures;
 use PHP_CodeSniffer\Files\File;
 
+use function array_key_exists;
 use function is_int;
-use function preg_match;
 use function str_starts_with;
 use function strlen;
 use function strrchr;
@@ -27,6 +28,8 @@ use const T_USE;
  */
 final readonly class ImportedNames
 {
+    use RegexCaptures;
+
     /**
      * @param File   $phpcsFile    The file.
      * @param string $name         A name as written, such as `Page`, `Contracts\Page` or `\AIC\Controller\Contracts\Page`.
@@ -110,7 +113,9 @@ final readonly class ImportedNames
      */
     private static function import(string $statement): array
     {
-        if (preg_match('/^\\\\?([A-Za-z_][\\w\\\\]*)(?:\\s+as\\s+(\\w+))?$/i', $statement, $match) !== 1) {
+        $match = self::regexMatch('/^\\\\?([A-Za-z_][\\w\\\\]*)(?:\\s+as\\s+(\\w+))?$/i', $statement);
+
+        if (!array_key_exists(1, $match)) {
             return [];
         }
 

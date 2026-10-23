@@ -7,6 +7,7 @@ namespace Gates\Sniffs\Functions;
 use Gates\Domain\KindMethods;
 use Gates\Sniffs\ImportedNames;
 use Override;
+use PHP_CodeSniffer\Exceptions\RuntimeException;
 use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
@@ -40,6 +41,8 @@ final readonly class KindAwareUnusedParameterSniff implements Sniff
     /**
      * @param File  $phpcsFile The file.
      * @param mixed $stackPtr  The function's token; PHPCS's interface leaves it untyped.
+     *
+     * @throws RuntimeException When PHPCS cannot read the class declaration.
      */
     #[Override]
     public function process(File $phpcsFile, mixed $stackPtr): void
@@ -54,6 +57,8 @@ final readonly class KindAwareUnusedParameterSniff implements Sniff
     /**
      * @param File $phpcsFile       The file.
      * @param int  $functionPointer A function's token.
+     *
+     * @throws RuntimeException When PHPCS cannot read the class declaration.
      *
      * @return bool Whether it is a named method (not a closure or an arrow function) that implements a kind
      *              interface's method.
@@ -76,6 +81,8 @@ final readonly class KindAwareUnusedParameterSniff implements Sniff
     /**
      * @param File $phpcsFile    The file.
      * @param int  $classPointer A class keyword.
+     *
+     * @throws RuntimeException When PHPCS cannot read the class declaration.
      *
      * @return list<string> The full names of the interfaces the class's `implements` names.
      */

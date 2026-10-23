@@ -22,6 +22,17 @@ the package's, so `init` again after `composer update` brings them back in step.
 the app's own requests from `config/native-site.json`: one step a line, each the method, path,
 form, extra header and status both sites must answer alike. A new route adds its step.
 
+The base NEON files include PHP configs that register the actual PHPStan rules and tagged
+architecture services. PHPat's attributed callables return every named architecture rule. PHPCS
+and PHPMD read custom XML generated from their custom classes. AIC's source build writes those
+two package files; an app consumes them without writing its installed package. gate:30 compares
+them with their writers in both profiles. Missing or stale package XML requires a rebuilt or
+reinstalled package; `aic-gate init` restores the app's root stubs.
+
+Root Rector configs call the package's typed setup with their own root and paths. Psalm's
+bootstrap loads PHPCS's installed autoloader and token definitions, since PHPCS does not expose
+those declarations through Composer's class map.
+
 ## The rules every gate shares
 
 - **No baselines and no suppressions.** A finding is fixed in the source. No baseline file, no
@@ -69,7 +80,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 27 | raw html | every `RawHtml` use is listed and matches its grant in `config/raw-html.php` | use a component; or grant the use with its reason |
 | 28 | house rules | *AIC only*: the workflow's shipped rules bite on their probes | not run in an app |
 | 29 | architecture docs | *AIC only*: these pages state what the code has | not run in an app |
-| 30 | suite files | the tools' root configs are aic/gates' stubs (`phpcs.xml.dist` with one root per module), and `composer.json` carries the suite's scripts and plugins as shipped | `vendor/bin/aic-gate init`, and paste the composer.json lines it prints |
+| 30 | suite files | root configs match the stubs, composer scripts/plugins match the suite, and custom PHPCS/PHPMD XML matches its writers | `vendor/bin/aic-gate init` for root stubs; rebuild or reinstall a stale package |
 | 31 | make scaffold | *AIC only*: `modules/scaffold/` is what the ten `bin/aic make:*` lines make, byte for byte, and `make:module` prints the lines the build asks for | not run in an app |
 
 ## The gates that need more than PHP

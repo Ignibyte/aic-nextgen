@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Architecture;
 
 use PHPat\Selector\Selector;
+use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 
@@ -21,13 +22,31 @@ use PHPat\Test\PHPat;
 final class CoreArchitectureTest
 {
     /**
+     * @return array<string, Rule> Every architecture rule under its existing name.
+     */
+    #[TestRule]
+    public function __invoke(): array
+    {
+        return [
+            'testApplicationUsesNoVendorClassBeyondPsr' => $this->testApplicationUsesNoVendorClassBeyondPsr(),
+            'testClassesAreFinalOrAbstract' => $this->testClassesAreFinalOrAbstract(),
+            'testDomainDoesNotDependOnInfrastructure' => $this->testDomainDoesNotDependOnInfrastructure(),
+            'testNothingDependsOnSwoole' => $this->testNothingDependsOnSwoole(),
+            'testRuntimeDoesNotDependOnGates' => $this->testRuntimeDoesNotDependOnGates(),
+            'testRuntimeDoesNotDependOnModuleContracts' => $this->testRuntimeDoesNotDependOnModuleContracts(),
+            'testRuntimeDoesNotDependOnTheWorkflow' => $this->testRuntimeDoesNotDependOnTheWorkflow(),
+            'testTheWorkflowUsesOnlyTheCommandKind' => $this->testTheWorkflowUsesOnlyTheCommandKind(),
+        ];
+    }
+
+    /**
      * Every concrete class in `AIC\` is `final`, or `abstract` when it is
      * designed for extension. Interfaces, traits and enums are not classes in
      * this sense and are left out.
      *
      * @return Rule The rule.
      */
-    public function testClassesAreFinalOrAbstract(): Rule
+    private function testClassesAreFinalOrAbstract(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::inNamespace('AIC'))
@@ -47,7 +66,7 @@ final class CoreArchitectureTest
      *
      * @return Rule The rule.
      */
-    public function testDomainDoesNotDependOnInfrastructure(): Rule
+    private function testDomainDoesNotDependOnInfrastructure(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::inNamespace('/^AIC\\\\[^\\\\]+\\\\Domain(\\\\.*)?$/', true))
@@ -65,7 +84,7 @@ final class CoreArchitectureTest
      *
      * @return Rule The rule.
      */
-    public function testApplicationUsesNoVendorClassBeyondPsr(): Rule
+    private function testApplicationUsesNoVendorClassBeyondPsr(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::inNamespace('/^AIC\\\\[^\\\\]+\\\\Application(\\\\.*)?$/', true))
@@ -87,7 +106,7 @@ final class CoreArchitectureTest
      *
      * @return Rule The rule.
      */
-    public function testRuntimeDoesNotDependOnGates(): Rule
+    private function testRuntimeDoesNotDependOnGates(): Rule
     {
         return PHPat::rule()
             ->classes(
@@ -106,7 +125,7 @@ final class CoreArchitectureTest
      *
      * @return Rule The rule.
      */
-    public function testRuntimeDoesNotDependOnTheWorkflow(): Rule
+    private function testRuntimeDoesNotDependOnTheWorkflow(): Rule
     {
         return PHPat::rule()
             ->classes(
@@ -126,7 +145,7 @@ final class CoreArchitectureTest
      *
      * @return Rule The rule.
      */
-    public function testTheWorkflowUsesOnlyTheCommandKind(): Rule
+    private function testTheWorkflowUsesOnlyTheCommandKind(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::inNamespace('AIC\\Workflow'))
@@ -150,7 +169,7 @@ final class CoreArchitectureTest
      *
      * @return Rule The rule.
      */
-    public function testRuntimeDoesNotDependOnModuleContracts(): Rule
+    private function testRuntimeDoesNotDependOnModuleContracts(): Rule
     {
         return PHPat::rule()
             ->classes(
@@ -170,7 +189,7 @@ final class CoreArchitectureTest
      *
      * @return Rule The rule.
      */
-    public function testNothingDependsOnSwoole(): Rule
+    private function testNothingDependsOnSwoole(): Rule
     {
         return PHPat::rule()
             ->classes(

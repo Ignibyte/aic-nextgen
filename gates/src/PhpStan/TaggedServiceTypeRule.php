@@ -19,6 +19,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 use function array_any;
+use function array_key_exists;
 use function count;
 use function sprintf;
 
@@ -63,6 +64,11 @@ final readonly class TaggedServiceTypeRule implements Rule
         }
 
         $args = $node->getArgs();
+
+        if (!array_key_exists(0, $args) || !array_key_exists(1, $args)) {
+            return [];
+        }
+
         $type = self::className($args[0], $scope);
         $service = self::className($args[1], $scope);
 

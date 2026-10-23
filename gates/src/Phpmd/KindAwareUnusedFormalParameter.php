@@ -6,6 +6,7 @@ namespace Gates\Phpmd;
 
 use Gates\Domain\KindMethods;
 use Override;
+use PDepend\Source\AST\AbstractASTClassOrInterface;
 use PDepend\Source\AST\ASTClass;
 use PHPMD\AbstractNode;
 use PHPMD\Node\ClassNode;
@@ -67,9 +68,27 @@ final class KindAwareUnusedFormalParameter extends UnusedFormalParameter
         $interfaces = [];
 
         foreach ($astClass->getInterfaces() as $interface) {
-            $interfaces[] = $interface->getNamespacedName();
+            $name = self::interfaceName($interface);
+
+            if ($name === '') {
+                continue;
+            }
+
+            $interfaces[] = $name;
         }
 
         return (new KindMethods())->isKindMethod($interfaces, $methodNode->getName() ?? '');
+    }
+
+    /**
+     * @param AbstractASTClassOrInterface|false $interface The iterator's native result, including its end marker.
+     *
+     * @return string The resolved interface name, or empty when the iterator has no current value.
+     */
+    private static function interfaceName(AbstractASTClassOrInterface|false $interface): string
+    {
+        return $interface === false
+            ? ''
+            : $interface->getNamespacedName();
     }
 }

@@ -10,6 +10,7 @@ parameters:
     # mid-run lost the dead-code detector's files (#74).
     tmpDir: .phpstan-cache/main
     paths:
+        - rector.php
         - framework/src
         - modules
         - generated

@@ -12,8 +12,9 @@ require __DIR__ . '/project.php';
 
 $root = (new ProjectRoot())->path();
 
-$home = is_string($_SERVER['HOME'] ?? null)
-    ? $_SERVER['HOME']
+$homeSetting = getenv('HOME');
+$home = is_string($homeSetting)
+    ? $homeSetting
     : '';
 
 exit((new GitleaksGate(new ExternalTool(new SystemProcessRunner()), (new GatesPackage())->path(), $home))->run($root));

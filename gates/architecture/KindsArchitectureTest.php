@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Architecture;
 
 use PHPat\Selector\Selector;
+use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 
@@ -18,11 +19,24 @@ use PHPat\Test\PHPat;
 final class KindsArchitectureTest
 {
     /**
+     * @return array<string, Rule> Every architecture rule under its existing name.
+     */
+    #[TestRule]
+    public function __invoke(): array
+    {
+        return [
+            'testAppEntryPointsAreKinds' => $this->testAppEntryPointsAreKinds(),
+            'testNoClassIsTwoKinds' => $this->testNoClassIsTwoKinds(),
+            'testResponsesAreSealed' => $this->testResponsesAreSealed(),
+        ];
+    }
+
+    /**
      * No class implements two kinds.
      *
      * @return Rule The rule.
      */
-    public function testNoClassIsTwoKinds(): Rule
+    private function testNoClassIsTwoKinds(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::AtLeastCountOf(
@@ -43,7 +57,7 @@ final class KindsArchitectureTest
      *
      * @return Rule The rule.
      */
-    public function testAppEntryPointsAreKinds(): Rule
+    private function testAppEntryPointsAreKinds(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::inNamespace('App'))
@@ -59,7 +73,7 @@ final class KindsArchitectureTest
      *
      * @return Rule The rule.
      */
-    public function testResponsesAreSealed(): Rule
+    private function testResponsesAreSealed(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::AllOf(

@@ -2,6 +2,7 @@
 <!-- Typed config files propagate failures to the HTTP/CLI startup boundary.
      Global-scope exception checking cannot model those includes; method exception contracts remain checked. -->
 <psalm
+    autoloader="vendor/aic/gates/config/psalm-autoload.php"
     errorLevel="1"
     findUnusedCode="true"
     findUnusedVariablesAndParams="true"
