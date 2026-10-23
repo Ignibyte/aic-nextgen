@@ -41,6 +41,7 @@ final readonly class InstallPreflight
      * @param PackLockStore $packLockStore The lock.
      * @param InstallHost   $installHost   The project around the pack.
      * @param ManagedRegion $managedRegion The regions' markers.
+     * @param string        $lockPath      The selected client's lock.
      */
     public function __construct(
         private PackSource $packSource,
@@ -49,6 +50,7 @@ final readonly class InstallPreflight
         private PackLockStore $packLockStore,
         private InstallHost $installHost,
         private ManagedRegion $managedRegion,
+        private string $lockPath = '.claude/aic-workflow.lock',
     ) {
     }
 
@@ -104,7 +106,7 @@ final readonly class InstallPreflight
 
         foreach ($installForce->paths as $path) {
             if (!$this->owns($packFiles, $path)) {
-                throw new WorkflowRefusal('--force=' . $path . ' names no file init owns; .claude/aic-workflow.lock lists them.');
+                throw new WorkflowRefusal('--force=' . $path . ' names no file init owns; ' . $this->lockPath . ' lists them.');
             }
         }
     }

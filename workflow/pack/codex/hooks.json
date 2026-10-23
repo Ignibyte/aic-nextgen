@@ -1,0 +1,81 @@
+{
+  "description": "AIC workflow scope and native independent-review callbacks.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$(git rev-parse --show-toplevel)\"; s=\"$p/{vendor}/aic/workflow/bin/aic-codex-guard.sh\"; test -x \"$s\" || { printf '%s\\n' '{\"systemMessage\":\"The installed AIC lifecycle guard is missing. No review receipt counts.\"}'; exit 0; }; exec bash \"$s\" start",
+            "timeout": 30,
+            "statusMessage": "Check AIC workflow"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$(git rev-parse --show-toplevel)\"; s=\"$p/{vendor}/aic/workflow/bin/aic-codex-guard.sh\"; test -x \"$s\" || { printf '%s\\n' '{\"systemMessage\":\"The installed AIC lifecycle guard is missing. No review receipt counts.\"}'; exit 0; }; exec bash \"$s\" start",
+            "timeout": 30,
+            "statusMessage": "Check AIC workflow"
+          }
+        ],
+        "matcher": ".*"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$(git rev-parse --show-toplevel)\"; s=\"$p/{vendor}/aic/workflow/bin/aic-codex-guard.sh\"; test -x \"$s\" || { printf '%s\\n' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"The installed AIC guard is missing.\"}}'; exit 0; }; exec bash \"$s\" pre",
+            "timeout": 30,
+            "statusMessage": "Check AIC workflow"
+          }
+        ],
+        "matcher": ".*"
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$(git rev-parse --show-toplevel)\"; s=\"$p/{vendor}/aic/workflow/bin/aic-codex-guard.sh\"; test -x \"$s\" || { printf '%s\\n' '{\"systemMessage\":\"The installed AIC lifecycle guard is missing. No review receipt counts.\"}'; exit 0; }; exec bash \"$s\" returned",
+            "timeout": 30,
+            "statusMessage": "Check AIC workflow"
+          }
+        ],
+        "matcher": ".*"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$(git rev-parse --show-toplevel)\"; s=\"$p/{vendor}/aic/workflow/bin/aic-codex-guard.sh\"; test -x \"$s\" || { printf '%s\\n' '{\"systemMessage\":\"The installed AIC lifecycle guard is missing. No review receipt counts.\"}'; exit 0; }; exec bash \"$s\" stop",
+            "timeout": 30,
+            "statusMessage": "Check AIC workflow"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$(git rev-parse --show-toplevel)\"; s=\"$p/{vendor}/aic/workflow/bin/aic-codex-guard.sh\"; test -x \"$s\" || { printf '%s\\n' '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"deny\",\"message\":\"The installed AIC guard is missing.\"}}}'; exit 0; }; exec bash \"$s\" permission",
+            "timeout": 30,
+            "statusMessage": "Check AIC workflow approval"
+          }
+        ],
+        "matcher": ".*"
+      }
+    ]
+  }
+}

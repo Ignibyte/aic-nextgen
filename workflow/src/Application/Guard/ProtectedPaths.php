@@ -28,7 +28,10 @@ final readonly class ProtectedPaths
     /**
      * The project's protected files, named whole in a word; its protected directories are named with their slash.
      */
-    private const array FILES = ['config/workflow.php', '.claude/settings.json', '.claude/settings.local.json'];
+    private const array FILES = [
+        'config/workflow.php', '.claude/settings.json', '.claude/settings.local.json',
+        '.codex/config.toml', '.codex/hooks.json',
+    ];
 
     /**
      * Why a file of the pack is protected (#105).
@@ -154,8 +157,10 @@ final readonly class ProtectedPaths
     {
         $entries = [
             $this->package => "the workflow package is the operator's: it changes in its own repository.",
+            $this->root . '/.agents' => "Installed agent instructions are the operator's.",
             $this->root . '/.claude/settings.json' => "the hook wiring is the operator's.",
             $this->root . '/.claude/settings.local.json' => "the hook wiring is the operator's.",
+            $this->root . '/.codex' => "Codex control files are the operator's.",
             $this->root . '/config/workflow.php' => 'config/workflow.php holds the levers: the operator changes it.',
             $this->root . '/var/index' => 'var/index/ is the code index: only bin/aic code:* and the engine write it (#118).',
             $this->root . '/var/workflow' => "var/workflow/ is the run's state: only the engine writes it, through bin/aic workflow:*.",
@@ -167,13 +172,20 @@ final readonly class ProtectedPaths
 
         $entries = [...$entries, ...$this->ruled($guardScene)];
 
+        return [...$entries, ...$this->globalEntries()];
+    }
+
+    /** @return array<string,string> Protected global client controls. */
+    private function globalEntries(): array
+    {
         return $this->home === ''
-            ? $entries
+            ? []
             : [
-            ...$entries,
+            $this->home . '/.agents' => "Global agent instructions are the operator's.",
             $this->home . '/.claude.json' => "Claude Code's global settings are the operator's.",
             $this->home . '/.claude/plugins' => "Claude Code's plugins are the operator's.",
             $this->home . '/.claude/settings.json' => "Claude Code's global settings are the operator's.",
+            $this->home . '/.codex' => "Codex global controls are the operator's.",
         ];
     }
 

@@ -24,6 +24,9 @@ if (($argv[1] ?? '') !== 'strip' || ($argv[2] ?? '') === '') {
 $package = $argv[2];
 $own = '#workflow/(src|bin|rules|probes|composer\\.json)#';
 
+$readme = str_replace('(workflow/', '(vendor/aic/workflow/', (string) file_get_contents('README.md'));
+file_put_contents('README.md', $readme);
+
 $neon = (string) file_get_contents('phpstan.neon');
 $neon = (string) preg_replace('#^(\\s*- )workflow/(src|bin|rules|probes/sweep)$#m', '$1' . $package . '/workflow/$2', $neon);
 file_put_contents('phpstan.neon', $neon);

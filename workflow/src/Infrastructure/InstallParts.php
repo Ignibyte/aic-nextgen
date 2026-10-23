@@ -12,6 +12,7 @@ use AIC\Workflow\Application\PackFileStep;
 use AIC\Workflow\Application\PackInstaller;
 use AIC\Workflow\Application\PackPlanner;
 use AIC\Workflow\Application\PackRegionStep;
+use AIC\Workflow\Domain\WorkflowClient;
 use Override;
 
 /**
@@ -35,28 +36,27 @@ final readonly class InstallParts implements InstallContext
     }
 
     /**
+     * @param WorkflowClient $workflowClient The selected client.
+     *
      * @return PackInstaller The installer.
      */
     #[Override]
-    public function packInstaller(): PackInstaller
+    public function packInstaller(WorkflowClient $workflowClient = WorkflowClient::Claude): PackInstaller
     {
-        $packageFiles = new PackageFiles(self::PACKAGE, $this->composerManifest()->vendorDir());
-        $localProjectFiles = new LocalProjectFiles($this->root);
+        $installFiles = new InstallFiles($this->root, self::PACKAGE, $this->composerManifest()->vendorDir(), $workflowClient);
         $packPlanner = new PackPlanner();
         $managedRegion = new ManagedRegion();
-        $claudeSettingsFile = new ClaudeSettingsFile($localProjectFiles, $packageFiles);
-        $packLockFile = new PackLockFile($localProjectFiles);
         $installHost = $this->installHost();
 
         return new PackInstaller(
-            new InstallPreflight($packageFiles, $localProjectFiles, $claudeSettingsFile, $packLockFile, $installHost, $managedRegion),
-            $packageFiles,
+            $this->preflight($installFiles, $installHost, $managedRegion),
+            $installFiles->packageFiles(),
             $installHost,
-            new PackFileStep($packageFiles, $localProjectFiles, $packPlanner),
-            new PackRegionStep($packageFiles, $localProjectFiles, $packPlanner, $managedRegion),
-            $claudeSettingsFile,
-            $localProjectFiles,
-            $packLockFile,
+            new PackFileStep($installFiles->packageFiles(), $installFiles->projectFiles(), $packPlanner),
+            new PackRegionStep($installFiles->packageFiles(), $installFiles->projectFiles(), $packPlanner, $managedRegion),
+            $installFiles->hookWiring(),
+            $installFiles->projectFiles(),
+            $installFiles->packLockFile(),
         );
     }
 
@@ -75,5 +75,28 @@ final readonly class InstallParts implements InstallContext
     private function composerManifest(): ComposerManifest
     {
         return new ComposerManifest($this->root, self::PACKAGE);
+    }
+
+    /**
+     * @param InstallFiles  $installFiles  The selected client files and wiring.
+     * @param InstallHost   $installHost   The project host.
+     * @param ManagedRegion $managedRegion The shared region parser.
+     *
+     * @return InstallPreflight The complete preflight before any write.
+     */
+    private function preflight(
+        InstallFiles $installFiles,
+        InstallHost $installHost,
+        ManagedRegion $managedRegion,
+    ): InstallPreflight {
+        return new InstallPreflight(
+            $installFiles->packageFiles(),
+            $installFiles->projectFiles(),
+            $installFiles->hookWiring(),
+            $installFiles->packLockFile(),
+            $installHost,
+            $managedRegion,
+            $installFiles->lockPath(),
+        );
     }
 }

@@ -6,8 +6,13 @@ namespace AIC\Workflow\Infrastructure;
 
 use AIC\Workflow\Domain\PackFile;
 use AIC\Workflow\Domain\PackRole;
+use AIC\Workflow\Domain\WorkflowClient;
 
+use function array_filter;
 use function array_map;
+use function array_unique;
+use function array_values;
+use function str_starts_with;
 
 /**
  * The one list of what `workflow:init` installs (#105, Droost's
@@ -51,6 +56,11 @@ final readonly class PackManifest
         'commands/aic/workflow/status.md',
     ];
 
+    /** @param WorkflowClient $workflowClient The installed client. */
+    public function __construct(private WorkflowClient $workflowClient = WorkflowClient::Claude)
+    {
+    }
+
     /**
      * @param string $tickets The project's ticket directory.
      *
@@ -59,13 +69,20 @@ final readonly class PackManifest
      */
     public function files(string $tickets): array
     {
-        return [
-            ...array_map(static fn (string $path): PackFile => new PackFile('claude/' . $path, '.claude/' . $path), self::CLAUDE),
+        $files = [
+            ...$this->agentFiles(),
             new PackFile('config/workflow.php', 'config/workflow.php', PackRole::WriteOnce),
             new PackFile('tickets/README.md', $tickets . '/README.md'),
-            new PackFile('agents-block.md', 'AGENTS.md', PackRole::Region),
-            new PackFile('claude-block.md', 'CLAUDE.md', PackRole::Region),
+            new PackFile(
+                $this->workflowClient === WorkflowClient::Codex ? 'codex/agents-block.md' : 'agents-block.md',
+                'AGENTS.md',
+                PackRole::Region,
+            ),
         ];
+
+        return $this->workflowClient === WorkflowClient::Claude
+            ? [...$files, new PackFile('claude-block.md', 'CLAUDE.md', PackRole::Region)]
+            : $files;
     }
 
     /**
@@ -74,17 +91,13 @@ final readonly class PackManifest
      */
     public function guarded(): array
     {
-        $guarded = [];
+        $guarded = [self::SETTINGS, '.claude/settings.local.json', '.codex/hooks.json', '.codex/config.toml'];
 
-        foreach ($this->files('') as $packFile) {
-            if ($packFile->source === 'tickets/README.md') {
-                continue;
-            }
-
-            $guarded[] = $packFile->destination;
+        foreach ([WorkflowClient::Claude, WorkflowClient::Codex] as $workflowClient) {
+            $guarded = [...$guarded, ...$this->guardedFiles($workflowClient)];
         }
 
-        return [...$guarded, self::LOCK];
+        return array_values(array_unique($guarded));
     }
 
     /**
@@ -92,6 +105,53 @@ final readonly class PackManifest
      */
     public function hooks(): PackFile
     {
-        return new PackFile(self::HOOKS, self::SETTINGS);
+        return new PackFile($this->workflowClient === WorkflowClient::Claude ? self::HOOKS : 'codex/hooks.json', $this->settings());
+    }
+
+    /** @return string The selected client's hook file. */
+    public function settings(): string
+    {
+        return $this->workflowClient === WorkflowClient::Claude
+            ? self::SETTINGS
+            : '.codex/hooks.json';
+    }
+
+    /** @return string The selected client's committed ownership lock. */
+    public function lock(): string
+    {
+        return $this->workflowClient === WorkflowClient::Claude
+            ? self::LOCK
+            : '.codex/aic-workflow.lock';
+    }
+
+    /**
+     * @param WorkflowClient $workflowClient The client whose files are protected.
+     *
+     * @return list<string> Its lock and protected destinations.
+     */
+    private function guardedFiles(WorkflowClient $workflowClient): array
+    {
+        $packManifest = new self($workflowClient);
+        $files = array_values(array_filter(
+            $packManifest->files(''),
+            static fn (PackFile $packFile): bool => $packFile->source !== 'tickets/README.md',
+        ));
+
+        return [$packManifest->lock(), ...array_map(static fn (PackFile $packFile): string => $packFile->destination, $files)];
+    }
+
+    /** @return list<PackFile> The selected client's instructions and role. */
+    private function agentFiles(): array
+    {
+        if ($this->workflowClient === WorkflowClient::Claude) {
+            return array_map(static fn (string $path): PackFile => new PackFile('claude/' . $path, '.claude/' . $path), self::CLAUDE);
+        }
+
+        $skills = array_values(array_filter(self::CLAUDE, static fn (string $path): bool => str_starts_with($path, 'skills/')));
+
+        return [
+            ...array_map(static fn (string $path): PackFile => new PackFile('claude/' . $path, '.agents/' . $path), $skills),
+            new PackFile('codex/agents/aic-seeker.toml', '.codex/agents/aic-seeker.toml'),
+        ];
     }
 }
