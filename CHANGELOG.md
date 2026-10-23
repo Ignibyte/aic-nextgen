@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Bounded workflow timeouts** (#137). One monotonic deadline covers command startup, input and execution. The runner verifies an isolated POSIX process group before launch, allows up to 250ms for termination, then forces that group to stop and drains output for up to another 250ms before reaping.
+  - Nonblocking input/output prevents blocked input or closed output from bypassing the deadline. Actual exit codes, complete observed output and normal background server startup are preserved. The workflow package now declares `ext-posix`; a command deliberately starting a different session is outside this process-group boundary.
+  - The timeout scenario now measures elapsed calls and owned worker identities, checks private pipe inheritance and an unrelated sentinel, and replaces global process matching. All 151 workflow expectations and 32 gates pass without deferrals.
+
 - **Gate reader boundaries and contracts** (#138, first part of #134). Gate readers validate regex captures, JSON members, filesystem entries, response headers and process pipes before using them, and document the exceptions that escape. Empty process commands now refuse before capture files are allocated.
   - Shared private traits keep capture and string-collection checks consistent. Diagnostic messages, module checks and complete separate process output are preserved.
   - Complete ordinary Psalm removes 85 gate-tool findings: runtime and all 39 source files in this ticket are clear. The report still exposes 98 gate and 275 workflow findings and exits 2; #139, #140 and #135 remain open. The existing 32 gates and the full 143-check workflow replay pass.

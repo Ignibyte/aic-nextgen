@@ -1,0 +1,151 @@
+<?php
+
+declare(strict_types=1);
+
+/* Existing workflow probe evidence, not an additional test runner. Workers are finite. */
+
+use AIC\Workflow\Infrastructure\LocalProcess;
+
+function identity(int $pid): ?array
+{
+    $file = '/proc/' . $pid . '/stat';
+    // A process may exit between existence and read; open its stat inode once.
+    set_error_handler(static fn (): bool => true);
+    try {
+        $stream = fopen($file, 'r');
+    } finally {
+        restore_error_handler();
+    }
+    if (!is_resource($stream)) {
+        return null;
+    }
+    $stat = stream_get_contents($stream);
+    fclose($stream);
+    $fields = explode(' ', substr($stat, strrpos($stat, ') ') + 2));
+
+    return ['state' => $fields[0], 'start' => $fields[19], 'parent' => $fields[1], 'group' => $fields[2], 'session' => $fields[3]];
+}
+
+function workers(string $receipt, string $nonce): array
+{
+    $rows = [];
+    foreach (file($receipt, FILE_IGNORE_NEW_LINES) ?: [] as $line) {
+        $fields = explode(' ', $line);
+        if (count($fields) !== 7 || $fields[0] !== $nonce) {
+            throw new RuntimeException('Malformed owned worker receipt.');
+        }
+        $rows[] = ['role' => $fields[1], 'pid' => (int) $fields[2], 'start' => $fields[3],
+            'parent' => $fields[4], 'group' => $fields[5], 'session' => $fields[6]];
+    }
+
+    return $rows;
+}
+
+function surviving(array $rows): array
+{
+    $states = [];
+    foreach ($rows as $row) {
+        $current = identity($row['pid']);
+        if ($current !== null && $current['start'] === $row['start']) {
+            $states[] = $row['role'] . ':' . $current['state'];
+        }
+    }
+
+    return $states;
+}
+
+function cleanup(array $rows): void
+{
+    foreach ($rows as $row) {
+        $current = identity($row['pid']);
+        if ($current !== null && $current['start'] === $row['start'] && $current['state'] !== 'Z') {
+            posix_kill($row['pid'], 9);
+        }
+    }
+}
+
+$mode = $argv[1] ?? '';
+if ($mode === 'sentinel-worker') {
+    if (posix_setsid() < 1) {
+        exit(70);
+    }
+    $own = identity(getmypid());
+    file_put_contents($argv[2] . '.writing', json_encode(['pid' => getmypid(), ...$own], JSON_THROW_ON_ERROR));
+    rename($argv[2] . '.writing', $argv[2]);
+    sleep(8);
+    exit(0);
+}
+
+require getcwd() . '/vendor/autoload.php';
+
+$nonce = bin2hex(random_bytes(12));
+$directory = getcwd() . '/var/probe05';
+$receipt = $directory . '/' . $mode . '-' . $nonce . '.pids';
+file_put_contents($receipt, '');
+$sentinel = null;
+$sentinelRow = null;
+$rows = [];
+$pass = false;
+
+try {
+    if ($mode === 'sentinel') {
+        $sentinelFile = $directory . '/' . $nonce . '.sentinel';
+        $sentinel = proc_open([PHP_BINARY, __FILE__, 'sentinel-worker', $sentinelFile],
+            [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']], $pipes, sys_get_temp_dir());
+        $ready = hrtime(true) + 1_000_000_000;
+        while (!is_file($sentinelFile) && hrtime(true) < $ready) {
+            usleep(10_000);
+        }
+        $sentinelRow = json_decode(file_get_contents($sentinelFile), true, flags: JSON_THROW_ON_ERROR);
+        if (!is_resource($sentinel) || $sentinelRow['group'] !== (string) $sentinelRow['pid']) {
+            throw new RuntimeException('Independent sentinel did not establish ownership.');
+        }
+    }
+
+    $command = match ($mode) {
+        'clean' => [PHP_BINARY, '-r', '$parent=posix_getppid(); $private=[readlink("/proc/$parent/fd/3"),readlink("/proc/$parent/fd/4")]; '
+            . 'foreach(glob("/proc/self/fd/*") as $fd) { if((int)basename($fd)>4 && is_link($fd) && in_array(readlink($fd),$private,true)) exit(71); } '
+            . 'echo "stdout"; fwrite(STDERR,"stderr");'],
+        'nonzero' => [PHP_BINARY, '-r', 'echo "exit23"; exit(23);'],
+        'large' => [PHP_BINARY, '-r', 'fwrite(STDOUT,str_repeat("O",180000)); fwrite(STDERR,str_repeat("E",190000));'],
+        default => ['bash', $directory . '/process-tree.sh', $mode, $receipt, $nonce],
+    };
+    $timed = !in_array($mode, ['clean', 'nonzero', 'large'], true);
+    $start = hrtime(true);
+    $result = (new LocalProcess(getcwd()))->run($command, $timed ? 1 : 3, $mode === 'input' ? str_repeat('I', 2_097_152) : '');
+    $elapsed = (hrtime(true) - $start) / 1_000_000_000;
+    $rows = workers($receipt, $nonce);
+    $states = surviving($rows);
+    $running = array_filter($states, static fn (string $state): bool => !str_ends_with($state, ':Z'));
+    $roles = array_column($rows, 'role');
+    $required = in_array($mode, ['grandchild', 'early'], true) ? ['root', 'leaf', 'sleeper'] : ['root', 'sleeper'];
+    $observed = !$timed || array_diff($required, $roles) === [];
+    $exit = $timed ? 124 : ($mode === 'nonzero' ? 23 : 0);
+    $bytes = match ($mode) {
+        'clean' => strlen($result->output) === 12 && str_contains($result->output, 'stdout') && str_contains($result->output, 'stderr'),
+        'nonzero' => $result->output === 'exit23',
+        'large' => strlen($result->output) === 370_000 && substr_count($result->output, 'O') === 180_000
+            && substr_count($result->output, 'E') === 190_000,
+        default => str_contains($result->output, 'ready-' . $nonce),
+    };
+    $sentinelAlive = true;
+    // A sleeping sentinel can change R/S state while remaining the same owned live process.
+    if ($sentinelRow !== null) {
+        $current = identity($sentinelRow['pid']);
+        $sentinelAlive = $current !== null && $current['start'] === $sentinelRow['start'] && $current['state'] !== 'Z';
+    }
+    $pass = $result->exitCode === $exit && $elapsed < 2.5 && $observed && $running === [] && $bytes && $sentinelAlive;
+    echo json_encode(['mode' => $mode, 'exit' => $result->exitCode, 'elapsed' => $elapsed, 'bytes' => strlen($result->output),
+        'roles' => $roles, 'states' => $states, 'sentinelAlive' => $sentinelAlive, 'pass' => $pass], JSON_THROW_ON_ERROR), "\n";
+} finally {
+    // Evidence first; cleanup can never turn a surviving worker into a passing observation.
+    cleanup(workers($receipt, $nonce));
+    if ($sentinelRow !== null) {
+        cleanup([$sentinelRow]);
+    }
+    if (is_resource($sentinel)) {
+        proc_close($sentinel);
+    }
+}
+
+exit($pass ? 0 : 1);
