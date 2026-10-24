@@ -53,6 +53,8 @@ final readonly class ProbeSweep
      * @param list<string> $names   The scenarios, in order.
      * @param bool         $keep    Whether a failing scenario's app is kept.
      *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
+     *
      * @return ProbeTally Every expectation, counted.
      */
     public function sweep(string $scratch, array $names, bool $keep): ProbeTally
@@ -72,6 +74,8 @@ final readonly class ProbeSweep
      * @param string $scratch Where its app is made.
      * @param string $name    The scenario.
      * @param bool   $keep    Whether its app is kept when it fails.
+     *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
      *
      * @return list<ProbeLine> Its lines.
      */
@@ -102,10 +106,11 @@ final readonly class ProbeSweep
      * @param list<ProbeLine> $lines    Its lines.
      * @param bool            $keep     Whether its app is kept when it failed.
      * @param float           $started  When it started.
+     *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
      */
     private function finish(ProbeApp $probeApp, string $name, array $lines, bool $keep, float $started): void
     {
-        $this->probeServer->stop($probeApp);
         $this->probeFiles->evidence($name, 'events.jsonl', $this->probeFiles->read($probeApp, 'var/workflow/events.jsonl') ?? '');
         $kept = $keep && array_any($lines, static fn (ProbeLine $probeLine): bool => $probeLine->probeVerdict !== ProbeVerdict::Pass);
 
@@ -121,6 +126,8 @@ final readonly class ProbeSweep
      * @param ProbeApp      $probeApp      The app.
      * @param string        $name          The scenario.
      * @param ProbeScenario $probeScenario Its steps.
+     *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
      *
      * @return list<ProbeLine> Its steps' lines, or not-run lines when it needs a database that does not answer.
      */
@@ -139,6 +146,10 @@ final readonly class ProbeSweep
             return $lines;
         }
 
-        return $this->probeSteps->run($probeApp, $name, $probeScenario);
+        try {
+            return $this->probeSteps->run($probeApp, $name, $probeScenario);
+        } finally {
+            $this->probeServer->stop($probeApp);
+        }
     }
 }

@@ -6,12 +6,14 @@ namespace AIC\Workflow\Infrastructure\Probe;
 
 use AIC\Workflow\Application\Probe\ProbeFiles;
 use AIC\Workflow\Domain\Probe\ProbeApp;
+use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 use function dirname;
 use function file_get_contents;
 use function file_put_contents;
 use function glob;
+use function hash;
 use function is_array;
 use function is_dir;
 use function is_file;
@@ -19,8 +21,13 @@ use function is_link;
 use function is_readable;
 use function is_string;
 use function mkdir;
+use function pathinfo;
 use function preg_replace;
+use function strlen;
+use function substr;
 use function unlink;
+
+use const PATHINFO_EXTENSION;
 
 /**
  * A scenario's files, written as the operator (#119), and the evidence in
@@ -29,6 +36,11 @@ use function unlink;
  */
 final readonly class LocalProbeFiles implements ProbeFiles
 {
+    /**
+     * Leave room below the filesystem's usual 255-byte component limit.
+     */
+    private const int NAME_BYTES = 200;
+
     /**
      * @param string $evidence This repository's `var/probe`, absolute.
      */
@@ -84,12 +96,17 @@ final readonly class LocalProbeFiles implements ProbeFiles
      * @param string $scenario The scenario.
      * @param string $file     The evidence's name; anything but letters, digits, `.` and `-` becomes `-`.
      * @param string $bytes    What it holds.
+     *
+     * @throws WorkflowRefusal When the evidence cannot be written completely.
      */
     #[Override]
     public function evidence(string $scenario, string $file, string $bytes): void
     {
-        $name = preg_replace('/[^A-Za-z0-9.-]+/', '-', $file);
-        $this->put($this->evidence . '/' . $scenario . '/' . (is_string($name) ? $name : 'evidence'), $bytes);
+        $path = $this->evidence . '/' . $scenario . '/' . $this->name($file);
+
+        if (!$this->put($path, $bytes)) {
+            throw new WorkflowRefusal('probe evidence could not be written completely to ' . $path . '.');
+        }
     }
 
     /**
@@ -110,6 +127,30 @@ final readonly class LocalProbeFiles implements ProbeFiles
     }
 
     /**
+     * @param string $file The complete evidence label.
+     *
+     * @return string Its sanitized name, bounded with the complete label's hash when long.
+     */
+    private function name(string $file): string
+    {
+        $sanitized = preg_replace('/[^A-Za-z0-9.-]+/', '-', $file);
+        $name = is_string($sanitized)
+            ? $sanitized
+            : 'evidence';
+
+        if (strlen($name) <= self::NAME_BYTES) {
+            return $name;
+        }
+
+        $extension = pathinfo($name, PATHINFO_EXTENSION);
+        $suffix = $extension !== '' && strlen($extension) <= 16
+            ? '.' . $extension
+            : '';
+
+        return substr($name, 0, self::NAME_BYTES - 65 - strlen($suffix)) . '-' . hash('sha256', $file) . $suffix;
+    }
+
+    /**
      * @param string $absolute A file.
      * @param string $bytes    What it holds.
      *
@@ -119,6 +160,6 @@ final readonly class LocalProbeFiles implements ProbeFiles
     {
         $folder = dirname($absolute);
 
-        return (is_dir($folder) || mkdir($folder, 0o775, true)) && file_put_contents($absolute, $bytes) !== false;
+        return (is_dir($folder) || mkdir($folder, 0o775, true)) && file_put_contents($absolute, $bytes) === strlen($bytes);
     }
 }

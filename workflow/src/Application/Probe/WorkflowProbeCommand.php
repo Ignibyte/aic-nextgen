@@ -58,6 +58,7 @@ final readonly class WorkflowProbeCommand implements Command
      * @param CommandInput $commandInput The line.
      *
      * @throws InvalidArgumentException When the response exit code is outside 0 to 255.
+     * @throws WorkflowRefusal          When probe evidence cannot be written completely.
      *
      * @return CommandResponse The tally; exit 0 only when every expectation passed, 1 otherwise, 2 refused.
      */

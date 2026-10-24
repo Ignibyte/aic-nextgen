@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Complete workflow probe evidence** (#55 prerequisite). Keep short diagnostic filenames unchanged and bound long names to200 bytes with a readable prefix and the complete label's SHA-256. Store the full output without truncation, including binary and empty payloads.
+  - Refuse failed or partial writes explicitly. Stop the owned scenario server before an exceptional step returns, preserve its original failure and scratch diagnostics, and release the workflow lock.
+  - All14 storage controls,5 live-process cleanup cases,41 focused expectations and all171 default workflow expectations pass. Final cache-cleared32 gates and both full-project Psalm modes pass.
+
 - **Workflow failure diagnostics and inspection recovery** (#144, #145). Add read-only `workflow:logs` with exact selectors, full stored output, JSON metadata and explicit line windows. Retain all observed per-gate and abnormal aggregate output. Schema 4 records capture provenance and leaves historical completeness unknown.
   - Allow the first independent inspection after prerequisite recovery. Unchanged actionable repeats, ordinary faults and retry limits retain their holds.
   - The dependency checker recognizes namespaced internal classes through their actual required extension without user autoload. The existing import policy requires ordinary imports for PHP's Pdo namespace; both import rules remain enabled.
