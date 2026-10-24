@@ -11,6 +11,7 @@ use AIC\Workflow\Domain\Probe\ProbeStep;
 use AIC\Workflow\Domain\Probe\SeekerStep;
 use AIC\Workflow\Domain\Probe\ServeStep;
 use AIC\Workflow\Domain\Probe\StopStep;
+use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 use function json_encode;
@@ -56,6 +57,8 @@ final readonly class ProbeHookSteps implements ProbeStepRunner
      * @param string    $step      The step's name.
      * @param ProbeStep $probeStep The step.
      *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
+     *
      * @return list<ProbeLine>|null Its lines; null when it is not one of this family's.
      */
     #[Override]
@@ -75,6 +78,8 @@ final readonly class ProbeHookSteps implements ProbeStepRunner
      * @param string    $scenario  The scenario.
      * @param string    $step      The step's name.
      * @param GuardStep $guardStep The call.
+     *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
      *
      * @return ProbeLine Whether the guard exited as expected and said what it should.
      */

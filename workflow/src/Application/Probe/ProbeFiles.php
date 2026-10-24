@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Workflow\Application\Probe;
 
 use AIC\Workflow\Domain\Probe\ProbeApp;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
  * Files in a scenario's app, written as the operator (#119), and the sweep's
@@ -42,6 +43,8 @@ interface ProbeFiles
      * @param string $scenario The scenario.
      * @param string $file     The evidence's file name, such as `03-workflow-run.json`.
      * @param string $bytes    What it holds.
+     *
+     * @throws WorkflowRefusal When the evidence cannot be written completely.
      */
     public function evidence(string $scenario, string $file, string $bytes): void;
 

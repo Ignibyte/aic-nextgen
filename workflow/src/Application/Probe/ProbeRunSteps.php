@@ -12,6 +12,7 @@ use AIC\Workflow\Domain\Probe\ProbeStep;
 use AIC\Workflow\Domain\Probe\RunAnswer;
 use AIC\Workflow\Domain\Probe\RunStep;
 use AIC\Workflow\Domain\ProcessResult;
+use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 use function count;
@@ -49,6 +50,8 @@ final readonly class ProbeRunSteps implements ProbeStepRunner
      * @param string    $step      The step's name.
      * @param ProbeStep $probeStep The step.
      *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
+     *
      * @return list<ProbeLine>|null Its lines; null when it is not one of this family's.
      */
     #[Override]
@@ -67,6 +70,8 @@ final readonly class ProbeRunSteps implements ProbeStepRunner
      * @param string   $scenario The scenario.
      * @param string   $step     The step's name.
      * @param RunStep  $runStep  The call.
+     *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
      *
      * @return list<ProbeLine> The outcome's line, then one per expected row.
      */
@@ -97,6 +102,8 @@ final readonly class ProbeRunSteps implements ProbeStepRunner
      * @param string      $scenario    The scenario.
      * @param string      $step        The step's name.
      * @param CommandStep $commandStep The command.
+     *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
      *
      * @return ProbeLine Whether it exited as expected.
      */
@@ -149,6 +156,8 @@ final readonly class ProbeRunSteps implements ProbeStepRunner
      * @param string        $scenario      The scenario.
      * @param string        $step          The step's name.
      * @param ProcessResult $processResult What it printed.
+     *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
      */
     private function keep(string $scenario, string $step, ProcessResult $processResult): void
     {

@@ -9,6 +9,7 @@ use AIC\Workflow\Domain\Probe\ProbeLine;
 use AIC\Workflow\Domain\Probe\ProbeScenario;
 use AIC\Workflow\Domain\Probe\ProbeStep;
 use AIC\Workflow\Domain\Probe\ProbeVerdict;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function array_any;
 use function array_slice;
@@ -38,6 +39,8 @@ final readonly class ProbeSteps
      * @param string        $scenario      The scenario.
      * @param ProbeScenario $probeScenario Its steps.
      *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
+     *
      * @return list<ProbeLine> Every expectation's line.
      */
     public function run(ProbeApp $probeApp, string $scenario, ProbeScenario $probeScenario): array
@@ -66,6 +69,8 @@ final readonly class ProbeSteps
      * @param string    $scenario  The scenario.
      * @param string    $step      The step's name.
      * @param ProbeStep $probeStep The step.
+     *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
      *
      * @return list<ProbeLine> Its expectations' lines.
      */

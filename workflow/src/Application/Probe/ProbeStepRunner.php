@@ -7,6 +7,7 @@ namespace AIC\Workflow\Application\Probe;
 use AIC\Workflow\Domain\Probe\ProbeApp;
 use AIC\Workflow\Domain\Probe\ProbeLine;
 use AIC\Workflow\Domain\Probe\ProbeStep;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
  * One family of the sweep's steps (#119): the plants, the engine's and the
@@ -20,6 +21,8 @@ interface ProbeStepRunner
      * @param string    $scenario  The scenario.
      * @param string    $step      The step's name.
      * @param ProbeStep $probeStep The step.
+     *
+     * @throws WorkflowRefusal When probe evidence cannot be written completely.
      *
      * @return list<ProbeLine>|null Its expectations' lines; null when it is not a step this family runs.
      */
