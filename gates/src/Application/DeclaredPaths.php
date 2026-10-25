@@ -63,7 +63,7 @@ final readonly class DeclaredPaths
      *
      * @throws InvalidArgumentException When the folder contains a link or an unreadable entry.
      *
-     * @return list<string> Its authored tpl sources in deterministic order; never a template selection mechanism.
+     * @return list<string> Its authored candidates in deterministic order; never a template selection mechanism.
      */
     public function templates(string $folder): array
     {
@@ -117,7 +117,7 @@ final readonly class DeclaredPaths
      *
      * @throws InvalidArgumentException When the directory cannot be read or contains a link.
      *
-     * @return list<string> The recursively observed tpl sources.
+     * @return list<string> The recursively observed authored candidates.
      */
     private function under(string $folder): array
     {
@@ -143,7 +143,7 @@ final readonly class DeclaredPaths
      *
      * @throws InvalidArgumentException When an entry is linked or not a regular file or directory.
      *
-     * @return list<string> Its tpl source or descendant tpl sources.
+     * @return list<string> Its authored candidate or descendant candidates.
      */
     private function entry(string $relative): array
     {
@@ -158,8 +158,22 @@ final readonly class DeclaredPaths
             throw new InvalidArgumentException($relative . ': template entries must be regular files or directories.');
         }
 
-        return str_ends_with(strtolower($relative), '.tpl.php')
+        return $this->candidate($relative)
             ? [$relative]
             : [];
+    }
+
+    /**
+     * @param string $relative A project-relative regular file, independent of the project's directory name.
+     *
+     * @return bool Whether it has a template suffix or is PHP inside an authored template folder.
+     */
+    private function candidate(string $relative): bool
+    {
+        $lower = strtolower($relative);
+
+        return str_ends_with($lower, '.tpl.php') || str_ends_with($lower, '.html.php')
+            || str_ends_with($lower, '.php')
+                && preg_match('#^(?:modules/[^/]+/templates/|themes/[^/]+/layouts/|templates/)#', $relative) === 1;
     }
 }

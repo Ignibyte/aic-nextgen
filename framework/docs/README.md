@@ -25,6 +25,13 @@ Read the first three before you plan a change; the rest when the change touches 
 5. [gates.md](gates.md): every quality gate, what it checks, what a failure means and the usual
    fix.
 
+6. [rendering.md](rendering.md): Components as data, layouts, regions, blocks, the Renderer and RawHtml grants.
+7. [templates.md](templates.md): explicit template identities, restricted PHP, type escaping and compiled output.
+8. [tessera.md](tessera.md): markers, targeted replies, forms, streams, props and pinned browser resources.
+9. [security.md](security.md): sessions, form guard, signed values, redirects, uploads, authentication and secrets.
+10. [native.md](native.md): the compiled pool server, concrete source types, class closure cache and PHP oracle.
+11. [workflow.md](workflow.md): installed engine, phases, guard, rules, review, code index, commands and recovery.
+
 ## Where things are
 
 | What | Where an app sees it |

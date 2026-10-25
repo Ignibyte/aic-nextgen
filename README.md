@@ -26,7 +26,7 @@ They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs
 | `modules/` | The fixture app, `aic/app`: four modules, `modules/<name>/<name>.module.php` (its manifest) and `src/` (`App\<Name>\`) |
 | `generated/` | The wiring `composer run build` writes from the manifests (`App\Generated\`); never edited by hand |
 | `docs/wiki/` | The code wiki `composer run build` writes from the surface and the code index: an index and a page per module; never edited by hand (notes go in `modules/<m>/README.md`) |
-| `templates/layouts/` | The page layouts' templates |
+| `themes/<name>/layouts/` | Declared HTML/page template sources |
 | `bootstrap/serve.php` | Serves one request: the wiring, the request in, the response out; compiled into the site or run under PHP |
 | `public/index.php` | The interpreted entry (php-fpm in DDEV, `php -S`): the autoloader, then `serve.php` |
 | `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
@@ -90,13 +90,13 @@ composer run gate:8         # one gate alone (gate:0 to gate:31)
 composer run gate:21        # the native gate: every runtime class through elephc
 ```
 
-The gates are static analysis only: PHPStan level 10, both ordinary and taint Psalm analysis, PHPMD, PHPCS,
-Pint, Rector, Deptrac and phpat for the architecture, semgrep, gitleaks and the composer checks.
+The gates combine PHPStan level 10, both full Psalm passes, style, architecture and security
+checks with native class probes and fresh whole-site comparisons against PHP.
 Runtime, gate-tooling and workflow source repairs are complete (#133–#135). Gate:13 now requires
 both full-project Psalm passes to succeed. A failing ordinary result cannot be hidden by a
 clean taint result, and either process error fails the gate.
-A component template (`*.html.php`) is plain PHP read only; gate:25 holds it to that grammar, and
-the class tools skip it. `composer run build` compiles it into a class beside its component, which
+A declared component template (`*.tpl.php`) is plain PHP read only; gate:25 holds it to that grammar, and
+the class tools skip authored sources. `composer run build` compiles it under `generated/templates/`, which
 every gate checks, and writes the lookup the Renderer finds each component's template through: a
 page is components, and only the Renderer turns them into HTML.
 The native gate compiles every runtime class with [elephc](https://github.com/illegalstudio/elephc),

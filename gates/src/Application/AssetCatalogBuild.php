@@ -44,7 +44,7 @@ final readonly class AssetCatalogBuild
     /**
      * @param list<ModuleDefinition> $modules        The modules in dependency order.
      * @param array<string, string>  $tesseraOutputs Verified pinned release bytes by absolute public output path.
-     * @param ThemeBinding|null      $themeBinding   The selected theme, absent for bounded legacy apps.
+     * @param ThemeBinding|null      $themeBinding   The selected theme, absent when the app selects no theme.
      *
      * @throws InvalidArgumentException When declarations, paths, roles or output identities collide or are invalid.
      * @throws JsonException            When inventory metadata cannot be encoded.

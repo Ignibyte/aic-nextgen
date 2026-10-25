@@ -44,22 +44,29 @@ final readonly class ArchitectureDocsGate
     /**
      * The pages the checks read, beside any others the README lists.
      */
-    private const array REQUIRED = ['README.md', 'kinds.md', 'systems.md', 'modules.md', 'gates.md'];
+    private const array REQUIRED = [
+        'README.md', 'kinds.md', 'systems.md', 'modules.md', 'gates.md', 'conventions.md',
+        'rendering.md', 'templates.md', 'tessera.md', 'security.md', 'native.md', 'workflow.md',
+    ];
 
     /**
+     * @param list<string>        $workflowCommands    Actual command names from the CLI composition root.
      * @param QuietFileReader     $quietFileReader     Reads the pages and the manifests.
      * @param DocsInventoryChecks $docsInventoryChecks D1, D2, D4.
      * @param DocsKindChecks      $docsKindChecks      D3, D5.
      * @param DocsAnchorChecks    $docsAnchorChecks    D7.
      * @param DocsWritingChecks   $docsWritingChecks   D9.
+     * @param DocsPageChecks      $docsPageChecks      Public API, type, header, runtime and command inventories.
      * @param ClassKinds          $classKinds          The entry kinds and the module folders.
      */
     public function __construct(
+        private array $workflowCommands,
         private QuietFileReader $quietFileReader = new QuietFileReader(),
         private DocsInventoryChecks $docsInventoryChecks = new DocsInventoryChecks(),
         private DocsKindChecks $docsKindChecks = new DocsKindChecks(),
         private DocsAnchorChecks $docsAnchorChecks = new DocsAnchorChecks(),
         private DocsWritingChecks $docsWritingChecks = new DocsWritingChecks(),
+        private DocsPageChecks $docsPageChecks = new DocsPageChecks(),
         private ClassKinds $classKinds = new ClassKinds(),
     ) {
     }
@@ -140,6 +147,7 @@ final readonly class ArchitectureDocsGate
             ...$this->docsKindChecks->kinds(self::page($pages, 'kinds.md'), $this->classKinds->entryKinds()),
             ...$this->docsKindChecks->folders(self::page($pages, 'modules.md'), ClassKinds::FOLDERS),
             ...$this->docsKindChecks->declarations(self::page($pages, 'modules.md'), self::declarations()),
+            ...$this->docsPageChecks->check($pages, $this->workflowCommands),
         ];
     }
 

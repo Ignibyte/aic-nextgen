@@ -24,7 +24,7 @@ use const STDOUT;
 
 /**
  * Gate #25: the plain PHP template grammar (#96, part 1 of #88). Every
- * `*.html.php` under the grammar's roots is validated; each refused construct
+ * authored candidate is matched to its declaration; each refused construct
  * is one line, sorted by path and line. It defers, named, when no template
  * exists.
  */
@@ -109,9 +109,7 @@ final readonly class TemplateGrammarGate
 
         foreach ($templates as $template) {
             $source = $this->quietFileReader->read($root . '/' . $template);
-            $found = $source === null
-                ? [$this->unreadable($template)]
-                : $this->templateValidator->violations($template, $source, $bindings[$template] ?? null);
+            $found = $this->sourceViolations($template, $source, $bindings[$template] ?? null);
             $violations = [...$violations, ...$found];
         }
 
@@ -124,11 +122,32 @@ final readonly class TemplateGrammarGate
     }
 
     /**
+     * @param string               $path            The audited authored candidate.
+     * @param string|null          $source          Its bytes, null when unreadable.
+     * @param TemplateBinding|null $templateBinding Its actual declaration, absent for a refused candidate.
+     *
+     * @return list<TemplateViolation> Read/declaration refusals, or the declared source's grammar violations.
+     */
+    private function sourceViolations(string $path, ?string $source, ?TemplateBinding $templateBinding): array
+    {
+        return match (true) {
+            $source === null => [$this->unreadable($path)],
+            $templateBinding === null => [new TemplateViolation(
+                $path,
+                1,
+                TemplateRefusal::Placement,
+                'authored templates require an explicit ModuleTemplate or ModuleTheme declaration for a portable .tpl.php source',
+            )],
+            default => $this->templateValidator->violations($path, $source, $templateBinding),
+        };
+    }
+
+    /**
      * @param string $root The project or grammar plant folder.
      *
      * @throws InvalidArgumentException When real module declarations or their sources are invalid.
      *
-     * @return array<string, TemplateBinding> Explicit bindings, absent for manifest-free legacy grammar plants.
+     * @return array<string, TemplateBinding> Explicit bindings; a candidate with no declaration is refused.
      */
     private function bindings(string $root): array
     {

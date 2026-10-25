@@ -88,4 +88,5 @@ These are not entry points; each has a contract or a name suffix and a folder of
 A class of none of these kinds is plain, and sits in `src/Entity/`, `src/Service/` or
 `src/Form/`. A component's declared `*.tpl.php` source lives in
 `modules/<name>/templates/components/`; the build compiles it into `generated/templates/`.
-The reference app retains bounded legacy `*.html.php` inputs until its migration completes.
+Every authored source needs an explicit declaration; unsupported old sources are refused.
+See [rendering.md](rendering.md) and [templates.md](templates.md) for the complete page contract.

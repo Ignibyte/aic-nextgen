@@ -27,7 +27,7 @@ use function var_export;
 /** Generate the selected theme and the inert presentation catalogs it consumes. */
 final readonly class WebPresentationSource
 {
-    /** The legacy-compatible catalog factory. */
+    /** The catalog factory for an app with no selected theme. */
     private const string SOURCE = <<<'PHP'
         final readonly class Presentation
         {

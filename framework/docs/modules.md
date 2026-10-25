@@ -127,8 +127,8 @@ relative to their module, under `templates/components/`. The typing line names t
 ```
 
 Only declared `.tpl.php` files are selected. Missing, duplicate, foreign, unclaimed, linked or
-nonportable sources fail the build before publication. gate:25 checks these sources and the
-bounded legacy `.html.php` sources against the same restricted PHP grammar: no new functions,
+nonportable sources fail the build before publication. gate:25 audits authored candidates, refuses unclaimed and unsupported inputs, and checks declared
+sources against the restricted PHP grammar: no new functions,
 calls or runtime includes. Static types determine automatic escaping.
 
 The site module selects one `AIC\Module\Contracts\ModuleTheme`:
@@ -160,8 +160,7 @@ The build audits nested generated outputs, removes orphans and checks freshness 
 
 The reference app declares every component source and its selected HTML/page theme. All compiled
 templates are under `generated/templates/`; historical compiler-owned module companions are
-audited and retired by the builder. The compiler still has a temporary old-input API while its
-remaining compatibility code is removed.
+audited and retired by the builder. Reader, compiler and lookup require explicit bindings; no old-input or companion-name fallback remains.
 
 ## Generate authored rendering files
 
@@ -169,7 +168,7 @@ With the workflow development package installed, use `bin/aic make:component <mo
 or `bin/aic make:page <module> <Class> <path>`. Both create lower-kebab `.tpl.php` sources and
 add their `ModuleTemplate` declarations to the owning manifest. `--export` adds the component's
 export in the same edit. A page's `--component=<Class>` reuses a declared local component and
-adds only its route; a legacy component needs an explicit declaration before reuse.
+adds only its route; an undeclared component needs an explicit mapping before reuse.
 
 For a site module without a selected theme or an existing layout service, run
 `bin/aic make:theme <name>`. It creates typed page-region data, the HTML/page templates under

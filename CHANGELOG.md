@@ -6,6 +6,21 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **Declared rendering contracts and architecture** (#149, #120, #121). Reader, compiler,
+  emitter and lookup require explicit identities. The shared link-safe source audit refuses
+  unsupported and unclaimed inputs before publication. Authored components ending in Template
+  remain visible in pairing, wiki and scaffold checks; generated classes remain in class tools.
+  - Six new app-facing guides cover rendering, templates, Tessera, security, native execution
+    and workflow. All twelve pages and README links are required. Method names, string constants,
+    enum cases and development commands are checked against actual source inventories.
+  - Final AIC32 gates and both full Psalm passes pass, with446 runtime classes and86 fresh site
+    comparisons; complete workflow186/0/0. The installed-workflow source fixture passes30 gates
+    and all446 classes freshly. A normal package-only App profile passes28 gates, both full Psalm,
+    all163 app classes freshly and86 site steps. Each compiled desktop/mobile browser flow passes22
+    checks. Its actual build preserves all14343 vendor/package files. Original runtime/template/
+    public asset bytes are unchanged; the earlier native/session issue remains open without a repair claim.
+
+
 - **Declared reference theme migration, part A** (#149). Every reference component uses an
   explicit `.tpl.php` mapping. The selected theme declares the former root CSS in the same
   cascade order. The old layout is removed, and the builder audits and retires its historical

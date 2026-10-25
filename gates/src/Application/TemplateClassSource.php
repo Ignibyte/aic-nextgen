@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use Gates\Domain\TemplateBinding;
 
+use function lcfirst;
 use function max;
 use function str_contains;
 use function str_pad;
@@ -17,29 +18,21 @@ use function substr;
 final readonly class TemplateClassSource
 {
     /**
-     * @param string               $component       The typed input's imported short class name.
-     * @param string               $variable        Its lower-camel template variable.
-     * @param bool                 $takesPass       Whether rendering writes children through the shared pass.
-     * @param string               $parts           The compiled part methods.
-     * @param TemplateBinding|null $templateBinding The explicit generated identity, absent for a legacy input.
+     * @param TemplateBinding $templateBinding The sole input and output identity.
+     * @param bool            $takesPass       Whether rendering writes children through the shared pass.
+     * @param string          $parts           The compiled part methods.
      *
      * @return string The declaration and render method through the start of its body.
      */
     public function opening(
-        string $component,
-        string $variable,
+        TemplateBinding $templateBinding,
         bool $takesPass,
         string $parts,
-        ?TemplateBinding $templateBinding,
     ): string {
-        $source = $templateBinding->source ?? $component . '.html.php';
-        $class = $templateBinding === null
-            ? $component . 'Template'
-            : substr($templateBinding->templateClass, (int) strrpos($templateBinding->templateClass, '\\') + 1);
-
-        $provenance = $templateBinding === null
-            ? $component . "'s markup, compiled from " . $source
-            : $component . "'s markup, compiled from\n * " . $source;
+        $component = substr($templateBinding->component, (int) strrpos($templateBinding->component, '\\') + 1);
+        $variable = lcfirst($component);
+        $class = substr($templateBinding->templateClass, (int) strrpos($templateBinding->templateClass, '\\') + 1);
+        $provenance = $component . "'s markup, compiled from\n * " . $templateBinding->source;
 
         return "/**\n * " . $provenance
             . " by composer run build (#97, #98):\n * edit the template and run composer run build, never this file.\n */\n"
