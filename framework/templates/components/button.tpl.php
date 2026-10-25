@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\Button $button */ ?>
+<button<?php if ($button->id !== ''): ?> id="<?= $button->id ?>"<?php endif ?><?php if ($button->type !== ''): ?> type="<?= $button->type ?>"<?php endif ?> class="aic-button"><?= $button->label ?></button>

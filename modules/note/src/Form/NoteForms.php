@@ -63,7 +63,7 @@ final readonly class NoteForms
             new Button('Save', 'submit', ''),
         ];
 
-        return new Form('note-form', $action, $fields, $this->formTokens->issue($serverRequest));
+        return new Form('note-form', $action, $fields, $this->formTokens->issue($serverRequest)->value());
     }
 
     /**
@@ -94,6 +94,6 @@ final readonly class NoteForms
     {
         $fields = [$this->noteEnvelope->field($path), new Button('Delete', 'submit', 'delete')];
 
-        return new Form('', $path . '/delete', $fields, $this->formTokens->issue($serverRequest));
+        return new Form('', $path . '/delete', $fields, $this->formTokens->issue($serverRequest)->value());
     }
 }

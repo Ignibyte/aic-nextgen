@@ -174,6 +174,6 @@ final readonly class DeclaredPaths
 
         return str_ends_with($lower, '.tpl.php') || str_ends_with($lower, '.html.php')
             || str_ends_with($lower, '.php')
-                && preg_match('#^(?:modules/[^/]+/templates/|themes/[^/]+/layouts/|templates/)#', $relative) === 1;
+                && preg_match('#^(?:modules/[^/]+/templates/|themes/[^/]+/layouts/|templates/|framework/templates/)#', $relative) === 1;
     }
 }

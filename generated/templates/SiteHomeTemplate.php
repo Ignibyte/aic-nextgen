@@ -30,21 +30,15 @@ final readonly class SiteHomeTemplate
      */
     public function render(Home $home, RenderPass $renderPass): string
     {
-        return $this->part9($home, $renderPass);
+        return $this->part8($home, $renderPass);
     }
 
     /**
-     * @param HomeDemo $homeDemo A loop's variable.
-     *
      * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
-    private function part0(HomeDemo $homeDemo): string
+    private function part0(): string
     {
-        return '<a class="aic-link" href="'
-            . self::text($homeDemo->path)
-            . '" data-enhance="off">'
-            . self::text($homeDemo->label)
-            . '</a>';
+        return ' data-enhance="off"';
     }
 
     /**
@@ -54,27 +48,15 @@ final readonly class SiteHomeTemplate
      */
     private function part1(HomeDemo $homeDemo): string
     {
-        return '<a class="aic-link" href="'
+        return '<li><a class="aic-link" href="'
             . self::text($homeDemo->path)
-            . '">'
-            . self::text($homeDemo->label)
-            . '</a>';
-    }
-
-    /**
-     * @param HomeDemo $homeDemo A loop's variable.
-     *
-     * @return string Markup from modules/site/templates/components/home.tpl.php.
-     */
-    private function part2(HomeDemo $homeDemo): string
-    {
-        return '<li>'
-            . '<!--t:b-->'
+            . '"'
             . ($homeDemo->plain
-                ? $this->part0($homeDemo)
-                : $this->part1($homeDemo))
-            . '<!--/t:b-->'
-            . '</li>';
+                ? $this->part0()
+                : '')
+            . '>'
+            . self::text($homeDemo->label)
+            . '</a></li>';
     }
 
     /**
@@ -82,12 +64,12 @@ final readonly class SiteHomeTemplate
      *
      * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
-    private function part3(Home $home): string
+    private function part2(Home $home): string
     {
         $markup = '';
 
         foreach ($home->demos as $homeDemo) {
-            $markup .= $this->part2($homeDemo);
+            $markup .= $this->part1($homeDemo);
         }
 
         return $markup;
@@ -98,7 +80,7 @@ final readonly class SiteHomeTemplate
      *
      * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
-    private function part4(HomeFact $homeFact): string
+    private function part3(HomeFact $homeFact): string
     {
         return '<dt>'
             . self::text($homeFact->term)
@@ -114,12 +96,12 @@ final readonly class SiteHomeTemplate
      *
      * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
-    private function part5(Home $home): string
+    private function part4(Home $home): string
     {
         $markup = '';
 
         foreach ($home->facts as $homeFact) {
-            $markup .= $this->part4($homeFact);
+            $markup .= $this->part3($homeFact);
         }
 
         return $markup;
@@ -130,7 +112,7 @@ final readonly class SiteHomeTemplate
      *
      * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
-    private function part6(string $pair): string
+    private function part5(string $pair): string
     {
         return '<li>'
             . self::text($pair)
@@ -142,12 +124,12 @@ final readonly class SiteHomeTemplate
      *
      * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
-    private function part7(Home $home): string
+    private function part6(Home $home): string
     {
         $markup = '';
 
         foreach ($home->query as $pair) {
-            $markup .= $this->part6($pair);
+            $markup .= $this->part5($pair);
         }
 
         return $markup;
@@ -161,7 +143,7 @@ final readonly class SiteHomeTemplate
      *
      * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
-    private function part8(Home $home, RenderPass $renderPass): string
+    private function part7(Home $home, RenderPass $renderPass): string
     {
         return '<!--/t:b-->'
             . '</ul>'
@@ -176,19 +158,19 @@ final readonly class SiteHomeTemplate
      *
      * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
-    private function part9(Home $home, RenderPass $renderPass): string
+    private function part8(Home $home, RenderPass $renderPass): string
     {
         return '<h2>Demos</h2><ul id="demos">'
             . '<!--t:b-->'
-            . $this->part3($home)
+            . $this->part2($home)
             . '<!--/t:b-->'
             . '</ul><h2>This request</h2><p>The AIC kernel is serving this request.</p><dl>'
             . '<!--t:b-->'
-            . $this->part5($home)
+            . $this->part4($home)
             . '<!--/t:b-->'
             . '</dl><ul id="query">'
             . '<!--t:b-->'
-            . $this->part7($home)
-            . $this->part8($home, $renderPass);
+            . $this->part6($home)
+            . $this->part7($home, $renderPass);
     }
 }

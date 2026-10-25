@@ -67,11 +67,13 @@ final readonly class TemplateCompiler
      * @param TemplateImports     $templateImports     Writes the generated file's opening and imports.
      * @param TemplateLoops       $templateLoops       Writes the parts that run a template's loops.
      * @param TemplateClassSource $templateClassSource Emits the compiled class.
+     * @param TemplateBlocks      $templateBlocks      Classifies safe morph boundaries before emission.
      */
     public function __construct(
         private TemplateImports $templateImports = new TemplateImports(),
         private TemplateLoops $templateLoops = new TemplateLoops(),
         private TemplateClassSource $templateClassSource = new TemplateClassSource(),
+        private TemplateBlocks $templateBlocks = new TemplateBlocks(),
     ) {
     }
 
@@ -88,6 +90,7 @@ final readonly class TemplateCompiler
         array $nodes,
         TemplateBinding $templateBinding,
     ): TemplateClass {
+        $nodes = $this->templateBlocks->classify($nodes, $templateBinding->role);
         $component = substr($templateBinding->component, (int) strrpos($templateBinding->component, '\\') + 1);
         $namespace = substr($templateBinding->templateClass, 0, (int) strrpos($templateBinding->templateClass, '\\'));
         $variable = lcfirst($component);
@@ -161,15 +164,27 @@ final readonly class TemplateCompiler
             TemplateNodeKind::Escaped => ['self::text(' . $templateNode->code . ')'],
             TemplateNodeKind::Raw => [$templateNode->code],
             TemplateNodeKind::Component => $this->component($templateNode),
-            TemplateNodeKind::Condition => ["'<!--t:b-->'", $this->condition($templateNode, $scope, $templateMethods), self::BLOCK_END],
+            TemplateNodeKind::Condition => $this->marked($templateNode, $this->condition($templateNode, $scope, $templateMethods)),
             TemplateNodeKind::ElseIf => [$this->condition($templateNode, $scope, $templateMethods)],
-            TemplateNodeKind::Loop, TemplateNodeKind::Counter => [
-                "'<!--t:b-->'",
+            TemplateNodeKind::Loop, TemplateNodeKind::Counter => $this->marked(
+                $templateNode,
                 $this->templateLoops->loop($templateNode, $scope, $templateMethods, $this),
-                self::BLOCK_END,
-            ],
+            ),
             TemplateNodeKind::Import, TemplateNodeKind::Break, TemplateNodeKind::Continue => [],
         };
+    }
+
+    /**
+     * @param TemplateNode $templateNode A classified condition or loop.
+     * @param string       $expression   Its rendered output.
+     *
+     * @return list<string> A safe body block's markers and expression, or its expression alone.
+     */
+    private function marked(TemplateNode $templateNode, string $expression): array
+    {
+        return $templateNode->marked
+            ? ["'<!--t:b-->'", $expression, self::BLOCK_END]
+            : [$expression];
     }
 
     /**

@@ -89,7 +89,9 @@ final class TemplateLowering
 
         foreach ($stmts as $stmt) {
             try {
-                $nodes = [...$nodes, ...$this->statement($stmt, $scope, $loops)];
+                foreach ($this->statement($stmt, $scope, $loops) as $node) {
+                    $nodes[] = $node->located($stmt->getStartLine());
+                }
             } catch (InvalidArgumentException $invalidArgumentException) {
                 throw $this->located($invalidArgumentException, $stmt->getStartLine());
             }

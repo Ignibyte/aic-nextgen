@@ -44,6 +44,6 @@ final readonly class GreetingForm
             : [new Alert(AlertSeverity::Error, $error, 'form-error')];
         $fields = [...$alerts, new FormField('Name', 'name', new Input('name', 'name', $value)), new Button('Greet', 'submit', '')];
 
-        return new Form('greeting-form', '/hello', $fields, $this->formTokens->issue($serverRequest));
+        return new Form('greeting-form', '/hello', $fields, $this->formTokens->issue($serverRequest)->value());
     }
 }

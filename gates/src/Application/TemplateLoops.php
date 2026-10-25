@@ -135,11 +135,11 @@ final readonly class TemplateLoops
         int $open,
     ): array {
         if (in_array($templateNode->kind, [TemplateNodeKind::Break, TemplateNodeKind::Continue], true)) {
-            $closers = $open === 0
-                ? []
-                : ["\$markup .= '" . str_repeat(self::BLOCK_END, $open) . "';"];
+            return $this->jump($templateNode, $open);
+        }
 
-            return [...$closers, $templateNode->kind === TemplateNodeKind::Break ? 'break;' : 'continue;'];
+        if (!$templateNode->marked) {
+            return [$this->ifStatement($templateNode, $scope, $templateMethods, $templateCompiler, $open)];
         }
 
         return [
@@ -149,6 +149,21 @@ final readonly class TemplateLoops
             '',
             "\$markup .= '" . self::BLOCK_END . "';",
         ];
+    }
+
+    /**
+     * @param TemplateNode $templateNode A break or continue node.
+     * @param int          $open         Markers actually opened inside this loop.
+     *
+     * @return list<string> Actual marker closers followed by the jump.
+     */
+    private function jump(TemplateNode $templateNode, int $open): array
+    {
+        $closers = $open === 0
+            ? []
+            : ["\$markup .= '" . str_repeat(self::BLOCK_END, $open) . "';"];
+
+        return [...$closers, $templateNode->kind === TemplateNodeKind::Break ? 'break;' : 'continue;'];
     }
 
     /**

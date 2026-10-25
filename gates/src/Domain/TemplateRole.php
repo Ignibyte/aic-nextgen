@@ -8,6 +8,7 @@ namespace Gates\Domain;
 enum TemplateRole
 {
     case Component;
+    case Atom;
     case Html;
     case Page;
 }

@@ -1,8 +1,8 @@
 # Templates
 
 Authored templates are restricted plain PHP compiled at build time. The build reads only explicit
-module and selected-theme declarations, producing ordinary final readonly PHP under
-`generated/templates/` with the `App\Generated\Templates` Composer prefix. Declare sources as
+module and selected-theme declarations and the fixed framework atom catalog. App inputs produce
+ordinary final readonly PHP under `generated/templates/` with the `App\Generated\Templates` Composer prefix. Declare sources as
 shown in [modules.md](modules.md#declared-templates-and-themes); gate:24 checks the compiled output
 and gate:25 checks the grammar.
 
@@ -40,9 +40,18 @@ its actual parameter types. A null test must be possible for that type. Class co
 cases must exist. A child component is rendered through the shared pass, with a stable key when
 repeated in a loop.
 
-Put control blocks between complete elements. A conditional inside an opening tag can place block
-markers inside the tag; write separate complete elements or move the choice into component data.
-Built-in atom templates remain framework PHP classes and are not authored template files.
+Conditions can omit a literal attribute inside a tag or select part of a quoted value. Body
+conditions and loops keep their Tessera block markers; tag and quoted-value blocks emit none.
+The compiler also tracks comments and script, style, textarea and title content. Branches must
+join at the same context; loops and their exits preserve the entry context. Tag names and opening
+delimiters remain literal: empty branches and zero iterations cannot complete a divided name.
+Quote dynamic attribute values. Render child Components and Regions only in element body context.
+
+The fifteen framework atoms are declared under `framework/templates/components/`. A source-package
+build uses the same reader and compiler to write their classes and lookup under
+`framework/src/Component/Application/`. Their inline role preserves the existing form-field paths
+and marker-free atom output. Apps consume these shipped classes; an app build never writes into
+an installed framework package. The fixed catalog does not relax module ownership declarations.
 
 The grammar denies function, method and static calls, `new`, closures, includes, require, eval,
 exit, echo/print statements, arbitrary PHP blocks, declarations, global/static variables,

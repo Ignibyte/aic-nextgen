@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\FileInput $fileInput */ ?>
+<input type="file"<?php if ($fileInput->id !== ''): ?> id="<?= $fileInput->id ?>"<?php endif ?><?php if ($fileInput->name !== ''): ?> name="<?= $fileInput->name ?>"<?php endif ?><?php if ($fileInput->accept !== ''): ?> accept="<?= $fileInput->accept ?>"<?php endif ?> class="aic-input">
