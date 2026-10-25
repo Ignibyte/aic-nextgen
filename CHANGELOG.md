@@ -6,6 +6,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **Declared rendering generators** (#148). Component and default page makes register explicit
+  `.tpl.php` sources. First-theme scaffolding creates typed region data, HTML/page templates,
+  CSS and a usable exported layout service through the existing guard and manifest editor.
+  Literal declaration collisions, missing compiled-template autoload setup and existing source
+  refuse before writes. Installed agent instructions describe authored paths and build outputs.
+  Module boundary scans follow live files after template retirement. Compiled provenance stays
+  within the existing source limits. The real scaffold is regenerated through the make commands.
+  - All 32 gates, both full Psalm passes and 186 workflow expectations pass. A generated installed
+    app passes all 30 gates, 449 native classes, 85 site steps and 18 compiled desktop/mobile checks.
+    The remaining reference migration and architecture pages stay in #149, #120 and #121.
+
 - **Declared theme and typed template compilation** (#146, #147).
   Module manifests select the HTML/page layout, typed regions, theme assets and component
   mappings. Explicit sources compile into `generated/templates/`; the app theme and Greetings

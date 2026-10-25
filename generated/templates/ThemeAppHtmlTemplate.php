@@ -11,7 +11,8 @@ use AIC\Component\Exception\UnknownComponent;
 use AIC\Form\Contracts\FormToken;
 
 /**
- * ThemeLayout's markup, compiled from themes/app/layouts/html.tpl.php by composer run build (#97, #98):
+ * ThemeLayout's markup, compiled from
+ * themes/app/layouts/html.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class ThemeAppHtmlTemplate

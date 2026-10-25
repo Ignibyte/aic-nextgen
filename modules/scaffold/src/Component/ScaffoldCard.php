@@ -7,7 +7,7 @@ namespace App\Scaffold\Component;
 use AIC\Component\Contracts\Component;
 
 /**
- * ScaffoldCard, made by bin/aic make:component (#122): its title, shown by ScaffoldCard.html.php.
+ * ScaffoldCard, made by bin/aic make:component (#122): its title, shown by its declared template.
  */
 final readonly class ScaffoldCard implements Component
 {

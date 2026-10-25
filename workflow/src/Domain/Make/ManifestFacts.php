@@ -13,11 +13,12 @@ use function array_map;
 final readonly class ManifestFacts
 {
     /**
-     * @param string       $module   The name it gives itself.
-     * @param list<string> $requires The modules it requires.
-     * @param list<string> $routes   Its routes, `METHOD /path`.
-     * @param list<string> $commands Its command names.
-     * @param list<string> $jobs     Its job names.
+     * @param string       $module       The name it gives itself.
+     * @param list<string> $requires     The modules it requires.
+     * @param list<string> $routes       Its routes, `METHOD /path`.
+     * @param list<string> $commands     Its command names.
+     * @param list<string> $jobs         Its job names.
+     * @param list<string> $presentation Literal template and theme identities.
      */
     public function __construct(
         public string $module,
@@ -25,6 +26,7 @@ final readonly class ManifestFacts
         public array $routes,
         public array $commands,
         public array $jobs,
+        public array $presentation = [],
     ) {
     }
 
@@ -37,6 +39,7 @@ final readonly class ManifestFacts
             ...array_map(static fn (string $route): string => 'route ' . $route, $this->routes),
             ...array_map(static fn (string $command): string => 'command ' . $command, $this->commands),
             ...array_map(static fn (string $job): string => 'job ' . $job, $this->jobs),
+            ...$this->presentation,
         ];
     }
 }

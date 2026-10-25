@@ -13,17 +13,19 @@ use function lcfirst;
 /**
  * A component's two files (#122), for `make:component` and for the view a
  * page makes for itself: the class with one promoted `title`, and its
- * `*.html.php`, whose first line types its variable.
+ * explicitly declared `*.tpl.php`, whose first line types its variable.
  */
 final readonly class MakeComponents
 {
     /**
      * @param ComponentSource         $componentSource         Writes the class.
      * @param ComponentTemplateSource $componentTemplateSource Writes the template.
+     * @param MakeNames               $makeNames               Derives its portable path.
      */
     public function __construct(
         private ComponentSource $componentSource = new ComponentSource(),
         private ComponentTemplateSource $componentTemplateSource = new ComponentTemplateSource(),
+        private MakeNames $makeNames = new MakeNames(),
     ) {
     }
 
@@ -43,9 +45,19 @@ final readonly class MakeComponents
                 $this->componentSource->source($namespace, $class, $made),
             ),
             new MadeFile(
-                'modules/' . $module . '/templates/components/' . $class . '.html.php',
+                'modules/' . $module . '/' . $this->template($class),
                 $this->componentTemplateSource->source($namespace, $class, lcfirst($class)),
             ),
         ];
+    }
+
+    /**
+     * @param string $class The authored component class.
+     *
+     * @return string Its portable owner-relative declared source.
+     */
+    public function template(string $class): string
+    {
+        return 'templates/components/' . $this->makeNames->kebab($class) . '.tpl.php';
     }
 }

@@ -453,7 +453,22 @@
             ]
         },
         {
-            "templates": [],
+            "templates": [
+                {
+                    "component": "App\\Scaffold\\Component\\ScaffoldCard",
+                    "generated": "generated/templates/ScaffoldScaffoldCardTemplate.php",
+                    "role": "Component",
+                    "source": "modules/scaffold/templates/components/scaffold-card.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\ScaffoldScaffoldCardTemplate"
+                },
+                {
+                    "component": "App\\Scaffold\\Component\\ScaffoldAboutView",
+                    "generated": "generated/templates/ScaffoldScaffoldAboutViewTemplate.php",
+                    "role": "Component",
+                    "source": "modules/scaffold/templates/components/scaffold-about-view.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\ScaffoldScaffoldAboutViewTemplate"
+                }
+            ],
             "themes": [],
             "regions": [],
             "themeAssets": [],

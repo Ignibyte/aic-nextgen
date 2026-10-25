@@ -23,3 +23,8 @@ the run's spec and the paths its file manifest declares.
    waits on the operator, stop and tell them what holds it.
 
 Each phase has a skill in `.claude/skills/aic-workflow-*`; `/aic:workflow:start` begins.
+
+Use `bin/aic make:* --dry-run` to plan new components, pages and the first site theme.
+Declare its authored source paths and module-manifest edit. Component templates are explicit
+`ModuleTemplate` declarations; `make:theme` selects one site `ModuleTheme` and creates its
+typed regions and layout service. `composer run build` owns `generated/templates/` and assets.

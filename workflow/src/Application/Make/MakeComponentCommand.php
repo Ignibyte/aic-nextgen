@@ -18,7 +18,7 @@ use function array_key_exists;
 
 /**
  * `bin/aic make:component <module> <Class> [--export] [--dry-run] [--json]`
- * (#122): the component, one promoted `title`, and its `*.html.php`; with
+ * (#122): the component, one promoted `title`, and its declared `*.tpl.php`; with
  * `--export`, the manifest exports it. A page gives it its caller
  * (`make:page … --component=<Class>`).
  */
@@ -71,10 +71,18 @@ final readonly class MakeComponentCommand implements Command
     private function recipe(ParsedArguments $parsedArguments): MakeRecipe
     {
         [$module, $namespace, $class] = $this->makeNames->target('', $parsedArguments);
-        $call = array_key_exists('export', $parsedArguments->flags)
-            ? $this->makeCalls->classOnly('export', 'Component', $class, $namespace)
-            : null;
+        $call = $this->makeCalls->template($class, $namespace);
 
-        return new MakeRecipe($module, $class, $this->makeComponents->files($module, $namespace, $class, 'make:component (#122)'), $call);
+        if (array_key_exists('export', $parsedArguments->flags)) {
+            $call = $call->then($this->makeCalls->classOnly('export', 'Component', $class, $namespace));
+        }
+
+        return new MakeRecipe(
+            $module,
+            $class,
+            $this->makeComponents->files($module, $namespace, $class, 'make:component (#122)'),
+            $call,
+            ['template ' . $namespace . '\\Component\\' . $class],
+        );
     }
 }

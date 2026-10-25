@@ -7,8 +7,6 @@ namespace AIC\Workflow\Parsing;
 use AIC\Workflow\Domain\Make\ManifestCall;
 use AIC\Workflow\Domain\Make\ManifestFacts;
 use AIC\Workflow\Exception\WorkflowRefusal;
-use PhpParser\Error;
-use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ClassConstFetch;
@@ -17,11 +15,10 @@ use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Return_;
-use PhpParser\ParserFactory;
 
 use function array_reverse;
-use function array_values;
 use function strtoupper;
 use function substr;
 
@@ -34,11 +31,17 @@ use function substr;
  */
 final readonly class ManifestEditor
 {
+    /** Source contract namespace; workflow depends on framework runtime only through the Command kind. */
+    private const string CONTRACTS = 'AIC\\Module\\Contracts';
+
     /**
      * @param ManifestImports $manifestImports Adds the `use` lines.
+     * @param ManifestSyntax  $manifestSyntax  Resolves source imports without execution.
      */
-    public function __construct(private ManifestImports $manifestImports = new ManifestImports())
-    {
+    public function __construct(
+        private ManifestImports $manifestImports = new ManifestImports(),
+        private ManifestSyntax $manifestSyntax = new ManifestSyntax(),
+    ) {
     }
 
     /**
@@ -59,7 +62,14 @@ final readonly class ManifestEditor
 
         $module = $this->module($this->returned($text, $file));
 
-        return new ManifestFacts($module, $facts['requires'], $facts['route'], $facts['command'], $facts['job']);
+        return new ManifestFacts(
+            $module,
+            $facts['requires'],
+            $facts['route'],
+            $facts['command'],
+            $facts['job'],
+            (new ManifestPresentation())->claims($this->returned($text, $file), $file),
+        );
     }
 
     /**
@@ -98,7 +108,7 @@ final readonly class ManifestEditor
      */
     private function returned(string $text, string $file): Expr
     {
-        $return = $this->firstReturn($this->parse($text, $file));
+        $return = $this->firstReturn($this->manifestSyntax->parse($text, $file));
         $expr = $return instanceof Return_
             ? $return->expr
             : null;
@@ -117,7 +127,7 @@ final readonly class ManifestEditor
     }
 
     /**
-     * @param list<Node\Stmt> $stmts The file's statements.
+     * @param list<Stmt> $stmts The file's statements.
      *
      * @return Return_|null Its first `return` with a value; null for none.
      */
@@ -160,7 +170,7 @@ final readonly class ManifestEditor
         $class = $new->class;
         $argument = $new->args[0] ?? null;
 
-        return $class instanceof Name && $class->getLast() === 'ModuleManifest'
+        return $class instanceof Name && $class->toString() === self::CONTRACTS . '\\ModuleManifest'
             && $argument instanceof Arg && $argument->value instanceof String_;
     }
 
@@ -232,23 +242,6 @@ final readonly class ManifestEditor
             : '';
 
         return strtoupper($name) . ' ' . ($this->strings($methodCall)[0] ?? '');
-    }
-
-    /**
-     * @param string $text A source.
-     * @param string $file Its path, for a refusal.
-     *
-     * @throws WorkflowRefusal When it does not parse.
-     *
-     * @return list<Node\Stmt> Its statements.
-     */
-    private function parse(string $text, string $file): array
-    {
-        try {
-            return array_values((new ParserFactory())->createForHostVersion()->parse($text) ?? []);
-        } catch (Error $error) {
-            throw new WorkflowRefusal($file . ' does not parse: ' . $error->getMessage(), 0, $error);
-        }
     }
 
     /**

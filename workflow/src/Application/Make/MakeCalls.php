@@ -66,4 +66,20 @@ final readonly class MakeCalls
             [$namespace . '\\' . $folder . '\\' . $class],
         );
     }
+
+    /**
+     * @param string $class     The owned component.
+     * @param string $namespace Its module namespace.
+     *
+     * @return ManifestCall Its explicit template declaration.
+     */
+    public function template(string $class, string $namespace): ManifestCall
+    {
+        $path = (new MakeComponents())->template($class);
+
+        return new ManifestCall(
+            '->with(new ModuleTemplate(' . $class . "::class, '" . $path . "'))",
+            [self::CONTRACTS . '\\ModuleTemplate', $namespace . '\\Component\\' . $class],
+        );
+    }
 }

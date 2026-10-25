@@ -17,6 +17,8 @@ use function array_keys;
 use function array_map;
 use function array_values;
 use function explode;
+use function file_exists;
+use function is_link;
 use function realpath;
 use function sort;
 use function str_ends_with;
@@ -29,7 +31,8 @@ use function trim;
 /**
  * Reads what gate:26 checks into one `ModuleTree` (#94): the modules through
  * the build's own reader, every path `git ls-files -co --exclude-standard`
- * lists (so an untracked file counts and an ignored one never does), the
+ * lists and the working tree still holds (so untracked files count, deleted
+ * paths do not, and ignored files never do), the
  * symbols of each PHP file, the template classes the build generates, and
  * composer.json's PSR-4 prefixes as written. Any failure is an exception, so
  * the gate fails closed.
@@ -92,13 +95,16 @@ final readonly class ModuleTreeReader
      */
     private function paths(string $root): array
     {
-        $processResult = $this->processRunner->run(['git', 'ls-files', '-co', '--exclude-standard'], $root);
+        $processResult = $this->processRunner->run(['git', 'ls-files', '-co', '--exclude-standard', '-z'], $root);
 
         if ($processResult->exitCode !== 0) {
             throw new RuntimeException('git ls-files failed: ' . trim($processResult->stderr));
         }
 
-        $paths = array_values(array_filter(explode("\n", $processResult->stdout), static fn (string $path): bool => $path !== ''));
+        $paths = array_values(array_filter(
+            explode("\0", $processResult->stdout),
+            static fn (string $path): bool => $path !== '' && (file_exists($root . '/' . $path) || is_link($root . '/' . $path)),
+        ));
         sort($paths);
 
         return $paths;

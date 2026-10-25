@@ -17,9 +17,10 @@ grant); a new component whose job an atom (`AIC\Component\Domain`) or a componen
 exports already does. Ask `bin/aic code:search` for each new component. HIGH; MEDIUM for a missed
 reuse.
 
-## A2 — Templates are plain `.html.php`
+## A2 — Declared templates are plain `.tpl.php`
 
-The gates hold: every `*.html.php` uses only the template grammar, in its place.
+The gates hold: declared `*.tpl.php` and bounded legacy `*.html.php` inputs use only the
+template grammar. Compiled classes under `generated/templates/` remain fully checked.
 
 Judge: logic a template carries past showing its component's values (sums, lookups, state
 branches that should be separate components); presentation moved into a component's PHP to keep

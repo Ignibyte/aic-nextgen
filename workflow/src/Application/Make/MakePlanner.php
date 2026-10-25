@@ -14,6 +14,7 @@ use function array_key_exists;
 use function hash;
 use function in_array;
 use function str_starts_with;
+use function strtolower;
 use function substr;
 
 /**
@@ -33,6 +34,7 @@ final readonly class MakePlanner
      * @param ProjectFiles            $projectFiles     The project's files.
      * @param SurfaceSource           $surfaceSource    The framework's commands.
      * @param Closure(): list<string> $workflowCommands The workflow's command names, read when asked.
+     * @param MakePresentation        $makePresentation Checks declared rendering prerequisites.
      */
     public function __construct(
         private ManifestEdits $manifestEdits,
@@ -40,6 +42,7 @@ final readonly class MakePlanner
         private ProjectFiles $projectFiles,
         private SurfaceSource $surfaceSource,
         private Closure $workflowCommands,
+        private MakePresentation $makePresentation = new MakePresentation(),
     ) {
     }
 
@@ -114,14 +117,15 @@ final readonly class MakePlanner
      */
     private function claims(MakeRecipe $makeRecipe): void
     {
-        if ($makeRecipe->claims === []) {
+        if ($makeRecipe->claims === [] && $makeRecipe->component === '') {
             return;
         }
 
         $declared = $this->declared();
+        $this->makePresentation->check($makeRecipe, $this->projectFiles, $declared);
 
         foreach ($makeRecipe->claims as $claim) {
-            $this->claim($claim, $declared);
+            $this->claim($this->identity($claim), $declared);
         }
     }
 
@@ -160,11 +164,39 @@ final readonly class MakePlanner
             }
 
             foreach ($manifestFacts->claims() as $claim) {
-                $declared[$claim] = $manifest;
+                $identity = $this->identity($claim);
+                $this->unique($manifest, $identity, $declared);
+                $declared[$identity] = $manifest;
             }
         }
 
         return $declared;
+    }
+
+    /**
+     * @param string $claim The literal claim retained in inspected facts.
+     *
+     * @return string Its comparison key; PHP class identities are case insensitive.
+     */
+    private function identity(string $claim): string
+    {
+        return str_starts_with($claim, 'template ')
+            ? strtolower($claim)
+            : $claim;
+    }
+
+    /**
+     * @param string                $manifest The declaring manifest.
+     * @param string                $claim    Its rendering or entry-point identity.
+     * @param array<string, string> $declared Earlier actual declarations.
+     *
+     * @throws WorkflowRefusal When the existing manifests already conflict.
+     */
+    private function unique(string $manifest, string $claim, array $declared): void
+    {
+        if (array_key_exists($claim, $declared)) {
+            throw new WorkflowRefusal($manifest . ' repeats ' . $claim . ' already declared by ' . $declared[$claim] . '.');
+        }
     }
 
     /**

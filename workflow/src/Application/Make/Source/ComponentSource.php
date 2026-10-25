@@ -24,7 +24,7 @@ final readonly class ComponentSource
         use AIC\Component\Contracts\Component;
 
         /**
-         * {class}, made by bin/aic {made}: its title, shown by {class}.html.php.
+         * {class}, made by bin/aic {made}: its title, shown by its declared template.
          */
         final readonly class {class} implements Component
         {

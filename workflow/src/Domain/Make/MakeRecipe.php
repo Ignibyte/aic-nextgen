@@ -7,7 +7,7 @@ namespace AIC\Workflow\Domain\Make;
 /**
  * What one make asks for (#122): the module, what it names for the record,
  * the files it writes, the manifest call (none for `make:module`, which
- * writes the manifest, and for a component it does not export), what it claims (`route GET /x`, `command x`, `job x`)
+ * writes the manifest), what it claims (routes, commands, jobs, templates or the selected theme)
  * so the planner can refuse a collision, whether it needs `site`, and the
  * lines it prints after writing.
  */
