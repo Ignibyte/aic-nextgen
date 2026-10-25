@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Gates\Templates;
 
 use Gates\Application\AtomBuild;
-use Gates\Application\ModuleBuild;
 use Gates\Application\PresentationBuild;
 use Gates\Application\QuietFileReader;
 use Gates\Domain\TemplateBinding;
@@ -18,7 +17,6 @@ use function array_unique;
 use function array_values;
 use function count;
 use function fwrite;
-use function glob;
 use function sprintf;
 use function usort;
 
@@ -49,16 +47,17 @@ final readonly class TemplateGrammarGate
     }
 
     /**
-     * @param string   $root   The repo root, or the plant root.
-     * @param resource $stdout Where the success and deferral lines go.
-     * @param resource $stderr Where the violations go.
+     * @param string      $root   The repo root, or the plant root.
+     * @param string|null $theme  The theme the root's `config/app.php` names (#153); null when it names none.
+     * @param resource    $stdout Where the success and deferral lines go.
+     * @param resource    $stderr Where the violations go.
      *
      * @return int The exit code: 0 when every template follows the grammar, or none exists.
      */
-    public function run(string $root, mixed $stdout = STDOUT, mixed $stderr = STDERR): int
+    public function run(string $root, ?string $theme, mixed $stdout = STDOUT, mixed $stderr = STDERR): int
     {
         try {
-            $bindings = $this->bindings($root);
+            $bindings = $this->bindings($root, $theme);
             $templates = array_values(array_unique([
                 ...$this->templateFinder->find($root, $this->templateGrammar->roots()),
                 ...array_keys($bindings),
@@ -147,29 +146,29 @@ final readonly class TemplateGrammarGate
                 $path,
                 1,
                 TemplateRefusal::Placement,
-                'authored templates require an explicit ModuleTemplate or ModuleTheme declaration for a portable .tpl.php source',
+                'a template lives in the configured theme: themes/<theme>/components/<Name>/<name>.tpl.php or themes/<theme>/layouts/',
             )],
             default => $this->templateValidator->violations($path, $source, $templateBinding),
         };
     }
 
     /**
-     * @param string $root The project or grammar plant folder.
+     * @param string      $root  The project or grammar plant folder.
+     * @param string|null $theme The configured theme; null leaves only the framework's atoms bound.
      *
-     * @throws InvalidArgumentException When real module declarations or their sources are invalid.
+     * @throws InvalidArgumentException When the theme breaks its layout.
      *
-     * @return array<string, TemplateBinding> Explicit bindings; a candidate with no declaration is refused.
+     * @return array<string, TemplateBinding> The bindings; a candidate with none is refused.
      */
-    private function bindings(string $root): array
+    private function bindings(string $root, ?string $theme): array
     {
-        $manifests = glob($root . '/modules/*/*.module.php');
         $bindings = (new AtomBuild(new PlainTemplateReader(), $root))->bindings();
 
-        if ($manifests === false || $manifests === []) {
+        if ($theme === null) {
             return $bindings;
         }
 
-        $presentationInventory = (new PresentationBuild($root))->plan((new ModuleBuild($root))->modules());
+        $presentationInventory = (new PresentationBuild($root))->plan($theme);
 
         foreach ($presentationInventory->templates as $binding) {
             $bindings[$binding->source] = $binding;

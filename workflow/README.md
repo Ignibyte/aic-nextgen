@@ -68,24 +68,24 @@ engine run. The engine runs and records its own gates. At `inspection-due`, disp
 `aic-seeker` role with `Inspect the open run.`. File its returned Seeker Inspection section
 unchanged. A parent-written, changed, stale or duplicate ledger does not replace that return.
 
-## Generate declared components and the first theme
+## Generate components and the first theme
 
-`bin/aic command:list` includes `make:component`, `make:page` and `make:theme`.
-Component and default page writers create module-owned lower-kebab `.tpl.php` files and add
-`ModuleTemplate` calls to the module manifest. Optional component exports and page routes share
-one planned manifest edit. `make:page --component=<Class>` reuses a declared local component.
-The entity generator's list page uses this shared writer when that generator is implemented.
+`bin/aic command:list` includes `make:component`, `make:page` and `make:theme`. Components live
+in the theme that `config/app.php` names (#153): `make:component <Class>` writes
+`themes/<theme>/components/<Class>/<Class>.php` and its lower-kebab `.tpl.php`, and edits no
+manifest. A default `make:page` writes its own view there and routes the page in its module's
+manifest; `make:page --component=<Class>` reuses a theme component. The entity generator's list
+page uses this shared writer when that generator is implemented.
 
-`bin/aic make:theme <name> --dry-run --json` previews the first site theme: typed page data,
-four regions, HTML/page templates, real CSS, an exported `HtmlLayout` service and the site's
-`ModuleTheme` selection. It assumes the site module exists and no theme or layout service does.
-Use lowercase words joined by hyphens, at most 32 bytes. An existing selection, file or literal
-claim refuses before writes. Reruns refuse instead of overwriting; aliases that make a generated
-short reference ambiguous require a manual manifest edit.
+`bin/aic make:theme <name> --dry-run --json` previews the first theme: `layouts/Page.php` with
+four regions, the HTML and page templates, real CSS, and an exported `HtmlLayout` service in the
+site module. It assumes the site module exists and no theme or layout service does, and prints
+the `config/app.php`, Composer and PHPCS lines to add. Use lowercase words joined by hyphens, at
+most 32 bytes. An existing file refuses before writes; reruns refuse instead of overwriting.
 
-Composer must map `"App\\Generated\\Templates\\": "generated/templates/"`; run
-`composer dump-autoload` before generation. Makes validate this exact mapping and do not edit
-tool configuration. Inspect the dry-run, declare every authored path and the module manifest,
+Composer must map `"App\\Theme\\Components\\": "themes/<theme>/components/"` and
+`"App\\Generated\\Templates\\": "generated/templates/"`; run `composer dump-autoload` before
+generation. Makes validate these mappings and do not edit tool configuration. Inspect the dry-run, declare every authored path and the module manifest,
 and ground those paths with the code index. The ordinary path-based guard checks them all;
 there is no special exemption for theme or template sources. The engine records `code.made`.
 The build owns `generated/templates/`, public assets and wiki output. No generated class is

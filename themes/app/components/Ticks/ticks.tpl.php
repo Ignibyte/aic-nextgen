@@ -1,0 +1,2 @@
+<?php /** @var \App\Theme\Components\Ticks\Ticks $ticks */ ?>
+<h2>Ticks</h2><p>Five ticks, streamed from <code>/events</code> by Tessera into the list below.</p><p data-signals__document='{"ticks":0}'>Ticks seen: <strong id="ticks-seen" data-text="$ticks">0</strong></p><ol data-region="ticks" data-stream="<?= $ticks->stream ?>"></ol>

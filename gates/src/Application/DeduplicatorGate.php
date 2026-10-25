@@ -117,8 +117,10 @@ final readonly class DeduplicatorGate
      */
     private function buildCommand(string $bin, array $existing, string $root): array
     {
-        $folders = glob($root . '/modules/*/templates');
-        $excludes = array_map(static fn (string $path): string => '--exclude=' . $path, $folders === false ? [] : $folders);
+        $components = glob($root . '/themes/*/components/*/*.tpl.php');
+        $layouts = glob($root . '/themes/*/layouts/*.tpl.php');
+        $templates = [...($components === false ? [] : $components), ...($layouts === false ? [] : $layouts)];
+        $excludes = array_map(static fn (string $path): string => '--exclude=' . $path, $templates);
 
         return [
             $bin,

@@ -37,6 +37,7 @@
 >
     <projectFiles>
         <directory name="modules"/>
+        <directory name="themes"/>
         <directory name="generated"/>
         <directory name="public"/>
         <directory name="bootstrap"/>
@@ -44,7 +45,8 @@
         <file name="bin/aic"/>
         <ignoreFiles>
             <!-- Templates are checked by gate:25, not the class tools. -->
-            <directory name="modules/*/templates"/>
+            <file name="themes/*/components/*/*.tpl.php"/>
+            <file name="themes/*/layouts/*.tpl.php"/>
             <directory name="vendor"/>
             <directory name=".rector-cache"/>
             <directory name=".psalm-cache"/>

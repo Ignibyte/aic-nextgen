@@ -94,17 +94,6 @@ none
 | `App\Site\Command\DatabasePing` | [modules/site/src/Command/DatabasePing.php](../../../modules/site/src/Command/DatabasePing.php) |
 | `App\Site\Command\Greet` | [modules/site/src/Command/Greet.php](../../../modules/site/src/Command/Greet.php) |
 
-### `src/Component/`
-
-| Component | Template | Template class |
-| --- | --- | --- |
-| `App\Site\Component\Greetings` | [modules/site/templates/components/greetings.tpl.php](../../../modules/site/templates/components/greetings.tpl.php) | `App\Generated\Templates\SiteGreetingsTemplate` |
-| `App\Site\Component\Home` | [modules/site/templates/components/home.tpl.php](../../../modules/site/templates/components/home.tpl.php) | `App\Generated\Templates\SiteHomeTemplate` |
-| `App\Site\Component\LineList` | [modules/site/templates/components/line-list.tpl.php](../../../modules/site/templates/components/line-list.tpl.php) | `App\Generated\Templates\SiteLineListTemplate` |
-| `App\Site\Component\Page` | [themes/app/layouts/page.tpl.php](../../../themes/app/layouts/page.tpl.php) | `App\Generated\Templates\ThemeAppPageTemplate` |
-| `App\Site\Component\SiteNav` | [modules/site/templates/components/site-nav.tpl.php](../../../modules/site/templates/components/site-nav.tpl.php) | `App\Generated\Templates\SiteSiteNavTemplate` |
-| `App\Site\Component\Ticks` | [modules/site/templates/components/ticks.tpl.php](../../../modules/site/templates/components/ticks.tpl.php) | `App\Generated\Templates\SiteTicksTemplate` |
-
 ### `src/Controller/`
 
 | Class | File |
@@ -121,13 +110,6 @@ none
 | `App\Site\Controller\StatusApi` | [modules/site/src/Controller/StatusApi.php](../../../modules/site/src/Controller/StatusApi.php) |
 | `App\Site\Controller\TickEvents` | [modules/site/src/Controller/TickEvents.php](../../../modules/site/src/Controller/TickEvents.php) |
 | `App\Site\Controller\TicksPage` | [modules/site/src/Controller/TicksPage.php](../../../modules/site/src/Controller/TicksPage.php) |
-
-### `src/Entity/`
-
-| Class | File |
-| --- | --- |
-| `App\Site\Entity\HomeDemo` | [modules/site/src/Entity/HomeDemo.php](../../../modules/site/src/Entity/HomeDemo.php) |
-| `App\Site\Entity\HomeFact` | [modules/site/src/Entity/HomeFact.php](../../../modules/site/src/Entity/HomeFact.php) |
 
 ### `src/Form/`
 

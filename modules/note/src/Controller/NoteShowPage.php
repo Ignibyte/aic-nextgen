@@ -9,11 +9,11 @@ use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
 use AIC\Entity\Application\EntityNotFoundException;
-use App\Note\Component\NoteCard;
 use App\Note\Form\NoteForms;
 use App\Note\Repository\NoteRepository;
 use App\Note\Service\NoteRequest;
 use App\Note\Service\NoteViews;
+use App\Theme\Components\NoteCard\NoteCard;
 use JsonException;
 use LogicException;
 use Override;
@@ -61,7 +61,7 @@ final readonly class NoteShowPage implements Page
 
         return $this->noteViews->page(
             [
-                new NoteCard($note),
+                new NoteCard($note->title, $note->body, $note->createdAt),
                 new Heading('Edit'),
                 $this->noteForms->form($serverRequest, $path, $note->title, $note->body, ''),
                 $this->noteForms->deleteForm($serverRequest, $path),

@@ -16,51 +16,29 @@ The architecture set an app's agent reads, shipped in `aic/framework`, is
 
 ## Status
 
-Current order (Chad, 2026-10-23): upstream elephc tickets are parked. Codex integration
-(#136) and workflow recovery (#144, #145) are delivered. Public assets (#55) are delivered;
-the operator accepted the unresolved native-session defect separately under #150.
-Continue framework fixes and declared themes (#146–#149) before further Lotline work
-(#128, #132). The Lotline bootstrap is
-held and unmerged in `/srv/stacks/aic-demo`; its resident agent stays open in the same tmux
-conversation. Restore it only after actual process loss. The separate demo rebuild (#129)
-is superseded. Old `/srv/stacks/lotline` is product and design reference; its source is not copied.
+Current order (Chad, 2026-10-25): finish epic #151, the theme owns all markup. #153 (components,
+layouts and assets in `themes/<theme>/`) is delivered; then #154 (a controller names a layout,
+falling back to `html.tpl.php`/`page.tpl.php`), #115 (the tick stream renders a theme component),
+#156 (gate:32, no HTML under `modules/`), #157 (layout generators) and #159 (the stock page reads
+only the rows it shows). The elephc fork carries #152 (`?>`, inline HTML, `<?=`) and #158
+(`htmlspecialchars` substitution) are unparked, fork only; #155 (templates run as templates, no
+markup in any PHP class, Tessera framing in framework templates) waits on #152. Lotline (#128,
+#132) waits on the epic: its bootstrap is held and unmerged in `/srv/stacks/aic-demo` on the
+pre-theme framework. Old `/srv/stacks/lotline` is product and design reference only. #150, an
+intermittent native session-ID defect, stays open.
 
-Approved theme direction: declarations live in module manifests. The site module declares the
-active theme, HTML/page templates, named regions and assets. Feature modules declare their
-component-to-template mappings. Author `themes/<name>/layouts/html.tpl.php` and `page.tpl.php`,
-with module-owned component `.tpl.php` files. Compile templates into `generated/templates/`
-and public assets into `public/assets/`. No separate theme registry or runtime discovery.
-146/147 implement the declared app theme and Greetings pilot, verified by all32 gates, both full
-Psalm passes,446 native classes,84 site comparisons,186 workflow expectations and compiled
-desktop/mobile checks. make:component/make:page declare .tpl.php sources; make:theme scaffolds
-the first selected site theme through the normal guard and manifest editor.148 verifies actual
-installed-app generation, native/browser behavior and the complete186-expectation workflow replay.
-149A migrates all reference inputs and root CSS into declarations and retires the unused AppLayout.
-Its final32 gates and both full Psalm passes pass, with446 runtime classes and86 fresh site
-comparisons, complete186-expectation workflow replay and22 compiled desktop/mobile checks.
-The updated installed app also passes30 gates, all446 classes freshly probed and86 site steps.
-An earlier native upload403 remains preserved and unexplained; these passes do not establish
-a repair or its relationship to150.
-149B completes required template binding APIs and declared-only lookup/wiki/scaffold behavior,
-with all six architecture pages from120/121 and source-backed inventories across12 required pages.
-Final AIC32/bothfullPsalm/446runtimeclasses/freshsite86 and complete186-expectation replay pass.
-The installed-workflow source fixture passes30 gates/all446classes freshly; a separate normal
-package-only App profile passes28 gates/bothfullPsalm/all163appclasses freshly/site86 without
-changing any of14343 vendor/package files. Both compiled desktop/mobile flows pass22 checks.
-Keep these profile scopes distinct. The native/session issue150 stays open; no repair is claimed.
+**The theme (#153, Chad 2026-10-25).** "There is no markup in php classes outside of components."
+`config/app.php` names the theme; `themes/<theme>/` holds `layouts/` (`html.tpl.php`,
+`page.tpl.php`, `Page.php` whose constructor's Region properties are the regions),
+`components/<Name>/` (the Component class and its kebab `.tpl.php`, PascalCase folders) and
+`assets/` (every public file; CSS bundles in path order). Modules hold controllers, services,
+entities, forms, blocks and migrations, never a component, template or asset; their manifests
+declare no presentation. Modules use theme classes; Deptrac's Theme layer keeps the theme off the
+modules. No theme registry, no runtime discovery. Until #155 the build still compiles each
+template into a class under `generated/templates/`.
 
-#114 moves all 15 catalog atoms into fixed `framework/templates/components/*.tpl.php` declarations,
-compiled by the same strict reader/compiler as module templates. The source-package build owns 20
-runtime outputs (15 templates, 4 lookup parts and the head); installed Apps consume them without
-package writes. Tag and quoted-attribute control flow emits no block comments. Body blocks retain
-markers, while the fixed inline atom role preserves existing atom bytes and child paths. Branches
-join compatible contexts and loops/exits preserve their entry; incomplete literal names and unsafe
-output positions are refused before publication. Form callers pass the issued token's ready string.
-All 3,282 original atom cases match. Each compiled browser flow passes 23 checks. The source fixture
-passes 30 gates covering all 463 runtime classes; the normal App passes 28 covering its 163 classes.
-The App build preserves 14,384 vendor/package files. Final Quality passes all 32 gates and both full
-Psalm passes, with 463 valid native runtime closures and 86 fresh site comparisons. The complete
-workflow replay passes all 186 expectations.
+#114 moved the 15 catalog atoms into `framework/templates/components/*.tpl.php`, compiled by the
+same reader and compiler; installed apps consume the shipped classes without package writes.
 
 #133 runtime, #134 gate tooling, #141/#142/#143 workflow source repairs, #135 dual-pass enforcement
 and #137 bounded teardown are delivered.
@@ -140,7 +118,7 @@ only `new Html`, and `Psr7ResponseWriter` the only reader of `markup()`. A page 
 regions holding components (`HtmlLayout::content(list<Component>, int)`), never a string. A
 template writes children through a `RenderPass` (`child()` with markers, `region()`, `inline()` in a
 layout), and a Tessera fragment is the same tree rendered by its path. The build generates the
-lookup (`generated/ModuleTemplates` and one `<M>Templates` per module), ending at the compiled
+lookup (`generated/ThemeTemplates` and its parts, #153), ending at the compiled
 framework atom lookup; a module component with no template is refused. #91, the agent workflow,
 runs as #100 to #106; #100: the run engine and its state, the dev-only `aic/workflow` package.
 #101: the engine runs the gates itself and keeps each verdict in `var/workflow/evidence.sqlite`
@@ -214,17 +192,14 @@ Background work is a job; the HTTP server's processes are its workers.
   session; content and faq were dropped. `scaffold` (#122) is what the make commands make, held
   by gate:31: regenerate it, never edit it by hand. It is AIC's test bed, not a showcase: a feature the
   gates need is added here with its framework change. Each module has its classes
-  in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Component`, `Block`,
-  `Form`, `Entity`, `Repository`, `Service`, `Command`, `Job`, `Migration`). There is no `app/`
-  and no hand-written composition class (#93). Selected HTML/page sources live in
-  `themes/<name>/layouts/*.tpl.php`; explicit module component templates compile into
-  `generated/templates/` with the dedicated `App\Generated\Templates` PSR-4 prefix. Every
-  reference input is explicitly declared; the old directory selector is removed. The reader, compiler and lookup require actual bindings without basename or companion guesses.
-- Module assets are explicit `ModuleAsset` declarations through the manifest's existing `with()`
-  seam (#55). Nested owner-relative sources and typed Style, Script or File roles are validated
-  at build time. Declared styles join the combined CSS in dependency/declaration order, followed
-  by declared theme styles in declaration order. The root CSS adapter is removed; the same
-  source bytes now live in the selected theme's assets.
+  in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Block`, `Form`,
+  `Entity`, `Repository`, `Service`, `Command`, `Job`, `Migration`). There is no `app/`
+  and no hand-written composition class (#93).
+- The theme (#153) is `themes/app/` (`config/app.php`'s `theme`): `layouts/` (`html.tpl.php`,
+  `page.tpl.php`, `Page.php`), `components/<Name>/` (`App\Theme\Components\<Name>\<Name>` and
+  its kebab `.tpl.php`) and `assets/`. The build finds them; nothing declares them. Templates
+  compile into `generated/templates/` (`App\Generated\Templates`). Every file in `assets/` is
+  published, its role from its extension; stylesheets join `aic.css` in path order.
 - `composer run build` owns `public/assets/`, the typed `PublicAssets` lookup and private
   `build/assets.json`. A full-set SHA-256 directory supplies canonical URLs; exact compatibility
   aliases preserve bytes, including adjacent pinned Tessera script/map. Resolve logical names
@@ -464,9 +439,9 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   `ELEPHC_BIN` overrides), run, and compared with host PHP. Work files land in `.native-gate/`
   (gitignored); pcre2 and oniguruma are pinned in aic/gates' `native/elephc.{toml,lock}`. Everything
   outside those roots runs interpreted by design.
-- gate:25 (`gates/bin/gate-templates.php`, #96/#149) audits authored candidates under modules/,
-  themes/ and the unsupported old templates/ root. It parses only actual declared `.tpl.php`
-  sources with php-parser (`Gates\Templates\`), deny by default.
+- gate:25 (`gates/bin/gate-templates.php`, #96/#149/#153) audits template candidates under
+  modules/, themes/ and the unsupported old templates/ root, and parses the theme's `.tpl.php`
+  files and the atoms with php-parser (`Gates\Templates\`), deny by default.
   - **Allowed:** inline HTML; `<?= one expression ?>`; `if`, `switch`, `for` and `foreach` in
     the alternative syntax; `match`; `break` and `continue`; the component variable (from the
     first line's `<?php /** @var \Fqcn\Name $name */ ?>`) and loop variables; property and
@@ -475,18 +450,19 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   - **Refused:** every function (`TemplateGrammar::functions()` is empty), method and static
     call, `::class`, `new`, closures, assignment outside a `for` header, `while` and
     `do`/`while`, `<?php echo`, declarations, superglobals, and anything else.
-  - **Placement:** declared portable `.tpl.php` under `modules/<m>/templates/components/` or
-    `themes/<theme>/layouts/`; no manifest-free or old-input mode.
+  - **Placement:** `themes/<theme>/components/<Name>/<name>.tpl.php` or
+    `themes/<theme>/layouts/`; a template anywhere else is refused.
   - **The class tools skip templates,** by Chad's decision, and so do the Stop hooks. A tool
     handed a template by explicit path ignores its excludes (Pint and phpcbf then rewrite it),
     so never pass a template to a fixer.
 - gate:26 (`gates/bin/gate-modules.php`, #94) reads the manifests and `git ls-files -co
   --exclude-standard`. A class's kind (`Gates\Domain\ClassKinds`, shared with the surface
   manifest) decides its folder: Page, Api and Stream in `src/Controller/`, then `Command/`,
-  `Job/`, `Block/`, `Component/` (authored data; compiled templates under generated/), `Notification/`, `Middleware/`,
-  `Migration/`, `Repository/` and `Form/` by name suffix. A plain class goes in `Entity/`,
-  `Service/` or `Form/`. Its message names the folder, the `->export(...)` or the
-  `->requires(...)` to add; the shell list is a constant in `ModuleShellRule`.
+  `Job/`, `Block/`, `Notification/`, `Middleware/`, `Migration/`, `Repository/` and `Form/` by
+  name suffix. A plain class goes in `Entity/`, `Service/` or `Form/`. A Component in a module, or
+  a module `templates/` or `assets/` folder, is refused with the theme path to move it to (#153).
+  Its message names the folder, the `->export(...)` or the `->requires(...)` to add; the shell
+  list is a constant in `ModuleShellRule`, which also admits the theme's classes.
 - Components only (#99), as gate:8 rules (`gates/src/PhpStan`) and a gate:9 phpat test:
   - `aic.htmlConstruction`: only `Renderer` makes an `Html`.
   - `aic.htmlMarkupRead`: only `Psr7ResponseWriter` reads one, a first-class callable included.

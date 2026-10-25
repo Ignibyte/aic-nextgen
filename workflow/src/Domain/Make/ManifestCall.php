@@ -20,14 +20,4 @@ final readonly class ManifestCall
         public array $uses,
     ) {
     }
-
-    /**
-     * @param ManifestCall $manifestCall The next fluent call and its imports.
-     *
-     * @return self Both calls in one guarded manifest edit.
-     */
-    public function then(self $manifestCall): self
-    {
-        return new self($this->call . "\n    " . $manifestCall->call, [...$this->uses, ...$manifestCall->uses]);
-    }
 }

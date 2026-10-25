@@ -16,7 +16,7 @@ final readonly class ScaffoldSequence
      */
     public const array LINES = [
         ['make:module', 'scaffold'],
-        ['make:component', 'scaffold', 'ScaffoldCard', '--export'],
+        ['make:component', 'ScaffoldCard'],
         ['make:page', 'scaffold', 'ScaffoldPage', '/scaffold', '--component=ScaffoldCard'],
         ['make:page', 'scaffold', 'ScaffoldAboutPage', '/scaffold/about'],
         ['make:page', 'scaffold', 'ScaffoldPost', '/scaffold', '--post'],

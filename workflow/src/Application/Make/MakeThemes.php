@@ -12,8 +12,8 @@ use AIC\Workflow\Domain\Make\MadeFile;
 final readonly class MakeThemes
 {
     /**
-     * @param ThemeSource       $themeSource       Writes typed data, templates and CSS.
-     * @param ThemeLayoutSource $themeLayoutSource Writes the usable site service.
+     * @param ThemeSource       $themeSource       Writes the page data, the layouts and the CSS.
+     * @param ThemeLayoutSource $themeLayoutSource Writes the site module's layout service.
      */
     public function __construct(
         private ThemeSource $themeSource = new ThemeSource(),
@@ -22,20 +22,20 @@ final readonly class MakeThemes
     }
 
     /**
-     * @param string $name  The theme's portable name.
-     * @param string $class The authored page-data class.
+     * @param string $name The theme's folder name.
      *
-     * @return list<MadeFile> All five authored files; MakeRun adds the edited site manifest last.
+     * @return list<MadeFile> The theme's four files and the site's layout service; MakeRun adds the edited site
+     *                        manifest last.
      */
-    public function files(string $name, string $class): array
+    public function files(string $name): array
     {
         $theme = 'themes/' . $name . '/';
 
         return [
-            new MadeFile('modules/site/src/Component/' . $class . '.php', $this->themeSource->data($class)),
             new MadeFile('modules/site/src/Service/HtmlLayout.php', $this->themeLayoutSource->source()),
+            new MadeFile($theme . 'layouts/Page.php', $this->themeSource->data()),
             new MadeFile($theme . 'layouts/html.tpl.php', $this->themeSource->html()),
-            new MadeFile($theme . 'layouts/page.tpl.php', $this->themeSource->page($class)),
+            new MadeFile($theme . 'layouts/page.tpl.php', $this->themeSource->page()),
             new MadeFile($theme . 'assets/theme.css', $this->themeSource->css()),
         ];
     }

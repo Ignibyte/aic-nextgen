@@ -56,9 +56,9 @@
             "captures": false
         },
         {
-            "name": "module asset",
+            "name": "theme asset",
             "method": "GET",
-            "path": "/assets/site/favicon.svg",
+            "path": "/assets/themes/app/favicon.svg",
             "form": "",
             "header": "",
             "status": 200,
@@ -650,9 +650,9 @@
             "captures": false
         },
         {
-            "name": "declared module stylesheet",
+            "name": "theme stylesheet",
             "method": "GET",
-            "path": "/assets/site/site.css",
+            "path": "/assets/themes/app/site.css",
             "form": "",
             "header": "",
             "status": 200,
@@ -661,7 +661,7 @@
         {
             "name": "asset HEAD ignores Range",
             "method": "HEAD",
-            "path": "/assets/site/site.css",
+            "path": "/assets/themes/app/site.css",
             "form": "",
             "header": "Range: bytes=0-15",
             "status": 200,

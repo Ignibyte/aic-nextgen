@@ -72,7 +72,7 @@ final readonly class PageSource
      */
     public function source(string $namespace, string $class, string $path, string $component, string $title): string
     {
-        $uses = ['use ' . $namespace . '\\Component\\' . $component . ';', 'use App\\Site\\Service\\HtmlLayout;'];
+        $uses = ['use App\\Theme\\Components\\' . $component . '\\' . $component . ';', 'use App\\Site\\Service\\HtmlLayout;'];
         usort(
             $uses,
             static fn (string $left, string $right): int => strcasecmp(str_replace('\\', ' ', $left), str_replace('\\', ' ', $right)),

@@ -68,7 +68,6 @@ final readonly class ManifestEditor
             $facts['route'],
             $facts['command'],
             $facts['job'],
-            (new ManifestPresentation())->claims($this->returned($text, $file), $file),
         );
     }
 

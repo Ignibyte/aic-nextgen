@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Console;
 
-use AIC\Workflow\Domain\Console\SurfaceDeclarations;
 use AIC\Workflow\Domain\Console\SurfaceModule;
 
 use function array_map;
@@ -43,22 +42,6 @@ final readonly class ModuleShowLines
             ...self::section('prefixes', $surfaceModule->prefixes),
             ...self::section('factories', $surfaceModule->factories),
             ...self::section('exports', self::exports($users)),
-            ...self::presentation($surfaceModule->declarations),
-        ];
-    }
-
-    /**
-     * @param SurfaceDeclarations $surfaceDeclarations The actual declared presentation.
-     *
-     * @return list<string> Explicit source, schema and asset sections.
-     */
-    private static function presentation(SurfaceDeclarations $surfaceDeclarations): array
-    {
-        return [
-            ...self::section('templates', self::rows($surfaceDeclarations->templates, ['role', 'component', 'source', 'generated'])),
-            ...self::section('themes', self::rows($surfaceDeclarations->themes, ['name', 'html', 'page', 'pageData'])),
-            ...self::section('regions', self::rows($surfaceDeclarations->regions, ['property', 'name'])),
-            ...self::section('theme assets', self::rows($surfaceDeclarations->themeAssets, ['name', 'kind', 'path'])),
         ];
     }
 

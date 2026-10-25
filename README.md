@@ -26,7 +26,7 @@ They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs
 | `modules/` | The fixture app, `aic/app`: four modules, `modules/<name>/<name>.module.php` (its manifest) and `src/` (`App\<Name>\`) |
 | `generated/` | The wiring `composer run build` writes from the manifests (`App\Generated\`); never edited by hand |
 | `docs/wiki/` | The code wiki `composer run build` writes from the surface and the code index: an index and a page per module; never edited by hand (notes go in `modules/<m>/README.md`) |
-| `themes/<name>/layouts/` | Declared HTML/page template sources |
+| `themes/<name>/` | The theme `config/app.php` names (#153): `layouts/` (the HTML and page templates and `Page.php`, the page's regions), `components/<Name>/` (each component's class and template) and `assets/` (CSS, scripts, images). Modules hold no templates or assets |
 | `bootstrap/serve.php` | Serves one request: the wiring, the request in, the response out; compiled into the site or run under PHP |
 | `public/index.php` | The interpreted entry (php-fpm in DDEV, `php -S`): the autoloader, then `serve.php` |
 | `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
@@ -75,9 +75,9 @@ service that restarts runs `bin/aic queue:work`. A second `schedule:run` in the 
 queues nothing more. Notifications go out through the queue: DDEV's Mailpit catches the mail
 (`ddev mailpit`), and `AIC_MAIL_HOST`, `AIC_MAIL_PORT` and `AIC_MAIL_FROM` point it elsewhere.
 
-The site theme lives in `assets/`, and each module's styles, scripts and images in its own
-`modules/<name>/assets/`. `composer run build` writes one `public/assets/aic.css` (the modules' CSS,
-then the theme) and copies the rest to `public/assets/<module>/`; the build output is committed. DDEV's nginx serves `public/` as static files. The compiled server
+Every stylesheet, script and image lives in the theme's `assets/`. `composer run build` writes one
+`public/assets/aic.css` (the theme's CSS, in path order) and copies the rest to
+`public/assets/themes/<name>/`; the build output is committed. DDEV's nginx serves `public/` as static files. The compiled server
 serves no static files, so in production a reverse proxy (nginx, Caddy) serves `public/` and
 forwards the rest. Without a proxy, the app's `/assets/{file}` route answers the built assets.
 
@@ -95,8 +95,8 @@ checks with native class probes and fresh whole-site comparisons against PHP.
 Runtime, gate-tooling and workflow source repairs are complete (#133–#135). Gate:13 now requires
 both full-project Psalm passes to succeed. A failing ordinary result cannot be hidden by a
 clean taint result, and either process error fails the gate.
-A declared component template (`*.tpl.php`) is plain PHP read only; gate:25 holds it to that grammar, and
-the class tools skip authored sources. `composer run build` compiles it under `generated/templates/`, which
+A component's template (`*.tpl.php`, beside its class in the theme) is plain PHP read only; gate:25
+holds it to that grammar, and the class tools skip templates. `composer run build` compiles it under `generated/templates/`, which
 every gate checks, and writes the lookup the Renderer finds each component's template through: a
 page is components, and only the Renderer turns them into HTML.
 The native gate compiles every runtime class with [elephc](https://github.com/illegalstudio/elephc),

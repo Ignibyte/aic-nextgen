@@ -21,8 +21,8 @@ use const GLOB_ONLYDIR;
 /**
  * The root files an app takes from aic/gates (#130): each tool's stub, from the
  * package's `stubs/`, as the project should hold it. phpcs.xml.dist is the one
- * that varies: the stub, with one root namespace per module on disk, the line
- * the build prints for a new module, before the generated wiring's.
+ * that varies: the stub, with one root namespace per module on disk and the
+ * theme's two (#153), the lines the build prints, before the generated wiring's.
  */
 final readonly class SuiteStubs
 {
@@ -64,7 +64,11 @@ final readonly class SuiteStubs
         $stub = (string) file_get_contents($this->package . '/stubs/' . $name);
 
         return $name === 'phpcs.xml.dist'
-            ? str_replace(self::GENERATED, implode('', $this->moduleRoots($root)) . self::GENERATED, $stub)
+            ? str_replace(
+                self::GENERATED,
+                implode('', [...$this->moduleRoots($root), ...$this->themeRoots($root)]) . self::GENERATED,
+                $stub,
+            )
             : $stub;
     }
 
@@ -80,6 +84,27 @@ final readonly class SuiteStubs
                 . str_replace('_', '', ucwords($name, '_')) . '"/>' . "\n",
             $this->modules($root),
         );
+    }
+
+    /**
+     * @param string $root The project's root.
+     *
+     * @return list<string> Each theme's two root namespace lines (#153), its components' and its layouts', each with
+     *                      its line break.
+     */
+    private function themeRoots(string $root): array
+    {
+        $folders = glob($root . '/themes/*', GLOB_ONLYDIR);
+        $names = array_map(basename(...), $folders === false ? [] : $folders);
+        sort($names);
+        $roots = [];
+
+        foreach ($names as $name) {
+            $roots[] = '                <element key="themes/' . $name . '/components" value="App\\Theme\\Components"/>' . "\n";
+            $roots[] = '                <element key="themes/' . $name . '/layouts" value="App\\Theme\\Layouts"/>' . "\n";
+        }
+
+        return $roots;
     }
 
     /**

@@ -9,7 +9,7 @@ use AIC\Block\Contracts\Placement;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\Link;
-use App\Site\Component\SiteNav;
+use App\Theme\Components\SiteNav\SiteNav;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 

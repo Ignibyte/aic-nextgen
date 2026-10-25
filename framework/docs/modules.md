@@ -54,11 +54,9 @@ ordinary code with literal class names.
 | `->job('prune', PruneJob::class)` | a Job, queued by that name |
 | `->schedule('prune-nightly', 'prune', ['days' => '30'], '0 3 * * *')` | a job queued on a five-field UTC cron cadence, with its payload |
 | `->migration(CreateNotesTable::class)` | a migration, applied in order by `bin/aic migrate` |
-| `->with(new ModuleTemplate(Card::class, 'templates/components/card.tpl.php'))` | an owned component paired with its explicit typed template source |
-| `->with(new ModuleTheme(...))` | the site module's selected HTML/page templates, typed page data, regions and assets |
-| `->with(new ModuleAsset('styles', 'assets/site.css', ModuleAssetKind::Style))` | an explicitly typed declaration; assets name their local identity, owner-relative source and publication role |
 
-Everything else a class needs comes through its constructor. A constructor asks for what it uses
+A manifest declares no presentation: components, layouts and assets live in the theme (see
+[The theme](#the-theme)). Everything else a class needs comes through its constructor. A constructor asks for what it uses
 by type; the generated wiring passes it. There is no container lookup in app code and no `new`
 of a service.
 
@@ -71,9 +69,9 @@ of a service.
 - the aggregators that join every module's pieces, and the facades `WebModules` and
   `ConsoleModules` that the framework's `AIC\Module\Application\AppKernel` and
   `AIC\Module\Application\ConsoleKernel` take;
-- the lookup from each component to its compiled template class;
-- declared template classes under `generated/templates/` (`App\Generated\Templates`), and
-  the selected-theme factory and transparent page adapter;
+- the lookup from each component to its compiled template class (`ThemeTemplates` and its parts);
+- the theme's compiled template classes under `generated/templates/` (`App\Generated\Templates`),
+  and the theme's document factory and transparent page adapter;
 - the exact public asset lookup and its data parts, joined with the template lookup by the
   generated `Presentation` factory.
 
@@ -93,7 +91,6 @@ kinds are described in [kinds.md](kinds.md).
 | `src/Controller/` | Page, Api and Stream |
 | `src/Command/` | Command |
 | `src/Job/` | Job |
-| `src/Component/` | authored Component data, with declared compiled templates under `generated/templates/` |
 | `src/Block/` | Block |
 | `src/Middleware/` | Middleware |
 | `src/Migration/` | Migration |
@@ -103,7 +100,9 @@ kinds are described in [kinds.md](kinds.md).
 | `src/Entity/` | plain classes: entities and values |
 | `src/Service/` | plain classes: services and helpers |
 
-A folder holds at most 15 files; `src/Migration/` has no cap. A sixteenth file means the module is
+A module's root holds its manifest, an optional `README.md`, `src/` and `resources/` (download
+sources). A Component class, a template or a public asset in a module is refused: they live in the
+theme. A folder holds at most 15 files; `src/Migration/` has no cap. A sixteenth file means the module is
 doing too much: split it into a second module, or group the work into fewer classes.
 
 ## Exports and requires
@@ -116,90 +115,102 @@ requires that module. gate:26 holds three rules:
 - requires name modules that exist and form no cycle;
 - nothing outside `modules/` but the shell.
 
-## Declared templates and themes
+## The theme
 
-Declarations use the manifest's existing `with()` seam. Feature modules declare
-`AIC\Module\Contracts\ModuleTemplate` with a final owned Component class and a source path
-relative to their module, under `templates/components/`. The typing line names that exact class:
+`config/app.php` names the theme (`theme: 'app'`); the build reads `themes/<theme>/` and no other
+folder, and nothing reads it while serving. A theme holds three folders:
 
-```php
-<?php /** @var \App\Site\Component\Greetings $greetings */ ?>
+```
+themes/app/
+  layouts/     html.tpl.php  page.tpl.php  Page.php
+  components/  Greetings/Greetings.php  Greetings/greetings.tpl.php  ...
+  assets/      10-tokens.css  site.css  favicon.svg  ...
 ```
 
-Only declared `.tpl.php` files are selected. Missing, duplicate, foreign, unclaimed, linked or
-nonportable sources fail the build before publication. gate:25 audits authored candidates, refuses unclaimed and unsupported inputs, and checks declared
-sources against the restricted PHP grammar: no new functions,
+Each `components/<Name>/` holds the final Component `App\Theme\Components\<Name>\<Name>`, its
+template `<name>.tpl.php` (the class name in lower kebab case, `line-list.tpl.php` for
+`LineList`), and any value classes of the same namespace that are not Components. The template's
+typing line names its folder's class:
+
+```php
+<?php /** @var \App\Theme\Components\Greetings\Greetings $greetings */ ?>
+```
+
+Nothing declares a component: the folder is the declaration. A folder without its class or
+template, a class whose name or namespace does not match its folder, a second Component in a
+folder, a stray file, a link, or a `.tpl.php` anywhere outside the theme fails the build before
+publication. gate:25 checks every template against the restricted PHP grammar: no functions,
 calls or runtime includes. Static types determine automatic escaping.
 
-The site module selects one `AIC\Module\Contracts\ModuleTheme`:
+`layouts/` holds exactly the document, the page and the page's region data. `Page.php` declares
+`App\Theme\Layouts\Page`: final, readonly, one public promoted nonnullable Region per region. The
+regions are its constructor's parameters, named after their properties, in order; renaming a
+property renames a Tessera region. The page template reads them (`$page->header`), and each
+must render exactly once on every branch: a loop or conditional omission is refused. The HTML
+template takes `AIC\Component\Domain\ThemeLayout`, reads title, identity and CSRF data, and
+places its page and tracked assets exactly once. HTML and page wrappers render transparently
+through the same pass. Region names and keyed component paths are shared with full pages and
+Tessera fragments.
 
-```php
-->with(new ModuleTheme('app', 'layouts/html.tpl.php', 'layouts/page.tpl.php', Page::class,
-    ['header' => 'header', 'content' => 'content', 'nav' => 'nav', 'footer' => 'footer'],
-    [new ModuleAsset('base', 'assets/theme.css', ModuleAssetKind::Style)]))
+Modules build theme components and never the reverse: gate:12's Theme layer lets a theme class
+use only the framework's contracts, domain values, exceptions and attributes. A component that
+needs a module's data takes its values as properties.
+
+The app maps the theme's two namespaces in Composer and PHPCS, and the build prints any line that
+is missing:
+
 ```
-
-These paths are relative to `themes/app/`. `Page` is authored module Component data: final,
-readonly, with public promoted nonnullable Region properties in declaration order. Its page
-template reads properties such as `$page->header`. Every declared region must render exactly
-once on every branch; a loop or conditional omission is refused. The HTML template takes
-`AIC\Component\Domain\ThemeLayout`, reads title, identity and CSRF data, and places its page
-and tracked assets exactly once. HTML/page wrappers render transparently through the same pass.
-Region names and keyed component paths are shared with full pages and Tessera fragments.
+"App\\Theme\\Components\\": "themes/app/components/",
+"App\\Theme\\Layouts\\": "themes/app/layouts/"
+<element key="themes/app/components" value="App\Theme\Components"/>
+<element key="themes/app/layouts" value="App\Theme\Layouts"/>
+```
 
 The generated implementation of `AIC\Component\Contracts\PageLayouts` creates documents.
 `AIC\Component\Domain\ThemePage` carries only the filled Regions; a compiled adapter constructs
-the authored typed page and renders its compiled template. Render data holds no factory service.
-The existing Renderer remains the only HTML constructor. No manifest, reflection or template
-include runs while serving a request.
+the theme's typed page and renders its compiled template. Render data holds no factory service.
+The existing Renderer remains the only HTML constructor. No reflection or template include runs
+while serving a request.
 
-The dedicated Composer mapping `"App\\Generated\\Templates\\": "generated/templates/"` is
-required on case-sensitive filesystems. Compiled classes remain in static/native analysis.
-The build audits nested generated outputs, removes orphans and checks freshness without writes.
-`module:show` and the generated wiki report actual source and generated identities.
+The Composer mapping `"App\\Generated\\Templates\\": "generated/templates/"` is required on
+case-sensitive filesystems. Compiled classes remain in static and native analysis. The build
+audits nested generated outputs, removes orphans and checks freshness without writes.
+`build/surface.json` carries the theme as a top-level `theme` object, and the code wiki's index
+has a Theme section.
 
-The reference app declares every component source and its selected HTML/page theme. All compiled
-templates are under `generated/templates/`; historical compiler-owned module companions are
-audited and retired by the builder. Reader, compiler and lookup require explicit bindings; no old-input or companion-name fallback remains.
+## Generate theme files
 
-## Generate authored rendering files
+With the workflow development package installed, `bin/aic make:component <Class>` writes the
+component and its template into the theme's `components/<Class>/` and edits no manifest.
+`bin/aic make:page <module> <Class> <path>` writes the controller in the module, routes it in the
+module's manifest, and writes its own view into the theme; `--component=<Class>` reuses a theme
+component instead.
 
-With the workflow development package installed, use `bin/aic make:component <module> <Class>`
-or `bin/aic make:page <module> <Class> <path>`. Both create lower-kebab `.tpl.php` sources and
-add their `ModuleTemplate` declarations to the owning manifest. `--export` adds the component's
-export in the same edit. A page's `--component=<Class>` reuses a declared local component and
-adds only its route; an undeclared component needs an explicit mapping before reuse.
+For an app without a theme or a layout service, run `bin/aic make:theme <name>`. It writes
+`themes/<name>/layouts/` (`Page.php` with four regions, header, content, nav and footer, and the
+HTML and page templates), a stylesheet, and an exported `HtmlLayout` service in the site module,
+then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module
+is assumed. Names are lowercase words joined by hyphens, at most 32 bytes.
 
-For a site module without a selected theme or an existing layout service, run
-`bin/aic make:theme <name>`. It creates typed page-region data, the HTML/page templates under
-`themes/<name>/layouts/`, a declared stylesheet and an exported `HtmlLayout` service consuming
-the compiled `PageLayouts`. The four regions are header, content, nav and footer. No favicon or
-feature module is assumed. Names are lowercase words joined by hyphens, at most 32 bytes.
-
-Set the exact compiled-template Composer prefix above and run `composer dump-autoload` first.
-Use `--dry-run --json` to inspect all authored paths and the manifest edit before declaring
-them in an open workflow's spec. Every target and the complete manifest edit pass the normal
-write guard; the make records the files it wrote. Generated classes, public assets and wiki
-output belong to `composer run build`. Existing files, a selected theme, conflicting literal
-declarations or ambiguous imports refuse without writes. Rerunning a make refuses rather than
-replacing source. The reference app uses the same declared input model as these writers.
+Map `App\Theme\Components\` and `App\Generated\Templates\` in Composer and run
+`composer dump-autoload` first. Use `--dry-run --json` to inspect every path before declaring it
+in an open workflow's spec. Every target passes the normal write guard; the make records the files
+it wrote. Generated classes, public assets and wiki output belong to `composer run build`.
+Existing files refuse without writes; rerunning a make refuses rather than replacing source.
 
 ## Assets
 
-Declare every module asset in its module manifest through `->with(new ModuleAsset(...))`.
-`AIC\Module\Contracts\ModuleAssetKind` distinguishes `Style` (CSS), `Script` (JavaScript)
-and `File` (other supported public types). A local name such as `styles` becomes the catalog
-identity `site/styles`. Its source starts with `assets/`, relative to the owning module.
-Nested portable paths are supported. Missing files, undeclared files, symlinks, duplicate
-identities or paths, unsupported extensions and mismatched roles fail the build.
+Every public asset lives in the theme's `assets/` folder, and every file there is published: no
+declaration names it. Its role comes from its extension: `.css` is a stylesheet, `.js` a script,
+any other supported type a file. The catalog identity is `theme_<theme>/<path>`, such as
+`theme_app/site.css`. Nested portable paths are supported. Symlinks, nonportable names and
+unsupported extensions fail the build.
 
-Declared styles are published individually and bundled in module dependency and declaration
-order into `public/assets/aic.css`, followed by selected-theme styles in their declaration order.
-Every bundled input is declared. Scripts, images, maps,
-fonts and other declared files retain their bytes under `public/assets/<module>/`. Declaring
-a script publishes it; a page or component must still select it when needed. Theme assets use
-the same ModuleAsset roles and validation, logical names such as `theme_app/base` and aliases
-under `public/assets/themes/app/`. They share the same fingerprint and HTTP policy.
+Stylesheets are published individually and bundled in path order into `public/assets/aic.css`;
+number a file's name (`10-tokens.css`) to order the cascade. Scripts, images, maps, fonts and
+other files keep their bytes under `public/assets/themes/<theme>/`. Publishing a script does not
+select it; a page or component must still load it when needed. Every asset shares the same
+fingerprint and HTTP policy.
 
 The generated `AIC\Http\Contracts\PublicAssets` lookup resolves logical names to canonical
 fingerprinted URLs. Its exact URL lookup accepts that URL or its declared compatibility alias.

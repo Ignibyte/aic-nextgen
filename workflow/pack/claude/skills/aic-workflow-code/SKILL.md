@@ -23,11 +23,12 @@ another file, add its row to the manifest first; the run records it as declared 
   redirect), an Api (JSON or XML), a Stream (events or a download), a Command (a CLI exit code)
   or a Job (queued or scheduled work). A controller returns its kind's response and nothing
   else; a helper goes in `src/Service/`.
-- **Components are data.** A component's constructor takes the ready values as public promoted
-  properties. Its declared template, `modules/<name>/templates/components/<name>.tpl.php`, is plain PHP
+- **Components are data, in the theme.** A component's constructor takes the ready values as
+  public promoted properties. It lives with its template in the theme `config/app.php` names:
+  `themes/<theme>/components/<Name>/<Name>.php` and `<name>.tpl.php`. The template is plain PHP
   with `<?= expression ?>`, the alternative `if`/`foreach` syntax and property reads: no
-  function or method calls.
-- **The build.** After a change to a manifest, a template or a module's assets, run
+  function or method calls. A module holds no template or asset; its controllers build components.
+- **The build.** After a change to a manifest, a template or a theme asset, run
   `composer run build`. It writes `generated/` (including compiled classes in
   `generated/templates/`), `build/surface.json`, `build/assets.json`, `public/assets/` and
   `docs/wiki/`; never edit those by hand. These exact inventories and generated directories
@@ -36,13 +37,13 @@ another file, add its row to the manifest first; the run records it as declared 
   migration or first site theme, prefer `bin/aic make:*` (`bin/aic command:list` lists them) to writing it by
   hand: it writes the class in its folder, adds the manifest call, and the result passes every
   gate. `--dry-run` lists the paths it will write; add each to the manifest first.
-- **Themes and templates.** `make:component` and a default `make:page` register `ModuleTemplate`
-  through the module manifest's `with()` call. `make:page --component=<Class>` reuses an existing
-  declared component. `make:theme <name>` selects the first site theme, creates typed region data,
-  `themes/<name>/layouts/html.tpl.php` and `page.tpl.php`, CSS and an exported `HtmlLayout` service.
-  It refuses an existing selection or file. The exact Composer prefix
-  `"App\\Generated\\Templates\\": "generated/templates/"` must be configured first; run
-  `composer dump-autoload`. Use the dry-run to declare every authored path and the site manifest.
+- **Themes and templates.** `make:component <Class>` writes the component and its template into
+  the theme and edits no manifest. A default `make:page` writes its own view there too;
+  `make:page --component=<Class>` reuses a theme component. `make:theme <name>` writes
+  `themes/<name>/layouts/` (`Page.php`, `html.tpl.php`, `page.tpl.php`), CSS and an exported
+  `HtmlLayout` service, then prints the `config/app.php`, Composer and PHPCS lines to add. The
+  Composer prefixes for `App\\Theme\\Components\\` and `App\\Generated\\Templates\\` must be configured
+  first; run `composer dump-autoload`. Use the dry-run to declare every path it lists.
 - **Find before you add.** `bin/aic code:search` and `bin/aic code:refs` before you write a
   class: reuse what the app has instead of a second copy.
 

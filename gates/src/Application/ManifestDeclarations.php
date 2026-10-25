@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use AIC\Module\Contracts\Binding;
-use AIC\Module\Contracts\ModuleAsset;
 use AIC\Module\Contracts\ModuleCommand;
 use AIC\Module\Contracts\ModuleDeclaration;
 use AIC\Module\Contracts\ModuleEntry;
@@ -14,8 +13,6 @@ use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\ModuleMiddleware;
 use AIC\Module\Contracts\ModuleRoute;
 use AIC\Module\Contracts\ModuleSchedule;
-use AIC\Module\Contracts\ModuleTemplate;
-use AIC\Module\Contracts\ModuleTheme;
 use AIC\Module\Contracts\PluginTag;
 use InvalidArgumentException;
 
@@ -29,15 +26,12 @@ final readonly class ManifestDeclarations
     /** The exact declaration contracts supported by this build. */
     private const array TYPES = [
         Binding::class,
-        ModuleAsset::class,
         ModuleCommand::class,
         ModuleEntry::class,
         ModuleJob::class,
         ModuleMiddleware::class,
         ModuleRoute::class,
         ModuleSchedule::class,
-        ModuleTemplate::class,
-        ModuleTheme::class,
         PluginTag::class,
     ];
 

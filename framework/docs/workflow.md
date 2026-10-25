@@ -61,8 +61,8 @@ surface inventory, rather than scanning runtime objects.
 
 Make commands create authored files and edit the owning manifest through the same guard. They
 record what was made. Declare the exact resulting paths in the open run first, run the build and
-keep generated outputs with the authored change. [modules.md](modules.md#generate-authored-rendering-files)
-covers declared component, page and theme generation.
+keep generated outputs with the authored change. [modules.md](modules.md#generate-theme-files)
+covers component, page and theme generation.
 
 ## Command inventory
 

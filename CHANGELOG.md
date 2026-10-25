@@ -6,6 +6,20 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **The theme owns every component, layout and asset** (#153, epic #151). `config/app.php` names
+  the theme; `themes/app/` holds `layouts/` (`html.tpl.php`, `page.tpl.php` and `Page.php`, whose
+  Region properties are the regions), `components/<Name>/` (each Component class with its
+  `.tpl.php`) and `assets/`. Modules hold no component, template or asset, and their manifests
+  declare no presentation: `ModuleTemplate`, `ModuleTheme`, `ModuleAsset` and `ModuleAssetKind`
+  are gone, and the build finds the theme itself. `make:component <Class>` writes into the theme
+  and edits no manifest; `make:page` writes its own view there; `make:theme` prints the
+  `config/app.php`, Composer and PHPCS lines to add. Every file in the theme's `assets/` is
+  published, CSS bundled in path order. Deptrac's Theme layer keeps the theme off the modules;
+  gate:26 refuses a Component, `templates/` or `assets/` in a module. `build/surface.json` gains a
+  `theme` object and the wiki a Theme section. Asset URLs move from `/assets/site/` to
+  `/assets/themes/app/`. Every page renders the same HTML as before; all 32 gates, the native
+  site and the 185-expectation probe sweep pass.
+
 - **Compiled catalog atoms and contextual markers** (#114). All 15 framework atoms now use
   fixed declared `.tpl.php` inputs and package-owned compiled classes. Conditional attributes and
   quoted-value control flow emit no block comments; ordinary body blocks keep their markers.

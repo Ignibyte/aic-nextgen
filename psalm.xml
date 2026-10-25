@@ -37,6 +37,7 @@
     <projectFiles>
         <directory name="framework/src"/>
         <directory name="modules"/>
+        <directory name="themes"/>
         <directory name="generated"/>
         <directory name="public"/>
         <directory name="bootstrap"/>
@@ -52,7 +53,8 @@
         <directory name="workflow/probes/sweep"/>
         <ignoreFiles>
             <!-- Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96). -->
-            <directory name="modules/*/templates"/>
+            <file name="themes/*/components/*/*.tpl.php"/>
+            <file name="themes/*/layouts/*.tpl.php"/>
             <directory name="vendor"/>
             <directory name=".rector-cache"/>
             <directory name=".psalm-cache"/>

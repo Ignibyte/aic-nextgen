@@ -6,7 +6,8 @@ imports:
 deptrac:
   # Templates are checked by gate:25, not the class tools.
   exclude_files:
-    - '#/modules/[^/]+/templates/#'
+    - '#\.tpl\.php$#'
   paths:
     - ./modules
+    - ./themes
     - ./generated

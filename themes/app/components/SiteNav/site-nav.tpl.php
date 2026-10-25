@@ -1,0 +1,2 @@
+<?php /** @var \App\Theme\Components\SiteNav\SiteNav $siteNav */ ?>
+<nav id="site-nav" aria-label="Demos"><?php foreach ($siteNav->links as $keyedComponent): ?><?= $keyedComponent ?><?php endforeach ?></nav>

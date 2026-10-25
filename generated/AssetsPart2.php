@@ -22,15 +22,15 @@ final readonly class AssetsPart2
     {
         return [
             new PublicAsset(
-                'site/favicon',
-                '/assets/fdec9885297e5185a9cd820792ab53cbb9a51ab715a42b2b3f6e008d7290db46/site/fa'
-                    . 'vicon.svg',
-                'fdec9885297e5185a9cd820792ab53cbb9a51ab715a42b2b3f6e008d7290db46/site/favicon.sv'
-                    . 'g',
-                'image/svg+xml',
-                '7be53ea497c123d3cee7c3e431893bbe93acefa344164ac75b18471408a114c6',
-                240,
-                '/assets/site/favicon.svg',
+                'tessera/tessera.csp.iife.js',
+                '/assets/ff9b99fbf3ae7103450b9e2e7d61fdf38577c268e8917adc64ea3758d15d33a4/tessera'
+                    . '-0.1.0/tessera.csp.iife.js',
+                'ff9b99fbf3ae7103450b9e2e7d61fdf38577c268e8917adc64ea3758d15d33a4/tessera-0.1.0/t'
+                    . 'essera.csp.iife.js',
+                'text/javascript; charset=utf-8',
+                'c200d65b0c2ead2ba9b1467249b5b245eda6f65f48c7072252ee23bb3a2c646b',
+                124_302,
+                '/assets/tessera-0.1.0/tessera.csp.iife.js',
             ),
             ...(new AssetsPart3())->all(),
         ];

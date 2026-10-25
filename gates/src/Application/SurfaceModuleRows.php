@@ -13,9 +13,6 @@ use AIC\Module\Contracts\ModuleSection;
 use AIC\Module\Contracts\PluginTag;
 use Closure;
 use Gates\Domain\ModuleDefinition;
-use Gates\Domain\PresentationInventory;
-use Gates\Domain\TemplateBinding;
-use Gates\Domain\ThemeBinding;
 
 use function array_map;
 
@@ -26,11 +23,6 @@ use function array_map;
  */
 final readonly class SurfaceModuleRows
 {
-    /** @param PresentationInventory|null $presentationInventory The actual checked presentation planned by the build. */
-    public function __construct(private ?PresentationInventory $presentationInventory = null)
-    {
-    }
-
     /**
      * @param ModuleDefinition $moduleDefinition A module.
      *
@@ -39,7 +31,6 @@ final readonly class SurfaceModuleRows
     public function row(ModuleDefinition $moduleDefinition): array
     {
         return [
-            ...$this->presentation($moduleDefinition->name),
             'bindings' => self::bindings($moduleDefinition),
             'blocks' => $moduleDefinition->entries(ModuleSection::Blocks),
             'exports' => $moduleDefinition->entries(ModuleSection::Exports),
@@ -76,76 +67,6 @@ final readonly class SurfaceModuleRows
                 static fn (ModuleSchedule $moduleSchedule): string => $moduleSchedule->name,
                 $moduleDefinition->declared(ModuleSchedule::class),
             )),
-        ];
-    }
-
-    /**
-     * @param string $module The owning module name.
-     *
-     * @return array<string, list<array<string, string>>> Its checked templates, theme, regions and theme assets.
-     */
-    private function presentation(string $module): array
-    {
-        $rows = ['templates' => [], 'themes' => [], 'regions' => [], 'themeAssets' => []];
-
-        foreach ($this->presentationInventory->templates ?? [] as $binding) {
-            if ($binding->owner !== $module) {
-                continue;
-            }
-
-            $rows['templates'][] = $this->template($binding);
-        }
-
-        $theme = $this->presentationInventory->theme ?? null;
-
-        if ($theme === null || $theme->owner !== $module) {
-            return $rows;
-        }
-
-        return ['templates' => $rows['templates'], ...$this->themeRows($theme)];
-    }
-
-    /**
-     * @param ThemeBinding $themeBinding The selected theme owned by this module.
-     *
-     * @return array<string, list<array<string, string>>> Its document/page, regions and public declarations.
-     */
-    private function themeRows(ThemeBinding $themeBinding): array
-    {
-        $rows = ['themes' => [], 'regions' => [], 'themeAssets' => []];
-        $declaration = $themeBinding->moduleTheme;
-        $rows['themes'][] = ['html' => $themeBinding->html->source,
-        'name' => $declaration->name,
-        'page' => $themeBinding->page->source,
-        'pageData' => $declaration->pageData,
-        ];
-
-        foreach ($declaration->regions as $property => $name) {
-            $rows['regions'][] = ['property' => $property, 'name' => $name];
-        }
-
-        foreach ($declaration->assets as $asset) {
-            $rows['themeAssets'][] = ['kind' => $asset->moduleAssetKind->name,
-            'name' => $asset->name,
-            'path' => 'themes/' . $declaration->name . '/' . $asset->source,
-            ];
-        }
-
-        return $rows;
-    }
-
-    /**
-     * @param TemplateBinding $templateBinding One actual compiled mapping.
-     *
-     * @return array<string, string> The source, input and generated identities with their role.
-     */
-    private function template(TemplateBinding $templateBinding): array
-    {
-        return ['component' => $templateBinding->component,
-        'generated' => $templateBinding->generated,
-        'role' => $templateBinding->role->name,
-        'source' => $templateBinding->source,
-        'templateClass' => $templateBinding->templateClass,
         ];
     }
 

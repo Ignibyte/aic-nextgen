@@ -65,7 +65,7 @@ final readonly class ThemeAppHtmlTemplate
     {
         return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport"'
             . " content=\"width=device-width, initial-scale=1\">\n"
-            . "<link rel=\"icon\" href=\"/assets/site/favicon.svg\" type=\"image/svg+xml\">\n"
+            . "<link rel=\"icon\" href=\"/assets/themes/app/favicon.svg\" type=\"image/svg+xml\">\n"
             . '<title>'
             . self::text($themeLayout->name)
             . '</title><meta name="tessera-layout" content="'

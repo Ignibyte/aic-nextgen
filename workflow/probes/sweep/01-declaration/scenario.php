@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * 01-declaration (#119; #101 AC 2, 3, 6; #104): a declared file asset rebuilds
+ * 01-declaration (#119; #101 AC 2, 3, 6; #104; #153): a theme file asset rebuilds
  * without declaring its generated outputs, which direct writes cannot edit.
  * At code an undeclared file, including an inventory filename suffix,
  * a new RawHtml grant and an edited rule file hold the run, and it advances
@@ -32,22 +32,22 @@ $shell = static fn (string $command): string => '{"session_id":"probe","cwd":"{r
     . '{"command":"' . $command . '"}}';
 $verifyAsset = <<<'PHP'
 require 'vendor/autoload.php';
-$source = file_get_contents('modules/site/assets/workflow-probe.txt');
-$published = file_get_contents('public/assets/site/workflow-probe.txt');
+$source = file_get_contents('themes/app/assets/workflow-probe.txt');
+$published = file_get_contents('public/assets/themes/app/workflow-probe.txt');
 $inventory = json_decode(file_get_contents('build/assets.json'), true, 512, JSON_THROW_ON_ERROR);
-$rows = array_values(array_filter($inventory['assets'], static fn (array $row): bool => $row['name'] === 'site/workflow-probe'));
+$rows = array_values(array_filter($inventory['assets'], static fn (array $row): bool => $row['name'] === 'theme_app/workflow-probe.txt'));
 $assets = new App\Generated\Assets();
-$asset = $assets->named('site/workflow-probe');
+$asset = $assets->named('theme_app/workflow-probe.txt');
 $canonical = $asset === null ? false : file_get_contents('public/assets/' . $asset->file);
 $ok = $source !== false && $source === $published && $source === $canonical && $inventory['schema'] === 'aic.assets/1'
-    && count($rows) === 1 && $rows[0]['aliasPath'] === '/assets/site/workflow-probe.txt'
-    && preg_match('#^/assets/[a-f0-9]{64}/site/workflow-probe[.]txt$#D', $rows[0]['path']) === 1
+    && count($rows) === 1 && $rows[0]['aliasPath'] === '/assets/themes/app/workflow-probe.txt'
+    && preg_match('#^/assets/[a-f0-9]{64}/themes/app/workflow-probe[.]txt$#D', $rows[0]['path']) === 1
     && $rows[0]['mediaType'] === 'text/plain; charset=utf-8'
     && $rows[0]['sha256'] === hash('sha256', $source) && $rows[0]['size'] === strlen($source)
     && $asset !== null && $asset->file === $rows[0]['file'] && $asset->mediaType === $rows[0]['mediaType']
     && $asset->path === $rows[0]['path'] && $asset->aliasPath === $rows[0]['aliasPath']
     && $asset->sha256 === $rows[0]['sha256'] && $asset->size === $rows[0]['size']
-    && $assets->byPath('/assets/site/workflow-probe.txt') === $asset && $assets->byPath($asset->path) === $asset;
+    && $assets->byPath('/assets/themes/app/workflow-probe.txt') === $asset && $assets->byPath($asset->path) === $asset;
 fwrite($ok ? STDOUT : STDERR, $ok ? "asset publication and catalog match\n" : "asset publication or catalog differs\n");
 exit($ok ? 0 : 1);
 PHP;
@@ -78,13 +78,12 @@ return new ProbeScenario([
         'var/workflow/spec-1.md',
         '| `CHANGELOG.md` | modify | The fix, named |',
         "| `CHANGELOG.md` | modify | The fix, named |\n"
-            . "| `modules/site/site.module.php` | modify | Declare the public probe file |\n"
-            . '| `modules/site/assets/workflow-probe.txt` | create | The declared file asset source |',
+            . '| `themes/app/assets/workflow-probe.txt` | create | The theme file asset source |',
     ),
     new ReplaceStep(
         'var/workflow/spec-1.md',
         "1. Only the label's text changes.",
-        "1. The label's text changes and a declared site file asset is rebuilt; no routes change.",
+        "1. The label's text changes and a theme file asset is rebuilt; no routes change.",
     ),
     ...array_slice($plan, 2),
     $probePlan->label(),
@@ -117,13 +116,7 @@ return new ProbeScenario([
         2,
         "build/assets.json is the build's: composer run build writes it.",
     ),
-    new ReplaceStep(
-        'modules/site/site.module.php',
-        "    ->with(new ModuleAsset('styles', 'assets/site.css', ModuleAssetKind::Style))\n",
-        "    ->with(new ModuleAsset('styles', 'assets/site.css', ModuleAssetKind::Style))\n"
-            . "    ->with(new ModuleAsset('workflow-probe', 'assets/workflow-probe.txt', ModuleAssetKind::File))\n",
-    ),
-    new WriteStep('modules/site/assets/workflow-probe.txt', 'stray.txt.fixture'),
+    new WriteStep('themes/app/assets/workflow-probe.txt', 'stray.txt.fixture'),
     new CommandStep(['composer', 'run', 'build']),
     new CommandStep(['php', '-r', $verifyAsset]),
     new RunStep('inspection-due', [

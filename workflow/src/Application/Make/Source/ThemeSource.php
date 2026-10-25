@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Make\Source;
 
-use function lcfirst;
-use function strtr;
-
 /** Authored typed region data and restricted templates for the first selected site theme. */
 final readonly class ThemeSource
 {
@@ -16,13 +13,13 @@ final readonly class ThemeSource
 
         declare(strict_types=1);
 
-        namespace App\Site\Component;
+        namespace App\Theme\Layouts;
 
         use AIC\Component\Contracts\Component;
         use AIC\Component\Contracts\Region;
 
-        /** The selected theme's authored page data, made by bin/aic make:theme (#148). */
-        final readonly class {class} implements Component
+        /** The theme's page data, made by bin/aic make:theme (#148, #153): one Region per region. */
+        final readonly class Page implements Component
         {
             /**
              * @param Region $header  The page header.
@@ -55,23 +52,19 @@ final readonly class ThemeSource
         </body></html>
         PHP;
 
-    /** Every declared Region occurs exactly once. */
+    /** Every Region occurs exactly once. */
     private const string PAGE = <<<'PHP'
-        <?php /** @var \App\Site\Component\{class} ${variable} */ ?>
-        <header><?= ${variable}->header ?></header>
-        <main class="theme-page"><?= ${variable}->content ?></main>
-        <nav><?= ${variable}->nav ?></nav>
-        <footer><?= ${variable}->footer ?></footer>
+        <?php /** @var \App\Theme\Layouts\Page $page */ ?>
+        <header><?= $page->header ?></header>
+        <main class="theme-page"><?= $page->content ?></main>
+        <nav><?= $page->nav ?></nav>
+        <footer><?= $page->footer ?></footer>
         PHP;
 
-    /**
-     * @param string $class The page input's short name.
-     *
-     * @return string Its authored PHP source.
-     */
-    public function data(string $class): string
+    /** @return string The page data class's source. */
+    public function data(): string
     {
-        return strtr(self::DATA, ['{class}' => $class]) . "\n";
+        return self::DATA . "\n";
     }
 
     /** @return string The authored document template. */
@@ -80,17 +73,13 @@ final readonly class ThemeSource
         return self::HTML . "\n";
     }
 
-    /**
-     * @param string $class The page input's short name.
-     *
-     * @return string The authored region template.
-     */
-    public function page(string $class): string
+    /** @return string The page template, placing each region. */
+    public function page(): string
     {
-        return strtr(self::PAGE, ['{class}' => $class, '{variable}' => lcfirst($class)]) . "\n";
+        return self::PAGE . "\n";
     }
 
-    /** @return string A real declared stylesheet without a module or favicon assumption. */
+    /** @return string A starting stylesheet, with no favicon assumed. */
     public function css(): string
     {
         return "body { margin: 1rem auto; padding: 0 1rem; max-width: 72rem; font-family: system-ui, sans-serif; }\n"

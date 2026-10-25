@@ -10,7 +10,6 @@ use AIC\Component\Contracts\Component;
 final readonly class TemplateBinding
 {
     /**
-     * @param string                  $owner         The declaring module or fixed source package.
      * @param class-string<Component> $component     The actual typed input class.
      * @param string                  $source        Its project-relative authored source.
      * @param string                  $generated     Its project-relative generated PHP path.
@@ -18,7 +17,6 @@ final readonly class TemplateBinding
      * @param TemplateRole            $role          Whether children carry component markers or remain transparent.
      */
     public function __construct(
-        public string $owner,
         public string $component,
         public string $source,
         public string $generated,

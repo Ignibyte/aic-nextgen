@@ -18,6 +18,7 @@ use function array_values;
 use function count;
 use function file_get_contents;
 use function fwrite;
+use function glob;
 use function implode;
 use function is_file;
 use function sort;
@@ -25,6 +26,7 @@ use function strlen;
 use function substr;
 
 use const ARRAY_FILTER_USE_BOTH;
+use const GLOB_ONLYDIR;
 use const PHP_EOL;
 use const STDERR;
 use const STDOUT;
@@ -44,8 +46,8 @@ final readonly class MakeScaffoldGate
     /**
      * How to make the module again.
      */
-    private const string REGENERATE = 'to make it again: rm -rf modules/scaffold; composer run build; run the ten lines of '
-        . 'Gates\\Application\\ScaffoldSequence with bin/aic; composer run build.';
+    private const string REGENERATE = 'to make it again: rm -rf modules/scaffold themes/app/components/Scaffold*; composer run build; '
+        . 'run the ten lines of Gates\\Application\\ScaffoldSequence with bin/aic; composer run build.';
 
     /**
      * @param ScaffoldFiles          $scaffoldFiles The overlay the commands write to.
@@ -89,7 +91,8 @@ final readonly class MakeScaffoldGate
             return 1;
         }
 
-        fwrite($stdout, 'gate:31 — modules/scaffold/ is what the ' . count(ScaffoldSequence::LINES) . ' make lines make: '
+        fwrite($stdout, 'gate:31 — modules/scaffold/ and its theme components are what the ' . count(ScaffoldSequence::LINES)
+            . ' make lines make: '
             . count($this->scaffoldFiles->made()) . ' file(s), byte for byte.' . PHP_EOL);
 
         return 0;
@@ -184,13 +187,17 @@ final readonly class MakeScaffoldGate
      */
     private function committed(string $root): array
     {
+        $components = glob($root . '/' . ScaffoldFiles::THEME . '*', GLOB_ONLYDIR);
+        $folders = [ScaffoldFiles::FOLDER, ...array_map(
+            static fn (string $folder): string => substr($folder, strlen($root) + 1) . '/',
+            $components === false ? [] : $components,
+        )];
         $files = [];
-        $folder = $root . '/' . ScaffoldFiles::FOLDER;
 
-        foreach ($this->fileLister->files($folder) as $file) {
-            $path = ScaffoldFiles::FOLDER . substr($file, strlen($folder));
-
-            $files[] = $path;
+        foreach ($folders as $folder) {
+            foreach ($this->fileLister->files($root . '/' . $folder) as $file) {
+                $files[] = $folder . substr($file, strlen($root . '/' . $folder));
+            }
         }
 
         sort($files);

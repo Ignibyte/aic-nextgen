@@ -6,7 +6,7 @@ namespace App\Generated\Templates;
 
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Exception\UnknownComponent;
-use App\Site\Component\Page;
+use App\Theme\Layouts\Page;
 
 /**
  * Page's markup, compiled from

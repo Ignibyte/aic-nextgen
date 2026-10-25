@@ -11,6 +11,7 @@ use AIC\Routing\Domain\Route;
 use AIC\Schedule\Domain\Schedule;
 use Gates\Domain\ClassKinds;
 use Gates\Domain\ModuleDefinition;
+use InvalidArgumentException;
 use JsonException;
 
 use function array_map;
@@ -27,7 +28,8 @@ use const JSON_UNESCAPED_UNICODE;
  * with its name, class and kind, and every queue job with its name, class and
  * kind, and every schedule with its cadence and job, in declaration order. A kind is read from the
  * class's interfaces, so it is never declared twice. Each route names the module that declares it
- * (#92, #93: every route is a module's), and the modules follow in build order with what each declares.
+ * (#92, #93: every route is a module's), and the modules follow in build order with what each declares, then
+ * the theme with its components, layouts and assets (#153).
  * Each command, job and schedule names its module, `framework` for the framework's own, and a
  * `kinds` table closes it (#109).
  */
@@ -37,11 +39,13 @@ final readonly class SurfaceManifest
      * @param ClassKinds        $classKinds        Reads each entry point's kind.
      * @param SurfaceModuleRows $surfaceModuleRows The module rows and the owners of named entries (#109).
      * @param SurfaceKinds      $surfaceKinds      The kinds table (#109).
+     * @param SurfaceTheme      $surfaceTheme      The theme object (#153).
      */
     public function __construct(
         private ClassKinds $classKinds = new ClassKinds(),
         private SurfaceModuleRows $surfaceModuleRows = new SurfaceModuleRows(),
         private SurfaceKinds $surfaceKinds = new SurfaceKinds(),
+        private SurfaceTheme $surfaceTheme = new SurfaceTheme(),
     ) {
     }
 
@@ -52,7 +56,8 @@ final readonly class SurfaceManifest
      * @param list<Schedule>         $schedules The schedules (#47).
      * @param list<ModuleDefinition> $modules   The modules, in build order (#92).
      *
-     * @throws JsonException When the manifest cannot be encoded.
+     * @throws JsonException            When the manifest cannot be encoded.
+     * @throws InvalidArgumentException When a theme asset cannot be read.
      *
      * @return string The manifest, pretty-printed, with a final newline.
      */
@@ -73,6 +78,7 @@ final readonly class SurfaceManifest
         }
 
         $manifest['modules'] = array_map($this->surfaceModuleRows->row(...), $modules);
+        $manifest['theme'] = $this->surfaceTheme->row();
         $manifest['kinds'] = $this->surfaceKinds->rows();
 
         return json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n";

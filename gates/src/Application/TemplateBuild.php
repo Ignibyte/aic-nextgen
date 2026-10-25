@@ -14,7 +14,6 @@ use Gates\Domain\TemplateUnit;
 use InvalidArgumentException;
 
 use function array_fill_keys;
-use function array_keys;
 use function array_map;
 use function file_get_contents;
 use function in_array;
@@ -26,23 +25,22 @@ use function strrpos;
 use function substr;
 
 /**
- * Compiles the actual declared module/theme inventory into generated/templates.
- * Source ownership, input identity and placement are validated before output;
- * no directory or basename convention selects an authored template.
+ * Compiles the theme's templates (#153) into generated/templates. Input identity and
+ * placement are validated before output.
  */
 final readonly class TemplateBuild
 {
     /**
-     * @param TemplateReader             $templateReader        Validates, types and lowers a template.
-     * @param TemplateCompiler           $templateCompiler      Compiles the lowered template.
-     * @param string                     $root                  The repo root.
-     * @param PresentationInventory|null $presentationInventory The checked inputs; null resolves the actual module declarations.
+     * @param TemplateReader        $templateReader        Validates, types and lowers a template.
+     * @param TemplateCompiler      $templateCompiler      Compiles the lowered template.
+     * @param string                $root                  The repo root.
+     * @param PresentationInventory $presentationInventory The theme's checked templates.
      */
     public function __construct(
         private TemplateReader $templateReader,
         private TemplateCompiler $templateCompiler,
         private string $root,
-        private ?PresentationInventory $presentationInventory = null,
+        private PresentationInventory $presentationInventory,
     ) {
     }
 
@@ -124,7 +122,7 @@ final readonly class TemplateBuild
     private function units(): array
     {
         $units = [];
-        $presentationInventory = $this->inventory();
+        $presentationInventory = $this->presentationInventory;
 
         foreach ($presentationInventory->templates as $binding) {
             $components = array_map(static fn (TemplateUnit $templateUnit): string => $templateUnit->binding->component, $units);
@@ -203,7 +201,7 @@ final readonly class TemplateBuild
         $source = $templateUnit->binding->source;
 
         if ($source === $theme->page->source) {
-            $this->regions($templateUnit->nodes, array_keys($theme->moduleTheme->regions), $templateUnit->binding->component);
+            $this->regions($templateUnit->nodes, $theme->regions, $templateUnit->binding->component);
         }
 
         if ($source !== $theme->html->source) {
@@ -211,17 +209,6 @@ final readonly class TemplateBuild
         }
 
         $this->document($templateUnit->nodes);
-    }
-
-    /**
-     * @throws InvalidArgumentException When actual module declarations or sources are invalid.
-     *
-     * @return PresentationInventory The sole explicit selection authority for every build consumer.
-     */
-    private function inventory(): PresentationInventory
-    {
-        return $this->presentationInventory
-            ?? (new PresentationBuild($this->root))->plan((new ModuleBuild($this->root))->modules());
     }
 
     /**

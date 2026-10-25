@@ -31,13 +31,13 @@ use const T_OPEN_TAG;
  */
 final readonly class TemplateValidator
 {
-    /** Every authored source requires a matching validated declaration. */
-    private const string PLACEMENT = 'declare a .tpl.php source under modules/<module>/templates/components/'
+    /** Every template sits in the theme (#153), or is one of the framework's atoms. */
+    private const string PLACEMENT = 'place a template in the configured theme: themes/<theme>/components/<Name>/<name>.tpl.php'
         . ' or themes/<theme>/layouts/, or a fixed framework atom catalog binding';
 
-    /** Explicit tpl sources remain confined to authored component or theme layout folders. */
-    private const string DECLARED_PLACE = '#^(?:modules/[a-z0-9_]+/templates/components|themes/[a-z][a-z0-9_-]*/layouts)'
-        . '/(?:[a-z0-9][a-z0-9._-]*/)*[a-z0-9][a-z0-9._-]*\\.tpl\\.php\\z#';
+    /** A theme's component and layout templates. */
+    private const string DECLARED_PLACE = '#^themes/[a-z][a-z0-9-]*/(?:components/[A-Z][A-Za-z0-9]*|layouts)'
+        . '/[a-z0-9][a-z0-9-]*\\.tpl\\.php\\z#';
 
     /**
      * The short open tag refusal's detail.

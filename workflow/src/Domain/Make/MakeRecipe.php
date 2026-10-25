@@ -14,7 +14,7 @@ namespace AIC\Workflow\Domain\Make;
 final readonly class MakeRecipe
 {
     /**
-     * @param string            $module      The module.
+     * @param string            $module      The module; empty for a component, which lives in the theme (#153).
      * @param string            $target      What it made, for the record and the answer.
      * @param list<MadeFile>    $files       The files it writes.
      * @param ManifestCall|null $call        The call it adds; null when it edits no manifest.
@@ -22,6 +22,7 @@ final readonly class MakeRecipe
      * @param bool              $needsSite   Whether the module must require `site`.
      * @param string            $component   A component file that must exist (`--component`); empty for none.
      * @param bool              $makesModule Whether it is `make:module`, which writes the manifest itself.
+     * @param list<string>      $lines       What else to do by hand, printed after the files (#153).
      */
     public function __construct(
         public string $module,
@@ -32,14 +33,17 @@ final readonly class MakeRecipe
         public bool $needsSite = false,
         public string $component = '',
         public bool $makesModule = false,
+        public array $lines = [],
     ) {
     }
 
     /**
-     * @return string The module's manifest, relative to the project's root.
+     * @return string The module's manifest, relative to the project's root; empty for a make that names no module.
      */
     public function manifest(): string
     {
-        return 'modules/' . $this->module . '/' . $this->module . '.module.php';
+        return $this->module === ''
+            ? ''
+            : 'modules/' . $this->module . '/' . $this->module . '.module.php';
     }
 }

@@ -38,6 +38,11 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
     public const string FOLDER = 'modules/scaffold/';
 
     /**
+     * The scaffold's components in the theme (#153), which the overlay hides too: every folder starting so.
+     */
+    public const string THEME = 'themes/app/components/Scaffold';
+
+    /**
      * @var array<string, string> The files written, by path.
      */
     private array $written = [];
@@ -58,7 +63,7 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
     #[Override]
     public function read(string $path): ?string
     {
-        if (str_starts_with($path, self::FOLDER)) {
+        if (self::hidden($path)) {
             return $this->written[$path] ?? null;
         }
 
@@ -98,7 +103,7 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
     {
         $absolute = $this->root . '/' . $path;
 
-        return !str_starts_with($path . '/', self::FOLDER) && (is_link($absolute) || is_dir($absolute))
+        return !self::hidden($path . '/') && (is_link($absolute) || is_dir($absolute))
             ? $path . ' is a symlink or a directory'
             : '';
     }
@@ -125,10 +130,20 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
     }
 
     /**
-     * @return array<string, string> The files written under the folder, by path.
+     * @return array<string, string> The files written under the hidden folders, by path.
      */
     public function made(): array
     {
-        return array_filter($this->written, static fn (string $path): bool => str_starts_with($path, self::FOLDER), ARRAY_FILTER_USE_KEY);
+        return array_filter($this->written, self::hidden(...), ARRAY_FILTER_USE_KEY);
+    }
+
+    /**
+     * @param string $path A path.
+     *
+     * @return bool Whether the overlay hides it: under the module's folder or a scaffold component's.
+     */
+    private static function hidden(string $path): bool
+    {
+        return str_starts_with($path, self::FOLDER) || str_starts_with($path, self::THEME);
     }
 }

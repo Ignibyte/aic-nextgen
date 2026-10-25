@@ -13,16 +13,15 @@ declare(strict_types=1);
  * console command, job and schedule, and the modules, so an agent can read the
  * app's whole surface in one file. The commands, jobs and schedules come from
  * the console kernel (#93); the database is never opened, because PdoDatabase
- * connects on its first query. A component template, plain PHP
- * (declared module/theme `.tpl.php` inputs), is checked by gate:25's grammar, typed, and compiled
- * to its declared class under `generated/templates/`; the
- * lookup that finds each component's template is generated/ModuleTemplates and
- * one `<M>Templates` per module, and a module component with no template is
- * refused (#98).
- * Declared module styles in requires order, then declared theme styles in
- * declaration order, build public/assets/aic.css. Declared files and scripts
- * are copied to their catalog paths. The build owns public/assets/:
- * a file there it would not write is deleted, and --check calls it stale.
+ * connects on its first query. The theme config/app.php names (#153) holds
+ * every component, layout and asset: each `.tpl.php` there, plain PHP, is
+ * checked by gate:25's grammar, typed, and compiled to its class under
+ * `generated/templates/`; the lookup that finds each component's template is
+ * generated/ThemeTemplates and its parts (#98), and a template anywhere else
+ * is refused. The theme's stylesheets, in path order, build
+ * public/assets/aic.css; its other files are copied to their catalog paths.
+ * The build owns public/assets/: a file there it would not write is deleted,
+ * and --check calls it stale.
  *
  * The modules come first (#92): every modules/<name>/<name>.module.php is read
  * and checked, and the wiring under generated/ is written (or, with --check,
@@ -53,9 +52,8 @@ use Gates\Application\ModuleBuild;
 use Gates\Application\PresentationBuild;
 use Gates\Application\ProjectProfile;
 use Gates\Application\PublicAssetOrphans;
-use Gates\Application\RetiredTemplates;
 use Gates\Application\SurfaceManifest;
-use Gates\Application\SurfaceModuleRows;
+use Gates\Application\SurfaceTheme;
 use Gates\Application\TemplateBuild;
 use Gates\Application\TemplateCompiler;
 use Gates\Application\TemplatesSource;
@@ -88,20 +86,18 @@ $moduleBuild = new ModuleBuild($root);
 try {
     $atoms = (new AtomBuild(new PlainTemplateReader(), $root))->files();
     $modules = $moduleBuild->modules();
-    $presentation = (new PresentationBuild($root))->plan($modules);
+    $presentation = (new PresentationBuild($root))->plan($appConfig->theme);
     $templateBuild = new TemplateBuild(new PlainTemplateReader(), new TemplateCompiler(), $root, $presentation);
     $templates = $templateBuild->classes();
     $templateClasses = [];
-    $templateOwners = [];
     $components = $templateBuild->components();
 
     foreach ($presentation->templates as $binding) {
         $templateClasses[$binding->component] = $binding->templateClass;
-        $templateOwners[$binding->component] = $binding->owner;
     }
 
     $tessera = (new TesseraBuild($root, $appConfig->tessera, new SystemProcessRunner()))->files();
-    $assetCatalog = (new AssetCatalogBuild($root))->plan($modules, $tessera, $presentation->theme);
+    $assetCatalog = (new AssetCatalogBuild($root))->plan($tessera, $presentation->theme);
     $generated = $moduleBuild->files($modules) + $templates + $atoms;
     $theme = $presentation->theme;
     $generated[$root . '/generated/Presentation.php'] = (new WebPresentationSource())->file($theme);
@@ -111,21 +107,19 @@ try {
         $generated[$root . '/generated/ThemePageTemplate.php'] = (new WebPresentationSource())->pageTemplate($theme);
         $components[ThemePage::class] = true;
         $templateClasses[ThemePage::class] = 'App\\Generated\\ThemePageTemplate';
-        $templateOwners[ThemePage::class] = $theme->owner;
     }
 
     foreach ((new AssetCatalogSource())->files($assetCatalog->assets) as $file => $source) {
         $generated[$root . '/generated/' . $file] = $source;
     }
 
-    foreach ((new TemplatesSource())->files($root, $modules, $components, $templateClasses, $templateOwners) as $file => $source) {
+    foreach ((new TemplatesSource())->files($components, $templateClasses) as $file => $source) {
         $generated[$root . '/generated/' . $file] = $source;
     }
     $buildOutputs = new BuildOutputs($root);
     $orphans = [
         ...$buildOutputs->orphans($root . '/generated', $generated, '*.php', true),
         ...($atoms === [] ? [] : $buildOutputs->orphans($root . '/framework/src/Component/Application/Templates', $atoms, '*.php', true)),
-        ...(new RetiredTemplates($root))->files($modules),
     ];
     $staleGenerated = [...$buildOutputs->stale($generated), ...$orphans];
 } catch (InvalidArgumentException|JsonException|RuntimeException $exception) {
@@ -160,7 +154,7 @@ $consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTra
 try {
     $routes = $moduleBuild->routes($modules, new RouteCollector(new RoutePatternCompiler()))->table();
     $outputs = [
-        $root . '/build/surface.json' => (new SurfaceManifest(surfaceModuleRows: new SurfaceModuleRows($presentation)))->json($routes->routes(), $consoleKernel->commands(), $consoleKernel->jobs(), $consoleKernel->schedules(), $modules),
+        $root . '/build/surface.json' => (new SurfaceManifest(surfaceTheme: new SurfaceTheme($root, $presentation->theme)))->json($routes->routes(), $consoleKernel->commands(), $consoleKernel->jobs(), $consoleKernel->schedules(), $modules),
     ] + $assetCatalog->outputs + $templates;
     // Only the package's source checkout owns these outputs; an app never writes vendor/.
     if ((new ProjectProfile())->profile($root) === GateProfile::Aic) {

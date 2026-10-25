@@ -9,13 +9,8 @@ declare(strict_types=1);
  */
 
 use AIC\Module\Contracts\ModuleManifest;
-use AIC\Module\Contracts\ModuleTemplate;
 use AIC\Module\Contracts\RouteMethod;
 use App\Note\Block\NoteTipsBlock;
-use App\Note\Component\NoteCard;
-use App\Note\Component\NoteList;
-use App\Note\Component\StockLinks;
-use App\Note\Component\StockListing;
 use App\Note\Controller\NoteCreatePost;
 use App\Note\Controller\NoteDeletePost;
 use App\Note\Controller\NoteListPage;
@@ -31,10 +26,6 @@ use App\Note\Migration\CreateStockItemsTable;
 use App\Note\Migration\IndexNotesByCreation;
 
 return (new ModuleManifest('note'))
-    ->with(new ModuleTemplate(NoteCard::class, 'templates/components/note-card.tpl.php'))
-    ->with(new ModuleTemplate(NoteList::class, 'templates/components/note-list.tpl.php'))
-    ->with(new ModuleTemplate(StockLinks::class, 'templates/components/stock-links.tpl.php'))
-    ->with(new ModuleTemplate(StockListing::class, 'templates/components/stock-listing.tpl.php'))
     ->requires('site')
     ->route(RouteMethod::Get, '/notes', NoteListPage::class)
     ->route(RouteMethod::Post, '/notes', NoteCreatePost::class)

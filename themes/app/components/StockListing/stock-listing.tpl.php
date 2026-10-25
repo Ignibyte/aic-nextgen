@@ -1,0 +1,2 @@
+<?php /** @var \App\Theme\Components\StockListing\StockListing $stockListing */ ?>
+<p id="stock-limit">The last <?= $stockListing->limit ?>.</p><ul id="stock"><?php foreach ($stockListing->lines as $line): ?><li><?= $line ?></li><?php endforeach ?></ul>

@@ -6,8 +6,8 @@ namespace App\Scaffold\Controller;
 
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
-use App\Scaffold\Component\ScaffoldCard;
 use App\Site\Service\HtmlLayout;
+use App\Theme\Components\ScaffoldCard\ScaffoldCard;
 use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;

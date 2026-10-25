@@ -4,29 +4,18 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Component\Contracts\Component;
-use AIC\Module\Contracts\ModuleTemplate;
-use Gates\Domain\ModuleDefinition;
 use Gates\Domain\PresentationInventory;
 use Gates\Domain\TemplateBinding;
-use Gates\Domain\TemplateRole;
 use InvalidArgumentException;
-use ReflectionClass;
 
 use function array_diff;
 use function array_fill_keys;
 use function array_intersect_key;
 use function array_map;
-use function class_exists;
 use function implode;
-use function is_a;
-use function realpath;
-use function str_starts_with;
-use function strrpos;
 use function strtolower;
-use function substr;
 
-/** Plan and validate the complete authored presentation before any output is published. */
+/** Plan and validate the theme's presentation (#153) before any output is published. */
 final readonly class PresentationBuild
 {
     /** @param string $root The project folder. */
@@ -35,55 +24,29 @@ final readonly class PresentationBuild
     }
 
     /**
-     * @param list<ModuleDefinition> $modules The actual validated module declarations.
+     * @param string|null $theme The theme `config/app.php` names; null for an app with no HTML.
      *
-     * @throws InvalidArgumentException When a presentation declaration is invalid, ambiguous or absent for an authored tpl source.
+     * @throws InvalidArgumentException When the theme breaks its layout, an identity repeats, or a template sits
+     *                                  outside the theme.
      *
      * @return PresentationInventory The complete checked inputs, without generated or public writes.
      */
-    public function plan(array $modules): PresentationInventory
+    public function plan(?string $theme): PresentationInventory
     {
-        $templates = $this->componentBindings($modules);
-        $theme = (new ThemeDeclarations($this->root))->read($modules);
-
-        if ($theme !== null) {
-            $templates = [...$templates, $theme->html, $theme->page];
-        }
+        $themeBinding = (new ThemeBuild($this->root))->read($theme);
+        $templates = $themeBinding === null
+            ? []
+            : [...$themeBinding->components, $themeBinding->html, $themeBinding->page];
 
         $this->claims($templates);
 
-        return new PresentationInventory($templates, $theme);
+        return new PresentationInventory($templates, $themeBinding);
     }
 
     /**
-     * @param ModuleDefinition $moduleDefinition The declaring module.
-     * @param string           $component        Its input class.
+     * @param list<TemplateBinding> $templates The complete template inventory.
      *
-     * @throws InvalidArgumentException When it is not a canonical final Component from the module's source.
-     *
-     * @return class-string<Component> The checked input identity.
-     */
-    public function component(ModuleDefinition $moduleDefinition, string $component): string
-    {
-        if (!class_exists($component) || !is_a($component, Component::class, true)) {
-            throw new InvalidArgumentException($component . ': declared input must be a component data class.');
-        }
-
-        $reflectionClass = new ReflectionClass($component);
-
-        if ($reflectionClass->getName() !== $component) {
-            throw new InvalidArgumentException($component . ': declared input must use its canonical class identity.');
-        }
-
-        $this->owned($moduleDefinition, $reflectionClass);
-
-        return $component;
-    }
-
-    /**
-     * @param list<TemplateBinding> $templates The complete explicit template inventory.
-     *
-     * @throws InvalidArgumentException When a source, input or generated identity repeats, or a tpl file is undeclared.
+     * @throws InvalidArgumentException When a source, input or generated identity repeats, or a tpl file is out of place.
      */
     private function claims(array $templates): void
     {
@@ -103,7 +66,7 @@ final readonly class PresentationBuild
     }
 
     /**
-     * @param TemplateBinding $templateBinding One explicit template binding.
+     * @param TemplateBinding $templateBinding One template binding.
      *
      * @return list<string> Independently unique source, input, output path and PHP class claims.
      */
@@ -118,9 +81,9 @@ final readonly class PresentationBuild
     }
 
     /**
-     * @param list<TemplateBinding> $templates The only selected tpl sources.
+     * @param list<TemplateBinding> $templates The theme's templates.
      *
-     * @throws InvalidArgumentException When any observed authored candidate has no explicit declaration.
+     * @throws InvalidArgumentException When a template candidate sits anywhere the theme did not bind it.
      */
     private function undeclared(array $templates): void
     {
@@ -135,78 +98,8 @@ final readonly class PresentationBuild
         $undeclared = array_diff($files, $sources);
 
         if ($undeclared !== []) {
-            throw new InvalidArgumentException('Undeclared presentation templates: ' . implode(', ', $undeclared) . '.');
+            throw new InvalidArgumentException("Templates outside the theme's components and layouts: " . implode(', ', $undeclared)
+                . '. Components live in themes/<theme>/components/<Name>/.');
         }
-    }
-
-    /**
-     * @param list<ModuleDefinition> $modules Modules in dependency order.
-     *
-     * @throws InvalidArgumentException When a component or its authored source is not owned and valid.
-     *
-     * @return list<TemplateBinding> The explicit module component bindings.
-     */
-    private function componentBindings(array $modules): array
-    {
-        $bindings = [];
-
-        foreach ($modules as $module) {
-            foreach ($module->declared(ModuleTemplate::class) as $declaration) {
-                $bindings[] = $this->binding($module, $declaration);
-            }
-        }
-
-        return $bindings;
-    }
-
-    /**
-     * @param ModuleDefinition        $moduleDefinition The declaring module.
-     * @param ReflectionClass<object> $reflectionClass  The existing component data class.
-     *
-     * @throws InvalidArgumentException When its canonical identity or actual source is foreign.
-     */
-    private function owned(ModuleDefinition $moduleDefinition, ReflectionClass $reflectionClass): void
-    {
-        $component = $reflectionClass->getName();
-        $base = realpath($this->root . '/modules/' . $moduleDefinition->name . '/src');
-        $file = $reflectionClass->getFileName();
-
-        if (!$reflectionClass->isFinal() || !$moduleDefinition->owns($component)) {
-            throw new InvalidArgumentException($component . ': declared input must be the owning module canonical final class.');
-        }
-
-        if ($base === false || $file === false || !str_starts_with($file, $base . '/')) {
-            throw new InvalidArgumentException($component . ': declared input must live inside its owning module source.');
-        }
-    }
-
-    /**
-     * @param ModuleDefinition $moduleDefinition The owning module.
-     * @param ModuleTemplate   $moduleTemplate   The explicitly paired component and source.
-     *
-     * @throws InvalidArgumentException When its input or template path is invalid.
-     *
-     * @return TemplateBinding Its deterministic input and generated output identities.
-     */
-    private function binding(ModuleDefinition $moduleDefinition, ModuleTemplate $moduleTemplate): TemplateBinding
-    {
-        $component = $this->component($moduleDefinition, $moduleTemplate->component);
-
-        if (!str_starts_with($moduleTemplate->template, 'templates/components/')) {
-            throw new InvalidArgumentException($moduleTemplate->template . ': component templates live under templates/components/.');
-        }
-
-        $source = (new DeclaredPaths($this->root))->file('modules/' . $moduleDefinition->name, $moduleTemplate->template);
-        $short = substr($component, (int) strrpos($component, '\\') + 1);
-        $template = $moduleDefinition->studlyName() . $short . 'Template';
-
-        return new TemplateBinding(
-            $moduleDefinition->name,
-            $component,
-            $source,
-            'generated/templates/' . $template . '.php',
-            'App\\Generated\\Templates\\' . $template,
-            TemplateRole::Component,
-        );
     }
 }

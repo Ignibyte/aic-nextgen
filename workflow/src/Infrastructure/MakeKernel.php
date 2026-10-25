@@ -55,16 +55,17 @@ final readonly class MakeKernel
         $projectFiles = $this->projectFiles ?? new LocalProjectFiles($this->root);
         $makeParts = new MakeParts($this->root, $projectFiles, $moduleFolders, '', self::PACKAGE, $this->watched);
         $makeRun = $makeParts->makeRun();
+        $makeComponents = $makeParts->makeComponents();
 
         return [
             'make:api' => new MakeApiCommand($makeRun),
             'make:block' => new MakeBlockCommand($makeRun),
             'make:command' => new MakeCommandCommand($makeRun),
-            'make:component' => new MakeComponentCommand($makeRun),
+            'make:component' => new MakeComponentCommand($makeRun, $makeComponents),
             'make:job' => new MakeJobCommand($makeRun),
             'make:migration' => new MakeMigrationCommand($makeRun, new UtcTime(new SystemClock())),
             'make:module' => new MakeModuleCommand($makeRun, $moduleFolders),
-            'make:page' => new MakePageCommand($makeRun),
+            'make:page' => new MakePageCommand($makeRun, $makeComponents),
             'make:theme' => $makeParts->theme($makeRun),
         ];
     }
