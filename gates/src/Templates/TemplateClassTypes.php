@@ -26,9 +26,6 @@ use function get_debug_type;
 use function in_array;
 use function interface_exists;
 use function is_a;
-use function str_replace;
-use function str_starts_with;
-use function ucwords;
 
 /**
  * What reflection tells the build about a template's classes (#97): the
@@ -64,7 +61,7 @@ final readonly class TemplateClassTypes
      * @param string $component The class the typing line names.
      * @param string $path      The template, relative to the repo root.
      *
-     * @throws InvalidArgumentException When it is not a final component class owned by the declaring module.
+     * @throws InvalidArgumentException When it is not a final component class, or not its theme folder's own.
      */
     public function component(string $component, string $path): void
     {
@@ -133,21 +130,21 @@ final readonly class TemplateClassTypes
      * @param class-string $component The validated component class.
      * @param string       $path      Its template's relative path.
      *
-     * @throws InvalidArgumentException When the template names a different module's component.
+     * @throws InvalidArgumentException When a theme component's template names another folder's class (#153).
      */
     private function owned(string $component, string $path): void
     {
-        $match = self::regexMatch('#^modules/([a-z0-9_]+)/templates/components/#', $path);
+        $match = self::regexMatch('#^themes/[a-z][a-z0-9-]*/components/([A-Z][A-Za-z0-9]*)/#', $path);
 
         if (!array_key_exists(1, $match)) {
             return;
         }
 
-        $owner = 'App\\' . str_replace('_', '', ucwords($match[1], '_')) . '\\Component\\';
+        $owner = 'App\\Theme\\Components\\' . $match[1] . '\\' . $match[1];
 
-        if (!str_starts_with($component, $owner)) {
+        if ($component !== $owner) {
             throw new InvalidArgumentException(
-                TemplateRefusal::ComponentType->value . ": a component template renders its module's own " . $owner,
+                TemplateRefusal::ComponentType->value . "': a component template renders its own folder's class, " . $owner,
             );
         }
     }

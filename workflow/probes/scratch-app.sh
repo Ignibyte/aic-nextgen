@@ -62,6 +62,9 @@ look() {
         module="$(sed -nE 's#^modules/([^/]+)/.*#\1#p' <<< "${path}")"
         if [ -n "${module}" ]; then
             php bin/aic code:tree "${module}" < /dev/null > /dev/null
+        else
+            # A file outside the modules, such as one in the theme (#153): outline its folder.
+            php bin/aic code:tree "$(dirname "${path}")/" < /dev/null > /dev/null || true
         fi
         php bin/aic code:tree "${path}" < /dev/null > /dev/null || true
         if [ "${path%.php}" != "${path}" ]; then

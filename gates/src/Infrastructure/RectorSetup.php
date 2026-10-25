@@ -49,8 +49,9 @@ final readonly class RectorSetup
     {
         return [
             // Templates belong to gate:25, never the class tools.
+            '*.tpl.php',
             ...array_map(static fn (string $path): string => $root . '/' . $path, [
-                'modules/*/templates', 'vendor', 'storage', 'tools', '.psalm-cache', '.rector-cache',
+                'vendor', 'storage', 'tools', '.psalm-cache', '.rector-cache',
             ]),
             // Throwing closures need @throws, which arrow functions cannot carry.
             ClosureToArrowFunctionRector::class,

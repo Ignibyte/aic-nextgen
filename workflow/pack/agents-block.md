@@ -24,7 +24,7 @@ the run's spec and the paths its file manifest declares.
 
 Each phase has a skill in `.claude/skills/aic-workflow-*`; `/aic:workflow:start` begins.
 
-Use `bin/aic make:* --dry-run` to plan new components, pages and the first site theme.
-Declare its authored source paths and module-manifest edit. Component templates are explicit
-`ModuleTemplate` declarations; `make:theme` selects one site `ModuleTheme` and creates its
-typed regions and layout service. `composer run build` owns `generated/templates/` and assets.
+Use `bin/aic make:* --dry-run` to plan new components, pages and the first theme, and declare
+every path it lists. Components, layouts and assets live in the theme `config/app.php` names:
+`themes/<theme>/components/<Name>/` holds a component's class and its template. Modules hold no
+templates or assets. `composer run build` owns `generated/templates/` and public assets.

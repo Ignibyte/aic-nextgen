@@ -14,27 +14,23 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 use InvalidArgumentException;
 use Override;
 
-use function array_key_exists;
-
 /**
- * `bin/aic make:component <module> <Class> [--export] [--dry-run] [--json]`
- * (#122): the component, one promoted `title`, and its declared `*.tpl.php`; with
- * `--export`, the manifest exports it. A page gives it its caller
- * (`make:page … --component=<Class>`).
+ * `bin/aic make:component <Class> [--dry-run] [--json]` (#122, #153): the
+ * component, one promoted `title`, and its template, together in the theme's
+ * `components/<Class>/`. It edits no manifest: any module may build it. A page
+ * gives it its caller (`make:page … --component=<Class>`).
  */
 final readonly class MakeComponentCommand implements Command
 {
     /**
      * @param MakeRun        $makeRun        The run.
-     * @param MakeComponents $makeComponents Writes the component and its template.
+     * @param MakeComponents $makeComponents Writes the component and its template in the theme.
      * @param MakeNames      $makeNames      The rules.
-     * @param MakeCalls      $makeCalls      The export call.
      */
     public function __construct(
         private MakeRun $makeRun,
-        private MakeComponents $makeComponents = new MakeComponents(),
+        private MakeComponents $makeComponents,
         private MakeNames $makeNames = new MakeNames(),
-        private MakeCalls $makeCalls = new MakeCalls(),
     ) {
     }
 
@@ -50,13 +46,7 @@ final readonly class MakeComponentCommand implements Command
     {
         return $this->makeRun->run(
             $commandInput,
-            new CommandUsage(
-                'make:component',
-                'make:component <module> <Class> [--export] [--dry-run] [--json]',
-                ['export', 'dry-run'],
-                [],
-                2,
-            ),
+            new CommandUsage('make:component', 'make:component <Class> [--dry-run] [--json]', ['dry-run'], [], 1),
             $this->recipe(...),
         );
     }
@@ -64,25 +54,19 @@ final readonly class MakeComponentCommand implements Command
     /**
      * @param ParsedArguments $parsedArguments The line.
      *
-     * @throws WorkflowRefusal When a name breaks a rule.
+     * @throws WorkflowRefusal When the name breaks a rule, or the app names no theme.
      *
      * @return MakeRecipe The component and its template.
      */
     private function recipe(ParsedArguments $parsedArguments): MakeRecipe
     {
-        [$module, $namespace, $class] = $this->makeNames->target('', $parsedArguments);
-        $call = $this->makeCalls->template($class, $namespace);
-
-        if (array_key_exists('export', $parsedArguments->flags)) {
-            $call = $call->then($this->makeCalls->classOnly('export', 'Component', $class, $namespace));
-        }
+        $class = $this->makeNames->class($parsedArguments->positional(0), '');
 
         return new MakeRecipe(
-            $module,
+            '',
             $class,
-            $this->makeComponents->files($module, $namespace, $class, 'make:component (#122)'),
-            $call,
-            ['template ' . $namespace . '\\Component\\' . $class],
+            $this->makeComponents->files($class, 'make:component (#122)'),
+            null,
         );
     }
 }

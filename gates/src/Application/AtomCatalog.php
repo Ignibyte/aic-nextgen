@@ -86,7 +86,6 @@ final readonly class AtomCatalog
         }
 
         return new TemplateBinding(
-            'aic/framework',
             $component,
             'framework/templates/components/' . $source . '.tpl.php',
             'framework/src/Component/Application/Templates/' . $class . '.php',

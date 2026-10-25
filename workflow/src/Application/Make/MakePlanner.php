@@ -14,7 +14,6 @@ use function array_key_exists;
 use function hash;
 use function in_array;
 use function str_starts_with;
-use function strtolower;
 use function substr;
 
 /**
@@ -34,7 +33,7 @@ final readonly class MakePlanner
      * @param ProjectFiles            $projectFiles     The project's files.
      * @param SurfaceSource           $surfaceSource    The framework's commands.
      * @param Closure(): list<string> $workflowCommands The workflow's command names, read when asked.
-     * @param MakePresentation        $makePresentation Checks declared rendering prerequisites.
+     * @param MakePresentation        $makePresentation Checks the autoload lines a theme file needs.
      */
     public function __construct(
         private ManifestEdits $manifestEdits,
@@ -54,6 +53,7 @@ final readonly class MakePlanner
     public function check(MakeRecipe $makeRecipe): void
     {
         $this->module($makeRecipe);
+        $this->makePresentation->check($makeRecipe, $this->projectFiles);
         $this->claims($makeRecipe);
 
         if ($makeRecipe->component !== '' && $this->projectFiles->read($makeRecipe->component) === null) {
@@ -74,6 +74,10 @@ final readonly class MakePlanner
      */
     private function module(MakeRecipe $makeRecipe): void
     {
+        if ($makeRecipe->module === '') {
+            return;
+        }
+
         $there = in_array($makeRecipe->module, $this->moduleFolders->names(), true);
 
         if ($makeRecipe->makesModule) {
@@ -117,15 +121,14 @@ final readonly class MakePlanner
      */
     private function claims(MakeRecipe $makeRecipe): void
     {
-        if ($makeRecipe->claims === [] && $makeRecipe->component === '') {
+        if ($makeRecipe->claims === []) {
             return;
         }
 
         $declared = $this->declared();
-        $this->makePresentation->check($makeRecipe, $this->projectFiles, $declared);
 
         foreach ($makeRecipe->claims as $claim) {
-            $this->claim($this->identity($claim), $declared);
+            $this->claim($claim, $declared);
         }
     }
 
@@ -164,25 +167,12 @@ final readonly class MakePlanner
             }
 
             foreach ($manifestFacts->claims() as $claim) {
-                $identity = $this->identity($claim);
-                $this->unique($manifest, $identity, $declared);
-                $declared[$identity] = $manifest;
+                $this->unique($manifest, $claim, $declared);
+                $declared[$claim] = $manifest;
             }
         }
 
         return $declared;
-    }
-
-    /**
-     * @param string $claim The literal claim retained in inspected facts.
-     *
-     * @return string Its comparison key; PHP class identities are case insensitive.
-     */
-    private function identity(string $claim): string
-    {
-        return str_starts_with($claim, 'template ')
-            ? strtolower($claim)
-            : $claim;
     }
 
     /**

@@ -20,7 +20,7 @@ final readonly class SurfaceModule
      * @param list<string>        $migrations   Its migrations, in order.
      * @param list<string>        $factories    Its factories.
      * @param list<string>        $prefixes     Protected prefixes.
-     * @param SurfaceDeclarations $declarations The actual checked service and presentation declarations.
+     * @param SurfaceDeclarations $declarations Its plugins, bindings and middleware.
      */
     public function __construct(
         public string $name,

@@ -19,12 +19,12 @@ final readonly class ComponentSource
 
         declare(strict_types=1);
 
-        namespace {namespace}\Component;
+        namespace App\Theme\Components\{class};
 
         use AIC\Component\Contracts\Component;
 
         /**
-         * {class}, made by bin/aic {made}: its title, shown by its declared template.
+         * {class}, made by bin/aic {made}: its title, shown by its template.
          */
         final readonly class {class} implements Component
         {
@@ -39,14 +39,13 @@ final readonly class ComponentSource
         PHP;
 
     /**
-     * @param string $namespace The module's namespace, without its last `\\`.
-     * @param string $class     The class.
-     * @param string $made      The make that made it, such as `make:component (#122)`.
+     * @param string $class The class.
+     * @param string $made  The make that made it, such as `make:component (#122)`.
      *
      * @return string The file's bytes.
      */
-    public function source(string $namespace, string $class, string $made): string
+    public function source(string $class, string $made): string
     {
-        return strtr(self::TEMPLATE, ['{namespace}' => $namespace, '{class}' => $class, '{made}' => $made]) . "\n";
+        return strtr(self::TEMPLATE, ['{class}' => $class, '{made}' => $made]) . "\n";
     }
 }

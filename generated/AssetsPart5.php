@@ -22,15 +22,15 @@ final readonly class AssetsPart5
     {
         return [
             new PublicAsset(
-                'tessera/tessera.csp.iife.js.map',
-                '/assets/fdec9885297e5185a9cd820792ab53cbb9a51ab715a42b2b3f6e008d7290db46/tessera'
-                    . '-0.1.0/tessera.csp.iife.js.map',
-                'fdec9885297e5185a9cd820792ab53cbb9a51ab715a42b2b3f6e008d7290db46/tessera-0.1.0/t'
-                    . 'essera.csp.iife.js.map',
-                'application/json; charset=utf-8',
-                '55ac49ce2c4ef4aa2aa6233669686641a6c07eb865898d9b708ab291e4087d56',
-                556_385,
-                '/assets/tessera-0.1.0/tessera.csp.iife.js.map',
+                'theme_app/20-base.css',
+                '/assets/ff9b99fbf3ae7103450b9e2e7d61fdf38577c268e8917adc64ea3758d15d33a4/themes/'
+                    . 'app/20-base.css',
+                'ff9b99fbf3ae7103450b9e2e7d61fdf38577c268e8917adc64ea3758d15d33a4/themes/app/20-b'
+                    . 'ase.css',
+                'text/css; charset=utf-8',
+                '2abc13c98ff5e3fd53fdc2fcc029d112693f3d1f17b989cfc3059d30db989a4d',
+                1_394,
+                '/assets/themes/app/20-base.css',
             ),
             ...(new AssetsPart6())->all(),
         ];

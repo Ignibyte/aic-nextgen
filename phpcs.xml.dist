@@ -9,6 +9,7 @@
 
     <file>framework/src</file>
     <file>modules</file>
+    <file>themes</file>
     <file>generated</file>
     <file>public</file>
     <file>bootstrap</file>
@@ -23,7 +24,7 @@
     <file>workflow/probes/sweep</file>
 
     <!-- Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96). -->
-    <exclude-pattern>*/modules/*/templates/*</exclude-pattern>
+    <exclude-pattern>*.tpl.php</exclude-pattern>
     <exclude-pattern>vendor/*</exclude-pattern>
     <exclude-pattern>storage/*</exclude-pattern>
     <exclude-pattern>.rector-cache/*</exclude-pattern>
@@ -40,6 +41,8 @@
                 <element key="modules/note/src" value="App\Note"/>
                 <element key="modules/scaffold/src" value="App\Scaffold"/>
                 <element key="modules/site/src" value="App\Site"/>
+                <element key="themes/app/components" value="App\Theme\Components"/>
+                <element key="themes/app/layouts" value="App\Theme\Layouts"/>
                 <element key="generated/templates" value="App\Generated\Templates"/>
                 <element key="generated" value="App\Generated"/>
                 <element key="gates/src" value="Gates"/>

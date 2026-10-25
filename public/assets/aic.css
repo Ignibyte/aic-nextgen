@@ -1,24 +1,4 @@
-/* Built by composer run build from declared module and selected-theme CSS: edit those and run composer run build, never this file. */
-
-/* modules/site/assets/site.css */
-/* The site module's nav block (SiteNavBlock): its links in a row, the current one in bold. */
-
-#site-nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 1rem;
-}
-
-#site-nav [aria-current="page"] {
-    color: var(--aic-text);
-    font-weight: 600;
-    text-decoration: none;
-}
-
-/* themes/app/assets/theme.css */
-.theme-page {
-    min-width: 0;
-}
+/* Built by composer run build from the theme's CSS: edit those and run composer run build, never this file. */
 
 /* themes/app/assets/10-tokens.css */
 /* Tokens: every colour, size and font the theme uses, light first, dark by the system's scheme. */
@@ -245,4 +225,24 @@ time {
     width: 1px;
     height: 1px;
     overflow: hidden;
+}
+
+/* themes/app/assets/site.css */
+/* The site module's nav block (SiteNavBlock): its links in a row, the current one in bold. */
+
+#site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+}
+
+#site-nav [aria-current="page"] {
+    color: var(--aic-text);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* themes/app/assets/theme.css */
+.theme-page {
+    min-width: 0;
 }

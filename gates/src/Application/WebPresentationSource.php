@@ -19,7 +19,6 @@ use InvalidArgumentException;
 use Override;
 
 use function array_map;
-use function array_values;
 use function implode;
 use function strtr;
 use function var_export;
@@ -38,7 +37,7 @@ final readonly class WebPresentationSource
              */
             public function create(): WebPresentation
             {
-                return new WebPresentation(new ModuleTemplates(), new Assets());
+                return new WebPresentation(new ThemeTemplates(), new Assets());
             }
         }
         PHP;
@@ -56,7 +55,7 @@ final readonly class WebPresentationSource
             {
                 $assets = new Assets();
 
-                return new WebPresentation(new ModuleTemplates(), $assets, new ThemeLayouts($assets));
+                return new WebPresentation(new ThemeTemplates(), $assets, new ThemeLayouts($assets));
             }
         }
         PHP;
@@ -159,7 +158,7 @@ final readonly class WebPresentationSource
     }
 
     /**
-     * @param ThemeBinding|null $themeBinding The explicit selection, absent for bounded legacy apps.
+     * @param ThemeBinding|null $themeBinding The configured theme, absent for an app with no theme.
      *
      * @throws InvalidArgumentException When generated imports or structure conflict.
      *
@@ -168,7 +167,7 @@ final readonly class WebPresentationSource
     public function file(?ThemeBinding $themeBinding = null): string
     {
         $namespace = 'App\\Generated';
-        $classes = [WebPresentation::class, InvalidArgumentException::class, $namespace . '\\ModuleTemplates', $namespace . '\\Assets'];
+        $classes = [WebPresentation::class, InvalidArgumentException::class, $namespace . '\\ThemeTemplates', $namespace . '\\Assets'];
         $source = $themeBinding === null
             ? self::SOURCE
             : self::THEMED;
@@ -177,7 +176,7 @@ final readonly class WebPresentationSource
             $namespace,
             $classes,
             [],
-            $this->phpClassFile->generated('the module presentation catalogs', 'the inert presentation factory.'),
+            $this->phpClassFile->generated('the theme presentation catalogs', 'the inert presentation factory.'),
             $source,
         );
     }
@@ -194,10 +193,10 @@ final readonly class WebPresentationSource
     {
         $literals = array_map(
             static fn (string $name): string => var_export($name, true),
-            array_values($themeBinding->moduleTheme->regions),
+            $themeBinding->regions,
         );
         $source = strtr(self::LAYOUTS, [
-            '{identity}' => var_export($themeBinding->moduleTheme->name, true),
+            '{identity}' => var_export($themeBinding->name, true),
             '{regions}' => implode(', ', $literals),
             '{scriptPath}' => var_export($scriptPath, true),
         ]);
@@ -208,7 +207,7 @@ final readonly class WebPresentationSource
             'App\\Generated',
             $classes,
             [],
-            $this->phpClassFile->generated('the selected theme declaration', 'the document and tracked resource factory.'),
+            $this->phpClassFile->generated('the configured theme', 'the document and tracked resource factory.'),
             $source,
         );
     }
@@ -224,7 +223,7 @@ final readonly class WebPresentationSource
     {
         $literals = array_map(
             static fn (string $name): string => var_export($name, true),
-            array_values($themeBinding->moduleTheme->regions),
+            $themeBinding->regions,
         );
         $arguments = array_map(static fn (string $name): string => '$themePage->regions->region(' . $name . ')', $literals);
         $classes = [ThemePage::class, RenderPass::class, InvalidArgumentException::class, UnknownComponent::class,
@@ -237,7 +236,7 @@ final readonly class WebPresentationSource
             'App\\Generated',
             $classes,
             [],
-            $this->phpClassFile->generated('the selected theme declaration', 'the typed page rendering adapter.'),
+            $this->phpClassFile->generated('the configured theme', 'the typed page rendering adapter.'),
             $source,
         );
     }

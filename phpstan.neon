@@ -13,6 +13,7 @@ parameters:
         - rector.php
         - framework/src
         - modules
+        - themes
         - generated
         - public
         - bootstrap
@@ -35,7 +36,7 @@ parameters:
         - vendor/squizlabs/php_codesniffer/src/Util/Tokens.php
     excludePaths:
         # Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
-        - modules/*/templates/*
+        - */*.tpl.php
         - vendor
         - storage (?)
         - tools (?)

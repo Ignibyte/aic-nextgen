@@ -8,9 +8,10 @@ Run `bin/aic workflow:status` before changing a file.
 Use one ticket and one actual workflow run per feature.
 Use the code index before declaring paths and classes.
 Use `bin/aic make:* --dry-run` before creating components, pages or the first site theme.
-Declare every authored source and module-manifest edit it lists.
-Templates are explicit `ModuleTemplate` declarations and compile under `generated/templates/`.
-`make:theme` creates typed regions and a layout service and selects the first `ModuleTheme`.
+Declare every path it lists, module manifests included.
+Components, layouts and assets live in the theme that `config/app.php` names.
+A component's class and template sit together in `themes/<theme>/components/<Name>/`.
+Modules hold no templates or assets. Templates compile under `generated/templates/`.
 The builder owns compiled templates and public assets.
 Follow the engine's phase and blocked rows.
 The engine owns the gate evidence.

@@ -21,12 +21,15 @@ final readonly class AppConfig
     /**
      * @param string         $name    The application's name, as pages show it.
      * @param TesseraRelease $tessera The Tessera release the pages load (#70).
+     * @param string|null    $theme   The folder under `themes/` the build reads the components, layouts and
+     *                                assets from (#153); null for an app with no HTML.
      *
      * @throws InvalidArgumentException When the name is blank.
      */
     public function __construct(
         public string $name,
         public TesseraRelease $tessera,
+        public ?string $theme = null,
     ) {
         if (trim($name) === '') {
             throw new InvalidArgumentException('AppConfig: the application name must not be blank.');

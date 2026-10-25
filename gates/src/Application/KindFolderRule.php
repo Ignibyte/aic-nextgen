@@ -31,7 +31,7 @@ final readonly class KindFolderRule implements ModuleRule
     /**
      * What a module's root may hold besides its manifest, `<name>.module.php`.
      */
-    private const array ROOT = ['src', 'templates', 'assets', 'resources'];
+    private const array ROOT = ['src', 'resources'];
 
     /**
      * @param ClassKinds $classKinds Reads a class's kind.
@@ -88,13 +88,13 @@ final readonly class KindFolderRule implements ModuleRule
             return null;
         }
 
-        if (!$this->inLayout($entry, $parts[3] ?? '')) {
+        if (!$this->inLayout($entry)) {
             return new BoundaryViolation($path, sprintf(
                 '%s is outside the module layout; modules/%s/ holds only %s.module.php, README.md, %s.',
                 $path,
                 $name,
                 $name,
-                'src/, templates/components/, assets/ and resources/',
+                'src/ and resources/ (templates and assets live in the theme, themes/<theme>/)',
             ));
         }
 
@@ -105,13 +105,12 @@ final readonly class KindFolderRule implements ModuleRule
 
     /**
      * @param string $entry The path's entry in the module's root.
-     * @param string $below The entry below it, if any.
      *
-     * @return bool Whether the module layout allows it: `src/`, `templates/components/`, `assets/` or `resources/`.
+     * @return bool Whether the module layout allows it: `src/` or `resources/`.
      */
-    private function inLayout(string $entry, string $below): bool
+    private function inLayout(string $entry): bool
     {
-        return in_array($entry, self::ROOT, true) && ($entry !== 'templates' || $below === 'components');
+        return in_array($entry, self::ROOT, true);
     }
 
     /**
@@ -129,6 +128,11 @@ final readonly class KindFolderRule implements ModuleRule
             ? $parts[3]
             : '';
         $class = $moduleTree->declared($path);
+        $component = $this->componentPlace($path, $class);
+
+        if ($component !== null) {
+            return $component;
+        }
 
         if (!in_array($folder, ClassKinds::FOLDERS, true) || $class === null) {
             return new BoundaryViolation($path, sprintf(
@@ -161,9 +165,7 @@ final readonly class KindFolderRule implements ModuleRule
         ?array $kind,
     ): ?BoundaryViolation {
         if ($kind !== null) {
-            return $kind[1] === $folder
-                ? null
-                : new BoundaryViolation($path, sprintf('%s: %s is a %s; move it to %s%s/.', $path, $class, $kind[0], $source, $kind[1]));
+            return $this->kindFolder($path, $source, $folder, $class, $kind);
         }
 
         if (in_array($folder, ClassKinds::PLAIN_FOLDERS, true)) {
@@ -180,6 +182,47 @@ final readonly class KindFolderRule implements ModuleRule
             $source,
             $source,
             $source,
+        ));
+    }
+
+    /**
+     * @param string                $path   The class's file.
+     * @param string                $source The module's `src/`, relative.
+     * @param string                $folder The kind folder it sits in.
+     * @param string                $class  The class.
+     * @param array{string, string} $kind   Its kind and folder.
+     *
+     * @return BoundaryViolation|null The breach, if the folder is not its kind's.
+     */
+    private function kindFolder(
+        string $path,
+        string $source,
+        string $folder,
+        string $class,
+        array $kind,
+    ): ?BoundaryViolation {
+        return $kind[1] === $folder
+            ? null
+            : new BoundaryViolation($path, sprintf('%s: %s is a %s; move it to %s%s/.', $path, $class, $kind[0], $source, $kind[1]));
+    }
+
+    /**
+     * @param string      $path  A file under a module's `src/`.
+     * @param string|null $class The class it declares, if any.
+     *
+     * @return BoundaryViolation|null The breach, if it is a Component: components live in the theme (#153).
+     */
+    private function componentPlace(string $path, ?string $class): ?BoundaryViolation
+    {
+        if ($class === null || ($this->classKinds->kindOf($class, false)[1] ?? '') !== ClassKinds::THEME_COMPONENTS) {
+            return null;
+        }
+
+        return new BoundaryViolation($path, sprintf(
+            '%s: %s is a Component; components live in the theme: move it to %s/ with its template.',
+            $path,
+            $class,
+            ClassKinds::THEME_COMPONENTS,
         ));
     }
 

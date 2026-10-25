@@ -10,7 +10,8 @@ use function str_starts_with;
 /**
  * `build/surface.json` as the inspect commands read it (#109): the routes,
  * commands, jobs and schedules with their modules, the modules, the kinds,
- * and whether a module manifest changed after the build wrote it.
+ * the theme (#153), and whether a module manifest changed after the build
+ * wrote it.
  */
 final readonly class SurfaceView
 {
@@ -22,6 +23,7 @@ final readonly class SurfaceView
      * @param list<SurfaceModule>                                                                      $modules   The modules.
      * @param list<SurfaceKind>                                                                        $kinds     The kinds.
      * @param bool                                                                                     $stale     Whether manifests changed.
+     * @param SurfaceTheme|null                                                                        $theme     The theme (#153).
      */
     public function __construct(
         public array $routes,
@@ -31,6 +33,7 @@ final readonly class SurfaceView
         public array $modules,
         public array $kinds,
         public bool $stale,
+        public ?SurfaceTheme $theme = null,
     ) {
     }
 

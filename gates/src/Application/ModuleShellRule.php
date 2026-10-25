@@ -11,8 +11,10 @@ use Gates\Domain\ModuleTree;
 use Override;
 
 use function array_any;
+use function count;
 use function fnmatch;
 use function implode;
+use function preg_match;
 use function sprintf;
 use function str_starts_with;
 
@@ -20,8 +22,9 @@ use function str_starts_with;
  * R5 of gate:26 (#94): the app's code lives in `modules/`; outside it sits only
  * the shell, by the project's profile (`ProjectProfile`, #130). Every path git
  * lists falls under the shell, every `App\` PSR-4 prefix maps a module's
- * namespace to its `src/` (or the generated wiring to `generated/`), and no
- * PHP file outside `modules/` and `generated/` declares an `App\` class.
+ * namespace to its `src/` (or the generated wiring to `generated/`, or the
+ * theme's two to its folders, #153), and no PHP file outside `modules/`,
+ * `generated/` and the theme's component and layout folders declares an `App\` class.
  */
 final readonly class ModuleShellRule implements ModuleRule
 {
@@ -69,32 +72,57 @@ final readonly class ModuleShellRule implements ModuleRule
      */
     private function pathViolation(string $path, ?string $class, array $shell): ?BoundaryViolation
     {
-        if (str_starts_with($path, 'modules/') || str_starts_with($path, 'generated/')) {
+        if ($this->appPlace($path, $class)) {
             return null;
         }
 
         if ($class !== null && str_starts_with($class, 'App\\')) {
-            return new BoundaryViolation($path, sprintf(
-                '%s declares %s outside modules/; move it to modules/<name>/src/%s/.',
+            return new BoundaryViolation(
                 $path,
-                $class,
-                $this->folderFor($class),
-            ));
+                sprintf('%s declares %s outside modules/; move it to %s/.', $path, $class, $this->folderFor($class)),
+            );
         }
 
         return array_any($shell, static fn (string $pattern): bool => fnmatch($pattern, $path))
             ? null
             : new BoundaryViolation($path, sprintf(
                 '%s is outside modules/ and the shell; move it into modules/<name>/'
-                    . ' (a declared page layout goes in themes/<theme>/layouts/).',
+                    . ' (a component goes in themes/<theme>/components/<Name>/, a layout in themes/<theme>/layouts/).',
                 $path,
             ));
     }
 
     /**
+     * @param string      $path  A path git lists.
+     * @param string|null $class The class the file declares, if any.
+     *
+     * @return bool Whether the app's code may sit there: a module, the generated wiring, or a theme class.
+     */
+    private function appPlace(string $path, ?string $class): bool
+    {
+        return str_starts_with($path, 'modules/') || str_starts_with($path, 'generated/') || $this->themeClass($path, $class);
+    }
+
+    /**
+     * @param string      $path  A path git lists.
+     * @param string|null $class The class the file declares, if any.
+     *
+     * @return bool Whether it is a theme's class (#153): an `App\Theme\Components\` class in a component folder, or
+     *              an `App\Theme\Layouts\` class in `layouts/`.
+     */
+    private function themeClass(string $path, ?string $class): bool
+    {
+        return $class !== null && (
+            str_starts_with($class, 'App\\Theme\\Components\\') && fnmatch('themes/*/components/*/*.php', $path)
+            || str_starts_with($class, 'App\\Theme\\Layouts\\') && fnmatch('themes/*/layouts/*.php', $path)
+        );
+    }
+
+    /**
      * @param ModuleTree $moduleTree composer.json's prefixes and the modules.
      *
-     * @return list<BoundaryViolation> Every `App\` prefix that maps anywhere but a module's `src/` or `generated/`.
+     * @return list<BoundaryViolation> Every `App\` prefix that maps anywhere but a module's `src/`, `generated/` or the
+     *                                 theme's folders.
      */
     private function prefixViolations(ModuleTree $moduleTree): array
     {
@@ -107,19 +135,53 @@ final readonly class ModuleShellRule implements ModuleRule
         $violations = [];
 
         foreach ($moduleTree->prefixes as $prefix => $folders) {
-            if (!str_starts_with($prefix, 'App\\') || $this->mapsTo($folders, $allowed[$prefix] ?? null)) {
+            if ($this->prefixAllowed($prefix, $folders, $allowed)) {
                 continue;
             }
 
             $violations[] = new BoundaryViolation('composer.json', sprintf(
-                "composer.json maps %s to %s; map each module's namespace to modules/<name>/src/,"
-                    . ' and the generated namespaces to generated/ or generated/templates/.',
+                "composer.json maps %s to %s; map each module's namespace to modules/<name>/src/, the generated namespaces"
+                    . ' to generated/ or generated/templates/, and App\\Theme\\Components\\ and App\\Theme\\Layouts\\ to'
+                    . ' themes/<theme>/components/ and themes/<theme>/layouts/.',
                 $prefix,
                 implode(', ', $folders),
             ));
         }
 
         return $violations;
+    }
+
+    /**
+     * @param string                $prefix  A PSR-4 prefix.
+     * @param list<string>          $folders Its configured folders.
+     * @param array<string, string> $allowed The folder each module and generated prefix maps to.
+     *
+     * @return bool Whether it is not the app's, or maps where the app's prefixes go.
+     */
+    private function prefixAllowed(string $prefix, array $folders, array $allowed): bool
+    {
+        return !str_starts_with($prefix, 'App\\')
+            || $this->mapsTo($folders, $allowed[$prefix] ?? null)
+            || $this->themePrefix($prefix, $folders);
+    }
+
+    /**
+     * @param string       $prefix  An `App\` prefix.
+     * @param list<string> $folders Its configured folders.
+     *
+     * @return bool Whether it is one of the theme's two prefixes, mapped to that folder of one theme.
+     */
+    private function themePrefix(string $prefix, array $folders): bool
+    {
+        $folder = match ($prefix) {
+            'App\\Theme\\Components\\' => 'components',
+            'App\\Theme\\Layouts\\' => 'layouts',
+            default => null,
+        };
+
+        return $folder !== null
+            && count($folders) === 1
+            && preg_match('#^themes/[a-z][a-z0-9-]*/' . $folder . '/\\z#', $folders[0]) === 1;
     }
 
     /**
@@ -136,10 +198,14 @@ final readonly class ModuleShellRule implements ModuleRule
     /**
      * @param string $class A stray `App\` class.
      *
-     * @return string The `src/` folder its kind belongs in.
+     * @return string Where its kind belongs: a module's `src/` folder, or the theme for a component.
      */
     private function folderFor(string $class): string
     {
-        return $this->classKinds->kindOf($class, false)[1] ?? 'Service';
+        $folder = $this->classKinds->kindOf($class, false)[1] ?? 'Service';
+
+        return $folder === ClassKinds::THEME_COMPONENTS
+            ? $folder
+            : 'modules/<name>/src/' . $folder;
     }
 }

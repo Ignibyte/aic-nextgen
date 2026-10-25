@@ -1,28 +1,27 @@
 # Templates
 
-Authored templates are restricted plain PHP compiled at build time. The build reads only explicit
-module and selected-theme declarations and the fixed framework atom catalog. App inputs produce
-ordinary final readonly PHP under `generated/templates/` with the `App\Generated\Templates` Composer prefix. Declare sources as
-shown in [modules.md](modules.md#declared-templates-and-themes); gate:24 checks the compiled output
-and gate:25 checks the grammar.
+Templates are restricted plain PHP compiled at build time. The build reads the theme
+`config/app.php` names and the fixed framework atom catalog. An app's templates compile to
+ordinary final readonly PHP under `generated/templates/` with the `App\Generated\Templates`
+Composer prefix. The theme's layout is in [modules.md](modules.md#the-theme); gate:24 checks the
+compiled output and gate:25 checks the grammar.
 
 ## Identity and placement
 
-A module pairs a final owned Component class with a portable lowercase `.tpl.php` path under
-`modules/<module>/templates/components/`. The filename need not be the class name. A selected theme
-places HTML and page wrappers under `themes/<theme>/layouts/`. Each file begins exactly with its
-fully qualified declared class and lower-camel variable:
+A component's template sits beside its class in the theme, `themes/<theme>/components/<Name>/`,
+named for the class in lower kebab case (`note-card.tpl.php` for `NoteCard`). The HTML and page
+wrappers sit in `themes/<theme>/layouts/`. Each file begins exactly with its fully qualified class
+and lower-camel variable, and a component template types its own folder's class:
 
 ```php
-<?php /** @var \App\Note\Component\NoteCard $noteCard */ ?>
+<?php /** @var \App\Theme\Components\NoteCard\NoteCard $noteCard */ ?>
 <article><h2><?= $noteCard->title ?></h2></article>
 ```
 
-The class, source, owner, wrapper role and generated output come from one validated binding.
-Missing declarations, duplicate mappings, foreign ownership, symlinks and nonportable paths are
-refused before publication. Old `.html.php` sources, unclaimed `.tpl.php` files and unsupported PHP
-inside authored template folders are refused. There is no manifest-free or basename-based input
-mode. A purely API app may select no theme and have no authored templates.
+The class, source, wrapper role and generated output come from one validated binding. Missing
+files, a mismatched class, symlinks and nonportable paths are refused before publication. Old
+`.html.php` sources, a `.tpl.php` anywhere outside the theme, and unsupported PHP inside a
+template folder are refused. An API-only app names no theme and has no templates.
 
 ## Grammar
 

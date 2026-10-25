@@ -22,10 +22,10 @@ final readonly class AssetsPart6
     {
         return [
             new PublicAsset(
-                'theme_app/atoms',
-                '/assets/fdec9885297e5185a9cd820792ab53cbb9a51ab715a42b2b3f6e008d7290db46/themes/'
+                'theme_app/30-atoms.css',
+                '/assets/ff9b99fbf3ae7103450b9e2e7d61fdf38577c268e8917adc64ea3758d15d33a4/themes/'
                     . 'app/30-atoms.css',
-                'fdec9885297e5185a9cd820792ab53cbb9a51ab715a42b2b3f6e008d7290db46/themes/app/30-a'
+                'ff9b99fbf3ae7103450b9e2e7d61fdf38577c268e8917adc64ea3758d15d33a4/themes/app/30-a'
                     . 'toms.css',
                 'text/css; charset=utf-8',
                 'db90f2b56c9be77b5cc4b6e26ed6134e0139638f37cb03107819ab8369bd777d',

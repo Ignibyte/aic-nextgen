@@ -67,7 +67,7 @@ final readonly class WikiModulePage
             ...$this->head($surfaceModule, $surfaceView),
             '',
             ...$this->wikiManifest->lines($surfaceModule, $surfaceView),
-            ...$this->wikiClasses->lines($name, $symbols, $surfaceModule->declarations),
+            ...$this->wikiClasses->lines($name, $symbols),
             ...$this->wikiUsage->lines($name, $crossings),
         ];
 

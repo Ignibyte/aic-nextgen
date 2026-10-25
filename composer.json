@@ -56,7 +56,9 @@
             "App\\Generated\\Templates\\": "generated/templates/",
             "App\\Note\\": "modules/note/src/",
             "App\\Scaffold\\": "modules/scaffold/src/",
-            "App\\Site\\": "modules/site/src/"
+            "App\\Site\\": "modules/site/src/",
+            "App\\Theme\\Components\\": "themes/app/components/",
+            "App\\Theme\\Layouts\\": "themes/app/layouts/"
         }
     },
     "config": {
@@ -119,7 +121,7 @@
         ]
     },
     "scripts-descriptions": {
-        "build": "Write the build-time outputs: the generated wiring, build/surface.json, each component template's class, public/assets/ (the modules' CSS and the theme in aic.css, the modules' other assets copied), and the code wiki in docs/wiki/.",
+        "build": "Write the build-time outputs: the generated wiring, build/surface.json, each component template's class, public/assets/ (the theme's stylesheets in aic.css, its other assets copied), and the code wiki in docs/wiki/.",
         "gate": "Run every quality gate (aic/gates, vendor/bin/aic-gate) and print one gate-summary line; aic-gate --list names each, and composer run gate:N or aic-gate N runs one.",
         "native:serve": "Build the compiled site and serve it on 127.0.0.1:8090 (or the given port) until interrupted."
     }

@@ -8,6 +8,7 @@ use Gates\Infrastructure\RectorSetup;
 // this file names the app's paths.
 return (new RectorSetup())->configure(__DIR__, [
     'modules',
+    'themes',
     'generated',
     'public',
     'bootstrap',

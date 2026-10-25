@@ -23,14 +23,14 @@ use function array_key_exists;
 /**
  * `bin/aic make:page <module> <Class> <path> [--component=<C>] [--post]`
  * (#122): a GET page (`…Page`) showing `--component` in the site's layout, or
- * a view of its own (`<Stem>View`) made with it; with `--post`, a POST page
+ * a view of its own (`<Stem>View`) made with it in the theme (#153); with `--post`, a POST page
  * (`…Post`) that answers 303 to its path. The manifest routes it.
  */
 final readonly class MakePageCommand implements Command
 {
     /**
      * @param MakeRun        $makeRun        The run.
-     * @param MakeComponents $makeComponents Writes a page's own view.
+     * @param MakeComponents $makeComponents Writes a page's own view in the theme.
      * @param MakeNames      $makeNames      The rules.
      * @param MakeCalls      $makeCalls      The route call.
      * @param PageSource     $pageSource     Writes a GET page.
@@ -38,7 +38,7 @@ final readonly class MakePageCommand implements Command
      */
     public function __construct(
         private MakeRun $makeRun,
-        private MakeComponents $makeComponents = new MakeComponents(),
+        private MakeComponents $makeComponents,
         private MakeNames $makeNames = new MakeNames(),
         private MakeCalls $makeCalls = new MakeCalls(),
         private PageSource $pageSource = new PageSource(),
@@ -95,9 +95,9 @@ final readonly class MakePageCommand implements Command
      * @param string          $class           The controller name.
      * @param string          $path            Its route.
      *
-     * @throws WorkflowRefusal When the component name is invalid.
+     * @throws WorkflowRefusal When the component name is invalid, or the app names no theme.
      *
-     * @return MakeRecipe The page and optional declared view.
+     * @return MakeRecipe The page, and its own view in the theme when it names no component.
      */
     private function get(
         ParsedArguments $parsedArguments,
@@ -112,22 +112,16 @@ final readonly class MakePageCommand implements Command
             ? $stem . 'View'
             : $this->makeNames->class($named, '');
         $view = $named === ''
-            ? $this->makeComponents->files($module, $namespace, $component, 'make:page (#122) for ' . $class)
+            ? $this->makeComponents->files($component, 'make:page (#122) for ' . $class)
             : [];
         $source = $this->pageSource->source($namespace, $class, $path, $component, $this->makeNames->words($stem));
         $madeFile = new MadeFile('modules/' . $module . '/src/Controller/' . $class . '.php', $source);
         $needed = $named === ''
             ? ''
-            : 'modules/' . $module . '/src/Component/' . $component . '.php';
+            : $this->makeComponents->folder($component) . $component . '.php';
         $manifestCall = $this->makeCalls->route('Get', $path, $class, $namespace);
-        $claims = ['route GET ' . $path];
 
-        if ($named === '') {
-            $manifestCall = $manifestCall->then($this->makeCalls->template($component, $namespace));
-            $claims[] = 'template ' . $namespace . '\\Component\\' . $component;
-        }
-
-        return new MakeRecipe($module, $class, [...$view, $madeFile], $manifestCall, $claims, true, $needed);
+        return new MakeRecipe($module, $class, [...$view, $madeFile], $manifestCall, ['route GET ' . $path], true, $needed);
     }
 
     /**

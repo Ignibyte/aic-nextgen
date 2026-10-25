@@ -135,9 +135,7 @@ final readonly class ModuleShowCommand implements Command
     {
         $name = $surfaceModule->name;
         $classes = self::moduleClasses($surfaceModule, $entries);
-        $files = ['modules/' . $name . '/' . $name . '.module.php',
-            ...self::classes($surfaceModule->declarations->templates, 'source'),
-            ...self::classes($surfaceModule->declarations->themeAssets, 'path')];
+        $files = ['modules/' . $name . '/' . $name . '.module.php'];
 
         foreach ($classes as $class) {
             foreach ($this->codeLookup->named($class) as $codeSymbol) {
@@ -167,8 +165,6 @@ final readonly class ModuleShowCommand implements Command
             ...self::classes($surfaceModule->declarations->plugins, 'class'),
             ...self::classes($surfaceModule->declarations->bindings, 'class'),
             ...self::classes($surfaceModule->declarations->middleware, 'class'),
-            ...self::classes($surfaceModule->declarations->templates, 'component'),
-            ...self::classes($surfaceModule->declarations->templates, 'templateClass'),
         ];
     }
 
@@ -185,7 +181,6 @@ final readonly class ModuleShowCommand implements Command
     private static function data(SurfaceModule $surfaceModule, array $dependents, array $entries, array $users): array
     {
         return [
-            ...$surfaceModule->declarations->rows(),
             'bindings' => $surfaceModule->declarations->bindings,
             'blocks' => $surfaceModule->blocks,
             'commands' => $entries['commands'] ?? [],

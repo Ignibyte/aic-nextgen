@@ -10,56 +10,74 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 use JsonException;
 use stdClass;
 
-use function array_any;
-use function array_key_exists;
-use function basename;
 use function get_object_vars;
 use function json_decode;
-use function str_starts_with;
-use function strtolower;
+use function preg_match;
+use function str_replace;
+use function strpos;
+use function substr;
 
 use const JSON_THROW_ON_ERROR;
 
-/** Check declared rendering prerequisites before a make writes any authored file. */
+/**
+ * Checks, before a make writes a theme component (#153), that Composer finds the component's class and its
+ * compiled template: `App\Theme\Components\` maps to the theme's `components/`, and `App\Generated\Templates\` to
+ * `generated/templates/`.
+ */
 final readonly class MakePresentation
 {
     /**
-     * @param MakeRecipe            $makeRecipe   The planned make.
-     * @param ProjectFiles          $projectFiles The actual project or its scaffold overlay.
-     * @param array<string, string> $declared     Actual manifest claims, independent of build freshness.
+     * @param MakeRecipe   $makeRecipe   The planned make.
+     * @param ProjectFiles $projectFiles The project or its scaffold overlay.
      *
-     * @throws WorkflowRefusal When compiled autoload setup or a reused declaration is absent.
+     * @throws WorkflowRefusal When a line is missing, naming the line to add.
      */
-    public function check(MakeRecipe $makeRecipe, ProjectFiles $projectFiles, array $declared): void
+    public function check(MakeRecipe $makeRecipe, ProjectFiles $projectFiles): void
     {
-        $presentation = array_any($makeRecipe->claims, static fn (string $claim): bool => str_starts_with($claim, 'template '));
+        foreach ($makeRecipe->files as $madeFile) {
+            if (preg_match('#^themes/[^/]+/components/#', $madeFile->path) !== 1) {
+                continue;
+            }
 
-        if ($presentation || $makeRecipe->component !== '') {
-            $this->autoload($projectFiles);
-        }
+            $psr4 = $this->psr4($projectFiles);
+            $components = substr($madeFile->path, 0, (int) strpos($madeFile->path, '/components/') + 12);
+            $this->line($psr4, 'App\\Theme\\Components\\', $components);
+            $this->line($psr4, 'App\\Generated\\Templates\\', 'generated/templates/');
 
-        if ($makeRecipe->component === '') {
             return;
         }
+    }
 
-        $class = (new MakeNames())->module($makeRecipe->module) . '\\Component\\' . basename($makeRecipe->component, '.php');
-
-        if (!array_key_exists(strtolower('template ' . $class), $declared)) {
-            throw new WorkflowRefusal($class . ' has no explicit ModuleTemplate declaration; declare it before reusing it.');
+    /**
+     * @param stdClass $psr4      composer.json's autoload.psr-4.
+     * @param string   $namespace A namespace with its last `\`.
+     * @param string   $folder    The folder it must map to.
+     *
+     * @throws WorkflowRefusal When it maps elsewhere or not at all.
+     */
+    private function line(stdClass $psr4, string $namespace, string $folder): void
+    {
+        if ((get_object_vars($psr4)[$namespace] ?? null) !== $folder) {
+            throw new WorkflowRefusal(
+                'Add "' . str_replace('\\', '\\\\', $namespace) . '": "' . $folder . "\" to composer.json's autoload.psr-4, "
+                    . 'then run composer dump-autoload.',
+            );
         }
     }
 
     /**
      * @param ProjectFiles $projectFiles The project files.
      *
-     * @throws WorkflowRefusal When Composer cannot resolve the exact lowercase compiled-template directory.
+     * @throws WorkflowRefusal When composer.json is not readable JSON with an autoload.psr-4 object.
+     *
+     * @return stdClass Its autoload.psr-4.
      */
-    private function autoload(ProjectFiles $projectFiles): void
+    private function psr4(ProjectFiles $projectFiles): stdClass
     {
         try {
             $composer = [json_decode($projectFiles->read('composer.json') ?? '', false, 512, JSON_THROW_ON_ERROR)];
         } catch (JsonException $jsonException) {
-            throw new WorkflowRefusal('composer.json must be readable JSON before generating declared templates.', 0, $jsonException);
+            throw new WorkflowRefusal('composer.json must be readable JSON before making a component.', 0, $jsonException);
         }
 
         $autoload = [$composer[0] instanceof stdClass
@@ -69,12 +87,10 @@ final readonly class MakePresentation
             ? get_object_vars($autoload[0])['psr-4'] ?? null
             : null];
 
-        if (
-            !$psr4[0] instanceof stdClass
-            || (get_object_vars($psr4[0])['App\\Generated\\Templates\\'] ?? null) !== 'generated/templates/'
-        ) {
-            throw new WorkflowRefusal('Add "App\\\\Generated\\\\Templates\\\\": "generated/templates/" to autoload.psr-4, '
-                . 'then run composer dump-autoload before generating declared templates.');
+        if (!$psr4[0] instanceof stdClass) {
+            throw new WorkflowRefusal("composer.json has no autoload.psr-4 to map the theme's components.");
         }
+
+        return $psr4[0];
     }
 }

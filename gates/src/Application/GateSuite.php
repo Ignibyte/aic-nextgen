@@ -95,7 +95,7 @@ final readonly class GateSuite
                 '{config}/phpmd.xml,{config}/phpmd-custom.xml',
                 '--strict',
                 '--exclude',
-                '*/modules/*/templates/*',
+                '*.tpl.php',
             ],
         ],
         11 => [

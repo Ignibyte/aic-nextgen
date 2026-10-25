@@ -6,8 +6,8 @@ namespace App\Site\Controller;
 
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
-use App\Site\Component\Ticks;
 use App\Site\Service\HtmlLayout;
+use App\Theme\Components\Ticks\Ticks;
 use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;

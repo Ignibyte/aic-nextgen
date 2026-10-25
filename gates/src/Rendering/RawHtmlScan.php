@@ -78,17 +78,21 @@ final readonly class RawHtmlScan
     private function files(string $root): array
     {
         $modules = glob($root . '/modules/*/src', GLOB_ONLYDIR);
+        $themes = glob($root . '/themes/*', GLOB_ONLYDIR);
         $framework = $this->projectProfile->profile($root) === GateProfile::Aic
             ? [$root . '/framework/src']
             : [];
-        $roots = [...$framework, ...($modules === false ? [] : $modules), $root . '/generated'];
+        $roots = [...$framework, ...($modules === false ? [] : $modules), ...($themes === false ? [] : $themes), $root . '/generated'];
         $files = [];
 
         foreach ($roots as $directory) {
             $files = [...$files, ...$this->fileLister->files($directory)];
         }
 
-        $php = array_values(array_filter($files, static fn (string $file): bool => str_ends_with($file, '.php')));
+        $php = array_values(array_filter(
+            $files,
+            static fn (string $file): bool => str_ends_with($file, '.php') && !str_ends_with($file, '.tpl.php'),
+        ));
         sort($php);
 
         return $php;

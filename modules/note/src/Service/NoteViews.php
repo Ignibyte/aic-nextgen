@@ -12,9 +12,9 @@ use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\Link;
 use AIC\Component\Domain\Paragraph;
 use AIC\Controller\Domain\PageDocument;
-use App\Note\Component\NoteList;
 use App\Note\Entity\Note;
 use App\Site\Service\HtmlLayout;
+use App\Theme\Components\NoteList\NoteList;
 use InvalidArgumentException;
 
 use function count;

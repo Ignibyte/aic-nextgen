@@ -10,6 +10,7 @@ parameters:
     tmpDir: .phpstan-cache/main
     paths:
         - modules
+        - themes
         - generated
         - public
         - bootstrap
@@ -17,7 +18,7 @@ parameters:
         - bin/aic
     excludePaths:
         # Templates are checked by gate:25, not the class tools.
-        - modules/*/templates/*
+        - */*.tpl.php
         - vendor
         - storage (?)
         - tools (?)

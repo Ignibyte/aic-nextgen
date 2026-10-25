@@ -2,7 +2,7 @@
 
 A Page builds a tree of data. The framework renders that tree as a document or as fragments;
 controllers do not assemble markup. Start with [kinds.md](kinds.md#page) for the response shapes
-and [modules.md](modules.md#declared-templates-and-themes) for declaring the templates.
+and [modules.md](modules.md#the-theme) for declaring the templates.
 
 ## Components and layouts
 
@@ -36,10 +36,10 @@ exactly once. These wrappers stay transparent to component target paths.
 | `Renderer::document()` | `document(Layout): Html`, the whole document through its registered template |
 | `Renderer::fragments()` | `fragments(Layout, list<string>): ?Html`, targets from the same tree; null when a target is absent |
 
-The generated `App\Generated\ModuleTemplates` lookup maps actual component classes to declared
-compiled classes, then delegates to the framework atoms. An authored component without a template
-is a build error, including one whose name ends in Template. No runtime directory scan, template
-include or companion-class naming rule chooses a template.
+The generated `App\Generated\ThemeTemplates` lookup maps the theme's component classes to their
+compiled classes, then delegates to the framework atoms. A component folder without its template
+is a build error. No runtime directory scan, template include or companion-class naming rule
+chooses a template.
 
 `AIC\Component\Application\RenderPass` writes a child with component markers, a region with
 its `data-region` wrapper, or an inline transparent wrapper. Full documents and fragments use the

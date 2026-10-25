@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace AIC\Workflow\Application\Wiki;
 
 use AIC\Workflow\Domain\CodeSymbol;
-use AIC\Workflow\Domain\Console\SurfaceDeclarations;
 
 use function array_filter;
 use function array_keys;
-use function array_map;
 use function count;
 use function explode;
 use function in_array;
@@ -41,19 +39,18 @@ final readonly class WikiClasses
     }
 
     /**
-     * @param string              $module              The module.
-     * @param list<CodeSymbol>    $symbols             The symbols in its files.
-     * @param SurfaceDeclarations $surfaceDeclarations The actual declared template mappings.
+     * @param string           $module  The module.
+     * @param list<CodeSymbol> $symbols The symbols in its files.
      *
      * @return list<string> The classes section's lines.
      */
-    public function lines(string $module, array $symbols, SurfaceDeclarations $surfaceDeclarations): array
+    public function lines(string $module, array $symbols): array
     {
         $folders = self::folders($module, $symbols);
         $lines = [];
 
         foreach (array_keys($folders) as $folder) {
-            $lines = [...$lines, ...$this->folder($module, $folder, $folders[$folder], $surfaceDeclarations)];
+            $lines = [...$lines, ...$this->folder($module, $folder, $folders[$folder])];
         }
 
         return [...$this->wikiMarkdown->section('## Classes', $folders === [] ? ['none'] : []), ...$lines];
@@ -70,25 +67,15 @@ final readonly class WikiClasses
     }
 
     /**
-     * @param string              $module              The module.
-     * @param string              $folder              A folder under its `src/`.
-     * @param list<CodeSymbol>    $symbols             The folder's classes.
-     * @param SurfaceDeclarations $surfaceDeclarations The actual declared template mappings.
+     * @param string           $module  The module.
+     * @param string           $folder  A folder under its `src/`.
+     * @param list<CodeSymbol> $symbols The folder's classes.
      *
-     * @return list<string> The folder's subsection: components with their templates, any other folder's classes with their files.
+     * @return list<string> The folder's subsection: its classes with their files.
      */
-    private function folder(
-        string $module,
-        string $folder,
-        array $symbols,
-        SurfaceDeclarations $surfaceDeclarations,
-    ): array {
-        $component = $folder === 'Component';
-        $table = $this->wikiMarkdown->table(
-            $component ? ['Component', 'Template', 'Template class'] : ['Class', 'File'],
-            $component ? $this->components($symbols, $surfaceDeclarations) : $this->classes($symbols),
-            'bin/aic code:tree ' . $module,
-        );
+    private function folder(string $module, string $folder, array $symbols): array
+    {
+        $table = $this->wikiMarkdown->table(['Class', 'File'], $this->classes($symbols), 'bin/aic code:tree ' . $module);
 
         return $this->wikiMarkdown->section('### ' . $this->wikiMarkdown->code('src/' . $folder . '/'), $table);
     }
@@ -107,35 +94,6 @@ final readonly class WikiClasses
         }
 
         return $rows;
-    }
-
-    /**
-     * @param list<CodeSymbol>    $symbols             Every authored component class, including Template suffixes.
-     * @param SurfaceDeclarations $surfaceDeclarations The actual declared template mappings.
-     *
-     * @return list<list<string>> Each component with its declared source and generated class.
-     */
-    private function components(array $symbols, SurfaceDeclarations $surfaceDeclarations): array
-    {
-        return array_map(fn (CodeSymbol $codeSymbol): array => $this->component($codeSymbol->name, $surfaceDeclarations), $symbols);
-    }
-
-    /**
-     * @param string              $class               An authored component.
-     * @param SurfaceDeclarations $surfaceDeclarations The actual declared template mappings.
-     *
-     * @return list<string> Its class, declared source and generated class; absent mappings stay explicit.
-     */
-    private function component(string $class, SurfaceDeclarations $surfaceDeclarations): array
-    {
-        foreach ($surfaceDeclarations->templates as $mapping) {
-            if (($mapping['component'] ?? '') === $class) {
-                return [$this->wikiMarkdown->code($class), $this->fileLink($mapping['source'] ?? ''),
-                    $this->wikiMarkdown->code($mapping['templateClass'] ?? '')];
-            }
-        }
-
-        return [$this->wikiMarkdown->code($class), 'none', 'none'];
     }
 
     /**

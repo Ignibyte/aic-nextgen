@@ -49,4 +49,9 @@ paths = [
     # gate:17 still scans the history.
     '''\.ddev/config\.local\.ya?ml''',
     '''\.ddev/\.ddev-docker-compose-[a-z]+\.yaml''',
+    # The planning checkout's evidence files (docs/planning, the private aic-planning repo, which
+    # this repo ignores) record the SHA-256 of every file and class a ticket read, keyed by its
+    # name; generic-api-key reads a digest under a name holding "token" (FormToken,
+    # 10-tokens.css) as a key. They are digests, never credentials, and this repo never commits them.
+    '''docs/planning/research/.*\.json''',
 ]

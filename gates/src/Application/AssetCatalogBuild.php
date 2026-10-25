@@ -7,7 +7,6 @@ namespace Gates\Application;
 use AIC\Http\Contracts\PublicAsset;
 use Gates\Domain\AssetCatalog;
 use Gates\Domain\AssetInput;
-use Gates\Domain\ModuleDefinition;
 use Gates\Domain\ThemeBinding;
 use InvalidArgumentException;
 use JsonException;
@@ -34,29 +33,25 @@ use const JSON_UNESCAPED_SLASHES;
 final readonly class AssetCatalogBuild
 {
     /**
-     * @param string       $root         The project folder.
-     * @param ModuleAssets $moduleAssets Uses the shared validated MIME definitions.
+     * @param string     $root       The project folder.
+     * @param AssetFiles $assetFiles Uses the shared validated MIME definitions.
      */
-    public function __construct(private string $root, private ModuleAssets $moduleAssets = new ModuleAssets())
+    public function __construct(private string $root, private AssetFiles $assetFiles = new AssetFiles())
     {
     }
 
     /**
-     * @param list<ModuleDefinition> $modules        The modules in dependency order.
-     * @param array<string, string>  $tesseraOutputs Verified pinned release bytes by absolute public output path.
-     * @param ThemeBinding|null      $themeBinding   The selected theme, absent when the app selects no theme.
+     * @param array<string, string> $tesseraOutputs Verified pinned release bytes by absolute public output path.
+     * @param ThemeBinding|null     $themeBinding   The configured theme, absent when the app names none.
      *
-     * @throws InvalidArgumentException When declarations, paths, roles or output identities collide or are invalid.
+     * @throws InvalidArgumentException When paths, roles or output identities collide or are invalid.
      * @throws JsonException            When inventory metadata cannot be encoded.
      *
      * @return AssetCatalog The complete non-writing output plan.
      */
-    public function plan(array $modules, array $tesseraOutputs, ?ThemeBinding $themeBinding = null): AssetCatalog
+    public function plan(array $tesseraOutputs, ?ThemeBinding $themeBinding): AssetCatalog
     {
-        $assetInputs = [
-            ...(new DeclaredAssetInputs($this->root))->read($modules),
-            ...(new ThemeAssetInputs($this->root))->read($themeBinding),
-        ];
+        $assetInputs = (new ThemeAssetInputs($this->root))->read($themeBinding);
         $outputs = (new AssetBundle($this->root))->outputs($assetInputs);
         $assets = [$this->asset('app/styles', 'aic.css', $outputs[$this->root . '/public/assets/aic.css'])];
 
@@ -79,8 +74,8 @@ final readonly class AssetCatalogBuild
     }
 
     /**
-     * @param AssetInput            $assetInput A declared module input.
-     * @param array<string, string> $outputs    The planned module output bytes.
+     * @param AssetInput            $assetInput A theme input.
+     * @param array<string, string> $outputs    The planned output bytes.
      *
      * @throws InvalidArgumentException When its expected publication is absent or unsupported.
      *
@@ -139,7 +134,7 @@ final readonly class AssetCatalogBuild
             $name,
             '/assets/' . $file,
             $file,
-            $this->moduleAssets->mediaType($file),
+            $this->assetFiles->mediaType($file),
             hash('sha256', $contents),
             strlen($contents),
             '/assets/' . $file,

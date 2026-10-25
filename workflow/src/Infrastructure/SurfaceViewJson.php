@@ -7,6 +7,7 @@ namespace AIC\Workflow\Infrastructure;
 use AIC\Workflow\Domain\Console\SurfaceDeclarations;
 use AIC\Workflow\Domain\Console\SurfaceKind;
 use AIC\Workflow\Domain\Console\SurfaceModule;
+use AIC\Workflow\Domain\Console\SurfaceTheme;
 use AIC\Workflow\Domain\Console\SurfaceView;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Closure;
@@ -42,6 +43,29 @@ final readonly class SurfaceViewJson
             $modules,
             self::kinds($jsonReader),
             $stale,
+            $jsonReader->isNull('theme') ? null : self::theme($jsonReader->object('theme')),
+        );
+    }
+
+    /**
+     * @param JsonReader $jsonReader The surface's theme object.
+     *
+     * @throws WorkflowRefusal When it is not the theme's shape.
+     *
+     * @return SurfaceTheme The theme.
+     */
+    private static function theme(JsonReader $jsonReader): SurfaceTheme
+    {
+        return new SurfaceTheme(
+            $jsonReader->string('name'),
+            $jsonReader->string('html'),
+            $jsonReader->string('page'),
+            $jsonReader->string('pageData'),
+            $jsonReader->strings('regions'),
+            self::rows($jsonReader, 'components', static fn (JsonReader $jsonReader): array => [
+                'component' => $jsonReader->string('component'),
+                'source' => $jsonReader->string('source'),
+            ]),
         );
     }
 
@@ -88,50 +112,24 @@ final readonly class SurfaceViewJson
             $jsonReader->strings('migrations'),
             $jsonReader->strings('factories'),
             $jsonReader->strings('prefixes'),
-            self::presentation($jsonReader),
+            self::declarations($jsonReader),
         );
     }
 
     /**
      * @param JsonReader $jsonReader One module row.
      *
-     * @throws WorkflowRefusal When presentation metadata is missing or has an invalid field.
+     * @throws WorkflowRefusal When a declaration list is missing or has an invalid field.
      *
      * @return SurfaceDeclarations Its checked declarations.
      */
-    private static function presentation(JsonReader $jsonReader): SurfaceDeclarations
+    private static function declarations(JsonReader $jsonReader): SurfaceDeclarations
     {
         return new SurfaceDeclarations(
             self::rows($jsonReader, 'plugins', self::plugin(...)),
             self::rows($jsonReader, 'bindings', self::binding(...)),
             self::rows($jsonReader, 'middleware', self::middleware(...)),
-            self::fields($jsonReader, 'templates', ['component', 'source', 'generated', 'templateClass', 'role']),
-            self::fields($jsonReader, 'themes', ['name', 'html', 'page', 'pageData']),
-            self::fields($jsonReader, 'regions', ['property', 'name']),
-            self::fields($jsonReader, 'themeAssets', ['name', 'path', 'kind']),
         );
-    }
-
-    /**
-     * @param JsonReader   $jsonReader One module row.
-     * @param string       $key        The declaration list to read.
-     * @param list<string> $fields     Required string field names.
-     *
-     * @throws WorkflowRefusal When a required list or string field is invalid.
-     *
-     * @return list<array<string, string>> The actual checked rows.
-     */
-    private static function fields(JsonReader $jsonReader, string $key, array $fields): array
-    {
-        return self::rows($jsonReader, $key, static function (JsonReader $jsonReader) use ($fields): array {
-            $values = [];
-
-            foreach ($fields as $field) {
-                $values[$field] = $jsonReader->string($field);
-            }
-
-            return $values;
-        });
     }
 
     /**

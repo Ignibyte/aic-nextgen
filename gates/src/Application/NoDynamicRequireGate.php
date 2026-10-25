@@ -13,7 +13,6 @@ use function count;
 use function file_get_contents;
 use function fwrite;
 use function is_dir;
-use function preg_match;
 use function restore_error_handler;
 use function set_error_handler;
 use function sort;
@@ -266,7 +265,7 @@ final readonly class NoDynamicRequireGate
     }
 
     /**
-     * Whether one (already-narrowed) directory entry is a `*.php` regular file outside a module's templates.
+     * Whether one (already-narrowed) directory entry is a `*.php` regular file and not a template.
      *
      * @param SplFileInfo $entry Entry yielded by the recursive iterator.
      */
@@ -274,7 +273,7 @@ final readonly class NoDynamicRequireGate
     {
         // Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
         return $entry->isFile() && str_ends_with($entry->getFilename(), '.php')
-            && preg_match('~/modules/[^/]+/templates/~', $entry->getPathname()) !== 1;
+            && !str_ends_with($entry->getFilename(), '.tpl.php');
     }
 
     /**

@@ -35,11 +35,17 @@ deptrac:
       collectors:
         - type: classLike
           value: '^(AIC\\[^\\]+|Gates)\\Infrastructure\\'
-    # The demo app: one layer until it grows features of its own (#10).
+    # The app's modules and its generated wiring: one layer (#10).
     - name: App
       collectors:
         - type: classLike
-          value: '^App\\'
+          value: '^App\\(?!Theme\\)'
+    # The theme (#153): components and page data, which the modules build and the
+    # generated wiring renders. It reads only the framework's seams, never a module.
+    - name: Theme
+      collectors:
+        - type: classLike
+          value: '^App\\Theme\\'
     # The phpat rule classes (gate:9).
     - name: Architecture
       collectors:
@@ -155,6 +161,12 @@ deptrac:
       - Attribute
       - Application
       - PsrVendor
+      - Theme
+    Theme:
+      - Contracts
+      - Domain
+      - Exception
+      - Attribute
     Architecture:
       - PhpatVendor
     # AIC's own PHPStan rules (gate:8) read the contracts they police and

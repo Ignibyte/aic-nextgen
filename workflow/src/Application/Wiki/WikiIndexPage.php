@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Workflow\Application\Wiki;
 
 use AIC\Workflow\Domain\Console\SurfaceModule;
+use AIC\Workflow\Domain\Console\SurfaceTheme;
 use AIC\Workflow\Domain\Console\SurfaceView;
 
 use function array_count_values;
@@ -64,7 +65,6 @@ final readonly class WikiIndexPage
         $markdown = $this->wikiMarkdown;
         $kinds = $markdown->table(['Kind', 'Routes'], self::kinds($surfaceView), 'bin/aic kind:list');
         $modules = $markdown->table(self::MODULES, $this->modules($surfaceView, $classes), 'bin/aic module:list');
-        $commands = $markdown->table(self::NAMED, $this->named($surfaceView->commands), 'bin/aic command:list');
         $schedules = $markdown->table(self::SCHEDULES, $this->schedules($surfaceView), 'bin/aic schedule:list');
         $routes = $markdown->table(['Method', 'Path', 'Kind', 'Module', 'Handler'], $this->routes($surfaceView), 'bin/aic route:list');
         $lines = [
@@ -74,14 +74,40 @@ final readonly class WikiIndexPage
                 . 'gate:24. How AIC works: ' . $markdown->link('the architecture pages', $this->wikiLinks->architecture()) . '.',
             '',
             ...$markdown->section('## Modules', $modules),
+            ...$markdown->section('## Theme', $this->theme($surfaceView->theme)),
             ...$markdown->section('## Requires', ['```mermaid', 'graph LR', ...$this->graph($surfaceView), '```']),
             ...$markdown->section('## Routes by kind', [...$kinds, '', ...$routes]),
-            ...$markdown->section('## Commands', $commands),
-            ...$markdown->section('## Jobs', $markdown->table(self::NAMED, $this->named($surfaceView->jobs), 'bin/aic job:list')),
+            ...$markdown->section('## Commands', $this->namedTable($surfaceView->commands, 'bin/aic command:list')),
+            ...$markdown->section('## Jobs', $this->namedTable($surfaceView->jobs, 'bin/aic job:list')),
             ...$markdown->section('## Schedules', $schedules),
         ];
 
         return rtrim(implode("\n", $lines)) . "\n";
+    }
+
+    /**
+     * @param SurfaceTheme|null $surfaceTheme The theme, if the app has one.
+     *
+     * @return list<string> Its folder, layouts and regions, then its components with their templates.
+     */
+    private function theme(?SurfaceTheme $surfaceTheme): array
+    {
+        if ($surfaceTheme === null) {
+            return ['none'];
+        }
+
+        $markdown = $this->wikiMarkdown;
+
+        return [
+            'Every component, layout and asset lives in ' . $markdown->code('themes/' . $surfaceTheme->name . '/') . ' (#153). The page '
+                . $markdown->code($surfaceTheme->page) . ' reads ' . $markdown->code($surfaceTheme->pageData) . ', whose regions are '
+                . $markdown->inline($surfaceTheme->regions) . '; the document is ' . $markdown->code($surfaceTheme->html) . '.',
+            '',
+            ...$markdown->table(['Component', 'Template'], array_map(
+                static fn (array $component): array => [$markdown->code($component['component']), $markdown->code($component['source'])],
+                $surfaceTheme->components,
+            ), 'bin/aic code:tree themes'),
+        ];
     }
 
     /**
@@ -138,6 +164,17 @@ final readonly class WikiIndexPage
             $this->wikiMarkdown->link($route['module'], $this->wikiLinks->module($route['module'], true)),
             $this->wikiMarkdown->code($route['handler']),
         ], $surfaceView->routes);
+    }
+
+    /**
+     * @param list<array{class: string, kind: string, module: string, name: string}> $entries Commands or jobs.
+     * @param string                                                                 $more    The command that lists them all.
+     *
+     * @return list<string> Their table.
+     */
+    private function namedTable(array $entries, string $more): array
+    {
+        return $this->wikiMarkdown->table(self::NAMED, $this->named($entries), $more);
     }
 
     /**

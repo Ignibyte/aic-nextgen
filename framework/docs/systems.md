@@ -69,10 +69,10 @@ The development engine and its guard are described in [workflow.md](workflow.md)
   the rest), and `AIC\Component\Application\Renderer`, the only class that makes HTML. Every value
   a template writes is escaped by its type; `AIC\Component\Domain\RawHtml` is the one way round
   that, and each use needs a grant in `config/raw-html.php` (gate:27).
-  Declared HTML/page/component templates compile into `generated/templates/`. A generated
-  `AIC\Component\Contracts\PageLayouts` implementation constructs the selected document;
+  The theme's HTML, page and component templates compile into `generated/templates/`. A generated
+  `AIC\Component\Contracts\PageLayouts` implementation constructs the theme's document;
   data-only `AIC\Component\Domain\ThemeLayout` and `AIC\Component\Domain\ThemePage` preserve
-  the same region tree used by full and fragment rendering. See [modules.md](modules.md#declared-templates-and-themes).
+  the same region tree used by full and fragment rendering. See [modules.md](modules.md#the-theme).
 
 See [rendering.md](rendering.md) and [templates.md](templates.md) for the complete rendering contract.
 

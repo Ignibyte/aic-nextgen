@@ -22,15 +22,15 @@ final readonly class AssetsPart9
     {
         return [
             new PublicAsset(
-                'theme_app/tokens',
-                '/assets/fdec9885297e5185a9cd820792ab53cbb9a51ab715a42b2b3f6e008d7290db46/themes/'
-                    . 'app/10-tokens.css',
-                'fdec9885297e5185a9cd820792ab53cbb9a51ab715a42b2b3f6e008d7290db46/themes/app/10-t'
-                    . 'okens.css',
+                'theme_app/theme.css',
+                '/assets/ff9b99fbf3ae7103450b9e2e7d61fdf38577c268e8917adc64ea3758d15d33a4/themes/'
+                    . 'app/theme.css',
+                'ff9b99fbf3ae7103450b9e2e7d61fdf38577c268e8917adc64ea3758d15d33a4/themes/app/them'
+                    . 'e.css',
                 'text/css; charset=utf-8',
-                '49f1bdf00c395a2db9dbf2ef4da79df8bcddb1fe778ebfcb53150b0afed9aa94',
-                941,
-                '/assets/themes/app/10-tokens.css',
+                '21f4ad72a0afcce2da3d4d1d8216fd780111214a2344031c9deba07e4eb94843',
+                34,
+                '/assets/themes/app/theme.css',
             ),
         ];
     }

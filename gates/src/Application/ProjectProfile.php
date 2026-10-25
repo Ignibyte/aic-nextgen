@@ -35,7 +35,7 @@ final readonly class ProjectProfile
         'bootstrap/*',
         // index.php, and the built assets (#39, #70).
         'public/*',
-        // Explicit selected-theme source.
+        // The theme: its components, layouts and assets (#153).
         'themes/*',
         // surface.json, the build's manifest (#26).
         'build/*',
@@ -95,6 +95,7 @@ final readonly class ProjectProfile
     private const array AIC_CLASS_ROOTS = [
         'framework/src',
         'modules',
+        'themes',
         'generated',
         'gates/src',
         'gates/architecture',
@@ -128,18 +129,18 @@ final readonly class ProjectProfile
         return $this->profile($root) === GateProfile::Aic
             ? new GateRoots(
                 self::AIC_CLASS_ROOTS,
-                ['framework/src', 'modules', 'generated', 'gates/src', 'gates/architecture', 'workflow/src'],
-                ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'generated']],
-                ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'generated']],
+                ['framework/src', 'modules', 'themes', 'generated', 'gates/src', 'gates/architecture', 'workflow/src'],
+                ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'themes', 'generated']],
+                ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'themes', 'generated']],
                 ['composer.json', 'framework/composer.json', 'workflow/composer.json'],
                 ['.claude/hooks', 'bin', 'gates/bin', 'workflow/bin', 'workflow/probes'],
                 [...self::APP_SHELL, ...self::AIC_SHELL],
             )
             : new GateRoots(
-                ['modules', 'generated'],
-                ['modules', 'generated'],
-                ['App\\' => ['modules', 'generated']],
-                ['AIC\\' => 'vendor/aic/framework/src', 'App\\' => ['modules', 'generated']],
+                ['modules', 'themes', 'generated'],
+                ['modules', 'themes', 'generated'],
+                ['App\\' => ['modules', 'themes', 'generated']],
+                ['AIC\\' => 'vendor/aic/framework/src', 'App\\' => ['modules', 'themes', 'generated']],
                 ['composer.json'],
                 ['.claude/hooks', 'bin'],
                 self::APP_SHELL,

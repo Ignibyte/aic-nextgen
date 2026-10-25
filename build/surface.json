@@ -298,105 +298,6 @@
     ],
     "modules": [
         {
-            "templates": [
-                {
-                    "component": "App\\Site\\Component\\Home",
-                    "generated": "generated/templates/SiteHomeTemplate.php",
-                    "role": "Component",
-                    "source": "modules/site/templates/components/home.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\SiteHomeTemplate"
-                },
-                {
-                    "component": "App\\Site\\Component\\LineList",
-                    "generated": "generated/templates/SiteLineListTemplate.php",
-                    "role": "Component",
-                    "source": "modules/site/templates/components/line-list.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\SiteLineListTemplate"
-                },
-                {
-                    "component": "App\\Site\\Component\\SiteNav",
-                    "generated": "generated/templates/SiteSiteNavTemplate.php",
-                    "role": "Component",
-                    "source": "modules/site/templates/components/site-nav.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\SiteSiteNavTemplate"
-                },
-                {
-                    "component": "App\\Site\\Component\\Ticks",
-                    "generated": "generated/templates/SiteTicksTemplate.php",
-                    "role": "Component",
-                    "source": "modules/site/templates/components/ticks.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\SiteTicksTemplate"
-                },
-                {
-                    "component": "App\\Site\\Component\\Greetings",
-                    "generated": "generated/templates/SiteGreetingsTemplate.php",
-                    "role": "Component",
-                    "source": "modules/site/templates/components/greetings.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\SiteGreetingsTemplate"
-                },
-                {
-                    "component": "AIC\\Component\\Domain\\ThemeLayout",
-                    "generated": "generated/templates/ThemeAppHtmlTemplate.php",
-                    "role": "Html",
-                    "source": "themes/app/layouts/html.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\ThemeAppHtmlTemplate"
-                },
-                {
-                    "component": "App\\Site\\Component\\Page",
-                    "generated": "generated/templates/ThemeAppPageTemplate.php",
-                    "role": "Page",
-                    "source": "themes/app/layouts/page.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\ThemeAppPageTemplate"
-                }
-            ],
-            "themes": [
-                {
-                    "html": "themes/app/layouts/html.tpl.php",
-                    "name": "app",
-                    "page": "themes/app/layouts/page.tpl.php",
-                    "pageData": "App\\Site\\Component\\Page"
-                }
-            ],
-            "regions": [
-                {
-                    "property": "header",
-                    "name": "header"
-                },
-                {
-                    "property": "content",
-                    "name": "content"
-                },
-                {
-                    "property": "nav",
-                    "name": "nav"
-                },
-                {
-                    "property": "footer",
-                    "name": "footer"
-                }
-            ],
-            "themeAssets": [
-                {
-                    "kind": "Style",
-                    "name": "base",
-                    "path": "themes/app/assets/theme.css"
-                },
-                {
-                    "kind": "Style",
-                    "name": "tokens",
-                    "path": "themes/app/assets/10-tokens.css"
-                },
-                {
-                    "kind": "Style",
-                    "name": "structure",
-                    "path": "themes/app/assets/20-base.css"
-                },
-                {
-                    "kind": "Style",
-                    "name": "atoms",
-                    "path": "themes/app/assets/30-atoms.css"
-                }
-            ],
             "bindings": [],
             "blocks": [
                 "App\\Site\\Block\\PoweredByBlock",
@@ -427,10 +328,6 @@
             "requires": []
         },
         {
-            "templates": [],
-            "themes": [],
-            "regions": [],
-            "themeAssets": [],
             "bindings": [
                 {
                     "class": "App\\Account\\Repository\\UserRepository",
@@ -467,39 +364,6 @@
             ]
         },
         {
-            "templates": [
-                {
-                    "component": "App\\Note\\Component\\NoteCard",
-                    "generated": "generated/templates/NoteNoteCardTemplate.php",
-                    "role": "Component",
-                    "source": "modules/note/templates/components/note-card.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\NoteNoteCardTemplate"
-                },
-                {
-                    "component": "App\\Note\\Component\\NoteList",
-                    "generated": "generated/templates/NoteNoteListTemplate.php",
-                    "role": "Component",
-                    "source": "modules/note/templates/components/note-list.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\NoteNoteListTemplate"
-                },
-                {
-                    "component": "App\\Note\\Component\\StockLinks",
-                    "generated": "generated/templates/NoteStockLinksTemplate.php",
-                    "role": "Component",
-                    "source": "modules/note/templates/components/stock-links.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\NoteStockLinksTemplate"
-                },
-                {
-                    "component": "App\\Note\\Component\\StockListing",
-                    "generated": "generated/templates/NoteStockListingTemplate.php",
-                    "role": "Component",
-                    "source": "modules/note/templates/components/stock-listing.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\NoteStockListingTemplate"
-                }
-            ],
-            "themes": [],
-            "regions": [],
-            "themeAssets": [],
             "bindings": [],
             "blocks": [
                 "App\\Note\\Block\\NoteTipsBlock"
@@ -524,32 +388,11 @@
             ]
         },
         {
-            "templates": [
-                {
-                    "component": "App\\Scaffold\\Component\\ScaffoldCard",
-                    "generated": "generated/templates/ScaffoldScaffoldCardTemplate.php",
-                    "role": "Component",
-                    "source": "modules/scaffold/templates/components/scaffold-card.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\ScaffoldScaffoldCardTemplate"
-                },
-                {
-                    "component": "App\\Scaffold\\Component\\ScaffoldAboutView",
-                    "generated": "generated/templates/ScaffoldScaffoldAboutViewTemplate.php",
-                    "role": "Component",
-                    "source": "modules/scaffold/templates/components/scaffold-about-view.tpl.php",
-                    "templateClass": "App\\Generated\\Templates\\ScaffoldScaffoldAboutViewTemplate"
-                }
-            ],
-            "themes": [],
-            "regions": [],
-            "themeAssets": [],
             "bindings": [],
             "blocks": [
                 "App\\Scaffold\\Block\\ScaffoldBlock"
             ],
-            "exports": [
-                "App\\Scaffold\\Component\\ScaffoldCard"
-            ],
+            "exports": [],
             "factories": [],
             "middleware": [],
             "migrations": [
@@ -564,6 +407,112 @@
             ]
         }
     ],
+    "theme": {
+        "assets": [
+            {
+                "kind": "Style",
+                "path": "themes/app/assets/10-tokens.css"
+            },
+            {
+                "kind": "Style",
+                "path": "themes/app/assets/20-base.css"
+            },
+            {
+                "kind": "Style",
+                "path": "themes/app/assets/30-atoms.css"
+            },
+            {
+                "kind": "File",
+                "path": "themes/app/assets/favicon.svg"
+            },
+            {
+                "kind": "Style",
+                "path": "themes/app/assets/site.css"
+            },
+            {
+                "kind": "Style",
+                "path": "themes/app/assets/theme.css"
+            }
+        ],
+        "components": [
+            {
+                "component": "App\\Theme\\Components\\Greetings\\Greetings",
+                "generated": "generated/templates/GreetingsTemplate.php",
+                "source": "themes/app/components/Greetings/greetings.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\GreetingsTemplate"
+            },
+            {
+                "component": "App\\Theme\\Components\\Home\\Home",
+                "generated": "generated/templates/HomeTemplate.php",
+                "source": "themes/app/components/Home/home.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\HomeTemplate"
+            },
+            {
+                "component": "App\\Theme\\Components\\LineList\\LineList",
+                "generated": "generated/templates/LineListTemplate.php",
+                "source": "themes/app/components/LineList/line-list.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\LineListTemplate"
+            },
+            {
+                "component": "App\\Theme\\Components\\NoteCard\\NoteCard",
+                "generated": "generated/templates/NoteCardTemplate.php",
+                "source": "themes/app/components/NoteCard/note-card.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\NoteCardTemplate"
+            },
+            {
+                "component": "App\\Theme\\Components\\NoteList\\NoteList",
+                "generated": "generated/templates/NoteListTemplate.php",
+                "source": "themes/app/components/NoteList/note-list.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\NoteListTemplate"
+            },
+            {
+                "component": "App\\Theme\\Components\\ScaffoldAboutView\\ScaffoldAboutView",
+                "generated": "generated/templates/ScaffoldAboutViewTemplate.php",
+                "source": "themes/app/components/ScaffoldAboutView/scaffold-about-view.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\ScaffoldAboutViewTemplate"
+            },
+            {
+                "component": "App\\Theme\\Components\\ScaffoldCard\\ScaffoldCard",
+                "generated": "generated/templates/ScaffoldCardTemplate.php",
+                "source": "themes/app/components/ScaffoldCard/scaffold-card.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\ScaffoldCardTemplate"
+            },
+            {
+                "component": "App\\Theme\\Components\\SiteNav\\SiteNav",
+                "generated": "generated/templates/SiteNavTemplate.php",
+                "source": "themes/app/components/SiteNav/site-nav.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\SiteNavTemplate"
+            },
+            {
+                "component": "App\\Theme\\Components\\StockLinks\\StockLinks",
+                "generated": "generated/templates/StockLinksTemplate.php",
+                "source": "themes/app/components/StockLinks/stock-links.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\StockLinksTemplate"
+            },
+            {
+                "component": "App\\Theme\\Components\\StockListing\\StockListing",
+                "generated": "generated/templates/StockListingTemplate.php",
+                "source": "themes/app/components/StockListing/stock-listing.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\StockListingTemplate"
+            },
+            {
+                "component": "App\\Theme\\Components\\Ticks\\Ticks",
+                "generated": "generated/templates/TicksTemplate.php",
+                "source": "themes/app/components/Ticks/ticks.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\TicksTemplate"
+            }
+        ],
+        "html": "themes/app/layouts/html.tpl.php",
+        "name": "app",
+        "page": "themes/app/layouts/page.tpl.php",
+        "pageData": "App\\Theme\\Layouts\\Page",
+        "regions": [
+            "header",
+            "content",
+            "nav",
+            "footer"
+        ]
+    },
     "kinds": [
         {
             "contract": "AIC\\Controller\\Contracts\\Page",
@@ -616,7 +565,7 @@
         {
             "contract": "AIC\\Component\\Contracts\\Component",
             "entry": false,
-            "folder": "Component",
+            "folder": "themes/<theme>/components/<Name>",
             "kind": "Component",
             "method": "",
             "response": ""

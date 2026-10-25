@@ -137,12 +137,13 @@ final readonly class MakeReport
      *
      * @throws WorkflowRefusal When composer.json or phpcs.xml.dist cannot be read.
      *
-     * @return list<string> For `make:module`, the composer.json and phpcs.xml.dist lines they lack; none otherwise.
+     * @return list<string> For `make:module`, the composer.json and phpcs.xml.dist lines they lack; then what the
+     *                      make asks to do by hand.
      */
     private function lines(MakeRecipe $makeRecipe): array
     {
         if (!$makeRecipe->makesModule) {
-            return [];
+            return $makeRecipe->lines;
         }
 
         $namespace = $this->makeNames->module($makeRecipe->module);

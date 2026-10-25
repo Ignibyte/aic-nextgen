@@ -38,6 +38,11 @@ use function usort;
 final readonly class ClassKinds
 {
     /**
+     * Where a component lives (#153): its own folder in the theme.
+     */
+    public const string THEME_COMPONENTS = 'themes/<theme>/components/<Name>';
+
+    /**
      * The folders a plain class may sit in.
      */
     public const array PLAIN_FOLDERS = ['Entity', 'Service', 'Form'];
@@ -48,7 +53,6 @@ final readonly class ClassKinds
     public const array FOLDERS = [
         'Block',
         'Command',
-        'Component',
         'Controller',
         'Entity',
         'Form',
@@ -67,7 +71,8 @@ final readonly class ClassKinds
         Api::class => ['Api', 'Controller'],
         Block::class => ['Block', 'Block'],
         Command::class => ['Command', 'Command'],
-        Component::class => ['Component', 'Component'],
+        // A component lives in the theme (#153), never in a module's src/.
+        Component::class => ['Component', self::THEME_COMPONENTS],
         Job::class => ['Job', 'Job'],
         MiddlewareInterface::class => ['Middleware', 'Middleware'],
         Migration::class => ['Migration', 'Migration'],

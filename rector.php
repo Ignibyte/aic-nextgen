@@ -9,6 +9,7 @@ use Gates\Infrastructure\RectorSetup;
 return (new RectorSetup())->configure(__DIR__, [
     'framework/src',
     'modules',
+    'themes',
     'generated',
     'public',
     'bootstrap',
