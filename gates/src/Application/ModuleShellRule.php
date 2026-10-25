@@ -85,7 +85,8 @@ final readonly class ModuleShellRule implements ModuleRule
         return array_any($shell, static fn (string $pattern): bool => fnmatch($pattern, $path))
             ? null
             : new BoundaryViolation($path, sprintf(
-                '%s is outside modules/ and the shell; move it into modules/<name>/ (a page layout goes in templates/layouts/).',
+                '%s is outside modules/ and the shell; move it into modules/<name>/'
+                    . ' (a declared page layout goes in themes/<theme>/layouts/).',
                 $path,
             ));
     }

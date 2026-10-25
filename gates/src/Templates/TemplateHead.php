@@ -13,7 +13,6 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Nop;
 
 use function array_key_exists;
-use function basename;
 use function count;
 use function lcfirst;
 use function sprintf;
@@ -25,7 +24,7 @@ use function substr;
  * A template's typing line (#96, #36's convention): the file starts with.
  *
  * exactly `<?php /** @var \Fully\Qualified\Name $name *\/ ?>`. The class's short
- * name is the file's (`NoteList.html.php` gives `NoteList`) and the variable
+ * name comes from the declaration's component identity and the variable
  * its lower-camel form (`$noteList`), the component variable the template
  * reads. #97 resolves the class; #96 checks the shape.
  */
@@ -40,10 +39,10 @@ final readonly class TemplateHead
         . ' \\$([A-Za-z_][A-Za-z0-9_]*) \\*\\/$/';
 
     /**
-     * @param string               $path            The template.
-     * @param string               $source          Its source.
-     * @param list<Stmt>           $stmts           Its statements; the first is marked as the typing line when it is one.
-     * @param TemplateBinding|null $templateBinding Its explicit input identity, absent for a legacy template.
+     * @param string          $path            The template.
+     * @param string          $source          Its source.
+     * @param list<Stmt>      $stmts           Its statements; the first is marked as the typing line when it is one.
+     * @param TemplateBinding $templateBinding Its required declared input identity.
      *
      * @return TemplateViolation|string The component variable's name, or the refusal.
      */
@@ -51,16 +50,14 @@ final readonly class TemplateHead
         string $path,
         string $source,
         array $stmts,
-        ?TemplateBinding $templateBinding = null,
+        TemplateBinding $templateBinding,
     ): TemplateViolation|string {
-        $short = $templateBinding === null
-            ? substr(basename($path), 0, -9)
-            : substr($templateBinding->component, (int) strrpos($templateBinding->component, '\\') + 1);
+        $short = substr($templateBinding->component, (int) strrpos($templateBinding->component, '\\') + 1);
         $first = $stmts[0] ?? null;
 
         if (
             !$first instanceof Nop || !$this->typed($source, $this->doc($first), $short)
-            || $templateBinding !== null && $this->componentClass($stmts) !== $templateBinding->component
+            || $this->componentClass($stmts) !== $templateBinding->component
         ) {
             return new TemplateViolation($path, 1, TemplateRefusal::ComponentType, sprintf(
                 'the file starts with <?php /** @var \\Fully\\Qualified\\%s $%s */ ?>',
@@ -79,7 +76,7 @@ final readonly class TemplateHead
      *
      * @return string The class the typing line names, fully qualified; empty when there is none.
      */
-    public function componentClass(array $stmts): string
+    private function componentClass(array $stmts): string
     {
         $first = $stmts[0] ?? null;
 

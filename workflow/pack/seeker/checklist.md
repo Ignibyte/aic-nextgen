@@ -19,7 +19,7 @@ reuse.
 
 ## A2 — Declared templates are plain `.tpl.php`
 
-The gates hold: declared `*.tpl.php` and bounded legacy `*.html.php` inputs use only the
+The gates hold: only explicitly declared `*.tpl.php` inputs use the
 template grammar. Compiled classes under `generated/templates/` remain fully checked.
 
 Judge: logic a template carries past showing its component's values (sums, lookups, state

@@ -32,7 +32,7 @@ final readonly class ThemeAssetInputs
     }
 
     /**
-     * @param ThemeBinding|null $themeBinding The validated selected theme, absent for a legacy application.
+     * @param ThemeBinding|null $themeBinding The validated selected theme, absent when the app selects no theme.
      *
      * @throws InvalidArgumentException When an asset is missing, undeclared, repeated or unsupported.
      *

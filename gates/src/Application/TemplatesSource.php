@@ -21,9 +21,9 @@ use function array_map;
 use function basename;
 use function glob;
 use function implode;
+use function in_array;
 use function is_a;
-use function str_ends_with;
-use function str_starts_with;
+use function sort;
 use function strtr;
 
 use const ARRAY_FILTER_USE_KEY;
@@ -129,9 +129,10 @@ final readonly class TemplatesSource
         string $root,
         array $modules,
         array $components,
-        array $templates = [],
-        array $owners = [],
+        array $templates,
+        array $owners,
     ): array {
+        $this->maps($modules, $components, $templates, $owners);
         $parts = [];
 
         foreach ($modules as $module) {
@@ -150,6 +151,46 @@ final readonly class TemplatesSource
     }
 
     /**
+     * @param list<ModuleDefinition> $modules    The validated module graph.
+     * @param array<string, bool>    $components The compiled component inventory.
+     * @param array<string, string>  $templates  Declared generated classes, without defaults.
+     * @param array<string, string>  $owners     Declared module owners, without inference.
+     *
+     * @throws InvalidArgumentException When either map is incomplete or names an absent owner.
+     */
+    private function maps(array $modules, array $components, array $templates, array $owners): void
+    {
+        $this->keys($components, $templates);
+        $this->keys($components, $owners);
+
+        $names = array_map(static fn (ModuleDefinition $moduleDefinition): string => $moduleDefinition->name, $modules);
+
+        foreach ($templates as $component => $class) {
+            if ($class === '' || !in_array($owners[$component], $names, true)) {
+                throw new InvalidArgumentException($component . ': declare its generated template class and an existing module owner.');
+            }
+        }
+    }
+
+    /**
+     * @param array<string, bool>   $components The compiled component inventory.
+     * @param array<string, string> $map        One required declared identity map.
+     *
+     * @throws InvalidArgumentException When the map is incomplete or has an extra identity.
+     */
+    private function keys(array $components, array $map): void
+    {
+        $expected = array_keys($components);
+        $actual = array_keys($map);
+        sort($expected);
+        sort($actual);
+
+        if ($actual !== $expected) {
+            throw new InvalidArgumentException('Template class and owner maps must exactly match the compiled component inventory.');
+        }
+    }
+
+    /**
      * @param ModuleDefinition      $moduleDefinition A module.
      * @param array<string, bool>   $components       Whether each template's `render()` takes the pass, by component class.
      * @param array<string, string> $owners           Explicit module owners by component.
@@ -161,8 +202,7 @@ final readonly class TemplatesSource
     {
         $owned = array_filter(
             $components,
-            static fn (string $component): bool => str_starts_with($component, $moduleDefinition->namespace)
-                || ($owners[$component] ?? '') === $moduleDefinition->name,
+            static fn (string $component): bool => $owners[$component] === $moduleDefinition->name,
             ARRAY_FILTER_USE_KEY,
         );
         $parts = [];
@@ -196,7 +236,7 @@ final readonly class TemplatesSource
             }
 
             throw new InvalidArgumentException($class . ' is a component with no template: add modules/' . $moduleDefinition->name
-                . '/templates/components/' . basename($file, '.php') . '.html.php.');
+                . '/templates/components/<name>.tpl.php and declare its componentTemplate mapping.');
         }
     }
 
@@ -204,11 +244,11 @@ final readonly class TemplatesSource
      * @param string              $class      A class in a module's `src/Component/`.
      * @param array<string, bool> $components Every template's component class, as keys.
      *
-     * @return bool Whether it is a component, not a generated template, and no template names it.
+     * @return bool Whether it is an authored component with no declared template.
      */
     private function unpaired(string $class, array $components): bool
     {
-        return !str_ends_with($class, 'Template') && is_a($class, Component::class, true) && !array_key_exists($class, $components);
+        return is_a($class, Component::class, true) && !array_key_exists($class, $components);
     }
 
     /**
@@ -251,7 +291,7 @@ final readonly class TemplatesSource
             '{next}' => $next,
             '{what}' => 'the ' . $module . " module's components, then the next.",
         ]);
-        $mapped = static fn (string $component): string => $templates[$component] ?? $component . 'Template';
+        $mapped = static fn (string $component): string => $templates[$component];
         $classes = [
             ComponentTemplates::class,
             Component::class,
@@ -279,7 +319,7 @@ final readonly class TemplatesSource
 
         foreach ($components as $component => $takesPass) {
             $short = $this->phpClassFile->short($component);
-            $template = $this->phpClassFile->short($templates[$component] ?? $component . 'Template');
+            $template = $this->phpClassFile->short($templates[$component]);
             $arms[] = '            $component instanceof ' . $short . ' => (new ' . $template . '())->render($component'
                 . ($takesPass ? ', $renderPass' : '') . '),';
         }

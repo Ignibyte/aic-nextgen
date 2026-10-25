@@ -21,7 +21,7 @@ final readonly class TemplateGrammar
     }
 
     /**
-     * @return list<string> The folders searched for `*.html.php`, relative to the repo root.
+     * @return list<string> The folders audited for declared and unsupported authored sources, relative to the project root.
      */
     public function roots(): array
     {

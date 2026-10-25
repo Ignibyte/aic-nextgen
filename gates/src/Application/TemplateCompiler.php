@@ -76,36 +76,31 @@ final readonly class TemplateCompiler
     }
 
     /**
-     * @param list<TemplateNode>   $nodes           The template's nodes.
-     * @param string               $namespace       The component's namespace.
-     * @param string               $component       The component's class name.
-     * @param TemplateBinding|null $templateBinding Its explicit declared output identity.
+     * @param list<TemplateNode> $nodes           The template's nodes.
+     * @param TemplateBinding    $templateBinding Its explicit declared output identity.
      *
      * @throws InvalidArgumentException When the template is too big for one class.
      *
-     * @return TemplateClass The source of `<component>Template`, in the same namespace, and whether its `render()`
+     * @return TemplateClass The declared generated class source, and whether its `render()`
      *                       takes the render pass.
      */
     public function compile(
         array $nodes,
-        string $namespace,
-        string $component,
-        ?TemplateBinding $templateBinding = null,
+        TemplateBinding $templateBinding,
     ): TemplateClass {
+        $component = substr($templateBinding->component, (int) strrpos($templateBinding->component, '\\') + 1);
+        $namespace = substr($templateBinding->templateClass, 0, (int) strrpos($templateBinding->templateClass, '\\'));
         $variable = lcfirst($component);
-        $templateMethods = new TemplateMethods($templateBinding->source ?? $component . '.html.php', $variable);
+        $templateMethods = new TemplateMethods($templateBinding->source, $variable);
         $scope = [$component . ' $' . $variable, 'RenderPass $renderPass'];
         $first = $templateMethods->call($this->sequence($nodes, $scope, $templateMethods));
         $takesPass = str_contains($first, '$renderPass');
         $parts = $templateMethods->source();
 
-        if ($templateBinding !== null) {
-            $namespace = substr($templateBinding->templateClass, 0, (int) strrpos($templateBinding->templateClass, '\\'));
-            $nodes[] = new TemplateNode(TemplateNodeKind::Import, $templateBinding->component);
-        }
+        $nodes[] = new TemplateNode(TemplateNodeKind::Import, $templateBinding->component);
 
         $class = $this->templateImports->head($nodes, $namespace, $parts . ($takesPass ? 'RenderPass $renderPass' : ''))
-            . $this->templateClassSource->opening($component, $variable, $takesPass, $parts, $templateBinding)
+            . $this->templateClassSource->opening($templateBinding, $takesPass, $parts)
             . '        return ' . $first . ";\n    }\n\n" . $parts . "}\n";
 
         if ($templateMethods->count() > self::PARTS || substr_count($class, "\n") > self::CLASS_LINES) {

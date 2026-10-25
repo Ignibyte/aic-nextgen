@@ -50,7 +50,7 @@ final readonly class PresentationBuild
             $templates = [...$templates, $theme->html, $theme->page];
         }
 
-        $this->claims($templates, $modules);
+        $this->claims($templates);
 
         return new PresentationInventory($templates, $theme);
     }
@@ -81,12 +81,11 @@ final readonly class PresentationBuild
     }
 
     /**
-     * @param list<TemplateBinding>  $templates The complete explicit template inventory.
-     * @param list<ModuleDefinition> $modules   The modules in dependency order.
+     * @param list<TemplateBinding> $templates The complete explicit template inventory.
      *
      * @throws InvalidArgumentException When a source, input or generated identity repeats, or a tpl file is undeclared.
      */
-    private function claims(array $templates, array $modules): void
+    private function claims(array $templates): void
     {
         $claimed = [];
 
@@ -100,7 +99,7 @@ final readonly class PresentationBuild
             $claimed += $claims;
         }
 
-        $this->undeclared($templates, $modules);
+        $this->undeclared($templates);
     }
 
     /**
@@ -119,19 +118,18 @@ final readonly class PresentationBuild
     }
 
     /**
-     * @param list<TemplateBinding>  $templates The only selected tpl sources.
-     * @param list<ModuleDefinition> $modules   The modules owning authored component sources.
+     * @param list<TemplateBinding> $templates The only selected tpl sources.
      *
-     * @throws InvalidArgumentException When any observed authored tpl file has no explicit declaration.
+     * @throws InvalidArgumentException When any observed authored candidate has no explicit declaration.
      */
-    private function undeclared(array $templates, array $modules): void
+    private function undeclared(array $templates): void
     {
         $declaredPaths = new DeclaredPaths($this->root);
-        $files = $declaredPaths->templates('themes');
-
-        foreach ($modules as $module) {
-            $files = [...$files, ...$declaredPaths->templates('modules/' . $module->name . '/templates')];
-        }
+        $files = [
+            ...$declaredPaths->templates('modules'),
+            ...$declaredPaths->templates('themes'),
+            ...$declaredPaths->templates('templates'),
+        ];
 
         $sources = array_map(static fn (TemplateBinding $templateBinding): string => $templateBinding->source, $templates);
         $undeclared = array_diff($files, $sources);

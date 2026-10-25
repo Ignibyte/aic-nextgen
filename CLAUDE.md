@@ -41,8 +41,13 @@ comparisons, complete186-expectation workflow replay and22 compiled desktop/mobi
 The updated installed app also passes30 gates, all446 classes freshly probed and86 site steps.
 An earlier native upload403 remains preserved and unexplained; these passes do not establish
 a repair or its relationship to150.
-149B still must remove the unused compiler compatibility APIs and add all six architecture pages
-from120/121.149 and both documentation tickets remain open until that complete result is delivered.
+149B completes required template binding APIs and declared-only lookup/wiki/scaffold behavior,
+with all six architecture pages from120/121 and source-backed inventories across12 required pages.
+Final AIC32/bothfullPsalm/446runtimeclasses/freshsite86 and complete186-expectation replay pass.
+The installed-workflow source fixture passes30 gates/all446classes freshly; a separate normal
+package-only App profile passes28 gates/bothfullPsalm/all163appclasses freshly/site86 without
+changing any of14343 vendor/package files. Both compiled desktop/mobile flows pass22 checks.
+Keep these profile scopes distinct. The native/session issue150 stays open; no repair is claimed.
 
 #133 runtime, #134 gate tooling, #141/#142/#143 workflow source repairs, #135 dual-pass enforcement
 and #137 bounded teardown are delivered.
@@ -65,14 +70,14 @@ M0, M1 and M2 are done (2026-10-19).
 
 **#33 made the compiled site the runtime.** FrankenPHP is set aside (Chad, 2026-10-19).
 - `bootstrap/serve.php` serves one request: under php-fpm (DDEV's reference, `public/index.php`), under `php -S`, and compiled with `elephc --web`.
-- gate:23 builds the whole app natively, serves it beside PHP, and compares 16 steps.
+- gate:23 builds the whole app natively, serves it beside PHP, and compares86 configured steps.
 - `composer run native:serve` serves the compiled site on 127.0.0.1:8090.
 
 #26: `build/surface.json` lists every route and command with its kind, written by `composer run
 build`; gate:24 keeps it fresh. #25: byte ranges (206/416) on downloads and Server-Sent Events
 (`EventStream` pulling from an `EventSource`, streamed natively). #7 (M3) runs as #35 to #39;
-#35: `AIC\Component` (the catalog atoms with a caller; data since #98). #36: a
-component's template compiles to `XTemplate.php` beside it (`composer run build`, kept fresh by
+#35: `AIC\Component` (the catalog atoms with a caller; data since #98). #36/#149: a
+component's declared `.tpl.php` compiles under `generated/templates/` (`composer run build`, kept fresh by
 gate:24); the generated class passes every gate unexcluded. #37: a Page returns
 `PageDocument(Layout)`; regions render as `data-region` elements, components and blocks between
 `<!--aic:...-->` markers. #38: blocks (`AIC\Block`) place themselves in a region by weight and
@@ -107,11 +112,11 @@ wiring around the generated pieces. #94: gate:26 holds the module boundaries (a 
 decides its `src/` folder, 15 files per folder, exports and requires, nothing outside `modules/`
 but the shell). #95: module assets: the theme moves to `assets/`, each module's
 `assets/` joins the build, and the site module's nav styles and favicon live in `modules/site/assets/`.
-#96: gate:25 holds every `*.html.php` template to the plain PHP grammar (deny by default); the
-class tools skip `modules/*/templates/` and `templates/`.
+#96/#149: gate:25 accepts only declared `*.tpl.php` templates, auditing unsupported and unclaimed
+authored sources for refusal. Class tools skip module template and theme layout sources.
 #97 to #99 (#87, #88): templates compile from plain PHP, one Renderer makes HTML, and gate:27 counts
 `RawHtml` against its grants. #97: `composer run build` compiles each
-`*.html.php` into its `XTemplate.php`, escaping every `<?= ?>` by its static type; loops are real
+declared `*.tpl.php` into its explicit generated class, escaping every `<?= ?>` by its static type; loops are real
 loops (`break`, `continue`) and `empty()` lowers by type; the old grammar is gone. A component
 is data: its constructor takes the ready values as promoted public props, computed by whoever
 builds it, and a class-typed loop variable is named for its class (`$keyedComponent`). #98: one
@@ -199,8 +204,7 @@ Background work is a job; the HTTP server's processes are its workers.
   and no hand-written composition class (#93). Selected HTML/page sources live in
   `themes/<name>/layouts/*.tpl.php`; explicit module component templates compile into
   `generated/templates/` with the dedicated `App\Generated\Templates` PSR-4 prefix. Every
-  reference input is explicitly declared; the old directory selector is removed. Remaining
-  nullable compiler compatibility APIs are removed in149B.
+  reference input is explicitly declared; the old directory selector is removed. The reader, compiler and lookup require actual bindings without basename or companion guesses.
 - Module assets are explicit `ModuleAsset` declarations through the manifest's existing `with()`
   seam (#55). Nested owner-relative sources and typed Style, Script or File roles are validated
   at build time. Declared styles join the combined CSS in dependency/declaration order, followed
@@ -445,8 +449,9 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   `ELEPHC_BIN` overrides), run, and compared with host PHP. Work files land in `.native-gate/`
   (gitignored); pcre2 and oniguruma are pinned in aic/gates' `native/elephc.{toml,lock}`. Everything
   outside those roots runs interpreted by design.
-- gate:25 (`gates/bin/gate-templates.php`, #96) parses each `*.html.php` under `modules/` and
-  `templates/` with php-parser (`Gates\Templates\`), deny by default.
+- gate:25 (`gates/bin/gate-templates.php`, #96/#149) audits authored candidates under modules/,
+  themes/ and the unsupported old templates/ root. It parses only actual declared `.tpl.php`
+  sources with php-parser (`Gates\Templates\`), deny by default.
   - **Allowed:** inline HTML; `<?= one expression ?>`; `if`, `switch`, `for` and `foreach` in
     the alternative syntax; `match`; `break` and `continue`; the component variable (from the
     first line's `<?php /** @var \Fqcn\Name $name */ ?>`) and loop variables; property and
@@ -455,14 +460,15 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   - **Refused:** every function (`TemplateGrammar::functions()` is empty), method and static
     call, `::class`, `new`, closures, assignment outside a `for` header, `while` and
     `do`/`while`, `<?php echo`, declarations, superglobals, and anything else.
-  - **Placement:** `modules/<m>/templates/components/` or `templates/layouts/`.
+  - **Placement:** declared portable `.tpl.php` under `modules/<m>/templates/components/` or
+    `themes/<theme>/layouts/`; no manifest-free or old-input mode.
   - **The class tools skip templates,** by Chad's decision, and so do the Stop hooks. A tool
     handed a template by explicit path ignores its excludes (Pint and phpcbf then rewrite it),
     so never pass a template to a fixer.
 - gate:26 (`gates/bin/gate-modules.php`, #94) reads the manifests and `git ls-files -co
   --exclude-standard`. A class's kind (`Gates\Domain\ClassKinds`, shared with the surface
   manifest) decides its folder: Page, Api and Stream in `src/Controller/`, then `Command/`,
-  `Job/`, `Block/`, `Component/` (with the generated templates), `Notification/`, `Middleware/`,
+  `Job/`, `Block/`, `Component/` (authored data; compiled templates under generated/), `Notification/`, `Middleware/`,
   `Migration/`, `Repository/` and `Form/` by name suffix. A plain class goes in `Entity/`,
   `Service/` or `Form/`. Its message names the folder, the `->export(...)` or the
   `->requires(...)` to add; the shell list is a constant in `ModuleShellRule`.

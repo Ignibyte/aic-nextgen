@@ -39,7 +39,7 @@ final readonly class ThemeDeclarations
      *
      * @throws InvalidArgumentException When selection, ownership, files or typed regions are invalid.
      *
-     * @return ThemeBinding|null The selected theme, null only for the bounded legacy transition.
+     * @return ThemeBinding|null The selected theme, null when no module selects a theme.
      */
     public function read(array $modules): ?ThemeBinding
     {

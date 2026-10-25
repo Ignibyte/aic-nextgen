@@ -19,7 +19,6 @@ use ReflectionType;
 use ReflectionUnionType;
 
 use function array_key_exists;
-use function basename;
 use function class_exists;
 use function enum_exists;
 use function explode;
@@ -64,13 +63,10 @@ final readonly class TemplateClassTypes
     /**
      * @param string $component The class the typing line names.
      * @param string $path      The template, relative to the repo root.
-     * @param bool   $declared  Whether an explicit declaration binds the input independently of its basename.
      *
-     * @throws InvalidArgumentException When it is not a final component class, or not the module's own of the file's name.
-     *
-     * @return string The file the class is declared in.
+     * @throws InvalidArgumentException When it is not a final component class owned by the declaring module.
      */
-    public function component(string $component, string $path, bool $declared = false): string
+    public function component(string $component, string $path): void
     {
         if (
             !class_exists($component)
@@ -82,9 +78,7 @@ final readonly class TemplateClassTypes
             );
         }
 
-        $this->owned($component, $path, $declared);
-
-        return (string) (new ReflectionClass($component))->getFileName();
+        $this->owned($component, $path);
     }
 
     /**
@@ -138,11 +132,10 @@ final readonly class TemplateClassTypes
     /**
      * @param class-string $component The validated component class.
      * @param string       $path      Its template's relative path.
-     * @param bool         $declared  Whether ownership is declared independently of the basename.
      *
      * @throws InvalidArgumentException When the template names a different module's component.
      */
-    private function owned(string $component, string $path, bool $declared): void
+    private function owned(string $component, string $path): void
     {
         $match = self::regexMatch('#^modules/([a-z0-9_]+)/templates/components/#', $path);
 
@@ -151,13 +144,10 @@ final readonly class TemplateClassTypes
         }
 
         $owner = 'App\\' . str_replace('_', '', ucwords($match[1], '_')) . '\\Component\\';
-        $expected = $declared
-            ? $owner
-            : $owner . basename($path, '.html.php');
 
-        if ($declared ? !str_starts_with($component, $expected) : $component !== $expected) {
+        if (!str_starts_with($component, $owner)) {
             throw new InvalidArgumentException(
-                TemplateRefusal::ComponentType->value . ": a component template renders its module's own " . $expected,
+                TemplateRefusal::ComponentType->value . ": a component template renders its module's own " . $owner,
             );
         }
     }

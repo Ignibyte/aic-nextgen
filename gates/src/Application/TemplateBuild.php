@@ -56,9 +56,7 @@ final readonly class TemplateBuild
         $classes = [];
 
         foreach ($this->units() as $path => $templateUnit) {
-            $generated = $templateUnit->binding === null
-                ? $templateUnit->generated
-                : $this->root . '/' . $templateUnit->generated;
+            $generated = $this->root . '/' . $templateUnit->binding->generated;
             $classes[$generated] = $this->compile($path, $templateUnit)->source;
         }
 
@@ -78,7 +76,7 @@ final readonly class TemplateBuild
         $components = [];
 
         foreach ($this->units() as $path => $templateUnit) {
-            $components[$templateUnit->component] = $this->compile($path, $templateUnit)->takesPass;
+            $components[$templateUnit->binding->component] = $this->compile($path, $templateUnit)->takesPass;
         }
 
         return $components;
@@ -129,7 +127,7 @@ final readonly class TemplateBuild
         $presentationInventory = $this->inventory();
 
         foreach ($presentationInventory->templates as $binding) {
-            $components = array_map(static fn (TemplateUnit $templateUnit): string => $templateUnit->component, $units);
+            $components = array_map(static fn (TemplateUnit $templateUnit): string => $templateUnit->binding->component, $units);
 
             if (in_array($binding->component, $components, true)) {
                 throw new InvalidArgumentException($binding->source . ': component already has a declared template.');
@@ -152,14 +150,9 @@ final readonly class TemplateBuild
      */
     private function compile(string $path, TemplateUnit $templateUnit): TemplateClass
     {
-        $component = $templateUnit->component;
-        $split = (int) strrpos($component, '\\');
-
         try {
             return $this->templateCompiler->compile(
                 $templateUnit->nodes,
-                substr($component, 0, $split),
-                substr($component, $split + 1),
                 $templateUnit->binding,
             );
         } catch (InvalidArgumentException $invalidArgumentException) {
@@ -169,7 +162,7 @@ final readonly class TemplateBuild
 
     /**
      * @param string                $path                  The project-relative authored source.
-     * @param TemplateBinding|null  $templateBinding       Its explicit declaration.
+     * @param TemplateBinding       $templateBinding       Its explicit declaration.
      * @param PresentationInventory $presentationInventory The actual checked theme and component declarations.
      *
      * @throws InvalidArgumentException When the source cannot be read or validated.
@@ -178,7 +171,7 @@ final readonly class TemplateBuild
      */
     private function read(
         string $path,
-        ?TemplateBinding $templateBinding,
+        TemplateBinding $templateBinding,
         PresentationInventory $presentationInventory,
     ): TemplateUnit {
         $source = file_get_contents($this->root . '/' . $path);
@@ -207,10 +200,10 @@ final readonly class TemplateBuild
             return;
         }
 
-        $source = $templateUnit->binding->source ?? '';
+        $source = $templateUnit->binding->source;
 
         if ($source === $theme->page->source) {
-            $this->regions($templateUnit->nodes, array_keys($theme->moduleTheme->regions), $templateUnit->component);
+            $this->regions($templateUnit->nodes, array_keys($theme->moduleTheme->regions), $templateUnit->binding->component);
         }
 
         if ($source !== $theme->html->source) {

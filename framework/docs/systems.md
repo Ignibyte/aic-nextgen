@@ -39,6 +39,8 @@ app meets first.
 - `AIC\Console`: `AIC\Console\Application\Console` runs `bin/aic <name>`; a missing or unknown
   name prints the usage and exits 2.
 
+See [native.md](native.md) for the compiled server and PHP comparison.
+
 ## 2. Wiring and modules
 
 - `AIC\Module`: the manifest (`AIC\Module\Contracts\ModuleManifest`), the `#[Tagged]` attribute,
@@ -47,6 +49,8 @@ app meets first.
   [modules.md](modules.md).
 - `AIC\Container`: a PSR-11 container that service providers fill at boot; it is frozen after
   boot and never changes during a request.
+
+The development engine and its guard are described in [workflow.md](workflow.md).
 
 ## 3. Data
 
@@ -70,6 +74,8 @@ app meets first.
   data-only `AIC\Component\Domain\ThemeLayout` and `AIC\Component\Domain\ThemePage` preserve
   the same region tree used by full and fragment rendering. See [modules.md](modules.md#declared-templates-and-themes).
 
+See [rendering.md](rendering.md) and [templates.md](templates.md) for the complete rendering contract.
+
 ## 5. Middleware
 
 - `AIC\Middleware`: one step of a PSR-15 stack. The stack's order is fixed: the browser runtime's
@@ -89,6 +95,8 @@ app meets first.
   document, turns redirects into a header the runtime follows, applies each write once by its id,
   and verifies the signed props a keyed component carries.
 
+See [tessera.md](tessera.md) for markers, requests, replies and streams.
+
 ## 8. Form security
 
 - `AIC\Form`: `AIC\Form\Application\FormGuardMiddleware` checks the form token and a honeypot on
@@ -106,6 +114,8 @@ app meets first.
   the session; passwords are hashed by Postgres pgcrypto (bcrypt). Users come from the app through
   `AIC\Auth\Contracts\UserProvider`, so there is no user entity in the framework. A manifest's
   `protectedPrefix` turns an anonymous visitor away.
+
+See [security.md](security.md) for sessions, form guards, uploads, auth and secret handling.
 
 ## 10. Background work
 

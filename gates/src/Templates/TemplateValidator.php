@@ -29,15 +29,9 @@ use const T_OPEN_TAG;
  */
 final readonly class TemplateValidator
 {
-    /**
-     * Where a template may sit: a module's `templates/components/`, or the page layouts' `templates/layouts/`.
-     */
-    private const string PLACE = '#^(modules/[a-z0-9_]+/templates/components|templates/layouts)/[A-Z][A-Za-z0-9]*\\.html\\.php$#';
-
-    /**
-     * The placement refusal's detail.
-     */
-    private const string PLACEMENT = 'a template sits in modules/<module>/templates/components/ or templates/layouts/';
+    /** Every authored source requires a matching validated declaration. */
+    private const string PLACEMENT = 'declare a .tpl.php source under modules/<module>/templates/components/'
+        . ' or themes/<theme>/layouts/';
 
     /** Explicit tpl sources remain confined to authored component or theme layout folders. */
     private const string DECLARED_PLACE = '#^(?:modules/[a-z0-9_]+/templates/components|themes/[a-z][a-z0-9_-]*/layouts)'
@@ -59,17 +53,15 @@ final readonly class TemplateValidator
     }
 
     /**
-     * @param string               $path            The template, relative to the root it was found under.
-     * @param string               $source          Its source.
-     * @param TemplateBinding|null $templateBinding The actual declaration when checking a tpl source.
+     * @param string          $path            The template, relative to the root it was found under.
+     * @param string          $source          Its source.
+     * @param TemplateBinding $templateBinding The required validated declaration.
      *
      * @return list<TemplateViolation> Every construct it refuses; none when the template follows the grammar.
      */
-    public function violations(string $path, string $source, ?TemplateBinding $templateBinding = null): array
+    public function violations(string $path, string $source, TemplateBinding $templateBinding): array
     {
-        $placed = $templateBinding === null
-            ? preg_match(self::PLACE, $path) === 1
-            : $templateBinding->source === $path && preg_match(self::DECLARED_PLACE, $path) === 1;
+        $placed = $templateBinding->source === $path && preg_match(self::DECLARED_PLACE, $path) === 1;
         $placement = $placed
             ? []
             : [new TemplateViolation($path, 1, TemplateRefusal::Placement, self::PLACEMENT)];

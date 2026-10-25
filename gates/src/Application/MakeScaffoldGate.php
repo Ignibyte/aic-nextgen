@@ -21,7 +21,6 @@ use function fwrite;
 use function implode;
 use function is_file;
 use function sort;
-use function str_ends_with;
 use function strlen;
 use function substr;
 
@@ -35,7 +34,7 @@ use const STDOUT;
  * `ScaffoldSequence` through the real make commands over `ScaffoldFiles`,
  * which hides the committed module and keeps every write in memory, then
  * compares the made files with the committed ones byte for byte, both ways,
- * skipping only the `*Template.php` the build writes (gate:24's). It also
+ * including every authored Template-suffixed file; compiled output lives under generated/. It also
  * holds the lines `make:module` prints to the ones the build asks for. A
  * finding prints how to make the module again. AIC only: an app has no
  * `modules/scaffold/`.
@@ -181,7 +180,7 @@ final readonly class MakeScaffoldGate
     /**
      * @param string $root The project's root.
      *
-     * @return list<string> The committed module's files, but the build's `*Template.php`, sorted.
+     * @return list<string> Every authored module file, sorted; compiled classes live under generated/.
      */
     private function committed(string $root): array
     {
@@ -190,10 +189,6 @@ final readonly class MakeScaffoldGate
 
         foreach ($this->fileLister->files($folder) as $file) {
             $path = ScaffoldFiles::FOLDER . substr($file, strlen($folder));
-
-            if (str_ends_with($path, 'Template.php')) {
-                continue;
-            }
 
             $files[] = $path;
         }

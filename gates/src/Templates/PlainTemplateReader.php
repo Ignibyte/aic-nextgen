@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Gates\Templates;
 
-use AIC\Component\Contracts\Layout;
 use Gates\Domain\TemplateBinding;
 use Gates\Domain\TemplateReader;
 use Gates\Domain\TemplateRefusal;
@@ -18,9 +17,7 @@ use PhpParser\Error;
 use PhpParser\Node\Stmt;
 
 use function array_map;
-use function dirname;
 use function implode;
-use function is_a;
 use function lcfirst;
 use function max;
 use function preg_match;
@@ -31,7 +28,7 @@ use function substr;
  * Reads a plain PHP template for the build (#97). It is validated first,
  * with gate:25's own validator, so a template the gate refuses never
  * compiles; then its typing line names the component, and its statements are
- * lowered to nodes. The generated class goes beside the component's file.
+ * lowered to nodes. The binding fixes its generated class and wrapper role.
  */
 final readonly class PlainTemplateReader implements TemplateReader
 {
@@ -50,62 +47,44 @@ final readonly class PlainTemplateReader implements TemplateReader
     }
 
     /**
-     * @param string               $path            The template, relative to the repo root.
-     * @param string               $source          Its source.
-     * @param TemplateBinding|null $templateBinding Its explicit input and output declaration, absent for a legacy input.
+     * @param string          $path            The template, relative to the repo root.
+     * @param string          $source          Its source.
+     * @param TemplateBinding $templateBinding Its required input and output declaration.
      *
      * @throws InvalidArgumentException When it breaks the grammar or a type rule: one `path:line: category: detail` line each.
      *
      * @return TemplateUnit The template read.
      */
     #[Override]
-    public function read(string $path, string $source, ?TemplateBinding $templateBinding = null): TemplateUnit
+    public function read(string $path, string $source, TemplateBinding $templateBinding): TemplateUnit
     {
         $this->validate($path, $source, $templateBinding);
         $stmts = $this->statements($path, $source);
         $this->templateHead->component($path, $source, $stmts, $templateBinding);
-        $component = $this->templateHead->componentClass($stmts);
+        $component = $templateBinding->component;
         $short = substr($component, (int) strrpos($component, '\\') + 1);
 
         try {
-            $file = $this->templateClassTypes->component($component, $path, $templateBinding !== null);
+            $this->templateClassTypes->component($component, $path);
             $scope = [lcfirst($short) => new TemplateType([TemplateTypeKind::Object], $component)];
-            $transparent = $this->transparent($component, $templateBinding);
-            $nodes = (new TemplateLowering($short, $transparent))->lower($stmts, $scope);
+            $nodes = (new TemplateLowering($short, $templateBinding->transparent()))->lower($stmts, $scope);
         } catch (InvalidArgumentException $invalidArgumentException) {
             $message = $path . ':' . $this->located($invalidArgumentException->getMessage());
 
             throw new InvalidArgumentException($message, 0, $invalidArgumentException);
         }
 
-        $generated = $templateBinding->generated ?? dirname($file) . '/' . $short . 'Template.php';
-
-        return new TemplateUnit($component, $generated, $nodes, $templateBinding);
+        return new TemplateUnit($templateBinding, $nodes);
     }
 
     /**
-     * @param string               $component       The checked input class.
-     * @param TemplateBinding|null $templateBinding Its explicit wrapper role, absent for a legacy layout.
-     *
-     * @return bool Whether children are rendered inline without new target paths.
-     */
-    private function transparent(string $component, ?TemplateBinding $templateBinding): bool
-    {
-        if ($templateBinding !== null) {
-            return $templateBinding->transparent();
-        }
-
-        return is_a($component, Layout::class, true);
-    }
-
-    /**
-     * @param string               $path            The authored template path.
-     * @param string               $source          Its source bytes.
-     * @param TemplateBinding|null $templateBinding Its explicit input, absent for a legacy source.
+     * @param string          $path            The authored template path.
+     * @param string          $source          Its source bytes.
+     * @param TemplateBinding $templateBinding Its required input identity.
      *
      * @throws InvalidArgumentException When any restricted grammar construct is refused.
      */
-    private function validate(string $path, string $source, ?TemplateBinding $templateBinding): void
+    private function validate(string $path, string $source, TemplateBinding $templateBinding): void
     {
         $violations = $this->templateValidator->violations($path, $source, $templateBinding);
 
