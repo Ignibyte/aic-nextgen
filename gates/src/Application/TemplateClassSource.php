@@ -37,7 +37,11 @@ final readonly class TemplateClassSource
             ? $component . 'Template'
             : substr($templateBinding->templateClass, (int) strrpos($templateBinding->templateClass, '\\') + 1);
 
-        return "/**\n * " . $component . "'s markup, compiled from " . $source
+        $provenance = $templateBinding === null
+            ? $component . "'s markup, compiled from " . $source
+            : $component . "'s markup, compiled from\n * " . $source;
+
+        return "/**\n * " . $provenance
             . " by composer run build (#97, #98):\n * edit the template and run composer run build, never this file.\n */\n"
             . 'final readonly class ' . $class . "\n{\n"
             . (str_contains($parts, 'self::text(') ? "    use RendersMarkup;\n\n" : '')

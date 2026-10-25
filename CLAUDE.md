@@ -32,8 +32,10 @@ with module-owned component `.tpl.php` files. Compile templates into `generated/
 and public assets into `public/assets/`. No separate theme registry or runtime discovery.
 146/147 implement the declared app theme and Greetings pilot, verified by all32 gates, both full
 Psalm passes,446 native classes,84 site comparisons,186 workflow expectations and compiled
-desktop/mobile checks. The remaining .html.php sources,
-old generator defaults and root assets/ CSS are bounded transition work for148/149.
+desktop/mobile checks. make:component/make:page declare .tpl.php sources; make:theme scaffolds
+the first selected site theme through the normal guard and manifest editor.148 verifies actual
+installed-app generation, native/browser behavior and the complete186-expectation workflow replay.
+The remaining .html.php sources and root assets/ CSS are bounded transition work for149.
 
 #133 runtime, #134 gate tooling, #141/#142/#143 workflow source repairs, #135 dual-pass enforcement
 and #137 bounded teardown are delivered.

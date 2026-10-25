@@ -84,6 +84,28 @@ final readonly class MakePageCommand implements Command
 
         [$module, $namespace, $class] = $this->makeNames->target('Page', $parsedArguments);
         $path = $this->makeNames->path($parsedArguments->positional(2));
+
+        return $this->get($parsedArguments, $module, $namespace, $class, $path);
+    }
+
+    /**
+     * @param ParsedArguments $parsedArguments The GET page options.
+     * @param string          $module          Its module.
+     * @param string          $namespace       The module namespace.
+     * @param string          $class           The controller name.
+     * @param string          $path            Its route.
+     *
+     * @throws WorkflowRefusal When the component name is invalid.
+     *
+     * @return MakeRecipe The page and optional declared view.
+     */
+    private function get(
+        ParsedArguments $parsedArguments,
+        string $module,
+        string $namespace,
+        string $class,
+        string $path,
+    ): MakeRecipe {
         $stem = $this->makeNames->stem($class, 'Page');
         $named = $parsedArguments->flag('component');
         $component = $named === ''
@@ -98,8 +120,14 @@ final readonly class MakePageCommand implements Command
             ? ''
             : 'modules/' . $module . '/src/Component/' . $component . '.php';
         $manifestCall = $this->makeCalls->route('Get', $path, $class, $namespace);
+        $claims = ['route GET ' . $path];
 
-        return new MakeRecipe($module, $class, [...$view, $madeFile], $manifestCall, ['route GET ' . $path], true, $needed);
+        if ($named === '') {
+            $manifestCall = $manifestCall->then($this->makeCalls->template($component, $namespace));
+            $claims[] = 'template ' . $namespace . '\\Component\\' . $component;
+        }
+
+        return new MakeRecipe($module, $class, [...$view, $madeFile], $manifestCall, $claims, true, $needed);
     }
 
     /**

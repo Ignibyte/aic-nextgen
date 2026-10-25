@@ -7,6 +7,11 @@ Start with `$aic-workflow-start`.
 Run `bin/aic workflow:status` before changing a file.
 Use one ticket and one actual workflow run per feature.
 Use the code index before declaring paths and classes.
+Use `bin/aic make:* --dry-run` before creating components, pages or the first site theme.
+Declare every authored source and module-manifest edit it lists.
+Templates are explicit `ModuleTemplate` declarations and compile under `generated/templates/`.
+`make:theme` creates typed regions and a layout service and selects the first `ModuleTheme`.
+The builder owns compiled templates and public assets.
 Follow the engine's phase and blocked rows.
 The engine owns the gate evidence.
 Fix findings in source.

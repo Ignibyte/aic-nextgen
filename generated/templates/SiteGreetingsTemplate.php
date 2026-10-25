@@ -8,7 +8,8 @@ use AIC\Component\Domain\RendersMarkup;
 use App\Site\Component\Greetings;
 
 /**
- * Greetings's markup, compiled from modules/site/templates/components/greetings.tpl.php by composer run build (#97, #98):
+ * Greetings's markup, compiled from
+ * modules/site/templates/components/greetings.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class SiteGreetingsTemplate

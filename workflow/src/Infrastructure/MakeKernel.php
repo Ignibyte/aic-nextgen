@@ -20,7 +20,7 @@ use AIC\Workflow\Application\UtcTime;
 /**
  * The make commands (#122), dev-only like the rest of the workflow:
  * `make:module`, `make:page`, `make:api`, `make:component`, `make:block`,
- * `make:command`, `make:job` and `make:migration`, each writing files that
+ * `make:command`, `make:job`, `make:migration` and `make:theme`, each writing files that
  * pass every gate and editing its module's manifest. `CodeKernel` merges them;
  * gate:31 builds them over its in-memory files.
  */
@@ -47,13 +47,14 @@ final readonly class MakeKernel
     }
 
     /**
-     * @return array<string, Command> The eight commands, by name.
+     * @return array<string, Command> The nine commands, by name.
      */
     public function commands(): array
     {
         $moduleFolders = $this->moduleFolders ?? new LocalModuleFolders($this->root);
         $projectFiles = $this->projectFiles ?? new LocalProjectFiles($this->root);
-        $makeRun = (new MakeParts($this->root, $projectFiles, $moduleFolders, '', self::PACKAGE, $this->watched))->makeRun();
+        $makeParts = new MakeParts($this->root, $projectFiles, $moduleFolders, '', self::PACKAGE, $this->watched);
+        $makeRun = $makeParts->makeRun();
 
         return [
             'make:api' => new MakeApiCommand($makeRun),
@@ -64,6 +65,7 @@ final readonly class MakeKernel
             'make:migration' => new MakeMigrationCommand($makeRun, new UtcTime(new SystemClock())),
             'make:module' => new MakeModuleCommand($makeRun, $moduleFolders),
             'make:page' => new MakePageCommand($makeRun),
+            'make:theme' => $makeParts->theme($makeRun),
         ];
     }
 }

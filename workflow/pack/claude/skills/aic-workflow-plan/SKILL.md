@@ -51,9 +51,12 @@ Each reason names the lookup to run. Run it, fix what it shows, then `bin/aic wo
   backticks, one path per row. Everything you write later must be here, docs included. Leave
   out the exact generated inventories `build/surface.json` and `build/assets.json`, plus
   `generated/`, `public/assets/` and `docs/wiki/`, which `composer run build` writes. Other
-  build files need their own exact manifest rows. A changed
-  component template also changes its compiled `src/Component/<Name>Template.php`: list both. A
-  new module also needs its line in `composer.json` and its root in `phpcs.xml.dist`.
+  build files need their own exact manifest rows. Declared templates compile under
+  `generated/templates/`, so their compiled classes are build-owned too. Use `make:* --dry-run`
+  to list authored component/page/theme files and the edited module manifest before declaring
+  them. A first theme includes typed region data, HTML/page templates, CSS and its layout service;
+  an existing selection refuses. A new module also needs its line in `composer.json` and its
+  root in `phpcs.xml.dist`. Set the exact compiled-template Composer prefix before generation.
 - **Locked-In Decisions:** the choices the code must keep, numbered, each with its reason.
 - **Entry Points:** every route, command or job the run adds or changes, by kind (Page, Api,
   Stream, Command or Job), method, path or name, class, module, the status a GET answers with

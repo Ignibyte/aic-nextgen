@@ -9,10 +9,10 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
+use App\Generated\Templates\ScaffoldScaffoldAboutViewTemplate;
+use App\Generated\Templates\ScaffoldScaffoldCardTemplate;
 use App\Scaffold\Component\ScaffoldAboutView;
-use App\Scaffold\Component\ScaffoldAboutViewTemplate;
 use App\Scaffold\Component\ScaffoldCard;
-use App\Scaffold\Component\ScaffoldCardTemplate;
 use Override;
 
 /**
@@ -41,8 +41,8 @@ final readonly class ScaffoldTemplates implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof ScaffoldAboutView => (new ScaffoldAboutViewTemplate())->render($component),
-            $component instanceof ScaffoldCard => (new ScaffoldCardTemplate())->render($component),
+            $component instanceof ScaffoldCard => (new ScaffoldScaffoldCardTemplate())->render($component),
+            $component instanceof ScaffoldAboutView => (new ScaffoldScaffoldAboutViewTemplate())->render($component),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }

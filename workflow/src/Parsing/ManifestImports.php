@@ -7,15 +7,18 @@ namespace AIC\Workflow\Parsing;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use PhpParser\Error;
 use PhpParser\Node\Stmt;
+use PhpParser\Node\Stmt\GroupUse;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\ParserFactory;
 
 use function array_column;
 use function array_reverse;
+use function count;
 use function in_array;
 use function ltrim;
 use function str_replace;
 use function strcasecmp;
+use function strrpos;
 use function substr;
 
 /**
@@ -36,6 +39,7 @@ final readonly class ManifestImports
     public function imported(string $text, string $use): string
     {
         $statements = $this->statements($text);
+        $this->compatible($statements, $use);
 
         if (in_array($use, array_column($statements, 'name'), true)) {
             return $text;
@@ -61,7 +65,7 @@ final readonly class ManifestImports
      *
      * @throws WorkflowRefusal When it does not parse.
      *
-     * @return list<array{name: string, start: int, end: int}> Each top-level class `use`, in order, with its offsets.
+     * @return list<array{name: string, alias: string, start: int, end: int}> Each top-level class import and its offsets.
      */
     private function statements(string $text): array
     {
@@ -100,18 +104,58 @@ final readonly class ManifestImports
     /**
      * @param Stmt $stmt One top-level statement.
      *
-     * @return array{name: string, start: int, end: int}|null Its first class import, when present.
+     * @throws WorkflowRefusal When an import needs a manual edit.
+     *
+     * @return array{name: string, alias: string, start: int, end: int}|null Its single class import, when present.
      */
     private function statement(Stmt $stmt): ?array
     {
+        if ($stmt instanceof GroupUse) {
+            throw new WorkflowRefusal('Grouped imports need a manual manifest edit; a make never guesses their references.');
+        }
+
         if (!$stmt instanceof Use_ || $stmt->type !== Use_::TYPE_NORMAL) {
             return null;
+        }
+
+        if (count($stmt->uses) !== 1) {
+            throw new WorkflowRefusal('Multiple imports need a manual manifest edit; a make never guesses their references.');
         }
 
         $use = $stmt->uses[0] ?? null;
 
         return $use === null
             ? null
-            : ['end' => $stmt->getEndFilePos(), 'name' => $use->name->toString(), 'start' => $stmt->getStartFilePos()];
+            : ['alias' => $use->getAlias()->toString(), 'end' => $stmt->getEndFilePos(),
+                'name' => $use->name->toString(), 'start' => $stmt->getStartFilePos()];
+    }
+
+    /**
+     * @param list<array{name: string, alias: string, start: int, end: int}> $statements Existing imports.
+     * @param string                                                         $use        The class the generated call names.
+     *
+     * @throws WorkflowRefusal When its short name would resolve incorrectly.
+     */
+    private function compatible(array $statements, string $use): void
+    {
+        foreach ($statements as $statement) {
+            if ($this->conflicts($statement, $use)) {
+                throw new WorkflowRefusal('The import ' . $use . ' conflicts with an existing name or alias; add the call by hand.');
+            }
+        }
+    }
+
+    /**
+     * @param array{name: string, alias: string, start: int, end: int} $statement An existing import.
+     * @param string                                                   $use       The generated call's class.
+     *
+     * @return bool Whether the generated short reference would name a different class.
+     */
+    private function conflicts(array $statement, string $use): bool
+    {
+        $short = substr($use, (int) strrpos('\\' . $use, '\\'));
+        $same = strcasecmp($use, $statement['name']) === 0;
+
+        return ($same && $statement['alias'] !== $short) || (!$same && strcasecmp($statement['alias'], $short) === 0);
     }
 }

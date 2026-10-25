@@ -77,7 +77,7 @@ These are not entry points; each has a contract or a name suffix and a folder of
 
 | Kind | Known by | Folder | What it is |
 |---|---|---|---|
-| Component | implements `AIC\Component\Contracts\Component` | `src/Component/` | a piece of a page as data: public readonly props and a template beside it |
+| Component | implements `AIC\Component\Contracts\Component` | `src/Component/` | a piece of a page as data: public readonly props and a declared template |
 | Block | implements `AIC\Block\Contracts\Block` | `src/Block/` | a component placed in a region by weight and route prefix, on pages that do not build it |
 | Middleware | implements `Psr\Http\Server\MiddlewareInterface` | `src/Middleware/` | a PSR-15 step in the stack, at a position the manifest names |
 | Migration | implements `AIC\Schema\Contracts\Migration` | `src/Migration/` | one schema change, by version, applied once by `bin/aic migrate` |
@@ -86,5 +86,6 @@ These are not entry points; each has a contract or a name suffix and a folder of
 | Form | name ends in `Form` | `src/Form/` | a form's fields and their checks |
 
 A class of none of these kinds is plain, and sits in `src/Entity/`, `src/Service/` or
-`src/Form/`. A component's template is a `*.html.php` file in `modules/<name>/templates/components/`;
-the build compiles it into a class beside the component.
+`src/Form/`. A component's declared `*.tpl.php` source lives in
+`modules/<name>/templates/components/`; the build compiles it into `generated/templates/`.
+The reference app retains bounded legacy `*.html.php` inputs until its migration completes.

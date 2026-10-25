@@ -86,7 +86,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 22 | pipeline docs | *AIC only*: its own process documents | not run in an app |
 | 23 | native site | the app compiled with `elephc --web` answers each step as the PHP app does | find the step that differs and the class behind it |
 | 24 | build outputs | `generated/`, `build/surface.json`, the template classes and `public/assets/` match what the build writes | `composer run build` |
-| 25 | templates | every `*.html.php` uses only the plain PHP template grammar | move the logic into the component's props |
+| 25 | templates | declared `*.tpl.php` and bounded legacy `*.html.php` inputs use only the plain PHP template grammar | move the logic into the component's props |
 | 26 | module boundaries | kind folders, the 15-file cap, exports and requires, no cycles, nothing outside `modules/` but the shell | move the class, export it, require the module, or split the module |
 | 27 | raw html | every `RawHtml` use is listed and matches its grant in `config/raw-html.php` | use a component; or grant the use with its reason |
 | 28 | house rules | *AIC only*: the workflow's shipped rules bite on their probes | not run in an app |
@@ -108,6 +108,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 
 ## Templates and the class tools
 
-The class tools (Pint, Rector, PHPStan, PHPMD, PHPCS, Deptrac, Psalm) skip `*.html.php` templates;
-gate:25 checks them instead. A fixer handed a template by path ignores its excludes and rewrites
-it, so never pass a template to Pint or phpcbf.
+The class tools (Pint, Rector, PHPStan, PHPMD, PHPCS, Deptrac, Psalm) skip authored template
+inputs; gate:25 checks them instead. Compiled classes under `generated/templates/` remain
+fully checked, including native compilation. A fixer handed an authored template by path ignores
+its excludes and rewrites it, so never pass an authored template to Pint or phpcbf.

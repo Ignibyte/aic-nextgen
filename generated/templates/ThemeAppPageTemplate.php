@@ -9,7 +9,8 @@ use AIC\Component\Exception\UnknownComponent;
 use App\Site\Component\Page;
 
 /**
- * Page's markup, compiled from themes/app/layouts/page.tpl.php by composer run build (#97, #98):
+ * Page's markup, compiled from
+ * themes/app/layouts/page.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
 final readonly class ThemeAppPageTemplate

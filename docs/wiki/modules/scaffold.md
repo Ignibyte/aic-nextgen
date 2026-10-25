@@ -80,8 +80,8 @@ none
 
 | Component | Template | Template class |
 | --- | --- | --- |
-| `App\Scaffold\Component\ScaffoldAboutView` | [modules/scaffold/templates/components/ScaffoldAboutView.html.php](../../../modules/scaffold/templates/components/ScaffoldAboutView.html.php) | `App\Scaffold\Component\ScaffoldAboutViewTemplate` |
-| `App\Scaffold\Component\ScaffoldCard` | [modules/scaffold/templates/components/ScaffoldCard.html.php](../../../modules/scaffold/templates/components/ScaffoldCard.html.php) | `App\Scaffold\Component\ScaffoldCardTemplate` |
+| `App\Scaffold\Component\ScaffoldAboutView` | [modules/scaffold/templates/components/scaffold-about-view.tpl.php](../../../modules/scaffold/templates/components/scaffold-about-view.tpl.php) | `App\Generated\Templates\ScaffoldScaffoldAboutViewTemplate` |
+| `App\Scaffold\Component\ScaffoldCard` | [modules/scaffold/templates/components/scaffold-card.tpl.php](../../../modules/scaffold/templates/components/scaffold-card.tpl.php) | `App\Generated\Templates\ScaffoldScaffoldCardTemplate` |
 
 ### `src/Controller/`
 

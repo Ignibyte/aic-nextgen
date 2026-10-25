@@ -159,9 +159,31 @@ The build audits nested generated outputs, removes orphans and checks freshness 
 `module:show` and the generated wiki report actual source and generated identities.
 
 The reference app currently declares its app theme and Greetings component. Existing `.html.php`
-inputs use one bounded `TemplateBuild::legacyTemplates` bridge while generators and the rest of
-the reference components migrate in the following work. Old layouts and root CSS remain during
+inputs use one bounded `TemplateBuild::legacyTemplates` bridge while the rest of the reference
+components migrate in the following work. Old layouts and root CSS remain during
 that transition; this does not describe the final migration as complete.
+
+## Generate authored rendering files
+
+With the workflow development package installed, use `bin/aic make:component <module> <Class>`
+or `bin/aic make:page <module> <Class> <path>`. Both create lower-kebab `.tpl.php` sources and
+add their `ModuleTemplate` declarations to the owning manifest. `--export` adds the component's
+export in the same edit. A page's `--component=<Class>` reuses a declared local component and
+adds only its route; a legacy component needs an explicit declaration before reuse.
+
+For a site module without a selected theme or an existing layout service, run
+`bin/aic make:theme <name>`. It creates typed page-region data, the HTML/page templates under
+`themes/<name>/layouts/`, a declared stylesheet and an exported `HtmlLayout` service consuming
+the compiled `PageLayouts`. The four regions are header, content, nav and footer. No favicon or
+feature module is assumed. Names are lowercase words joined by hyphens, at most 32 bytes.
+
+Set the exact compiled-template Composer prefix above and run `composer dump-autoload` first.
+Use `--dry-run --json` to inspect all authored paths and the manifest edit before declaring
+them in an open workflow's spec. Every target and the complete manifest edit pass the normal
+write guard; the make records the files it wrote. Generated classes, public assets and wiki
+output belong to `composer run build`. Existing files, a selected theme, conflicting literal
+declarations or ambiguous imports refuse without writes. Rerunning a make refuses rather than
+replacing source. The reference app's remaining legacy migration is separate from these writers.
 
 ## Assets
 

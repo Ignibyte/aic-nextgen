@@ -7,7 +7,7 @@ namespace App\Scaffold\Component;
 use AIC\Component\Contracts\Component;
 
 /**
- * ScaffoldAboutView, made by bin/aic make:page (#122) for ScaffoldAboutPage: its title, shown by ScaffoldAboutView.html.php.
+ * ScaffoldAboutView, made by bin/aic make:page (#122) for ScaffoldAboutPage: its title, shown by its declared template.
  */
 final readonly class ScaffoldAboutView implements Component
 {

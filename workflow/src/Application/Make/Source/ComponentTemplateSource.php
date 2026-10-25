@@ -7,7 +7,7 @@ namespace AIC\Workflow\Application\Make\Source;
 use function strtr;
 
 /**
- * A component's `*.html.php`: its typing line and one paragraph of its title (#122).
+ * A component's declared `*.tpl.php`: its typing line and one paragraph of its title (#148).
  */
 final readonly class ComponentTemplateSource
 {

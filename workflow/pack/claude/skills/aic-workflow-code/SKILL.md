@@ -24,17 +24,25 @@ another file, add its row to the manifest first; the run records it as declared 
   or a Job (queued or scheduled work). A controller returns its kind's response and nothing
   else; a helper goes in `src/Service/`.
 - **Components are data.** A component's constructor takes the ready values as public promoted
-  properties. Its template, `modules/<name>/templates/components/<Name>.html.php`, is plain PHP
+  properties. Its declared template, `modules/<name>/templates/components/<name>.tpl.php`, is plain PHP
   with `<?= expression ?>`, the alternative `if`/`foreach` syntax and property reads: no
   function or method calls.
 - **The build.** After a change to a manifest, a template or a module's assets, run
-  `composer run build`. It writes `generated/`, `build/surface.json`, `public/assets/` and each
-  component's compiled `src/Component/<Name>Template.php`; never edit those by hand. The
-  compiled template is a path in the module, so it needs its manifest row.
+  `composer run build`. It writes `generated/` (including compiled classes in
+  `generated/templates/`), `build/surface.json`, `build/assets.json`, `public/assets/` and
+  `docs/wiki/`; never edit those by hand. These exact inventories and generated directories
+  are build outputs; declare every authored source and the edited module manifest.
 - **Make a new class.** For a new module, page, api, component, block, command, job or
-  migration, prefer `bin/aic make:*` (`bin/aic command:list` names the eight) to writing it by
+  migration or first site theme, prefer `bin/aic make:*` (`bin/aic command:list` lists them) to writing it by
   hand: it writes the class in its folder, adds the manifest call, and the result passes every
   gate. `--dry-run` lists the paths it will write; add each to the manifest first.
+- **Themes and templates.** `make:component` and a default `make:page` register `ModuleTemplate`
+  through the module manifest's `with()` call. `make:page --component=<Class>` reuses an existing
+  declared component. `make:theme <name>` selects the first site theme, creates typed region data,
+  `themes/<name>/layouts/html.tpl.php` and `page.tpl.php`, CSS and an exported `HtmlLayout` service.
+  It refuses an existing selection or file. The exact Composer prefix
+  `"App\\Generated\\Templates\\": "generated/templates/"` must be configured first; run
+  `composer dump-autoload`. Use the dry-run to declare every authored path and the site manifest.
 - **Find before you add.** `bin/aic code:search` and `bin/aic code:refs` before you write a
   class: reuse what the app has instead of a second copy.
 
