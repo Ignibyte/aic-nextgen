@@ -7,7 +7,7 @@ namespace App\Note\Component;
 use AIC\Component\Contracts\Component;
 
 /**
- * The last stock items, from StockListing.html.php: how many it shows, then
+ * The last stock items, from stock-listing.tpl.php: how many it shows, then
  * one line each.
  */
 final readonly class StockListing implements Component

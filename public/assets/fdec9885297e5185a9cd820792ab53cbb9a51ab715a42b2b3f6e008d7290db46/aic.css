@@ -1,4 +1,4 @@
-/* Built by composer run build (#95) from each module's assets/ CSS, then the site theme's assets/ CSS: edit those and run composer run build, never this file. */
+/* Built by composer run build from declared module and selected-theme CSS: edit those and run composer run build, never this file. */
 
 /* modules/site/assets/site.css */
 /* The site module's nav block (SiteNavBlock): its links in a row, the current one in bold. */
@@ -20,7 +20,7 @@
     min-width: 0;
 }
 
-/* assets/10-tokens.css */
+/* themes/app/assets/10-tokens.css */
 /* Tokens: every colour, size and font the theme uses, light first, dark by the system's scheme. */
 :root {
     --aic-bg: #fbfaf7;
@@ -55,7 +55,7 @@
     }
 }
 
-/* assets/20-base.css */
+/* themes/app/assets/20-base.css */
 /* The document and the layout's regions. */
 *,
 *::before,
@@ -135,7 +135,7 @@ time {
     color: var(--aic-muted);
 }
 
-/* assets/30-atoms.css */
+/* themes/app/assets/30-atoms.css */
 /* The atoms: each styles one aic-* class the framework renders. */
 .aic-link {
     color: var(--aic-accent);

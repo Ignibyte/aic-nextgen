@@ -14,15 +14,14 @@ declare(strict_types=1);
  * app's whole surface in one file. The commands, jobs and schedules come from
  * the console kernel (#93); the database is never opened, because PdoDatabase
  * connects on its first query. A component template, plain PHP
- * (`modules/<m>/templates/components/X.html.php`, or a page layout in
- * `templates/layouts/`), is checked by gate:25's grammar, typed, and compiled
- * to `XTemplate.php` beside the component its typing line names (#97); the
+ * (declared module/theme `.tpl.php` inputs), is checked by gate:25's grammar, typed, and compiled
+ * to its declared class under `generated/templates/`; the
  * lookup that finds each component's template is generated/ModuleTemplates and
  * one `<M>Templates` per module, and a module component with no template is
  * refused (#98).
- * The assets (#39, #95): each module's assets/*.css in requires order, then
- * the site theme's assets/*.css, build public/assets/aic.css; a module's other
- * assets are copied to public/assets/<module>/. The build owns public/assets/:
+ * Declared module styles in requires order, then declared theme styles in
+ * declaration order, build public/assets/aic.css. Declared files and scripts
+ * are copied to their catalog paths. The build owns public/assets/:
  * a file there it would not write is deleted, and --check calls it stale.
  *
  * The modules come first (#92): every modules/<name>/<name>.module.php is read
@@ -49,11 +48,11 @@ use App\Generated\ConsoleModules;
 use Gates\Application\AssetCatalogBuild;
 use Gates\Application\AssetCatalogSource;
 use Gates\Application\BuildOutputs;
-use Gates\Application\DeclaredPaths;
 use Gates\Application\ModuleBuild;
 use Gates\Application\PresentationBuild;
 use Gates\Application\ProjectProfile;
 use Gates\Application\PublicAssetOrphans;
+use Gates\Application\RetiredTemplates;
 use Gates\Application\SurfaceManifest;
 use Gates\Application\SurfaceModuleRows;
 use Gates\Application\TemplateBuild;
@@ -120,19 +119,17 @@ try {
     foreach ((new TemplatesSource())->files($root, $modules, $components, $templateClasses, $templateOwners) as $file => $source) {
         $generated[$root . '/generated/' . $file] = $source;
     }
+    $buildOutputs = new BuildOutputs($root);
+    $orphans = [
+        ...$buildOutputs->orphans($root . '/generated', $generated, '*.php', true),
+        ...(new RetiredTemplates($root))->files($modules),
+    ];
+    $staleGenerated = [...$buildOutputs->stale($generated), ...$orphans];
 } catch (InvalidArgumentException|JsonException|RuntimeException $exception) {
     fwrite(\STDERR, 'aic-build: ' . $exception->getMessage() . "\n");
 
     exit(1);
 }
-
-$buildOutputs = new BuildOutputs($root);
-
-$orphans = [
-    ...$buildOutputs->orphans($root . '/generated', $generated, '*.php', true),
-    ...(new DeclaredPaths($root))->legacy($presentation),
-];
-$staleGenerated = [...$buildOutputs->stale($generated), ...$orphans];
 
 if ($checking && $staleGenerated !== []) {
     fwrite(\STDERR, 'gate:24 — stale: ' . $buildOutputs->names($staleGenerated) . "; run composer run build and commit them.\n");

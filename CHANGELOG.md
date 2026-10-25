@@ -6,6 +6,19 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **Declared reference theme migration, part A** (#149). Every reference component uses an
+  explicit `.tpl.php` mapping. The selected theme declares the former root CSS in the same
+  cascade order. The old layout is removed, and the builder audits and retires its historical
+  compiler outputs using their module ownership, class identity and provenance.
+  - Missing planned zero-byte outputs now fail freshness checks. Final compiler compatibility
+    removal and the six architecture pages remain required in part B before #149/#120/#121 close.
+    Root and shipped formatter configs now check `generated/templates/`; a planted violation
+    fails the actual formatter in both AIC and an installed app.
+  - All32 gates, both full Psalm passes,446 runtime classes,86 fresh site comparisons,
+    complete186 workflow expectations and22 compiled desktop/mobile checks pass. The updated
+    installed app passes30 gates with all446 classes freshly probed. An earlier native upload403
+    is preserved for investigation; no repair or relationship to the session defect is claimed.
+
 - **Declared rendering generators** (#148). Component and default page makes register explicit
   `.tpl.php` sources. First-theme scaffolding creates typed region data, HTML/page templates,
   CSS and a usable exported layout service through the existing guard and manifest editor.

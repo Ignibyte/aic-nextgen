@@ -8,12 +8,11 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\ThemeLayout;
+use AIC\Component\Domain\ThemePage;
 use AIC\Component\Exception\UnknownComponent;
 use App\Generated\Templates\SiteGreetingsTemplate;
 use App\Generated\Templates\ThemeAppHtmlTemplate;
 use App\Generated\Templates\ThemeAppPageTemplate;
-use App\Site\Component\AppLayout;
-use App\Site\Component\AppLayoutTemplate;
 use App\Site\Component\Greetings;
 use App\Site\Component\Page;
 use Override;
@@ -28,7 +27,7 @@ final readonly class SiteTemplatesPart2 implements ComponentTemplates
      * @param ComponentTemplates $componentTemplates The templates after these.
      */
     public function __construct(
-        private ComponentTemplates $componentTemplates = new SiteTemplatesPart3(),
+        private ComponentTemplates $componentTemplates = new NoteTemplates(),
     ) {
     }
 
@@ -44,10 +43,10 @@ final readonly class SiteTemplatesPart2 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof AppLayout => (new AppLayoutTemplate())->render($component, $renderPass),
             $component instanceof Greetings => (new SiteGreetingsTemplate())->render($component),
             $component instanceof ThemeLayout => (new ThemeAppHtmlTemplate())->render($component, $renderPass),
             $component instanceof Page => (new ThemeAppPageTemplate())->render($component, $renderPass),
+            $component instanceof ThemePage => (new ThemePageTemplate())->render($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }

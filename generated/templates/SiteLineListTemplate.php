@@ -2,15 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Site\Component;
+namespace App\Generated\Templates;
 
 use AIC\Component\Domain\RendersMarkup;
+use App\Site\Component\LineList;
 
 /**
- * LineList's markup, compiled from LineList.html.php by composer run build (#97, #98):
+ * LineList's markup, compiled from
+ * modules/site/templates/components/line-list.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
-final readonly class LineListTemplate
+final readonly class SiteLineListTemplate
 {
     use RendersMarkup;
 
@@ -27,7 +29,7 @@ final readonly class LineListTemplate
     /**
      * @param LineList $lineList The component.
      *
-     * @return string Markup from LineList.html.php.
+     * @return string Markup from modules/site/templates/components/line-list.tpl.php.
      */
     private function part0(LineList $lineList): string
     {
@@ -41,7 +43,7 @@ final readonly class LineListTemplate
     /**
      * @param string $line A loop's variable.
      *
-     * @return string Markup from LineList.html.php.
+     * @return string Markup from modules/site/templates/components/line-list.tpl.php.
      */
     private function part1(string $line): string
     {
@@ -53,7 +55,7 @@ final readonly class LineListTemplate
     /**
      * @param LineList $lineList The component.
      *
-     * @return string Markup from LineList.html.php.
+     * @return string Markup from modules/site/templates/components/line-list.tpl.php.
      */
     private function part2(LineList $lineList): string
     {
@@ -69,7 +71,7 @@ final readonly class LineListTemplate
     /**
      * @param LineList $lineList The component.
      *
-     * @return string Markup from LineList.html.php.
+     * @return string Markup from modules/site/templates/components/line-list.tpl.php.
      */
     private function part3(LineList $lineList): string
     {
@@ -85,7 +87,7 @@ final readonly class LineListTemplate
     /**
      * @param LineList $lineList The component.
      *
-     * @return string Markup from LineList.html.php.
+     * @return string Markup from modules/site/templates/components/line-list.tpl.php.
      */
     private function part4(LineList $lineList): string
     {

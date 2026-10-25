@@ -23,9 +23,9 @@ final readonly class AssetsPart3
         return [
             new PublicAsset(
                 'site/styles',
-                '/assets/1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/site/si'
+                '/assets/fdec9885297e5185a9cd820792ab53cbb9a51ab715a42b2b3f6e008d7290db46/site/si'
                     . 'te.css',
-                '1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/site/site.css',
+                'fdec9885297e5185a9cd820792ab53cbb9a51ab715a42b2b3f6e008d7290db46/site/site.css',
                 'text/css; charset=utf-8',
                 'd9e6ad8017058810a16550a8690cc73e515a3452a48e6e3c0339d41f9da38b9d',
                 286,

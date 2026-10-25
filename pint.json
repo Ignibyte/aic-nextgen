@@ -112,6 +112,6 @@
         "visibility_required": { "elements": ["const", "method", "property"] },
         "whitespace_after_comma_in_array": { "ensure_single_space": true }
     },
-    "exclude": ["vendor", "storage", "tools", ".psalm-cache", ".rector-cache", ".native-gate", "docs", "templates"],
+    "exclude": ["vendor", "storage", "tools", ".psalm-cache", ".rector-cache", ".native-gate", "docs"],
     "notPath": ["#^modules/[^/]+/templates/#", "#^themes/[^/]+/layouts/.*\\.tpl\\.php$#"]
 }

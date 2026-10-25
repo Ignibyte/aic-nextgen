@@ -7,7 +7,7 @@ namespace App\Site\Component;
 use AIC\Component\Contracts\Component;
 
 /**
- * The greetings for a name, from Greetings.html.php: one per greeter plugin.
+ * The greetings for a name, from greetings.tpl.php: one per greeter plugin.
  */
 final readonly class Greetings implements Component
 {

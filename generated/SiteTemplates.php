@@ -8,14 +8,14 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
+use App\Generated\Templates\SiteHomeTemplate;
+use App\Generated\Templates\SiteLineListTemplate;
+use App\Generated\Templates\SiteSiteNavTemplate;
+use App\Generated\Templates\SiteTicksTemplate;
 use App\Site\Component\Home;
-use App\Site\Component\HomeTemplate;
 use App\Site\Component\LineList;
-use App\Site\Component\LineListTemplate;
 use App\Site\Component\SiteNav;
-use App\Site\Component\SiteNavTemplate;
 use App\Site\Component\Ticks;
-use App\Site\Component\TicksTemplate;
 use Override;
 
 /**
@@ -44,10 +44,10 @@ final readonly class SiteTemplates implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof Home => (new HomeTemplate())->render($component, $renderPass),
-            $component instanceof LineList => (new LineListTemplate())->render($component),
-            $component instanceof SiteNav => (new SiteNavTemplate())->render($component, $renderPass),
-            $component instanceof Ticks => (new TicksTemplate())->render($component),
+            $component instanceof Home => (new SiteHomeTemplate())->render($component, $renderPass),
+            $component instanceof LineList => (new SiteLineListTemplate())->render($component),
+            $component instanceof SiteNav => (new SiteSiteNavTemplate())->render($component, $renderPass),
+            $component instanceof Ticks => (new SiteTicksTemplate())->render($component),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }

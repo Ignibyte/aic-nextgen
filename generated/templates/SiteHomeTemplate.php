@@ -2,19 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\Site\Component;
+namespace App\Generated\Templates;
 
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\RendersMarkup;
 use AIC\Component\Exception\UnknownComponent;
+use App\Site\Component\Home;
 use App\Site\Entity\HomeDemo;
 use App\Site\Entity\HomeFact;
 
 /**
- * Home's markup, compiled from Home.html.php by composer run build (#97, #98):
+ * Home's markup, compiled from
+ * modules/site/templates/components/home.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
-final readonly class HomeTemplate
+final readonly class SiteHomeTemplate
 {
     use RendersMarkup;
 
@@ -34,7 +36,7 @@ final readonly class HomeTemplate
     /**
      * @param HomeDemo $homeDemo A loop's variable.
      *
-     * @return string Markup from Home.html.php.
+     * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
     private function part0(HomeDemo $homeDemo): string
     {
@@ -48,7 +50,7 @@ final readonly class HomeTemplate
     /**
      * @param HomeDemo $homeDemo A loop's variable.
      *
-     * @return string Markup from Home.html.php.
+     * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
     private function part1(HomeDemo $homeDemo): string
     {
@@ -62,7 +64,7 @@ final readonly class HomeTemplate
     /**
      * @param HomeDemo $homeDemo A loop's variable.
      *
-     * @return string Markup from Home.html.php.
+     * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
     private function part2(HomeDemo $homeDemo): string
     {
@@ -78,7 +80,7 @@ final readonly class HomeTemplate
     /**
      * @param Home $home The component.
      *
-     * @return string Markup from Home.html.php.
+     * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
     private function part3(Home $home): string
     {
@@ -94,7 +96,7 @@ final readonly class HomeTemplate
     /**
      * @param HomeFact $homeFact A loop's variable.
      *
-     * @return string Markup from Home.html.php.
+     * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
     private function part4(HomeFact $homeFact): string
     {
@@ -110,7 +112,7 @@ final readonly class HomeTemplate
     /**
      * @param Home $home The component.
      *
-     * @return string Markup from Home.html.php.
+     * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
     private function part5(Home $home): string
     {
@@ -126,7 +128,7 @@ final readonly class HomeTemplate
     /**
      * @param string $pair A loop's variable.
      *
-     * @return string Markup from Home.html.php.
+     * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
     private function part6(string $pair): string
     {
@@ -138,7 +140,7 @@ final readonly class HomeTemplate
     /**
      * @param Home $home The component.
      *
-     * @return string Markup from Home.html.php.
+     * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
     private function part7(Home $home): string
     {
@@ -157,7 +159,7 @@ final readonly class HomeTemplate
      *
      * @throws UnknownComponent When a child has no registered template.
      *
-     * @return string Markup from Home.html.php.
+     * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
     private function part8(Home $home, RenderPass $renderPass): string
     {
@@ -172,7 +174,7 @@ final readonly class HomeTemplate
      *
      * @throws UnknownComponent When a child has no registered template.
      *
-     * @return string Markup from Home.html.php.
+     * @return string Markup from modules/site/templates/components/home.tpl.php.
      */
     private function part9(Home $home, RenderPass $renderPass): string
     {

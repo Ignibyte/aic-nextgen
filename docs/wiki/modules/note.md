@@ -78,10 +78,10 @@ none
 
 | Component | Template | Template class |
 | --- | --- | --- |
-| `App\Note\Component\NoteCard` | [modules/note/templates/components/NoteCard.html.php](../../../modules/note/templates/components/NoteCard.html.php) | `App\Note\Component\NoteCardTemplate` |
-| `App\Note\Component\NoteList` | [modules/note/templates/components/NoteList.html.php](../../../modules/note/templates/components/NoteList.html.php) | `App\Note\Component\NoteListTemplate` |
-| `App\Note\Component\StockLinks` | [modules/note/templates/components/StockLinks.html.php](../../../modules/note/templates/components/StockLinks.html.php) | `App\Note\Component\StockLinksTemplate` |
-| `App\Note\Component\StockListing` | [modules/note/templates/components/StockListing.html.php](../../../modules/note/templates/components/StockListing.html.php) | `App\Note\Component\StockListingTemplate` |
+| `App\Note\Component\NoteCard` | [modules/note/templates/components/note-card.tpl.php](../../../modules/note/templates/components/note-card.tpl.php) | `App\Generated\Templates\NoteNoteCardTemplate` |
+| `App\Note\Component\NoteList` | [modules/note/templates/components/note-list.tpl.php](../../../modules/note/templates/components/note-list.tpl.php) | `App\Generated\Templates\NoteNoteListTemplate` |
+| `App\Note\Component\StockLinks` | [modules/note/templates/components/stock-links.tpl.php](../../../modules/note/templates/components/stock-links.tpl.php) | `App\Generated\Templates\NoteStockLinksTemplate` |
+| `App\Note\Component\StockListing` | [modules/note/templates/components/stock-listing.tpl.php](../../../modules/note/templates/components/stock-listing.tpl.php) | `App\Generated\Templates\NoteStockListingTemplate` |
 
 ### `src/Controller/`
 

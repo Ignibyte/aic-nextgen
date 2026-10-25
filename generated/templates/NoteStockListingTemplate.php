@@ -2,15 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Note\Component;
+namespace App\Generated\Templates;
 
 use AIC\Component\Domain\RendersMarkup;
+use App\Note\Component\StockListing;
 
 /**
- * StockListing's markup, compiled from StockListing.html.php by composer run build (#97, #98):
+ * StockListing's markup, compiled from
+ * modules/note/templates/components/stock-listing.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
-final readonly class StockListingTemplate
+final readonly class NoteStockListingTemplate
 {
     use RendersMarkup;
 
@@ -27,7 +29,7 @@ final readonly class StockListingTemplate
     /**
      * @param string $line A loop's variable.
      *
-     * @return string Markup from StockListing.html.php.
+     * @return string Markup from modules/note/templates/components/stock-listing.tpl.php.
      */
     private function part0(string $line): string
     {
@@ -39,7 +41,7 @@ final readonly class StockListingTemplate
     /**
      * @param StockListing $stockListing The component.
      *
-     * @return string Markup from StockListing.html.php.
+     * @return string Markup from modules/note/templates/components/stock-listing.tpl.php.
      */
     private function part1(StockListing $stockListing): string
     {
@@ -55,7 +57,7 @@ final readonly class StockListingTemplate
     /**
      * @param StockListing $stockListing The component.
      *
-     * @return string Markup from StockListing.html.php.
+     * @return string Markup from modules/note/templates/components/stock-listing.tpl.php.
      */
     private function part2(StockListing $stockListing): string
     {

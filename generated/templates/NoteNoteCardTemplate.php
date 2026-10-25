@@ -2,15 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Note\Component;
+namespace App\Generated\Templates;
 
 use AIC\Component\Domain\RendersMarkup;
+use App\Note\Component\NoteCard;
 
 /**
- * NoteCard's markup, compiled from NoteCard.html.php by composer run build (#97, #98):
+ * NoteCard's markup, compiled from
+ * modules/note/templates/components/note-card.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
-final readonly class NoteCardTemplate
+final readonly class NoteNoteCardTemplate
 {
     use RendersMarkup;
 
@@ -27,7 +29,7 @@ final readonly class NoteCardTemplate
     /**
      * @param NoteCard $noteCard The component.
      *
-     * @return string Markup from NoteCard.html.php.
+     * @return string Markup from modules/note/templates/components/note-card.tpl.php.
      */
     private function part0(NoteCard $noteCard): string
     {

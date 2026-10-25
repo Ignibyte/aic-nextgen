@@ -1,0 +1,110 @@
+/* The atoms: each styles one aic-* class the framework renders. */
+.aic-link {
+    color: var(--aic-accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+}
+
+.aic-link:hover {
+    text-decoration-thickness: 2px;
+}
+
+.aic-badge {
+    display: inline-block;
+    min-width: 1.6em;
+    padding: 0 0.5em;
+    border-radius: 999px;
+    background: var(--aic-accent);
+    color: var(--aic-accent-text);
+    font-size: 0.8em;
+    font-weight: 600;
+    line-height: 1.6;
+    text-align: center;
+    vertical-align: 0.1em;
+}
+
+.aic-form {
+    display: grid;
+    gap: calc(var(--aic-space) * 0.75);
+    margin: var(--aic-space) 0;
+}
+
+.aic-field {
+    display: grid;
+    gap: 0.3rem;
+    margin: 0;
+}
+
+.aic-field label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.aic-checkbox {
+    justify-self: start;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin: 0;
+    accent-color: var(--aic-accent);
+}
+
+.aic-input,
+.aic-textarea {
+    width: 100%;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--aic-line);
+    border-radius: var(--aic-radius);
+    background: var(--aic-surface);
+    color: var(--aic-text);
+    font: inherit;
+}
+
+.aic-textarea {
+    min-height: 6rem;
+    resize: vertical;
+}
+
+.aic-input:focus,
+.aic-textarea:focus,
+.aic-button:focus-visible {
+    outline: 2px solid var(--aic-accent);
+    outline-offset: 1px;
+}
+
+.aic-button {
+    justify-self: start;
+    padding: 0.45rem 1rem;
+    border: 0;
+    border-radius: var(--aic-radius);
+    background: var(--aic-accent);
+    color: var(--aic-accent-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#delete.aic-button {
+    background: var(--aic-danger);
+    color: var(--aic-bg);
+}
+
+.aic-alert {
+    margin: 0;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--aic-radius);
+    border-left: 4px solid var(--aic-muted);
+    background: var(--aic-surface);
+}
+
+.aic-alert[data-severity="error"] {
+    border-left-color: var(--aic-danger);
+    background: var(--aic-danger-bg);
+}
+
+.aic-honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}

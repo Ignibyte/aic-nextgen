@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Note\Component;
+namespace App\Generated\Templates;
 
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Exception\UnknownComponent;
+use App\Note\Component\StockLinks;
 
 /**
- * StockLinks's markup, compiled from StockLinks.html.php by composer run build (#97, #98):
+ * StockLinks's markup, compiled from
+ * modules/note/templates/components/stock-links.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
-final readonly class StockLinksTemplate
+final readonly class NoteStockLinksTemplate
 {
     /**
      * @param StockLinks $stockLinks The component.
@@ -32,7 +34,7 @@ final readonly class StockLinksTemplate
      *
      * @throws UnknownComponent When a child has no registered template.
      *
-     * @return string Markup from StockLinks.html.php.
+     * @return string Markup from modules/note/templates/components/stock-links.tpl.php.
      */
     private function part0(StockLinks $stockLinks, RenderPass $renderPass): string
     {

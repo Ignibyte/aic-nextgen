@@ -8,7 +8,7 @@ use AIC\Component\Contracts\Component;
 use App\Note\Entity\Note;
 
 /**
- * A note's article: its title, body and date, from NoteCard.html.php.
+ * A note's article: its title, body and date, from note-card.tpl.php.
  */
 final readonly class NoteCard implements Component
 {
