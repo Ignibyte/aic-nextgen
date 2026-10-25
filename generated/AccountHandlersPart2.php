@@ -32,7 +32,7 @@ final readonly class AccountHandlersPart2
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig());
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
         $requestSession = new RequestSession();
         $uploadForm = new UploadForm();
 

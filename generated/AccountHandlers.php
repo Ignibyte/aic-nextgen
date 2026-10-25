@@ -39,7 +39,7 @@ final readonly class AccountHandlers
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig());
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
         $loginForm = new LoginForm();
         $userRepository = new UserRepository($this->handlerContext->database());
         $pgcryptoPasswordHasher = new PgcryptoPasswordHasher($this->handlerContext->database());

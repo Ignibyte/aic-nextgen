@@ -1,0 +1,50 @@
+{
+    "assets": [
+        {
+            "aliasPath": "/assets/aic.css",
+            "file": "797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/aic.css",
+            "mediaType": "text/css; charset=utf-8",
+            "name": "app/styles",
+            "path": "/assets/797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/aic.css",
+            "sha256": "228f179d350bbbcac76a77cdc2658a1d6861e7688240a5d29704741c9378ee2c",
+            "size": 5006
+        },
+        {
+            "aliasPath": "/assets/site/favicon.svg",
+            "file": "797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/site/favicon.svg",
+            "mediaType": "image/svg+xml",
+            "name": "site/favicon",
+            "path": "/assets/797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/site/favicon.svg",
+            "sha256": "7be53ea497c123d3cee7c3e431893bbe93acefa344164ac75b18471408a114c6",
+            "size": 240
+        },
+        {
+            "aliasPath": "/assets/site/site.css",
+            "file": "797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/site/site.css",
+            "mediaType": "text/css; charset=utf-8",
+            "name": "site/styles",
+            "path": "/assets/797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/site/site.css",
+            "sha256": "d9e6ad8017058810a16550a8690cc73e515a3452a48e6e3c0339d41f9da38b9d",
+            "size": 286
+        },
+        {
+            "aliasPath": "/assets/tessera-0.1.0/tessera.csp.iife.js",
+            "file": "797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/tessera-0.1.0/tessera.csp.iife.js",
+            "mediaType": "text/javascript; charset=utf-8",
+            "name": "tessera/tessera.csp.iife.js",
+            "path": "/assets/797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/tessera-0.1.0/tessera.csp.iife.js",
+            "sha256": "c200d65b0c2ead2ba9b1467249b5b245eda6f65f48c7072252ee23bb3a2c646b",
+            "size": 124302
+        },
+        {
+            "aliasPath": "/assets/tessera-0.1.0/tessera.csp.iife.js.map",
+            "file": "797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/tessera-0.1.0/tessera.csp.iife.js.map",
+            "mediaType": "application/json; charset=utf-8",
+            "name": "tessera/tessera.csp.iife.js.map",
+            "path": "/assets/797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/tessera-0.1.0/tessera.csp.iife.js.map",
+            "sha256": "55ac49ce2c4ef4aa2aa6233669686641a6c07eb865898d9b708ab291e4087d56",
+            "size": 556385
+        }
+    ],
+    "schema": "aic.assets/1"
+}

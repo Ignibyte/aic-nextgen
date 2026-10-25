@@ -32,14 +32,12 @@ final readonly class SiteHandlersPart3
      */
     public function byId(): array
     {
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
         $notifier = new Notifier(new PostgresQueue($this->handlerContext->database()));
 
         return [
             NotificationsPage::class => $this->handlerContext->page(
-                new NotificationsPage(
-                    new HtmlLayout($this->handlerContext->appConfig()),
-                    new DatabaseChannel($this->handlerContext->database()),
-                ),
+                new NotificationsPage($htmlLayout, new DatabaseChannel($this->handlerContext->database())),
             ),
             NotificationsPost::class => $this->handlerContext->page(new NotificationsPost($notifier)),
         ];

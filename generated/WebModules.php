@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
-use AIC\Component\Application\ComponentTemplates;
 use AIC\Container\Contracts\ServiceRegistry;
 use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
 use AIC\Module\Application\HandlerWiring;
 use AIC\Module\Application\MiddlewareWiring;
 use AIC\Module\Application\PluginWiring;
+use AIC\Module\Application\WebPresentation;
 use AIC\Module\Application\WebWiring;
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
@@ -60,12 +60,14 @@ final readonly class WebModules implements HandlerWiring, MiddlewareWiring, Plug
     }
 
     /**
-     * @return ComponentTemplates The modules' component templates, ending at the framework's atoms (#98).
+     * @throws InvalidArgumentException When the compiled asset metadata is invalid.
+     *
+     * @return WebPresentation The compiled template and public asset catalogs.
      */
     #[Override]
-    public function templates(): ComponentTemplates
+    public function presentation(): WebPresentation
     {
-        return new ModuleTemplates();
+        return (new Presentation())->create();
     }
 
     /**

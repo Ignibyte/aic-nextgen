@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Module\Application\HandlerContext;
-use App\Site\Controller\AssetFile;
 use App\Site\Controller\HealthApi;
 use App\Site\Controller\ResourceDownload;
 use App\Site\Controller\StatusApi;
@@ -34,17 +33,18 @@ final readonly class SiteHandlers
      */
     public function byId(): array
     {
-        $requestedFile = new RequestedFile($this->handlerContext->root());
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
 
         return [
-            AssetFile::class => $this->handlerContext->stream(new AssetFile($requestedFile)),
             HealthApi::class => $this->handlerContext->api(new HealthApi($this->handlerContext->database())),
-            ResourceDownload::class => $this->handlerContext->stream(new ResourceDownload($requestedFile)),
+            ResourceDownload::class => $this->handlerContext->stream(
+                new ResourceDownload(new RequestedFile($this->handlerContext->root())),
+            ),
             StatusApi::class => $this->handlerContext->api(
                 new StatusApi($this->handlerContext->appConfig(), $this->handlerContext->bootedAt(), $this->handlerContext->database()),
             ),
             TickEvents::class => $this->handlerContext->stream(new TickEvents()),
-            TicksPage::class => $this->handlerContext->page(new TicksPage(new HtmlLayout($this->handlerContext->appConfig()))),
+            TicksPage::class => $this->handlerContext->page(new TicksPage($htmlLayout)),
         ];
     }
 }

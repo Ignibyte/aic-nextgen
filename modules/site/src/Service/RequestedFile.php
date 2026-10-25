@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Site\Service;
 
 use AIC\Controller\Domain\FileDownload;
+use AIC\Http\Domain\AssetMediaTypes;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function array_key_exists;
 use function basename;
 use function is_string;
-use function pathinfo;
-
-use const PATHINFO_EXTENSION;
 
 /**
  * The file a request's `file` attribute names, in a directory under the app's
@@ -23,10 +21,12 @@ use const PATHINFO_EXTENSION;
 final readonly class RequestedFile
 {
     /**
-     * @param string $root The app's root directory.
+     * @param string          $root            The app's root directory.
+     * @param AssetMediaTypes $assetMediaTypes The framework's extension-to-media-type mapping.
      */
     public function __construct(
         private string $root,
+        private AssetMediaTypes $assetMediaTypes = new AssetMediaTypes(),
     ) {
     }
 
@@ -42,25 +42,7 @@ final readonly class RequestedFile
 
         $path = $this->root . '/' . $directory . '/' . $name;
 
-        return new FileDownload($path, self::mediaType($name), $name, $serverRequest->getHeaderLine('Range'));
-    }
-
-    /**
-     * @param ServerRequestInterface $serverRequest The request, with the `file` attribute and an optional `dir`.
-     * @param string                 $directory     The directory it is served from, relative to the app's root.
-     *
-     * @return FileDownload The file, shown in place.
-     */
-    public function inline(ServerRequestInterface $serverRequest, string $directory): FileDownload
-    {
-        $name = self::name($serverRequest, 'file');
-        $subdirectory = self::name($serverRequest, 'dir');
-        $base = $this->root . '/' . $directory;
-        $path = $subdirectory === ''
-            ? $base . '/' . $name
-            : $base . '/' . $subdirectory . '/' . $name;
-
-        return new FileDownload($path, self::mediaType($name), '', $serverRequest->getHeaderLine('Range'));
+        return new FileDownload($path, $this->assetMediaTypes->forFile($name), $name, $serverRequest->getHeaderLine('Range'));
     }
 
     /**
@@ -74,24 +56,5 @@ final readonly class RequestedFile
         $attributes = $serverRequest->getAttributes();
 
         return basename(array_key_exists($attribute, $attributes) && is_string($attributes[$attribute]) ? $attributes[$attribute] : '');
-    }
-
-    /**
-     * @param string $name A file name.
-     *
-     * @return string Its media type, by extension.
-     */
-    private static function mediaType(string $name): string
-    {
-        return match (pathinfo($name, PATHINFO_EXTENSION)) {
-            'css' => 'text/css; charset=utf-8',
-            'js' => 'text/javascript; charset=utf-8',
-            'map' => 'application/json; charset=utf-8',
-            'txt' => 'text/plain; charset=utf-8',
-            'svg' => 'image/svg+xml',
-            'png' => 'image/png',
-            'woff2' => 'font/woff2',
-            default => 'application/octet-stream',
-        };
     }
 }

@@ -45,7 +45,8 @@ use AIC\Routing\Domain\RoutePatternCompiler;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use AIC\Workflow\Infrastructure\WikiKernel;
 use App\Generated\ConsoleModules;
-use Gates\Application\AssetBundle;
+use Gates\Application\AssetCatalogBuild;
+use Gates\Application\AssetCatalogSource;
 use Gates\Application\BuildOutputs;
 use Gates\Application\ModuleBuild;
 use Gates\Application\ProjectProfile;
@@ -83,13 +84,19 @@ $templateBuild = new TemplateBuild(new PlainTemplateReader(), new TemplateCompil
 
 try {
     $modules = $moduleBuild->modules();
+    $tessera = (new TesseraBuild($root, $appConfig->tessera, new SystemProcessRunner()))->files();
+    $assetCatalog = (new AssetCatalogBuild($root))->plan($modules, $tessera);
     $generated = $moduleBuild->files($modules);
+
+    foreach ((new AssetCatalogSource())->files($assetCatalog->assets) as $file => $source) {
+        $generated[$root . '/generated/' . $file] = $source;
+    }
 
     foreach ((new TemplatesSource())->files($root, $modules, $templateBuild->components()) as $file => $source) {
         $generated[$root . '/generated/' . $file] = $source;
     }
-} catch (InvalidArgumentException $invalidArgumentException) {
-    fwrite(\STDERR, 'aic-build: ' . $invalidArgumentException->getMessage() . "\n");
+} catch (InvalidArgumentException|JsonException|RuntimeException $exception) {
+    fwrite(\STDERR, 'aic-build: ' . $exception->getMessage() . "\n");
 
     exit(1);
 }
@@ -125,10 +132,9 @@ $consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTra
 try {
     $routes = $moduleBuild->routes($modules, new RouteCollector(new RoutePatternCompiler()))->table();
     $templates = $templateBuild->classes();
-    $tessera = (new TesseraBuild($root, $appConfig->tessera, new SystemProcessRunner()))->files();
     $outputs = [
         $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleKernel->commands(), $consoleKernel->jobs(), $consoleKernel->schedules(), $modules),
-    ] + (new AssetBundle($root))->outputs($modules) + $templates + $tessera;
+    ] + $assetCatalog->outputs + $templates;
     // Only the package's source checkout owns these outputs; an app never writes vendor/.
     if ((new ProjectProfile())->profile($root) === GateProfile::Aic) {
         $outputs[$root . '/gates/config/phpcs-custom.xml'] = (new SniffRegistration())->source();

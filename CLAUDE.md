@@ -17,8 +17,10 @@ The architecture set an app's agent reads, shipped in `aic/framework`, is
 ## Status
 
 Current order (Chad, 2026-10-23): upstream elephc tickets are parked. Codex integration
-(#136) is delivered. Finish workflow recovery (#144, #145), then the other framework fixes and
-declared themes (#146–#149) before further Lotline work (#128, #132). The Lotline bootstrap is
+(#136) and workflow recovery (#144, #145) are delivered. Public assets (#55) are verified for
+delivery; the operator accepted the unresolved native-session defect separately under #150.
+Continue framework fixes and declared themes (#146–#149) before further Lotline work
+(#128, #132). The Lotline bootstrap is
 held and unmerged in `/srv/stacks/aic-demo`; its resident agent stays open in the same tmux
 conversation. Restore it only after actual process loss. The separate demo rebuild (#129)
 is superseded. Old `/srv/stacks/lotline` is product and design reference; its source is not copied.
@@ -62,8 +64,9 @@ component's template compiles to `XTemplate.php` beside it (`composer run build`
 gate:24); the generated class passes every gate unexcluded. #37: a Page returns
 `PageDocument(Layout)`; regions render as `data-region` elements, components and blocks between
 `<!--aic:...-->` markers. #38: blocks (`AIC\Block`) place themselves in a region by weight and
-route prefix, as tagged plugins. #39: the theme builds into `public/assets/aic.css` (gate:24; `assets/` since #95);
-nginx serves it in DDEV, a proxy in production, `/assets/{file}` on the compiled site. #7 and M3
+route prefix, as tagged plugins. #39 introduced bundled theme CSS (gate:24; `assets/` since #95).
+#55 now publishes fingerprinted assets and exact compatibility aliases; the compiled framework
+serves them before dynamic application assembly. #7 and M3
 are done. #8 runs as #41 to #44; #41: `AIC\Session` (a Postgres session behind
 `__Host-aic_session`, on the request as `aic.session`). #42: `FormGuardMiddleware` checks the CSRF
 token and the honeypot on every unsafe request; the `Form` atom takes a `FormToken`. #43: the app secret comes only from `AIC_APP_SECRET`
@@ -182,12 +185,21 @@ Background work is a job; the HTTP server's processes are its workers.
   in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Component`, `Block`,
   `Form`, `Entity`, `Repository`, `Service`, `Command`, `Job`, `Migration`). There is no `app/`
   and no hand-written composition class (#93). Page layouts compile from `templates/layouts/`.
-- One site theme, CSS only, at the top-level `assets/` (#95). `composer run build` bundles each
-  module's `modules/<name>/assets/*.css` (in requires order), then the theme last, into
-  `public/assets/aic.css`. It copies a module's other assets (scripts, images, fonts, flat until #55)
-  to `public/assets/<module>/`. Nothing links a module script; a component that needs one declares
-  it from #55 (Chad, 2026-10-21). The build owns `public/assets/`: gate:24 calls an orphan there
-  stale.
+- Module assets are explicit `ModuleAsset` declarations through the manifest's existing `with()`
+  seam (#55). Nested owner-relative sources and typed Style, Script or File roles are validated
+  at build time. Declared styles join the combined CSS in dependency/declaration order, followed
+  by the top-level `assets/` theme through one legacy adapter until #149.
+- `composer run build` owns `public/assets/`, the typed `PublicAssets` lookup and private
+  `build/assets.json`. A full-set SHA-256 directory supplies canonical URLs; exact compatibility
+  aliases preserve bytes, including adjacent pinned Tessera script/map. Resolve logical names
+  through the catalog; publishing a script does not automatically select it for a page.
+- The early framework asset handler bypasses module factories, sessions and database work.
+  Canonical assets cache for one year with `immutable`; aliases use `public, no-cache`.
+  Strong ETags, strict HTTP dates and ordered preconditions/ranges use verified bytes and
+  modification time from the same opened handle. Dynamic responses default to `private, no-store`.
+  Deploy binary, catalog and public files together in an isolated release root and retain prior
+  releases for old URLs; the build's current-set cleanup is not atomic in-place deployment.
+  See [the asset contract](framework/docs/modules.md#assets). Gate:24 rejects stale outputs.
 - **`aic/workflow`** (#100), in `workflow/`, namespace `AIC\Workflow\`: the agent workflow's
   engine, a second package that is dev-only (`require-dev`, a path repository like the
   framework's; Chad, 2026-10-22). `bin/aic` lists its commands when it is installed:

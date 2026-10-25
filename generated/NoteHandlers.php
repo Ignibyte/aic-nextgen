@@ -43,7 +43,7 @@ final readonly class NoteHandlers
     {
         $entityStore = new EntityStore($this->handlerContext->database());
         $noteRepository = new NoteRepository($entityStore);
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig());
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
         $noteViews = new NoteViews($htmlLayout);
         $noteEnvelope = new NoteEnvelope($this->handlerContext->envelopeCodec());
         $noteForms = new NoteForms($noteEnvelope);

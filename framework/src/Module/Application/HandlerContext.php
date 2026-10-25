@@ -6,16 +6,13 @@ namespace AIC\Module\Application;
 
 use AIC\Config\Domain\AppConfig;
 use AIC\Container\Exception\ContainerException;
-use AIC\Controller\Application\ApiHandler;
-use AIC\Controller\Application\PageHandlers;
-use AIC\Controller\Application\StreamHandler;
 use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\Page;
-use AIC\Controller\Contracts\ResponseWriter;
 use AIC\Controller\Contracts\Stream;
 use AIC\Database\Contracts\Database;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Http\Application\ResponseBuilder;
+use AIC\Http\Contracts\PublicAssets;
 use AIC\Schedule\Domain\Schedule;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -35,30 +32,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 final readonly class HandlerContext
 {
     /**
-     * @param PageHandlers    $pageHandlers      Wraps a Page with the response writer and the blocks.
-     * @param ResponseWriter  $responseWriter    Writes the Api and Stream responses.
-     * @param ResponseBuilder $responseBuilder   Makes PSR-7 responses, for middleware.
-     * @param AppConfig       $appConfig         The app's settings.
-     * @param Database        $database          The database.
-     * @param EnvelopeCodec   $envelopeCodec     Seals and opens the forms' signed envelopes.
-     * @param Plugins         $plugins           The plugins, by type.
-     * @param list<Schedule>  $schedules         Every module's schedules.
-     * @param list<string>    $protectedPrefixes Every module's protected path prefixes.
-     * @param string          $bootedAt          When the app booted to serve this request, ISO 8601 in UTC.
-     * @param string          $root              The app's root directory.
+     * @param HttpHandlers $httpHandlers The Page, Api and Stream wrappers.
+     * @param WebRoots     $webRoots     The grouped typed roots for generated constructors.
      */
     public function __construct(
-        private PageHandlers $pageHandlers,
-        private ResponseWriter $responseWriter,
-        private ResponseBuilder $responseBuilder,
-        private AppConfig $appConfig,
-        private Database $database,
-        private EnvelopeCodec $envelopeCodec,
-        private Plugins $plugins,
-        private array $schedules,
-        private array $protectedPrefixes,
-        private string $bootedAt,
-        private string $root,
+        private HttpHandlers $httpHandlers,
+        private WebRoots $webRoots,
     ) {
     }
 
@@ -69,7 +48,7 @@ final readonly class HandlerContext
      */
     public function page(Page $page): RequestHandlerInterface
     {
-        return $this->pageHandlers->handler($page);
+        return $this->httpHandlers->page($page);
     }
 
     /**
@@ -79,7 +58,7 @@ final readonly class HandlerContext
      */
     public function api(Api $api): RequestHandlerInterface
     {
-        return new ApiHandler($api, $this->responseWriter);
+        return $this->httpHandlers->api($api);
     }
 
     /**
@@ -89,7 +68,7 @@ final readonly class HandlerContext
      */
     public function stream(Stream $stream): RequestHandlerInterface
     {
-        return new StreamHandler($stream, $this->responseWriter);
+        return $this->httpHandlers->stream($stream);
     }
 
     /**
@@ -97,7 +76,7 @@ final readonly class HandlerContext
      */
     public function appConfig(): AppConfig
     {
-        return $this->appConfig;
+        return $this->webRoots->appConfig;
     }
 
     /**
@@ -105,7 +84,7 @@ final readonly class HandlerContext
      */
     public function database(): Database
     {
-        return $this->database;
+        return $this->webRoots->database;
     }
 
     /**
@@ -113,7 +92,7 @@ final readonly class HandlerContext
      */
     public function envelopeCodec(): EnvelopeCodec
     {
-        return $this->envelopeCodec;
+        return $this->webRoots->envelopeCodec;
     }
 
     /**
@@ -121,7 +100,7 @@ final readonly class HandlerContext
      */
     public function responseBuilder(): ResponseBuilder
     {
-        return $this->responseBuilder;
+        return $this->webRoots->responseBuilder;
     }
 
     /**
@@ -133,7 +112,7 @@ final readonly class HandlerContext
      */
     public function tagged(string $type): array
     {
-        return $this->plugins->tagged($type);
+        return $this->webRoots->plugins->tagged($type);
     }
 
     /**
@@ -141,7 +120,7 @@ final readonly class HandlerContext
      */
     public function schedules(): array
     {
-        return $this->schedules;
+        return $this->webRoots->schedules;
     }
 
     /**
@@ -149,7 +128,7 @@ final readonly class HandlerContext
      */
     public function protectedPrefixes(): array
     {
-        return $this->protectedPrefixes;
+        return $this->webRoots->protectedPrefixes;
     }
 
     /**
@@ -157,7 +136,7 @@ final readonly class HandlerContext
      */
     public function bootedAt(): string
     {
-        return $this->bootedAt;
+        return $this->webRoots->bootedAt;
     }
 
     /**
@@ -165,6 +144,12 @@ final readonly class HandlerContext
      */
     public function root(): string
     {
-        return $this->root;
+        return $this->webRoots->root;
+    }
+
+    /** @return PublicAssets The compiled public catalog available to layout and component composition. */
+    public function assets(): PublicAssets
+    {
+        return $this->webRoots->publicAssets;
     }
 }

@@ -41,6 +41,11 @@ final readonly class ModuleReader
      */
     private const array RESERVED = ['app', 'generated', 'module'];
 
+    /** @param ManifestDeclarations $manifestDeclarations Rejects declarations with no build consumer. */
+    public function __construct(private ManifestDeclarations $manifestDeclarations = new ManifestDeclarations())
+    {
+    }
+
     /**
      * @param string $root The repo root.
      *
@@ -89,6 +94,7 @@ final readonly class ModuleReader
         }
 
         $this->checkName($name, $module->name);
+        $this->manifestDeclarations->check($module);
 
         return new ModuleDefinition($name, 'App\\' . str_replace('_', '', ucwords($name, '_')) . '\\', $module);
     }

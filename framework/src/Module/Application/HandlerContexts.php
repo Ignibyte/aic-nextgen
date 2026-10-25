@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
-use AIC\Component\Application\Renderer;
 use AIC\Config\Domain\AppConfig;
 use AIC\Container\Exception\ContainerException;
-use AIC\Controller\Application\PageHandlers;
-use AIC\Controller\Application\Psr7ResponseWriter;
 use AIC\Database\Contracts\Database;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Http\Application\ResponseBuilder;
@@ -43,25 +40,45 @@ final readonly class HandlerContexts
     }
 
     /**
-     * @param WebWiring $webWiring The modules' plugins, schedules, protected prefixes and templates.
+     * @param WebWiring       $webWiring       The modules' plugins, schedules and protected prefixes.
+     * @param WebPresentation $webPresentation The already composed build-owned presentation catalogs.
      *
      * @throws ContainerException When a registered service cannot be resolved.
      *
      * @return HandlerContext The context.
      */
-    public function create(WebWiring $webWiring): HandlerContext
+    public function create(WebWiring $webWiring, WebPresentation $webPresentation): HandlerContext
     {
         $plugins = new Plugins($webWiring instanceof PluginWiring ? $webWiring : null);
-        $psr7ResponseWriter = new Psr7ResponseWriter($this->responseBuilder, new Renderer($webWiring->templates()));
 
         return new HandlerContext(
-            new PageHandlers($psr7ResponseWriter, $plugins->blocks()),
-            $psr7ResponseWriter,
-            $this->responseBuilder,
+            new HttpHandlers($this->responseBuilder, $webPresentation->componentTemplates, $plugins->blocks()),
+            $this->roots($webWiring, $plugins, $webPresentation),
+        );
+    }
+
+    /** @return string The inert application root, available before any module provider runs. */
+    public function root(): string
+    {
+        return $this->root;
+    }
+
+    /**
+     * @param WebWiring       $webWiring       The compiled request roots.
+     * @param Plugins         $plugins         The modules' already composed plugins.
+     * @param WebPresentation $webPresentation The already composed presentation catalogs.
+     *
+     * @return WebRoots The typed constructor roots.
+     */
+    private function roots(WebWiring $webWiring, Plugins $plugins, WebPresentation $webPresentation): WebRoots
+    {
+        return new WebRoots(
             $this->appConfig,
             $this->database,
             new EnvelopeCodec(new HmacSigner($this->appSecret), new StringMapJson()),
+            $this->responseBuilder,
             $plugins,
+            $webPresentation->publicAssets,
             $webWiring->schedules(),
             $webWiring->protectedPrefixes(),
             $this->bootedAt,

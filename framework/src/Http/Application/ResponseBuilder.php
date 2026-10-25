@@ -42,7 +42,7 @@ final readonly class ResponseBuilder
      */
     public function create(int $status, string $contentType, string $body): ResponseInterface
     {
-        $response = $this->withHeader($this->responseFactory->createResponse($status), 'Content-Type', $contentType);
+        $response = $this->head($status, $contentType);
 
         return self::response($response->withBody($this->streamFactory->createStream($body)));
     }
@@ -59,7 +59,7 @@ final readonly class ResponseBuilder
      */
     public function createFromFile(int $status, string $contentType, string $path): ResponseInterface
     {
-        $response = $this->withHeader($this->responseFactory->createResponse($status), 'Content-Type', $contentType);
+        $response = $this->head($status, $contentType);
 
         return self::response($response->withBody($this->streamFactory->createStreamFromFile($path, 'rb')));
     }
@@ -75,7 +75,7 @@ final readonly class ResponseBuilder
      */
     public function createFromStream(int $status, string $contentType, StreamInterface $stream): ResponseInterface
     {
-        $response = $this->withHeader($this->responseFactory->createResponse($status), 'Content-Type', $contentType);
+        $response = $this->head($status, $contentType);
 
         return self::response($response->withBody($stream));
     }
@@ -106,6 +106,21 @@ final readonly class ResponseBuilder
     public function withAddedHeader(ResponseInterface $response, string $name, string $value): ResponseInterface
     {
         return self::response($response->withAddedHeader($name, $value));
+    }
+
+    /**
+     * @param int    $status      The status.
+     * @param string $contentType The response media type.
+     *
+     * @throws InvalidArgumentException When a response field is invalid.
+     *
+     * @return ResponseInterface Conservative defaults for every application and boundary response.
+     */
+    private function head(int $status, string $contentType): ResponseInterface
+    {
+        $response = $this->withHeader($this->responseFactory->createResponse($status), 'Content-Type', $contentType);
+
+        return $this->withHeader($response, 'Cache-Control', 'private, no-store');
     }
 
     /**

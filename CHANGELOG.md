@@ -4,6 +4,19 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Changed
+
+- **Declared and cacheable public assets** (#55).
+  Module manifests declare typed, nested asset inputs. The build publishes a generated lookup,
+  full-set fingerprint URLs and byte-identical compatibility aliases. The early framework handler
+  answers public requests before module factories, sessions or database work.
+  - Canonical assets cache for one year with `immutable`; aliases revalidate. Strong ETags,
+    strict HTTP dates, ordered preconditions and ranges use one verified byte/mtime snapshot.
+    HEAD and 304 stay bodyless. Dynamic responses default to `private, no-store`.
+  - Final cache-cleared 32 gates, both full Psalm passes, all 186 workflow expectations and
+    compiled desktop/mobile checks pass. Earlier intermittent native-session corruption remains
+    unresolved under #150; the operator authorized this delivery with that defect open.
+
 ### Fixed
 
 - **Complete workflow probe evidence** (#55 prerequisite). Keep short diagnostic filenames unchanged and bound long names to200 bytes with a readable prefix and the complete label's SHA-256. Store the full output without truncation, including binary and empty payloads.
