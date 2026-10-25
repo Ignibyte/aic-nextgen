@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
@@ -27,11 +28,13 @@ final readonly class ScaffoldHandlers
     }
 
     /**
+     * @throws ContainerException When a called constructor or service fails.
+     *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
 
         return [
             ScaffoldAboutPage::class => $this->handlerContext->page(new ScaffoldAboutPage($htmlLayout)),

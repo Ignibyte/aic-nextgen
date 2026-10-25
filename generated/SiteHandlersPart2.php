@@ -41,7 +41,7 @@ final readonly class SiteHandlersPart2
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
         $formTokens = new FormTokens();
         $greetingForm = new GreetingForm($formTokens);
         $postgresQueue = new PostgresQueue($this->handlerContext->database());

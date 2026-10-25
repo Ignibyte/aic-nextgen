@@ -8,14 +8,14 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
-use App\Site\Component\Greetings;
-use App\Site\Component\GreetingsTemplate;
 use App\Site\Component\Home;
 use App\Site\Component\HomeTemplate;
 use App\Site\Component\LineList;
 use App\Site\Component\LineListTemplate;
 use App\Site\Component\SiteNav;
 use App\Site\Component\SiteNavTemplate;
+use App\Site\Component\Ticks;
+use App\Site\Component\TicksTemplate;
 use Override;
 
 /**
@@ -44,10 +44,10 @@ final readonly class SiteTemplates implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof Greetings => (new GreetingsTemplate())->render($component),
             $component instanceof Home => (new HomeTemplate())->render($component, $renderPass),
             $component instanceof LineList => (new LineListTemplate())->render($component),
             $component instanceof SiteNav => (new SiteNavTemplate())->render($component, $renderPass),
+            $component instanceof Ticks => (new TicksTemplate())->render($component),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }

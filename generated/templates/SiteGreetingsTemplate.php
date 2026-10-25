@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Site\Component;
+namespace App\Generated\Templates;
 
 use AIC\Component\Domain\RendersMarkup;
+use App\Site\Component\Greetings;
 
 /**
- * Greetings's markup, compiled from Greetings.html.php by composer run build (#97, #98):
+ * Greetings's markup, compiled from modules/site/templates/components/greetings.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
-final readonly class GreetingsTemplate
+final readonly class SiteGreetingsTemplate
 {
     use RendersMarkup;
 
@@ -27,7 +28,7 @@ final readonly class GreetingsTemplate
     /**
      * @param string $greeting A loop's variable.
      *
-     * @return string Markup from Greetings.html.php.
+     * @return string Markup from modules/site/templates/components/greetings.tpl.php.
      */
     private function part0(string $greeting): string
     {
@@ -39,7 +40,7 @@ final readonly class GreetingsTemplate
     /**
      * @param Greetings $greetings The component.
      *
-     * @return string Markup from Greetings.html.php.
+     * @return string Markup from modules/site/templates/components/greetings.tpl.php.
      */
     private function part1(Greetings $greetings): string
     {
@@ -55,7 +56,7 @@ final readonly class GreetingsTemplate
     /**
      * @param Greetings $greetings The component.
      *
-     * @return string Markup from Greetings.html.php.
+     * @return string Markup from modules/site/templates/components/greetings.tpl.php.
      */
     private function part2(Greetings $greetings): string
     {
@@ -63,6 +64,6 @@ final readonly class GreetingsTemplate
             . '<!--t:b-->'
             . $this->part1($greetings)
             . '<!--/t:b-->'
-            . '</ul>';
+            . "</ul>\n";
     }
 }

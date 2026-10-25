@@ -11,14 +11,16 @@ namespace Gates\Domain;
 final readonly class TemplateUnit
 {
     /**
-     * @param string             $component The component's class, fully qualified.
-     * @param string             $generated The generated class's file: `<Name>Template.php` beside the component.
-     * @param list<TemplateNode> $nodes     The lowered template.
+     * @param string               $component The component's class, fully qualified.
+     * @param string               $generated The generated class's file: `<Name>Template.php` beside the component.
+     * @param list<TemplateNode>   $nodes     The lowered template.
+     * @param TemplateBinding|null $binding   Its explicit output identity, absent for a legacy input.
      */
     public function __construct(
         public string $component,
         public string $generated,
         public array $nodes,
+        public ?TemplateBinding $binding = null,
     ) {
     }
 }

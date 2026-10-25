@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Component\Contracts\PageLayouts;
 use AIC\Config\Domain\AppConfig;
 use AIC\Container\Exception\ContainerException;
 use AIC\Controller\Contracts\Api;
@@ -151,5 +152,15 @@ final readonly class HandlerContext
     public function assets(): PublicAssets
     {
         return $this->webRoots->publicAssets;
+    }
+
+    /**
+     * @throws ContainerException When the selected-theme root cannot be resolved.
+     *
+     * @return PageLayouts The generated selected-theme factory.
+     */
+    public function layouts(): PageLayouts
+    {
+        return $this->webRoots->pageLayouts ?? throw new ContainerException('The generated presentation declares no theme.');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
+use AIC\Workflow\Domain\Console\SurfaceDeclarations;
 use AIC\Workflow\Domain\Console\SurfaceKind;
 use AIC\Workflow\Domain\Console\SurfaceModule;
 use AIC\Workflow\Domain\Console\SurfaceView;
@@ -87,10 +88,50 @@ final readonly class SurfaceViewJson
             $jsonReader->strings('migrations'),
             $jsonReader->strings('factories'),
             $jsonReader->strings('prefixes'),
+            self::presentation($jsonReader),
+        );
+    }
+
+    /**
+     * @param JsonReader $jsonReader One module row.
+     *
+     * @throws WorkflowRefusal When presentation metadata is missing or has an invalid field.
+     *
+     * @return SurfaceDeclarations Its checked declarations.
+     */
+    private static function presentation(JsonReader $jsonReader): SurfaceDeclarations
+    {
+        return new SurfaceDeclarations(
             self::rows($jsonReader, 'plugins', self::plugin(...)),
             self::rows($jsonReader, 'bindings', self::binding(...)),
             self::rows($jsonReader, 'middleware', self::middleware(...)),
+            self::fields($jsonReader, 'templates', ['component', 'source', 'generated', 'templateClass', 'role']),
+            self::fields($jsonReader, 'themes', ['name', 'html', 'page', 'pageData']),
+            self::fields($jsonReader, 'regions', ['property', 'name']),
+            self::fields($jsonReader, 'themeAssets', ['name', 'path', 'kind']),
         );
+    }
+
+    /**
+     * @param JsonReader   $jsonReader One module row.
+     * @param string       $key        The declaration list to read.
+     * @param list<string> $fields     Required string field names.
+     *
+     * @throws WorkflowRefusal When a required list or string field is invalid.
+     *
+     * @return list<array<string, string>> The actual checked rows.
+     */
+    private static function fields(JsonReader $jsonReader, string $key, array $fields): array
+    {
+        return self::rows($jsonReader, $key, static function (JsonReader $jsonReader) use ($fields): array {
+            $values = [];
+
+            foreach ($fields as $field) {
+                $values[$field] = $jsonReader->string($field);
+            }
+
+            return $values;
+        });
     }
 
     /**

@@ -13,11 +13,11 @@ use function count;
 use function file_get_contents;
 use function fwrite;
 use function is_dir;
+use function preg_match;
 use function restore_error_handler;
 use function set_error_handler;
 use function sort;
 use function sprintf;
-use function str_contains;
 use function str_ends_with;
 use function str_replace;
 
@@ -273,7 +273,8 @@ final readonly class NoDynamicRequireGate
     private static function isPhpEntry(SplFileInfo $entry): bool
     {
         // Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
-        return $entry->isFile() && str_ends_with($entry->getFilename(), '.php') && !str_contains($entry->getPathname(), '/templates/');
+        return $entry->isFile() && str_ends_with($entry->getFilename(), '.php')
+            && preg_match('~/modules/[^/]+/templates/~', $entry->getPathname()) !== 1;
     }
 
     /**

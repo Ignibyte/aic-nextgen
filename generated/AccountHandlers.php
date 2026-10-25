@@ -6,6 +6,7 @@ namespace App\Generated;
 
 use AIC\Auth\Application\Authenticator;
 use AIC\Auth\Application\PgcryptoPasswordHasher;
+use AIC\Container\Exception\ContainerException;
 use AIC\Form\Application\FormTokens;
 use AIC\Module\Application\HandlerContext;
 use AIC\Session\Application\RequestSession;
@@ -13,7 +14,6 @@ use App\Account\Controller\AccountPage;
 use App\Account\Controller\LoginPage;
 use App\Account\Controller\LoginPost;
 use App\Account\Controller\LogoutPost;
-use App\Account\Controller\VisitsForget;
 use App\Account\Controller\VisitsPage;
 use App\Account\Form\LoginForm;
 use App\Account\Repository\UserRepository;
@@ -35,24 +35,24 @@ final readonly class AccountHandlers
     }
 
     /**
+     * @throws ContainerException When a called constructor or service fails.
+     *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
         $loginForm = new LoginForm();
         $userRepository = new UserRepository($this->handlerContext->database());
         $pgcryptoPasswordHasher = new PgcryptoPasswordHasher($this->handlerContext->database());
         $authenticator = new Authenticator($userRepository, $pgcryptoPasswordHasher);
-        $requestSession = new RequestSession();
 
         return [
             AccountPage::class => $this->handlerContext->page(new AccountPage($htmlLayout, $authenticator)),
             LoginPage::class => $this->handlerContext->page(new LoginPage($htmlLayout, $loginForm)),
             LoginPost::class => $this->handlerContext->page(new LoginPost($htmlLayout, $loginForm, $authenticator)),
             LogoutPost::class => $this->handlerContext->page(new LogoutPost($authenticator)),
-            VisitsForget::class => $this->handlerContext->page(new VisitsForget($requestSession)),
-            VisitsPage::class => $this->handlerContext->page(new VisitsPage($htmlLayout, $requestSession, new FormTokens())),
+            VisitsPage::class => $this->handlerContext->page(new VisitsPage($htmlLayout, new RequestSession(), new FormTokens())),
         ];
     }
 }

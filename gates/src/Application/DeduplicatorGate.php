@@ -9,6 +9,7 @@ use Gates\Domain\ProcessRunner;
 use function array_map;
 use function count;
 use function fwrite;
+use function glob;
 use function implode;
 use function is_executable;
 use function sprintf;
@@ -62,7 +63,7 @@ final readonly class DeduplicatorGate
             return 1;
         }
 
-        $command = $this->buildCommand($bin, $existing);
+        $command = $this->buildCommand($bin, $existing, $root);
         $processResult = $this->processRunner->run($command);
         fwrite($stdout, sprintf('gate:14 — %s%s%s', implode(' ', $command), PHP_EOL, $processResult->stdout));
         fwrite($stderr, $processResult->stderr);
@@ -110,18 +111,22 @@ final readonly class DeduplicatorGate
      *
      * @param string       $bin      Resolved phpcpd binary path.
      * @param list<string> $existing Source directories with PHP files.
+     * @param string       $root     The project folder.
      *
      * @return list<string>
      */
-    private function buildCommand(string $bin, array $existing): array
+    private function buildCommand(string $bin, array $existing, string $root): array
     {
+        $folders = glob($root . '/modules/*/templates');
+        $excludes = array_map(static fn (string $path): string => '--exclude=' . $path, $folders === false ? [] : $folders);
+
         return [
             $bin,
             '--min-lines=4',
             '--min-tokens=50',
             '--fuzzy',
             // Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
-            '--exclude=/templates/',
+            ...$excludes,
             ...$existing,
         ];
     }

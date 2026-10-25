@@ -298,6 +298,62 @@
     ],
     "modules": [
         {
+            "templates": [
+                {
+                    "component": "App\\Site\\Component\\Greetings",
+                    "generated": "generated/templates/SiteGreetingsTemplate.php",
+                    "role": "Component",
+                    "source": "modules/site/templates/components/greetings.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\SiteGreetingsTemplate"
+                },
+                {
+                    "component": "AIC\\Component\\Domain\\ThemeLayout",
+                    "generated": "generated/templates/ThemeAppHtmlTemplate.php",
+                    "role": "Html",
+                    "source": "themes/app/layouts/html.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\ThemeAppHtmlTemplate"
+                },
+                {
+                    "component": "App\\Site\\Component\\Page",
+                    "generated": "generated/templates/ThemeAppPageTemplate.php",
+                    "role": "Page",
+                    "source": "themes/app/layouts/page.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\ThemeAppPageTemplate"
+                }
+            ],
+            "themes": [
+                {
+                    "html": "themes/app/layouts/html.tpl.php",
+                    "name": "app",
+                    "page": "themes/app/layouts/page.tpl.php",
+                    "pageData": "App\\Site\\Component\\Page"
+                }
+            ],
+            "regions": [
+                {
+                    "property": "header",
+                    "name": "header"
+                },
+                {
+                    "property": "content",
+                    "name": "content"
+                },
+                {
+                    "property": "nav",
+                    "name": "nav"
+                },
+                {
+                    "property": "footer",
+                    "name": "footer"
+                }
+            ],
+            "themeAssets": [
+                {
+                    "kind": "Style",
+                    "name": "base",
+                    "path": "themes/app/assets/theme.css"
+                }
+            ],
             "bindings": [],
             "blocks": [
                 "App\\Site\\Block\\PoweredByBlock",
@@ -329,6 +385,10 @@
             "requires": []
         },
         {
+            "templates": [],
+            "themes": [],
+            "regions": [],
+            "themeAssets": [],
             "bindings": [
                 {
                     "class": "App\\Account\\Repository\\UserRepository",
@@ -365,6 +425,10 @@
             ]
         },
         {
+            "templates": [],
+            "themes": [],
+            "regions": [],
+            "themeAssets": [],
             "bindings": [],
             "blocks": [
                 "App\\Note\\Block\\NoteTipsBlock"
@@ -389,6 +453,10 @@
             ]
         },
         {
+            "templates": [],
+            "themes": [],
+            "regions": [],
+            "themeAssets": [],
             "bindings": [],
             "blocks": [
                 "App\\Scaffold\\Block\\ScaffoldBlock"

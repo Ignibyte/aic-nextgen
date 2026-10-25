@@ -14,12 +14,16 @@ declare(strict_types=1);
 use AIC\Module\Contracts\ModuleAsset;
 use AIC\Module\Contracts\ModuleAssetKind;
 use AIC\Module\Contracts\ModuleManifest;
+use AIC\Module\Contracts\ModuleTemplate;
+use AIC\Module\Contracts\ModuleTheme;
 use AIC\Module\Contracts\RouteMethod;
 use App\Site\Block\PoweredByBlock;
 use App\Site\Block\SiteNavBlock;
 use App\Site\Command\DatabasePing;
 use App\Site\Command\Greet;
 use App\Site\Component\AppLayout;
+use App\Site\Component\Greetings;
+use App\Site\Component\Page;
 use App\Site\Controller\GreetingPage;
 use App\Site\Controller\GreetingPost;
 use App\Site\Controller\HealthApi;
@@ -41,6 +45,15 @@ use App\Site\Service\HtmlLayout;
 use App\Site\Service\SpanishGreeter;
 
 return (new ModuleManifest('site'))
+    ->with(new ModuleTheme(
+        'app',
+        'layouts/html.tpl.php',
+        'layouts/page.tpl.php',
+        Page::class,
+        ['header' => 'header', 'content' => 'content', 'nav' => 'nav', 'footer' => 'footer'],
+        [new ModuleAsset('base', 'assets/theme.css', ModuleAssetKind::Style)],
+    ))
+    ->with(new ModuleTemplate(Greetings::class, 'templates/components/greetings.tpl.php'))
     ->with(new ModuleAsset('styles', 'assets/site.css', ModuleAssetKind::Style))
     ->with(new ModuleAsset('favicon', 'assets/favicon.svg', ModuleAssetKind::File))
     ->route(RouteMethod::Get, '/api/status', StatusApi::class)

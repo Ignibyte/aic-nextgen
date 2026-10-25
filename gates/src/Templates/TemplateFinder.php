@@ -57,7 +57,7 @@ final readonly class TemplateFinder
     {
         $templates = array_filter(
             $this->fileLister->files($root . '/' . $folder),
-            static fn (string $path): bool => str_ends_with($path, '.html.php'),
+            static fn (string $path): bool => str_ends_with($path, '.html.php') || str_ends_with($path, '.tpl.php'),
         );
 
         return array_values(array_map(static fn (string $path): string => substr($path, strlen($root) + 1), $templates));

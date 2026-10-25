@@ -2,48 +2,57 @@
     "assets": [
         {
             "aliasPath": "/assets/aic.css",
-            "file": "797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/aic.css",
+            "file": "1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/aic.css",
             "mediaType": "text/css; charset=utf-8",
             "name": "app/styles",
-            "path": "/assets/797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/aic.css",
-            "sha256": "228f179d350bbbcac76a77cdc2658a1d6861e7688240a5d29704741c9378ee2c",
-            "size": 5006
+            "path": "/assets/1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/aic.css",
+            "sha256": "55d4f65cb58d243e1670c72fc7c237213e7eac115dacbc6ccfab26d9fceb464a",
+            "size": 5075
         },
         {
             "aliasPath": "/assets/site/favicon.svg",
-            "file": "797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/site/favicon.svg",
+            "file": "1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/site/favicon.svg",
             "mediaType": "image/svg+xml",
             "name": "site/favicon",
-            "path": "/assets/797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/site/favicon.svg",
+            "path": "/assets/1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/site/favicon.svg",
             "sha256": "7be53ea497c123d3cee7c3e431893bbe93acefa344164ac75b18471408a114c6",
             "size": 240
         },
         {
             "aliasPath": "/assets/site/site.css",
-            "file": "797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/site/site.css",
+            "file": "1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/site/site.css",
             "mediaType": "text/css; charset=utf-8",
             "name": "site/styles",
-            "path": "/assets/797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/site/site.css",
+            "path": "/assets/1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/site/site.css",
             "sha256": "d9e6ad8017058810a16550a8690cc73e515a3452a48e6e3c0339d41f9da38b9d",
             "size": 286
         },
         {
             "aliasPath": "/assets/tessera-0.1.0/tessera.csp.iife.js",
-            "file": "797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/tessera-0.1.0/tessera.csp.iife.js",
+            "file": "1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/tessera-0.1.0/tessera.csp.iife.js",
             "mediaType": "text/javascript; charset=utf-8",
             "name": "tessera/tessera.csp.iife.js",
-            "path": "/assets/797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/tessera-0.1.0/tessera.csp.iife.js",
+            "path": "/assets/1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/tessera-0.1.0/tessera.csp.iife.js",
             "sha256": "c200d65b0c2ead2ba9b1467249b5b245eda6f65f48c7072252ee23bb3a2c646b",
             "size": 124302
         },
         {
             "aliasPath": "/assets/tessera-0.1.0/tessera.csp.iife.js.map",
-            "file": "797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/tessera-0.1.0/tessera.csp.iife.js.map",
+            "file": "1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/tessera-0.1.0/tessera.csp.iife.js.map",
             "mediaType": "application/json; charset=utf-8",
             "name": "tessera/tessera.csp.iife.js.map",
-            "path": "/assets/797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/tessera-0.1.0/tessera.csp.iife.js.map",
+            "path": "/assets/1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/tessera-0.1.0/tessera.csp.iife.js.map",
             "sha256": "55ac49ce2c4ef4aa2aa6233669686641a6c07eb865898d9b708ab291e4087d56",
             "size": 556385
+        },
+        {
+            "aliasPath": "/assets/themes/app/theme.css",
+            "file": "1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/themes/app/theme.css",
+            "mediaType": "text/css; charset=utf-8",
+            "name": "theme_app/base",
+            "path": "/assets/1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/themes/app/theme.css",
+            "sha256": "21f4ad72a0afcce2da3d4d1d8216fd780111214a2344031c9deba07e4eb94843",
+            "size": 34
         }
     ],
     "schema": "aic.assets/1"

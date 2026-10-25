@@ -25,7 +25,7 @@ final readonly class TemplateGrammar
      */
     public function roots(): array
     {
-        return ['modules', 'templates'];
+        return ['modules', 'templates', 'themes'];
     }
 
     /**

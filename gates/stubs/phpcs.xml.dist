@@ -25,6 +25,7 @@
     <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
         <properties>
             <property name="rootNamespaces" type="array">
+                <element key="generated/templates" value="App\Generated\Templates"/>
                 <element key="generated" value="App\Generated"/>
             </property>
         </properties>

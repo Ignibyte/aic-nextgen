@@ -79,6 +79,7 @@ final readonly class HandlerContexts
             $this->responseBuilder,
             $plugins,
             $webPresentation->publicAssets,
+            $webPresentation->pageLayouts,
             $webWiring->schedules(),
             $webWiring->protectedPrefixes(),
             $this->bootedAt,

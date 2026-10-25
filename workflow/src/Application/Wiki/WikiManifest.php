@@ -60,10 +60,10 @@ final readonly class WikiManifest
         $name = $surfaceModule->name;
         $markdown = $this->wikiMarkdown;
         $more = 'bin/aic module:show ' . $name;
-        $bindings = $this->pairs($surfaceModule->bindings, 'interface', 'class');
-        $plugins = $this->pairs($surfaceModule->plugins, 'type', 'class');
+        $bindings = $this->pairs($surfaceModule->declarations->bindings, 'interface', 'class');
+        $plugins = $this->pairs($surfaceModule->declarations->plugins, 'type', 'class');
         $commands = $this->named(self::owned($surfaceView->commands, $name));
-        $middleware = $this->pairs($surfaceModule->middleware, 'class', 'position');
+        $middleware = $this->pairs($surfaceModule->declarations->middleware, 'class', 'position');
 
         return [
             ...$markdown->section('## Routes', $markdown->table(self::ROUTES, $this->routes($surfaceView, $name), $more)),

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
 use AIC\Session\Application\RequestSession;
 use App\Account\Controller\UploadsPage;
 use App\Account\Controller\UploadsPost;
+use App\Account\Controller\VisitsForget;
 use App\Account\Form\UploadForm;
 use App\Account\Service\UploadRules;
 use App\Site\Service\HtmlLayout;
@@ -28,12 +30,14 @@ final readonly class AccountHandlersPart2
     }
 
     /**
+     * @throws ContainerException When a called constructor or service fails.
+     *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
         $requestSession = new RequestSession();
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
         $uploadForm = new UploadForm();
 
         return [
@@ -41,6 +45,7 @@ final readonly class AccountHandlersPart2
             UploadsPost::class => $this->handlerContext->page(
                 new UploadsPost($htmlLayout, $requestSession, $uploadForm, (new UploadRules())->uploadCheck()),
             ),
+            VisitsForget::class => $this->handlerContext->page(new VisitsForget($requestSession)),
         ];
     }
 }

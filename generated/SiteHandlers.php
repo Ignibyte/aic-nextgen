@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
 use App\Site\Controller\HealthApi;
 use App\Site\Controller\ResourceDownload;
@@ -29,11 +30,13 @@ final readonly class SiteHandlers
     }
 
     /**
+     * @throws ContainerException When a called constructor or service fails.
+     *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
 
         return [
             HealthApi::class => $this->handlerContext->api(new HealthApi($this->handlerContext->database())),

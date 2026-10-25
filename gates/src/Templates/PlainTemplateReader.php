@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Templates;
 
 use AIC\Component\Contracts\Layout;
+use Gates\Domain\TemplateBinding;
 use Gates\Domain\TemplateReader;
 use Gates\Domain\TemplateRefusal;
 use Gates\Domain\TemplateType;
@@ -49,17 +50,64 @@ final readonly class PlainTemplateReader implements TemplateReader
     }
 
     /**
-     * @param string $path   The template, relative to the repo root.
-     * @param string $source Its source.
+     * @param string               $path            The template, relative to the repo root.
+     * @param string               $source          Its source.
+     * @param TemplateBinding|null $templateBinding Its explicit input and output declaration, absent for a legacy input.
      *
      * @throws InvalidArgumentException When it breaks the grammar or a type rule: one `path:line: category: detail` line each.
      *
      * @return TemplateUnit The template read.
      */
     #[Override]
-    public function read(string $path, string $source): TemplateUnit
+    public function read(string $path, string $source, ?TemplateBinding $templateBinding = null): TemplateUnit
     {
-        $violations = $this->templateValidator->violations($path, $source);
+        $this->validate($path, $source, $templateBinding);
+        $stmts = $this->statements($path, $source);
+        $this->templateHead->component($path, $source, $stmts, $templateBinding);
+        $component = $this->templateHead->componentClass($stmts);
+        $short = substr($component, (int) strrpos($component, '\\') + 1);
+
+        try {
+            $file = $this->templateClassTypes->component($component, $path, $templateBinding !== null);
+            $scope = [lcfirst($short) => new TemplateType([TemplateTypeKind::Object], $component)];
+            $transparent = $this->transparent($component, $templateBinding);
+            $nodes = (new TemplateLowering($short, $transparent))->lower($stmts, $scope);
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            $message = $path . ':' . $this->located($invalidArgumentException->getMessage());
+
+            throw new InvalidArgumentException($message, 0, $invalidArgumentException);
+        }
+
+        $generated = $templateBinding->generated ?? dirname($file) . '/' . $short . 'Template.php';
+
+        return new TemplateUnit($component, $generated, $nodes, $templateBinding);
+    }
+
+    /**
+     * @param string               $component       The checked input class.
+     * @param TemplateBinding|null $templateBinding Its explicit wrapper role, absent for a legacy layout.
+     *
+     * @return bool Whether children are rendered inline without new target paths.
+     */
+    private function transparent(string $component, ?TemplateBinding $templateBinding): bool
+    {
+        if ($templateBinding !== null) {
+            return $templateBinding->transparent();
+        }
+
+        return is_a($component, Layout::class, true);
+    }
+
+    /**
+     * @param string               $path            The authored template path.
+     * @param string               $source          Its source bytes.
+     * @param TemplateBinding|null $templateBinding Its explicit input, absent for a legacy source.
+     *
+     * @throws InvalidArgumentException When any restricted grammar construct is refused.
+     */
+    private function validate(string $path, string $source, ?TemplateBinding $templateBinding): void
+    {
+        $violations = $this->templateValidator->violations($path, $source, $templateBinding);
 
         if ($violations !== []) {
             throw new InvalidArgumentException(implode("\n", array_map(
@@ -67,23 +115,6 @@ final readonly class PlainTemplateReader implements TemplateReader
                 $violations,
             )));
         }
-
-        $stmts = $this->statements($path, $source);
-        $this->templateHead->component($path, $source, $stmts);
-        $component = $this->templateHead->componentClass($stmts);
-        $short = substr($component, (int) strrpos($component, '\\') + 1);
-
-        try {
-            $file = $this->templateClassTypes->component($component, $path);
-            $scope = [lcfirst($short) => new TemplateType([TemplateTypeKind::Object], $component)];
-            $nodes = (new TemplateLowering($short, is_a($component, Layout::class, true)))->lower($stmts, $scope);
-        } catch (InvalidArgumentException $invalidArgumentException) {
-            $message = $path . ':' . $this->located($invalidArgumentException->getMessage());
-
-            throw new InvalidArgumentException($message, 0, $invalidArgumentException);
-        }
-
-        return new TemplateUnit($component, dirname($file) . '/' . $short . 'Template.php', $nodes);
     }
 
     /**

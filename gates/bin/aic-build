@@ -34,6 +34,7 @@ declare(strict_types=1);
  * surface.json lists exactly what the app serves.
  */
 
+use AIC\Component\Domain\ThemePage;
 use AIC\Config\Domain\AppConfig;
 use AIC\Database\Domain\DatabaseConfig;
 use AIC\Database\Infrastructure\PdoDatabase;
@@ -48,14 +49,18 @@ use App\Generated\ConsoleModules;
 use Gates\Application\AssetCatalogBuild;
 use Gates\Application\AssetCatalogSource;
 use Gates\Application\BuildOutputs;
+use Gates\Application\DeclaredPaths;
 use Gates\Application\ModuleBuild;
+use Gates\Application\PresentationBuild;
 use Gates\Application\ProjectProfile;
 use Gates\Application\PublicAssetOrphans;
 use Gates\Application\SurfaceManifest;
+use Gates\Application\SurfaceModuleRows;
 use Gates\Application\TemplateBuild;
 use Gates\Application\TemplateCompiler;
 use Gates\Application\TemplatesSource;
 use Gates\Application\TesseraBuild;
+use Gates\Application\WebPresentationSource;
 use Gates\Domain\GateProfile;
 use Gates\Infrastructure\ProjectConfig;
 use Gates\Infrastructure\ProjectRoot;
@@ -80,19 +85,39 @@ try {
 $arguments = $argv ?? [];
 $checking = ($arguments[1] ?? '') === '--check';
 $moduleBuild = new ModuleBuild($root);
-$templateBuild = new TemplateBuild(new PlainTemplateReader(), new TemplateCompiler(), $root);
-
 try {
     $modules = $moduleBuild->modules();
+    $presentation = (new PresentationBuild($root))->plan($modules);
+    $templateBuild = new TemplateBuild(new PlainTemplateReader(), new TemplateCompiler(), $root, $presentation);
+    $templates = $templateBuild->classes();
+    $templateClasses = [];
+    $templateOwners = [];
+    $components = $templateBuild->components();
+
+    foreach ($presentation->templates as $binding) {
+        $templateClasses[$binding->component] = $binding->templateClass;
+        $templateOwners[$binding->component] = $binding->owner;
+    }
+
     $tessera = (new TesseraBuild($root, $appConfig->tessera, new SystemProcessRunner()))->files();
-    $assetCatalog = (new AssetCatalogBuild($root))->plan($modules, $tessera);
-    $generated = $moduleBuild->files($modules);
+    $assetCatalog = (new AssetCatalogBuild($root))->plan($modules, $tessera, $presentation->theme);
+    $generated = $moduleBuild->files($modules) + $templates;
+    $theme = $presentation->theme;
+    $generated[$root . '/generated/Presentation.php'] = (new WebPresentationSource())->file($theme);
+
+    if ($theme !== null) {
+        $generated[$root . '/generated/ThemeLayouts.php'] = (new WebPresentationSource())->layouts($theme, $appConfig->tessera->scriptPath());
+        $generated[$root . '/generated/ThemePageTemplate.php'] = (new WebPresentationSource())->pageTemplate($theme);
+        $components[ThemePage::class] = true;
+        $templateClasses[ThemePage::class] = 'App\\Generated\\ThemePageTemplate';
+        $templateOwners[ThemePage::class] = $theme->owner;
+    }
 
     foreach ((new AssetCatalogSource())->files($assetCatalog->assets) as $file => $source) {
         $generated[$root . '/generated/' . $file] = $source;
     }
 
-    foreach ((new TemplatesSource())->files($root, $modules, $templateBuild->components()) as $file => $source) {
+    foreach ((new TemplatesSource())->files($root, $modules, $components, $templateClasses, $templateOwners) as $file => $source) {
         $generated[$root . '/generated/' . $file] = $source;
     }
 } catch (InvalidArgumentException|JsonException|RuntimeException $exception) {
@@ -103,7 +128,10 @@ try {
 
 $buildOutputs = new BuildOutputs($root);
 
-$orphans = $buildOutputs->orphans($root . '/generated', $generated);
+$orphans = [
+    ...$buildOutputs->orphans($root . '/generated', $generated, '*.php', true),
+    ...(new DeclaredPaths($root))->legacy($presentation),
+];
 $staleGenerated = [...$buildOutputs->stale($generated), ...$orphans];
 
 if ($checking && $staleGenerated !== []) {
@@ -131,9 +159,8 @@ if (!$checking) {
 $consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTransport($mailConfig), $mailConfig, new ConsoleModules());
 try {
     $routes = $moduleBuild->routes($modules, new RouteCollector(new RoutePatternCompiler()))->table();
-    $templates = $templateBuild->classes();
     $outputs = [
-        $root . '/build/surface.json' => (new SurfaceManifest())->json($routes->routes(), $consoleKernel->commands(), $consoleKernel->jobs(), $consoleKernel->schedules(), $modules),
+        $root . '/build/surface.json' => (new SurfaceManifest(surfaceModuleRows: new SurfaceModuleRows($presentation)))->json($routes->routes(), $consoleKernel->commands(), $consoleKernel->jobs(), $consoleKernel->schedules(), $modules),
     ] + $assetCatalog->outputs + $templates;
     // Only the package's source checkout owns these outputs; an app never writes vendor/.
     if ((new ProjectProfile())->profile($root) === GateProfile::Aic) {
@@ -212,6 +239,8 @@ exit(0);
  *
  * @param string       $root         The project's root.
  * @param BuildOutputs $buildOutputs Finds the orphans.
+ *
+ * @throws InvalidArgumentException When an output directory escapes the project or traverses a symlink.
  *
  * @return array{array<string, string>, list<string>} The pages by absolute path, and the orphans.
  */

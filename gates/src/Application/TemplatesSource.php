@@ -118,42 +118,51 @@ final readonly class TemplatesSource
      * @param list<ModuleDefinition> $modules    The checked modules, in build order.
      * @param array<string, bool>    $components Whether each template's `render()` takes the pass, by its component
      *                                           class, fully qualified.
+     * @param array<string, string>  $templates  Explicit generated template classes by component.
+     * @param array<string, string>  $owners     Explicit module owners by component.
      *
      * @throws InvalidArgumentException When a module component has no template, or a class would not fit the gates.
      *
      * @return array<string, string> Each generated class file, by its name under `generated/`.
      */
-    public function files(string $root, array $modules, array $components): array
-    {
+    public function files(
+        string $root,
+        array $modules,
+        array $components,
+        array $templates = [],
+        array $owners = [],
+    ): array {
         $parts = [];
 
         foreach ($modules as $module) {
             $this->paired($root, $module, $components);
-            $parts = [...$parts, ...$this->moduleParts($module, $components)];
+            $parts = [...$parts, ...$this->moduleParts($module, $components, $owners)];
         }
 
         $files = ['ModuleTemplates.php' => $this->head($parts === [] ? 'AtomTemplates' : $parts[0][0])];
 
         foreach ($parts as $index => [$class, $chunk, $module]) {
             $next = $parts[$index + 1][0] ?? 'AtomTemplates';
-            $files[$class . '.php'] = $this->part($class, $chunk, $next, $module);
+            $files[$class . '.php'] = $this->part($class, $chunk, $next, $module, $templates);
         }
 
         return $files;
     }
 
     /**
-     * @param ModuleDefinition    $moduleDefinition A module.
-     * @param array<string, bool> $components       Whether each template's `render()` takes the pass, by component class.
+     * @param ModuleDefinition      $moduleDefinition A module.
+     * @param array<string, bool>   $components       Whether each template's `render()` takes the pass, by component class.
+     * @param array<string, string> $owners           Explicit module owners by component.
      *
      * @return list<array{string, array<string, bool>, string}> Its parts of the chain: each class, the components it
      *                                                          matches and the module's name.
      */
-    private function moduleParts(ModuleDefinition $moduleDefinition, array $components): array
+    private function moduleParts(ModuleDefinition $moduleDefinition, array $components, array $owners): array
     {
         $owned = array_filter(
             $components,
-            static fn (string $component): bool => str_starts_with($component, $moduleDefinition->namespace),
+            static fn (string $component): bool => str_starts_with($component, $moduleDefinition->namespace)
+                || ($owners[$component] ?? '') === $moduleDefinition->name,
             ARRAY_FILTER_USE_KEY,
         );
         $parts = [];
@@ -224,23 +233,25 @@ final readonly class TemplatesSource
     }
 
     /**
-     * @param string              $class      The part's class.
-     * @param array<string, bool> $components The components it matches: whether each template takes the pass.
-     * @param string              $next       The class after it.
-     * @param string              $module     The module's name.
+     * @param string                $class      The part's class.
+     * @param array<string, bool>   $components The components it matches: whether each template takes the pass.
+     * @param string                $next       The class after it.
+     * @param string                $module     The module's name.
+     * @param array<string, string> $templates  Explicit generated classes by component.
      *
      * @throws InvalidArgumentException When it would not fit the gates.
      *
      * @return string The part's class file.
      */
-    private function part(string $class, array $components, string $next, string $module): string
+    private function part(string $class, array $components, string $next, string $module, array $templates): string
     {
         $body = strtr(self::TEMPLATE, [
-            '{arms}' => $this->arms($components),
+            '{arms}' => $this->arms($components, $templates),
             '{class}' => $class,
             '{next}' => $next,
             '{what}' => 'the ' . $module . " module's components, then the next.",
         ]);
+        $mapped = static fn (string $component): string => $templates[$component] ?? $component . 'Template';
         $classes = [
             ComponentTemplates::class,
             Component::class,
@@ -248,7 +259,7 @@ final readonly class TemplatesSource
             UnknownComponent::class,
             Override::class,
             ...array_keys($components),
-            ...array_map(static fn (string $component): string => $component . 'Template', array_keys($components)),
+            ...array_map($mapped, array_keys($components)),
             ...($next === 'AtomTemplates' ? [AtomTemplates::class] : []),
         ];
         $docblock = $this->phpClassFile->generated('modules/' . $module . '/templates', "the module's template lookup (#98).");
@@ -257,17 +268,19 @@ final readonly class TemplatesSource
     }
 
     /**
-     * @param array<string, bool> $components The components a part matches: whether each template takes the pass.
+     * @param array<string, bool>   $components The components a part matches: whether each template takes the pass.
+     * @param array<string, string> $templates  Explicit generated classes by component.
      *
      * @return string Its match arms, one per component.
      */
-    private function arms(array $components): string
+    private function arms(array $components, array $templates): string
     {
         $arms = [];
 
         foreach ($components as $component => $takesPass) {
             $short = $this->phpClassFile->short($component);
-            $arms[] = '            $component instanceof ' . $short . ' => (new ' . $short . 'Template())->render($component'
+            $template = $this->phpClassFile->short($templates[$component] ?? $component . 'Template');
+            $arms[] = '            $component instanceof ' . $short . ' => (new ' . $template . '())->render($component'
                 . ($takesPass ? ', $renderPass' : '') . '),';
         }
 

@@ -97,7 +97,7 @@ final readonly class ModuleShellRule implements ModuleRule
      */
     private function prefixViolations(ModuleTree $moduleTree): array
     {
-        $allowed = ['App\\Generated\\' => 'generated/'];
+        $allowed = ['App\\Generated\\' => 'generated/', 'App\\Generated\\Templates\\' => 'generated/templates/'];
 
         foreach ($moduleTree->modules as $moduleDefinition) {
             $allowed[$moduleDefinition->namespace] = 'modules/' . $moduleDefinition->name . '/src/';
@@ -111,7 +111,8 @@ final readonly class ModuleShellRule implements ModuleRule
             }
 
             $violations[] = new BoundaryViolation('composer.json', sprintf(
-                'composer.json maps %s to %s; map each module\'s namespace to modules/<name>/src/, and App\\Generated\\ to generated/.',
+                "composer.json maps %s to %s; map each module's namespace to modules/<name>/src/,"
+                    . ' and the generated namespaces to generated/ or generated/templates/.',
                 $prefix,
                 implode(', ', $folders),
             ));

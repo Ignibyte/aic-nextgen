@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Gates\Templates;
 
+use Gates\Application\ModuleBuild;
+use Gates\Application\PresentationBuild;
 use Gates\Application\QuietFileReader;
+use Gates\Domain\TemplateBinding;
 use Gates\Domain\TemplateRefusal;
 use Gates\Domain\TemplateViolation;
+use InvalidArgumentException;
 
 use function count;
 use function fwrite;
+use function glob;
 use function sprintf;
 use function usort;
 
@@ -48,23 +53,42 @@ final readonly class TemplateGrammarGate
      */
     public function run(string $root, mixed $stdout = STDOUT, mixed $stderr = STDERR): int
     {
-        $templates = $this->templateFinder->find($root, $this->templateGrammar->roots());
+        try {
+            $bindings = $this->bindings($root);
+            $templates = $this->templateFinder->find($root, $this->templateGrammar->roots());
+            $violations = $this->violations($root, $templates, $bindings);
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            fwrite($stderr, 'gate:25 — ' . $invalidArgumentException->getMessage() . PHP_EOL);
 
-        if ($templates === []) {
-            fwrite($stdout, 'gate:25 — no component templates (*.html.php) under modules/ or templates/ yet; deferring.' . PHP_EOL);
+            return 1;
+        }
+
+        return $this->report($violations, count($templates), $stdout, $stderr);
+    }
+
+    /**
+     * @param list<TemplateViolation> $violations Every refused source construct.
+     * @param int                     $templates  Number of observed authored sources.
+     * @param resource                $stdout     Success and deferral output.
+     * @param resource                $stderr     Refusal output.
+     *
+     * @return int The actual grammar verdict.
+     */
+    private function report(array $violations, int $templates, mixed $stdout, mixed $stderr): int
+    {
+        if ($templates === 0) {
+            fwrite($stdout, 'gate:25 — no authored templates under modules/, templates/ or themes/; deferring.' . PHP_EOL);
 
             return 0;
         }
-
-        $violations = $this->violations($root, $templates);
 
         foreach ($violations as $violation) {
             fwrite($stderr, 'gate:25 — ' . $violation->message() . PHP_EOL);
         }
 
         $summary = $violations === []
-            ? sprintf('gate:25 — %d template(s) follow the template grammar.', count($templates))
-            : sprintf('gate:25 — %d violation(s) in %d template(s).', count($violations), count($templates));
+            ? sprintf('gate:25 — %d template(s) follow the template grammar.', $templates)
+            : sprintf('gate:25 — %d violation(s) in %d template(s).', count($violations), $templates);
         fwrite($violations === [] ? $stdout : $stderr, $summary . PHP_EOL);
 
         return $violations === []
@@ -73,12 +97,13 @@ final readonly class TemplateGrammarGate
     }
 
     /**
-     * @param string       $root      The root.
-     * @param list<string> $templates The templates, relative to it.
+     * @param string                         $root      The root.
+     * @param list<string>                   $templates The templates, relative to it.
+     * @param array<string, TemplateBinding> $bindings  The validated explicit mappings.
      *
      * @return list<TemplateViolation> Every violation, by path then line; an unreadable template is one.
      */
-    private function violations(string $root, array $templates): array
+    private function violations(string $root, array $templates, array $bindings): array
     {
         $violations = [];
 
@@ -86,7 +111,7 @@ final readonly class TemplateGrammarGate
             $source = $this->quietFileReader->read($root . '/' . $template);
             $found = $source === null
                 ? [$this->unreadable($template)]
-                : $this->templateValidator->violations($template, $source);
+                : $this->templateValidator->violations($template, $source, $bindings[$template] ?? null);
             $violations = [...$violations, ...$found];
         }
 
@@ -96,6 +121,31 @@ final readonly class TemplateGrammarGate
         );
 
         return $violations;
+    }
+
+    /**
+     * @param string $root The project or grammar plant folder.
+     *
+     * @throws InvalidArgumentException When real module declarations or their sources are invalid.
+     *
+     * @return array<string, TemplateBinding> Explicit bindings, absent for manifest-free legacy grammar plants.
+     */
+    private function bindings(string $root): array
+    {
+        $manifests = glob($root . '/modules/*/*.module.php');
+
+        if ($manifests === false || $manifests === []) {
+            return [];
+        }
+
+        $presentationInventory = (new PresentationBuild($root))->plan((new ModuleBuild($root))->modules());
+        $bindings = [];
+
+        foreach ($presentationInventory->templates as $binding) {
+            $bindings[$binding->source] = $binding;
+        }
+
+        return $bindings;
     }
 
     /**

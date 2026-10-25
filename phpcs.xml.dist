@@ -40,6 +40,7 @@
                 <element key="modules/note/src" value="App\Note"/>
                 <element key="modules/scaffold/src" value="App\Scaffold"/>
                 <element key="modules/site/src" value="App\Site"/>
+                <element key="generated/templates" value="App\Generated\Templates"/>
                 <element key="generated" value="App\Generated"/>
                 <element key="gates/src" value="Gates"/>
                 <element key="gates/architecture" value="Gates\Architecture"/>
