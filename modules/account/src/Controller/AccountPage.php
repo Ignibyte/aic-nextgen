@@ -46,7 +46,7 @@ final readonly class AccountPage implements Page
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
         $user = $this->authenticator->userId($serverRequest);
-        $form = new Form('', '/logout', [new Button('Sign out', 'submit', 'sign-out')], $this->formTokens->issue($serverRequest));
+        $form = new Form('', '/logout', [new Button('Sign out', 'submit', 'sign-out')], $this->formTokens->issue($serverRequest)->value());
 
         return $this->htmlLayout->content(
             [new Heading('Account'), new Paragraph('Signed in as ' . $user . '.', 'signed-in'), $form],

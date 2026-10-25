@@ -52,6 +52,6 @@ final readonly class StockForm
             new Button('Add', 'submit', 'add-stock'),
         ];
 
-        return new Form('stock-form', '/stock', $fields, $this->formTokens->issue($serverRequest));
+        return new Form('stock-form', '/stock', $fields, $this->formTokens->issue($serverRequest)->value());
     }
 }

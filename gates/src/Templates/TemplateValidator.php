@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Gates\Templates;
 
+use Gates\Application\AtomCatalog;
 use Gates\Domain\TemplateBinding;
 use Gates\Domain\TemplateRefusal;
 use Gates\Domain\TemplateScope;
 use Gates\Domain\TemplateViolation;
+use InvalidArgumentException;
 use PhpParser\Error;
 use PhpParser\NodeTraverser;
 use PhpParser\Token;
@@ -31,7 +33,7 @@ final readonly class TemplateValidator
 {
     /** Every authored source requires a matching validated declaration. */
     private const string PLACEMENT = 'declare a .tpl.php source under modules/<module>/templates/components/'
-        . ' or themes/<theme>/layouts/';
+        . ' or themes/<theme>/layouts/, or a fixed framework atom catalog binding';
 
     /** Explicit tpl sources remain confined to authored component or theme layout folders. */
     private const string DECLARED_PLACE = '#^(?:modules/[a-z0-9_]+/templates/components|themes/[a-z][a-z0-9_-]*/layouts)'
@@ -57,11 +59,14 @@ final readonly class TemplateValidator
      * @param string          $source          Its source.
      * @param TemplateBinding $templateBinding The required validated declaration.
      *
+     * @throws InvalidArgumentException When the fixed library catalog contains invalid or duplicate declarations.
+     *
      * @return list<TemplateViolation> Every construct it refuses; none when the template follows the grammar.
      */
     public function violations(string $path, string $source, TemplateBinding $templateBinding): array
     {
-        $placed = $templateBinding->source === $path && preg_match(self::DECLARED_PLACE, $path) === 1;
+        $placed = $templateBinding->source === $path
+            && (preg_match(self::DECLARED_PLACE, $path) === 1 || (new AtomCatalog())->contains($templateBinding));
         $placement = $placed
             ? []
             : [new TemplateViolation($path, 1, TemplateRefusal::Placement, self::PLACEMENT)];

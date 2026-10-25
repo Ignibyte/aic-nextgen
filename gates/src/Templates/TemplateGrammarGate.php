@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Templates;
 
+use Gates\Application\AtomBuild;
 use Gates\Application\ModuleBuild;
 use Gates\Application\PresentationBuild;
 use Gates\Application\QuietFileReader;
@@ -12,6 +13,9 @@ use Gates\Domain\TemplateRefusal;
 use Gates\Domain\TemplateViolation;
 use InvalidArgumentException;
 
+use function array_keys;
+use function array_unique;
+use function array_values;
 use function count;
 use function fwrite;
 use function glob;
@@ -55,7 +59,10 @@ final readonly class TemplateGrammarGate
     {
         try {
             $bindings = $this->bindings($root);
-            $templates = $this->templateFinder->find($root, $this->templateGrammar->roots());
+            $templates = array_values(array_unique([
+                ...$this->templateFinder->find($root, $this->templateGrammar->roots()),
+                ...array_keys($bindings),
+            ]));
             $violations = $this->violations($root, $templates, $bindings);
         } catch (InvalidArgumentException $invalidArgumentException) {
             fwrite($stderr, 'gate:25 — ' . $invalidArgumentException->getMessage() . PHP_EOL);
@@ -101,6 +108,8 @@ final readonly class TemplateGrammarGate
      * @param list<string>                   $templates The templates, relative to it.
      * @param array<string, TemplateBinding> $bindings  The validated explicit mappings.
      *
+     * @throws InvalidArgumentException When the fixed library catalog is invalid.
+     *
      * @return list<TemplateViolation> Every violation, by path then line; an unreadable template is one.
      */
     private function violations(string $root, array $templates, array $bindings): array
@@ -125,6 +134,8 @@ final readonly class TemplateGrammarGate
      * @param string               $path            The audited authored candidate.
      * @param string|null          $source          Its bytes, null when unreadable.
      * @param TemplateBinding|null $templateBinding Its actual declaration, absent for a refused candidate.
+     *
+     * @throws InvalidArgumentException When the fixed library catalog is invalid.
      *
      * @return list<TemplateViolation> Read/declaration refusals, or the declared source's grammar violations.
      */
@@ -152,13 +163,13 @@ final readonly class TemplateGrammarGate
     private function bindings(string $root): array
     {
         $manifests = glob($root . '/modules/*/*.module.php');
+        $bindings = (new AtomBuild(new PlainTemplateReader(), $root))->bindings();
 
         if ($manifests === false || $manifests === []) {
-            return [];
+            return $bindings;
         }
 
         $presentationInventory = (new PresentationBuild($root))->plan((new ModuleBuild($root))->modules());
-        $bindings = [];
 
         foreach ($presentationInventory->templates as $binding) {
             $bindings[$binding->source] = $binding;

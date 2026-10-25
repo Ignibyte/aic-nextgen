@@ -5,13 +5,9 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use AIC\Component\Application\AtomTemplates;
-use AIC\Component\Application\ComponentTemplates;
-use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
-use AIC\Component\Exception\UnknownComponent;
 use Gates\Domain\ModuleDefinition;
 use InvalidArgumentException;
-use Override;
 
 use function array_chunk;
 use function array_filter;
@@ -20,11 +16,9 @@ use function array_keys;
 use function array_map;
 use function basename;
 use function glob;
-use function implode;
 use function in_array;
 use function is_a;
 use function sort;
-use function strtr;
 
 use const ARRAY_FILTER_USE_KEY;
 
@@ -43,73 +37,10 @@ final readonly class TemplatesSource
     private const int PART = 4;
 
     /**
-     * A part of the chain, with `{class}`, `{what}`, `{next}` and `{arms}`.
-     */
-    private const string TEMPLATE = <<<'PHP'
-        final readonly class {class} implements ComponentTemplates
-        {
-            /**
-             * @param ComponentTemplates $componentTemplates The templates after these.
-             */
-            public function __construct(
-                private ComponentTemplates $componentTemplates = new {next}(),
-            ) {
-            }
-
-            /**
-             * @param Component  $component  A component.
-             * @param RenderPass $renderPass The pass rendering it.
-             *
-             * @throws UnknownComponent When no template renders it.
-             *
-             * @return string Its markup: {what}
-             */
-            #[Override]
-            public function compose(Component $component, RenderPass $renderPass): string
-            {
-                return match (true) {
-        {arms}
-                    default => $this->componentTemplates->compose($component, $renderPass),
-                };
-            }
-        }
-        PHP;
-
-    /**
-     * The chain's head, with `{first}`.
-     */
-    private const string HEAD = <<<'PHP'
-        final readonly class ModuleTemplates implements ComponentTemplates
-        {
-            /**
-             * @param ComponentTemplates $componentTemplates The chain's first templates.
-             */
-            public function __construct(
-                private ComponentTemplates $componentTemplates = new {first}(),
-            ) {
-            }
-
-            /**
-             * @param Component  $component  A component.
-             * @param RenderPass $renderPass The pass rendering it.
-             *
-             * @throws UnknownComponent When no template renders it.
-             *
-             * @return string Its markup, from the modules' templates or the framework's atoms.
-             */
-            #[Override]
-            public function compose(Component $component, RenderPass $renderPass): string
-            {
-                return $this->componentTemplates->compose($component, $renderPass);
-            }
-        }
-        PHP;
-
-    /**
-     * @param PhpClassFile $phpClassFile Lays out the files.
+     * @param TemplateLookupSource $templateLookupSource Emits the checked lookup classes.
      */
     public function __construct(
-        private PhpClassFile $phpClassFile = new PhpClassFile(),
+        private TemplateLookupSource $templateLookupSource = new TemplateLookupSource(),
     ) {
     }
 
@@ -260,70 +191,44 @@ final readonly class TemplatesSource
      */
     private function head(string $first): string
     {
-        $body = strtr(self::HEAD, ['{first}' => $first]);
-        $classes = [ComponentTemplates::class, Component::class, RenderPass::class, UnknownComponent::class, Override::class];
+        $class = $first === 'AtomTemplates'
+            ? AtomTemplates::class
+            : 'App\\Generated\\' . $first;
 
-        if ($first === 'AtomTemplates') {
-            $classes[] = AtomTemplates::class;
-        }
-
-        $docblock = $this->phpClassFile->generated('the module templates', 'the head of the template lookup (#98).');
-
-        return $this->phpClassFile->file('App\\Generated', $classes, [], $docblock, $body);
+        return $this->templateLookupSource->head(
+            'App\\Generated',
+            'ModuleTemplates',
+            $class,
+            'the module templates',
+            "Its markup, from the modules' templates or the framework's atoms.",
+        );
     }
 
     /**
-     * @param string                $class      The part's class.
-     * @param array<string, bool>   $components The components it matches: whether each template takes the pass.
-     * @param string                $next       The class after it.
-     * @param string                $module     The module's name.
-     * @param array<string, string> $templates  Explicit generated classes by component.
+     * @param string                $class      The declared lookup part.
+     * @param array<string, bool>   $components The components' render-pass requirements.
+     * @param string                $next       The next generated part or framework head.
+     * @param string                $module     The real module owner.
+     * @param array<string, string> $templates  Exact declared compiled classes.
      *
-     * @throws InvalidArgumentException When it would not fit the gates.
+     * @throws InvalidArgumentException When the lookup cannot fit normal source limits.
      *
-     * @return string The part's class file.
+     * @return string The module's bounded lookup class.
      */
     private function part(string $class, array $components, string $next, string $module, array $templates): string
     {
-        $body = strtr(self::TEMPLATE, [
-            '{arms}' => $this->arms($components, $templates),
-            '{class}' => $class,
-            '{next}' => $next,
-            '{what}' => 'the ' . $module . " module's components, then the next.",
-        ]);
-        $mapped = static fn (string $component): string => $templates[$component];
-        $classes = [
-            ComponentTemplates::class,
-            Component::class,
-            RenderPass::class,
-            UnknownComponent::class,
-            Override::class,
-            ...array_keys($components),
-            ...array_map($mapped, array_keys($components)),
-            ...($next === 'AtomTemplates' ? [AtomTemplates::class] : []),
-        ];
-        $docblock = $this->phpClassFile->generated('modules/' . $module . '/templates', "the module's template lookup (#98).");
+        $nextClass = $next === 'AtomTemplates'
+            ? AtomTemplates::class
+            : 'App\\Generated\\' . $next;
 
-        return $this->phpClassFile->file('App\\Generated', $classes, [], $docblock, $body);
-    }
-
-    /**
-     * @param array<string, bool>   $components The components a part matches: whether each template takes the pass.
-     * @param array<string, string> $templates  Explicit generated classes by component.
-     *
-     * @return string Its match arms, one per component.
-     */
-    private function arms(array $components, array $templates): string
-    {
-        $arms = [];
-
-        foreach ($components as $component => $takesPass) {
-            $short = $this->phpClassFile->short($component);
-            $template = $this->phpClassFile->short($templates[$component]);
-            $arms[] = '            $component instanceof ' . $short . ' => (new ' . $template . '())->render($component'
-                . ($takesPass ? ', $renderPass' : '') . '),';
-        }
-
-        return implode("\n", $arms);
+        return $this->templateLookupSource->part(
+            'App\\Generated',
+            $class,
+            $components,
+            $templates,
+            $nextClass,
+            'modules/' . $module . '/templates',
+            'the ' . $module . " module's components, then the next.",
+        );
     }
 }

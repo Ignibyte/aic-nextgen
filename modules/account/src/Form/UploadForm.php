@@ -45,6 +45,6 @@ final readonly class UploadForm
             : [new Alert(AlertSeverity::Error, $error, 'upload-error')];
         $fields = [...$alerts, new FormField('File', 'file', new FileInput('file', 'file', $accept)), new Button('Upload', 'submit', '')];
 
-        return new Form('upload-form', '/uploads', $fields, $this->formTokens->issue($serverRequest), FormEncoding::Multipart);
+        return new Form('upload-form', '/uploads', $fields, $this->formTokens->issue($serverRequest)->value(), FormEncoding::Multipart);
     }
 }

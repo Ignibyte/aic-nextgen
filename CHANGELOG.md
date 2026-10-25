@@ -6,6 +6,19 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **Compiled catalog atoms and contextual markers** (#114). All 15 framework atoms now use
+  fixed declared `.tpl.php` inputs and package-owned compiled classes. Conditional attributes and
+  quoted-value control flow emit no block comments; ordinary body blocks keep their markers.
+  Strict branch joins, loop exits and literal tag boundaries fail before publication when unsafe.
+  Home uses one anchor with an optional attribute; all 11 Form sites prepare issued token strings.
+  - All 3,282 original atom cases match exactly. Each PHP/native crawl pairing matches 93 responses;
+    old/new pairings match 90 exactly and three changed Home responses after marker removal. Root
+    and source fixture cover 463 runtime classes; a normal App covers its 163 classes. Each compiled
+    desktop/mobile browser flow passes 23 checks. An actual App build preserves 14,384 vendor/package files.
+  - Final Quality passes all 32 gates and both full Psalm passes, with 463 valid native runtime
+    closures and 86 fresh site comparisons. The complete workflow replay passes all 186 expectations.
+    Original native/session issue #150 remains open; no repair is claimed.
+
 - **Declared rendering contracts and architecture** (#149, #120, #121). Reader, compiler,
   emitter and lookup require explicit identities. The shared link-safe source audit refuses
   unsupported and unclaimed inputs before publication. Authored components ending in Template

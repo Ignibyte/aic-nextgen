@@ -47,9 +47,9 @@ cd "$PROJECT_ROOT" || exit 0
 
 # Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
 git_capture CHANGED_PHP_FILES enforce-quality.sh \
-    git diff --name-only --diff-filter=ACM HEAD -- '*.php' ':(exclude)modules/*/templates/*' ':(exclude)themes/*/layouts/*'
+    git diff --name-only --diff-filter=ACM HEAD -- '*.php' ':(exclude)modules/*/templates/*' ':(exclude)themes/*/layouts/*' ':(exclude)framework/templates/*'
 git_capture UNTRACKED_PHP_FILES enforce-quality.sh \
-    git ls-files --others --exclude-standard -- '*.php' ':(exclude)modules/*/templates/*' ':(exclude)themes/*/layouts/*'
+    git ls-files --others --exclude-standard -- '*.php' ':(exclude)modules/*/templates/*' ':(exclude)themes/*/layouts/*' ':(exclude)framework/templates/*'
 
 FILES=""
 while IFS= read -r file; do

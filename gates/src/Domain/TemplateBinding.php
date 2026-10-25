@@ -10,7 +10,7 @@ use AIC\Component\Contracts\Component;
 final readonly class TemplateBinding
 {
     /**
-     * @param string                  $owner         The declaring module.
+     * @param string                  $owner         The declaring module or fixed source package.
      * @param class-string<Component> $component     The actual typed input class.
      * @param string                  $source        Its project-relative authored source.
      * @param string                  $generated     Its project-relative generated PHP path.
@@ -28,7 +28,7 @@ final readonly class TemplateBinding
     }
 
     /**
-     * @return bool Whether the authored wrapper writes children without changing their target paths.
+     * @return bool Whether the declared role writes children inline without changing their target paths.
      */
     public function transparent(): bool
     {

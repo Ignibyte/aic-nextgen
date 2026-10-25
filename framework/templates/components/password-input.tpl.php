@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\PasswordInput $passwordInput */ ?>
+<input type="password"<?php if ($passwordInput->id !== ''): ?> id="<?= $passwordInput->id ?>"<?php endif ?><?php if ($passwordInput->name !== ''): ?> name="<?= $passwordInput->name ?>"<?php endif ?> autocomplete="current-password" class="aic-input">

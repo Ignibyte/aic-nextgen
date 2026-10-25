@@ -18,6 +18,8 @@ final readonly class TemplateNode
      * @param string             $binding   A component's key expression, empty for none.
      * @param string             $key       A component's compile-time key, `Name.N`.
      * @param list<string>       $scope     A loop's variables, `Type $var`, in scope for its body.
+     * @param bool               $marked    Whether this block opens and closes morph markers.
+     * @param int                $line      The authored statement's source line.
      */
     public function __construct(
         public TemplateNodeKind $kind,
@@ -27,6 +29,28 @@ final readonly class TemplateNode
         public string $binding = '',
         public string $key = '',
         public array $scope = [],
+        public bool $marked = true,
+        public int $line = 1,
     ) {
+    }
+
+    /**
+     * @param int $line The source statement's line.
+     *
+     * @return self The node with its origin, preserving all lowered children.
+     */
+    public function located(int $line): self
+    {
+        return new self(
+            $this->kind,
+            $this->code,
+            $this->children,
+            $this->otherwise,
+            $this->binding,
+            $this->key,
+            $this->scope,
+            $this->marked,
+            $line,
+        );
     }
 }

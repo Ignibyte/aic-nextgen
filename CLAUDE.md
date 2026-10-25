@@ -49,6 +49,19 @@ package-only App profile passes28 gates/bothfullPsalm/all163appclasses freshly/s
 changing any of14343 vendor/package files. Both compiled desktop/mobile flows pass22 checks.
 Keep these profile scopes distinct. The native/session issue150 stays open; no repair is claimed.
 
+#114 moves all 15 catalog atoms into fixed `framework/templates/components/*.tpl.php` declarations,
+compiled by the same strict reader/compiler as module templates. The source-package build owns 20
+runtime outputs (15 templates, 4 lookup parts and the head); installed Apps consume them without
+package writes. Tag and quoted-attribute control flow emits no block comments. Body blocks retain
+markers, while the fixed inline atom role preserves existing atom bytes and child paths. Branches
+join compatible contexts and loops/exits preserve their entry; incomplete literal names and unsafe
+output positions are refused before publication. Form callers pass the issued token's ready string.
+All 3,282 original atom cases match. Each compiled browser flow passes 23 checks. The source fixture
+passes 30 gates covering all 463 runtime classes; the normal App passes 28 covering its 163 classes.
+The App build preserves 14,384 vendor/package files. Final Quality passes all 32 gates and both full
+Psalm passes, with 463 valid native runtime closures and 86 fresh site comparisons. The complete
+workflow replay passes all 186 expectations.
+
 #133 runtime, #134 gate tooling, #141/#142/#143 workflow source repairs, #135 dual-pass enforcement
 and #137 bounded teardown are delivered.
 Complete approved ordinary analysis has zero findings. Gate:13 now runs ordinary analysis
@@ -86,7 +99,8 @@ route prefix, as tagged plugins. #39 introduced bundled theme CSS (gate:24; `ass
 serves them before dynamic application assembly. #7 and M3
 are done. #8 runs as #41 to #44; #41: `AIC\Session` (a Postgres session behind
 `__Host-aic_session`, on the request as `aic.session`). #42: `FormGuardMiddleware` checks the CSRF
-token and the honeypot on every unsafe request; the `Form` atom takes a `FormToken`. #43: the app secret comes only from `AIC_APP_SECRET`
+token and the honeypot on every unsafe request; the `Form` atom takes the issued `FormToken::value()`
+string prepared by its caller. #43: the app secret comes only from `AIC_APP_SECRET`
 (DDEV's ignored `config.local.yaml` here); `EnvelopeCodec` signs form values, `SameOriginPath` keeps
 redirects on the site. #44: multipart posts become PSR-7 uploads; `UploadCheck` accepts a file by
 its content. #8 is done. #9: `AIC\Auth` (pgcrypto bcrypt, `Authenticator`, protected prefixes);
@@ -113,7 +127,8 @@ decides its `src/` folder, 15 files per folder, exports and requires, nothing ou
 but the shell). #95: module assets: the theme moves to `assets/`, each module's
 `assets/` joins the build, and the site module's nav styles and favicon live in `modules/site/assets/`.
 #96/#149: gate:25 accepts only declared `*.tpl.php` templates, auditing unsupported and unclaimed
-authored sources for refusal. Class tools skip module template and theme layout sources.
+authored sources for refusal. Class tools skip authored module, theme layout and fixed framework
+atom sources; all compiled classes remain checked.
 #97 to #99 (#87, #88): templates compile from plain PHP, one Renderer makes HTML, and gate:27 counts
 `RawHtml` against its grants. #97: `composer run build` compiles each
 declared `*.tpl.php` into its explicit generated class, escaping every `<?= ?>` by its static type; loops are real
@@ -125,8 +140,8 @@ only `new Html`, and `Psr7ResponseWriter` the only reader of `markup()`. A page 
 regions holding components (`HtmlLayout::content(list<Component>, int)`), never a string. A
 template writes children through a `RenderPass` (`child()` with markers, `region()`, `inline()` in a
 layout), and a Tessera fragment is the same tree rendered by its path. The build generates the
-lookup (`generated/ModuleTemplates` and one `<M>Templates` per module), ending at the atoms'
-hand-written templates; a module component with no template is refused. #91, the agent workflow,
+lookup (`generated/ModuleTemplates` and one `<M>Templates` per module), ending at the compiled
+framework atom lookup; a module component with no template is refused. #91, the agent workflow,
 runs as #100 to #106; #100: the run engine and its state, the dev-only `aic/workflow` package.
 #101: the engine runs the gates itself and keeps each verdict in `var/workflow/evidence.sqlite`
 beside the subject hash of the tree it judged. #102: the guard hook holds the agent to the open run.

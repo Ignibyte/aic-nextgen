@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\Checkbox $checkbox */ ?>
+<input type="checkbox"<?php if ($checkbox->id !== ''): ?> id="<?= $checkbox->id ?>"<?php endif ?><?php if ($checkbox->name !== ''): ?> name="<?= $checkbox->name ?>"<?php endif ?> value="1"<?php if ($checkbox->checked): ?> checked<?php endif ?> class="aic-checkbox">

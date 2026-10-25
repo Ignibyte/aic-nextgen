@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\Input $input */ ?>
+<input<?php if ($input->id !== ''): ?> id="<?= $input->id ?>"<?php endif ?><?php if ($input->name !== ''): ?> name="<?= $input->name ?>"<?php endif ?> value="<?= $input->value ?>"<?php if ($input->invalid): ?> aria-invalid="true"<?php endif ?> class="aic-input">

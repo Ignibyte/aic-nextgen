@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\FormField $formField */ ?>
+<p class="aic-field"><label<?php if ($formField->controlId !== ''): ?> for="<?= $formField->controlId ?>"<?php endif ?>><?= $formField->label ?></label> <?= $formField->component ?></p>

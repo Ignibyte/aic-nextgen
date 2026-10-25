@@ -47,6 +47,7 @@ use AIC\Workflow\Infrastructure\WikiKernel;
 use App\Generated\ConsoleModules;
 use Gates\Application\AssetCatalogBuild;
 use Gates\Application\AssetCatalogSource;
+use Gates\Application\AtomBuild;
 use Gates\Application\BuildOutputs;
 use Gates\Application\ModuleBuild;
 use Gates\Application\PresentationBuild;
@@ -85,6 +86,7 @@ $arguments = $argv ?? [];
 $checking = ($arguments[1] ?? '') === '--check';
 $moduleBuild = new ModuleBuild($root);
 try {
+    $atoms = (new AtomBuild(new PlainTemplateReader(), $root))->files();
     $modules = $moduleBuild->modules();
     $presentation = (new PresentationBuild($root))->plan($modules);
     $templateBuild = new TemplateBuild(new PlainTemplateReader(), new TemplateCompiler(), $root, $presentation);
@@ -100,7 +102,7 @@ try {
 
     $tessera = (new TesseraBuild($root, $appConfig->tessera, new SystemProcessRunner()))->files();
     $assetCatalog = (new AssetCatalogBuild($root))->plan($modules, $tessera, $presentation->theme);
-    $generated = $moduleBuild->files($modules) + $templates;
+    $generated = $moduleBuild->files($modules) + $templates + $atoms;
     $theme = $presentation->theme;
     $generated[$root . '/generated/Presentation.php'] = (new WebPresentationSource())->file($theme);
 
@@ -122,6 +124,7 @@ try {
     $buildOutputs = new BuildOutputs($root);
     $orphans = [
         ...$buildOutputs->orphans($root . '/generated', $generated, '*.php', true),
+        ...($atoms === [] ? [] : $buildOutputs->orphans($root . '/framework/src/Component/Application/Templates', $atoms, '*.php', true)),
         ...(new RetiredTemplates($root))->files($modules),
     ];
     $staleGenerated = [...$buildOutputs->stale($generated), ...$orphans];
@@ -192,7 +195,7 @@ if ($checking) {
         exit(1);
     }
 
-    fwrite(\STDOUT, 'gate:24 — build outputs are fresh: ' . count($routes->routes()) . ' routes, ' . count($consoleKernel->commands()) . ' commands, ' . count($modules) . ' module(s) and their wiring, the assets, ' . count($templates) . ' templates, Tessera ' . $appConfig->tessera->version . ', ' . count($wiki) . " wiki pages.\n");
+    fwrite(\STDOUT, 'gate:24 — build outputs are fresh: ' . count($routes->routes()) . ' routes, ' . count($consoleKernel->commands()) . ' commands, ' . count($modules) . ' module(s) and their wiring, the assets, ' . count($templates) . ' app templates and ' . count($atoms) . ' library outputs, Tessera ' . $appConfig->tessera->version . ', ' . count($wiki) . " wiki pages.\n");
 
     exit(0);
 }
@@ -226,7 +229,7 @@ foreach ($wikiOrphans as $orphan) {
     unlink($orphan);
 }
 
-fwrite(\STDOUT, 'aic-build: wrote generated/ (' . count($modules) . ' module(s)), build/surface.json, public/assets/, ' . count($templates) . ' templates, Tessera ' . $appConfig->tessera->version . ' and ' . count($wiki) . " wiki pages in docs/wiki/.\n");
+fwrite(\STDOUT, 'aic-build: wrote generated/ (' . count($modules) . ' module(s)), build/surface.json, public/assets/, ' . count($templates) . ' app templates and ' . count($atoms) . ' library outputs, Tessera ' . $appConfig->tessera->version . ' and ' . count($wiki) . " wiki pages in docs/wiki/.\n");
 
 exit(0);
 

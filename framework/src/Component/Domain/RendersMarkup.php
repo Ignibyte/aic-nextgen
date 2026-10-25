@@ -25,17 +25,4 @@ trait RendersMarkup
     {
         return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8');
     }
-
-    /**
-     * @param string $name  An attribute name the atom chose.
-     * @param string $value Its value; empty leaves the attribute out.
-     *
-     * @return string ` name="value"`, escaped, or nothing.
-     */
-    private static function attribute(string $name, string $value): string
-    {
-        return $value === ''
-            ? ''
-            : ' ' . $name . '="' . self::text($value) . '"';
-    }
 }

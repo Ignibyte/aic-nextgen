@@ -65,7 +65,7 @@ final readonly class NotificationsPage implements Page
             [
                 new Heading('Notifications'),
                 new LineList('notifications', $latest, 'None yet.'),
-                new Form('', '/notifications', $fields, $this->formTokens->issue($serverRequest)),
+                new Form('', '/notifications', $fields, $this->formTokens->issue($serverRequest)->value()),
             ],
             200,
         );

@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\Textarea $textarea */ ?>
+<textarea<?php if ($textarea->id !== ''): ?> id="<?= $textarea->id ?>"<?php endif ?><?php if ($textarea->name !== ''): ?> name="<?= $textarea->name ?>"<?php endif ?> class="aic-textarea"><?= $textarea->value ?></textarea>

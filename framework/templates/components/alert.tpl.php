@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\Alert $alert */ ?>
+<p<?php if ($alert->id !== ''): ?> id="<?= $alert->id ?>"<?php endif ?> class="aic-alert" role="alert" data-error-summary tabindex="-1" data-severity="<?= match ($alert->alertSeverity) { \AIC\Component\Domain\AlertSeverity::Error => $alert->alertSeverity->value } ?>"><?= $alert->message ?></p>

@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\Link $link */ ?>
+<a<?php if ($link->href !== ''): ?> href="<?= $link->href ?>"<?php endif ?><?php if ($link->target !== ''): ?> data-target="<?= $link->target ?>"<?php endif ?><?php if ($link->current): ?> aria-current="page"<?php endif ?> class="aic-link"><?= $link->label ?></a>
