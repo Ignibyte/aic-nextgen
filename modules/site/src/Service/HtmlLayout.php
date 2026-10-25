@@ -10,6 +10,8 @@ use AIC\Component\Contracts\Regions;
 use AIC\Component\Domain\TrackedAssets;
 use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Domain\PageDocument;
+use AIC\Http\Contracts\PublicAsset;
+use AIC\Http\Contracts\PublicAssets;
 use App\Site\Component\AppLayout;
 use InvalidArgumentException;
 
@@ -19,10 +21,12 @@ use InvalidArgumentException;
 final readonly class HtmlLayout
 {
     /**
-     * @param AppConfig $appConfig The app's settings.
+     * @param AppConfig    $appConfig    The app's settings.
+     * @param PublicAssets $publicAssets The generated public asset catalog.
      */
     public function __construct(
         private AppConfig $appConfig,
+        private PublicAssets $publicAssets,
     ) {
     }
 
@@ -36,7 +40,10 @@ final readonly class HtmlLayout
      */
     public function page(Regions $regions, int $status): PageDocument
     {
-        $trackedAssets = new TrackedAssets('/assets/aic.css', $this->appConfig->tessera->scriptPath());
+        $trackedAssets = new TrackedAssets(
+            $this->assetPath($this->publicAssets->named('app/styles'), 'application stylesheet'),
+            $this->assetPath($this->publicAssets->byPath($this->appConfig->tessera->scriptPath()), 'pinned Tessera script'),
+        );
 
         return new PageDocument(
             new AppLayout($this->appConfig->name, $trackedAssets, $regions, $regions->region('content'), $regions->region('nav')),
@@ -55,5 +62,22 @@ final readonly class HtmlLayout
     public function content(array $components, int $status): PageDocument
     {
         return $this->page(new Regions([new Region('content', $components)]), $status);
+    }
+
+    /**
+     * @param PublicAsset|null $publicAsset The declared catalog match.
+     * @param string           $description The required resource, for a configuration refusal.
+     *
+     * @throws InvalidArgumentException When the generated catalog lacks the required resource.
+     *
+     * @return string Its canonical public URL.
+     */
+    private function assetPath(?PublicAsset $publicAsset, string $description): string
+    {
+        if (!$publicAsset instanceof PublicAsset) {
+            throw new InvalidArgumentException('The public asset catalog has no ' . $description . '.');
+        }
+
+        return $publicAsset->path;
     }
 }

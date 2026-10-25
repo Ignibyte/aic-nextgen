@@ -1,0 +1,13 @@
+/* The site module's nav block (SiteNavBlock): its links in a row, the current one in bold. */
+
+#site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+}
+
+#site-nav [aria-current="page"] {
+    color: var(--aic-text);
+    font-weight: 600;
+    text-decoration: none;
+}

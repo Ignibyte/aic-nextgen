@@ -54,6 +54,7 @@ ordinary code with literal class names.
 | `->job('prune', PruneJob::class)` | a Job, queued by that name |
 | `->schedule('prune-nightly', 'prune', ['days' => '30'], '0 3 * * *')` | a job queued on a five-field UTC cron cadence, with its payload |
 | `->migration(CreateNotesTable::class)` | a migration, applied in order by `bin/aic migrate` |
+| `->with(new ModuleAsset('styles', 'assets/site.css', ModuleAssetKind::Style))` | an explicitly typed declaration; assets name their local identity, owner-relative source and publication role |
 
 Everything else a class needs comes through its constructor. A constructor asks for what it uses
 by type; the generated wiring passes it. There is no container lookup in app code and no `new`
@@ -68,9 +69,12 @@ of a service.
 - the aggregators that join every module's pieces, and the facades `WebModules` and
   `ConsoleModules` that the framework's `AIC\Module\Application\AppKernel` and
   `AIC\Module\Application\ConsoleKernel` take;
-- the lookup from each component to its compiled template class.
+- the lookup from each component to its compiled template class;
+- the exact public asset lookup and its data parts, joined with the template lookup by the
+  generated `Presentation` factory.
 
-It also writes `build/surface.json` (every route, command and job with its kind) and
+It also writes `build/surface.json` (every route, command and job with its kind),
+`build/assets.json` (the private public-asset inventory) and
 `public/assets/`. Never edit what the build writes: change the manifest or the source and build
 again. gate:24 fails when any of it is stale, and when `generated/` or `public/assets/` holds a file
 the build would not write.
@@ -110,7 +114,41 @@ requires that module. gate:26 holds three rules:
 
 ## Assets
 
-The site has one theme, CSS only, in the app's top-level `assets/`. `composer run build` bundles
-each module's `modules/<name>/assets/*.css`, in requires order, then the theme last, into
-`public/assets/aic.css`. Any other file in a module's `assets/` (scripts, images, fonts) is copied
-to `public/assets/<name>/`. The build owns `public/assets/`.
+Declare every module asset in its module manifest through `->with(new ModuleAsset(...))`.
+`AIC\Module\Contracts\ModuleAssetKind` distinguishes `Style` (CSS), `Script` (JavaScript)
+and `File` (other supported public types). A local name such as `styles` becomes the catalog
+identity `site/styles`. Its source starts with `assets/`, relative to the owning module.
+Nested portable paths are supported. Missing files, undeclared files, symlinks, duplicate
+identities or paths, unsupported extensions and mismatched roles fail the build.
+
+Declared styles are published individually and bundled in module dependency and declaration
+order into `public/assets/aic.css`. The current top-level `assets/` theme CSS follows them;
+the declared-theme migration will replace this temporary root input. Scripts, images, maps,
+fonts and other declared files retain their bytes under `public/assets/<module>/`. Declaring
+a script publishes it; a page or component must still select it when needed.
+
+The generated `AIC\Http\Contracts\PublicAssets` lookup resolves logical names to canonical
+fingerprinted URLs. Its exact URL lookup accepts that URL or its declared compatibility alias.
+The private `build/assets.json` inventory describes both addresses for each representation.
+The SHA-256 of the sorted complete asset set names the canonical directory, so a byte, identity
+or publication change invalidates the set. Project roots and timestamps do not enter that hash.
+Aliases retain their bytes, and the pinned Tessera script and source map stay adjacent under
+both addresses. Request text never selects a filesystem path. The framework reserves
+`/assets` and `/assets/`; module routes cannot claim that namespace. GET, HEAD, single byte
+ranges and public failures are handled before module factories, plugins, handlers, sessions
+or database work. Public responses carry no session cookie or Tessera-specific variation.
+
+Canonical responses use `Cache-Control: public, max-age=31536000, immutable`; aliases use
+`public, no-cache` and must revalidate. Errors use `no-store`. An opened file supplies bounded
+verified bytes and modification time together. Responses use a strong content ETag, Last-Modified
+clamped to Date, and ordered HTTP preconditions before ranges. GET and HEAD can return a
+bodyless 304; HEAD ignores ranges and keeps the full representation's length. A matching strong
+If-Range tag permits a range. Weak tags, mismatches and date-form If-Range return the whole
+representation because publication does not prove a strong date history.
+
+The build owns every output under `public/assets/`; edit declarations and source files, then
+rebuild. It removes old fingerprint directories. Deploy the native binary, catalog and public
+tree together in isolated release roots, retaining old releases while clients can reference
+them. Building in place under an old running binary is not an atomic deployment. The direct
+application implements this HTTP policy; a static proxy needs equivalent publication selection,
+validators and cache headers before replacing it.

@@ -20,6 +20,11 @@ app meets first.
 ## 1. HTTP, routing and the kinds
 
 - `AIC\Http`: PSR-7 messages and PSR-17 factories, with typed input. Byte ranges are parsed here.
+  Its declared public asset lookup answers the reserved `/assets/` namespace before dynamic
+  assembly, without sessions or database access. File and range output is shared with downloads.
+  Responses default to `private, no-store`. Public assets have immutable fingerprint URLs,
+  revalidated compatibility aliases and ordered conditional/range responses over verified
+  bytes and same-handle metadata. Public errors and server-sent events retain `no-store`.
 - `AIC\Sapi`: turns one server request into a PSR-7 request, uploads included, and emits the
   response. `AIC\Sapi\Infrastructure\SapiRequestExtractor` is the one place superglobals are read.
 - `AIC\Kernel`: `AIC\Kernel\Application\Kernel` takes a request across that boundary and hands it

@@ -31,7 +31,7 @@ final readonly class ScaffoldHandlers
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig());
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
 
         return [
             ScaffoldAboutPage::class => $this->handlerContext->page(new ScaffoldAboutPage($htmlLayout)),

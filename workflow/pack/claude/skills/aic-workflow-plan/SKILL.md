@@ -49,7 +49,9 @@ Each reason names the lookup to run. Run it, fix what it shows, then `bin/aic wo
   1, each with an empty `Met` cell. Write targets a gate, the build or a request can show.
 - **File Manifest:** one row per file the run will create, modify or delete, the path in
   backticks, one path per row. Everything you write later must be here, docs included. Leave
-  out `build/`, `generated/` and `public/assets/`, which `composer run build` writes. A changed
+  out the exact generated inventories `build/surface.json` and `build/assets.json`, plus
+  `generated/`, `public/assets/` and `docs/wiki/`, which `composer run build` writes. Other
+  build files need their own exact manifest rows. A changed
   component template also changes its compiled `src/Component/<Name>Template.php`: list both. A
   new module also needs its line in `composer.json` and its root in `phpcs.xml.dist`.
 - **Locked-In Decisions:** the choices the code must keep, numbered, each with its reason.

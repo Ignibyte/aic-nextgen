@@ -16,6 +16,7 @@ use function array_slice;
 use function count;
 use function implode;
 use function in_array;
+use function str_ends_with;
 use function str_starts_with;
 
 /**
@@ -30,7 +31,7 @@ final readonly class DeclarationCheck implements PhaseCheck
     /**
      * What `composer run build` writes, and the engine's state.
      */
-    private const array EXEMPT = ['build/surface.json', 'generated/', 'public/assets/', 'var/workflow/', 'docs/wiki/'];
+    private const array EXEMPT = ['build/assets.json', 'build/surface.json', 'generated/', 'public/assets/', 'var/workflow/', 'docs/wiki/'];
 
     /**
      * The undeclared paths a summary names at most (Droost's `SUMMARY_PATHS`).
@@ -122,7 +123,11 @@ final readonly class DeclarationCheck implements PhaseCheck
     private function exempt(string $path): bool
     {
         foreach (self::EXEMPT as $prefix) {
-            if (str_starts_with($path, $prefix)) {
+            $matches = str_ends_with($prefix, '/')
+                ? str_starts_with($path, $prefix)
+                : $path === $prefix;
+
+            if ($matches) {
                 return true;
             }
         }

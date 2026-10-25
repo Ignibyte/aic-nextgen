@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
-use AIC\Component\Application\ComponentTemplates;
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use AIC\Schedule\Domain\Schedule;
+use InvalidArgumentException;
 
 /**
  * What the app kernel always takes from the generated wiring (#93): the
@@ -38,7 +38,9 @@ interface WebWiring
     public function protectedPrefixes(): array;
 
     /**
-     * @return ComponentTemplates The modules' component templates, ending at the framework's atoms (#98).
+     * @throws InvalidArgumentException When compiled public asset metadata is invalid.
+     *
+     * @return WebPresentation The compiled component and public asset catalogs, without any module provider work.
      */
-    public function templates(): ComponentTemplates;
+    public function presentation(): WebPresentation;
 }

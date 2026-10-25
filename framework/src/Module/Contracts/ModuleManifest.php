@@ -180,7 +180,7 @@ final readonly class ModuleManifest
      *
      * @return self The manifest with it, after the ones before it.
      */
-    private function with(ModuleDeclaration $moduleDeclaration): self
+    public function with(ModuleDeclaration $moduleDeclaration): self
     {
         return clone($this, ['declarations' => [...$this->declarations, $moduleDeclaration]]);
     }

@@ -8,6 +8,7 @@ use AIC\Config\Domain\AppConfig;
 use AIC\Database\Contracts\Database;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Http\Application\ResponseBuilder;
+use AIC\Http\Contracts\PublicAssets;
 use AIC\Module\Application\ConsoleContext;
 use AIC\Module\Application\HandlerContext;
 use AIC\Notification\Contracts\MailTransport;
@@ -33,6 +34,7 @@ final readonly class WiringContexts
                 AppConfig::class => 'appConfig',
                 Database::class => 'database',
                 EnvelopeCodec::class => 'envelopeCodec',
+                PublicAssets::class => 'assets',
                 ResponseBuilder::class => 'responseBuilder',
             ],
             ['bootedAt' => 'bootedAt', 'protectedPrefixes' => 'protectedPrefixes', 'root' => 'root', 'schedules' => 'schedules'],

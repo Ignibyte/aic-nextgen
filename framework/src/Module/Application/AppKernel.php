@@ -4,23 +4,20 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
-use AIC\Container\Exception\ContainerException;
 use AIC\Database\Contracts\Database;
+use AIC\Http\Application\AssetFiles;
+use AIC\Http\Application\AssetResponses;
+use AIC\Http\Application\FileResponses;
 use AIC\Http\Application\ResponseBuilder;
+use AIC\Http\Application\StaticAssets;
 use AIC\Kernel\Application\Kernel;
-use AIC\Routing\Application\RouteCollector;
-use AIC\Routing\Application\Router;
-use AIC\Routing\Domain\RoutePatternCompiler;
 use AIC\Sapi\Contracts\RequestExtractor;
-use LogicException;
+use InvalidArgumentException;
 
 /**
- * The app's web side, composed from the generated wiring (#93): the handler
- * context with the modules' plugins, their handlers behind the router, the
- * framework's stack around it with the modules' middleware after the session,
- * and the kernel. The wiring brings plugins, handlers and middleware only when
- * some module has them (`PluginWiring`, `HandlerWiring`, `MiddlewareWiring`).
- * `bootstrap/serve.php` builds it once per request.
+ * Compose the public boundary around an inert dynamic handler. No user
+ * provider, route, handler or session is assembled before StaticAssets decides
+ * whether the request belongs to the compiled public catalog.
  */
 final readonly class AppKernel
 {
@@ -36,8 +33,7 @@ final readonly class AppKernel
      * @param Database         $database         The database.
      * @param WebWiring        $webWiring        The modules' generated wiring.
      *
-     * @throws LogicException     When two modules declare one route, or a route pattern does not compile.
-     * @throws ContainerException When a registered service cannot be resolved.
+     * @throws InvalidArgumentException When the compiled presentation contains invalid public asset metadata.
      */
     public function __construct(
         HandlerContexts $handlerContexts,
@@ -46,15 +42,22 @@ final readonly class AppKernel
         Database $database,
         WebWiring $webWiring,
     ) {
-        $handlerContext = $handlerContexts->create($webWiring);
-        $routeTable = $webWiring->routes(new RouteCollector(new RoutePatternCompiler()))->table();
-        $handlers = $webWiring instanceof HandlerWiring
-            ? $webWiring->handlers($handlerContext)
-            : [];
-        $afterSession = (new ModuleLayers())->afterSession($webWiring, $handlerContext);
+        $webPresentation = $webWiring->presentation();
+        $dynamicApplication = new DynamicApplication(
+            $handlerContexts,
+            $webWiring,
+            new FrameworkStack($responseBuilder, $database),
+            $webPresentation,
+        );
+        $staticAssets = new StaticAssets(
+            $webPresentation->publicAssets,
+            new AssetFiles($handlerContexts->root()),
+            new AssetResponses($responseBuilder, new FileResponses($responseBuilder)),
+            $dynamicApplication,
+        );
         $this->kernel = new Kernel(
             $requestExtractor,
-            (new FrameworkStack($responseBuilder, $database))->around(new Router($routeTable, $handlers), $afterSession),
+            $staticAssets,
             $responseBuilder,
         );
     }

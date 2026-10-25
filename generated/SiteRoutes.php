@@ -6,7 +6,6 @@ namespace App\Generated;
 
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
-use App\Site\Controller\AssetFile;
 use App\Site\Controller\GreetingPage;
 use App\Site\Controller\GreetingPost;
 use App\Site\Controller\HealthApi;
@@ -39,8 +38,6 @@ final readonly class SiteRoutes
             ->get('/api/status', StatusApi::class)
             ->get('/health', HealthApi::class)
             ->get('/download/{file}', ResourceDownload::class)
-            ->get('/assets/{file}', AssetFile::class)
-            ->get('/assets/{dir}/{file}', AssetFile::class)
             ->get('/events', TickEvents::class)
             ->get('/ticks', TicksPage::class)
             ->get('/', HomePage::class)

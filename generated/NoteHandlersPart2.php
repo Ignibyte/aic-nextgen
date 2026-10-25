@@ -38,7 +38,7 @@ final readonly class NoteHandlersPart2
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig());
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
         $entityStore = new EntityStore($this->handlerContext->database());
         $stockRepository = new StockRepository($entityStore);
         $stockForm = new StockForm();

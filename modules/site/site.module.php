@@ -11,6 +11,8 @@ declare(strict_types=1);
  * nothing reads it at run time.
  */
 
+use AIC\Module\Contracts\ModuleAsset;
+use AIC\Module\Contracts\ModuleAssetKind;
 use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\RouteMethod;
 use App\Site\Block\PoweredByBlock;
@@ -18,7 +20,6 @@ use App\Site\Block\SiteNavBlock;
 use App\Site\Command\DatabasePing;
 use App\Site\Command\Greet;
 use App\Site\Component\AppLayout;
-use App\Site\Controller\AssetFile;
 use App\Site\Controller\GreetingPage;
 use App\Site\Controller\GreetingPost;
 use App\Site\Controller\HealthApi;
@@ -40,11 +41,11 @@ use App\Site\Service\HtmlLayout;
 use App\Site\Service\SpanishGreeter;
 
 return (new ModuleManifest('site'))
+    ->with(new ModuleAsset('styles', 'assets/site.css', ModuleAssetKind::Style))
+    ->with(new ModuleAsset('favicon', 'assets/favicon.svg', ModuleAssetKind::File))
     ->route(RouteMethod::Get, '/api/status', StatusApi::class)
     ->route(RouteMethod::Get, '/health', HealthApi::class)
     ->route(RouteMethod::Get, '/download/{file}', ResourceDownload::class)
-    ->route(RouteMethod::Get, '/assets/{file}', AssetFile::class)
-    ->route(RouteMethod::Get, '/assets/{dir}/{file}', AssetFile::class)
     ->route(RouteMethod::Get, '/events', TickEvents::class)
     ->route(RouteMethod::Get, '/ticks', TicksPage::class)
     ->route(RouteMethod::Get, '/', HomePage::class)

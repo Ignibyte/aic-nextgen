@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Component\Application\ComponentTemplates;
 use AIC\Container\Contracts\ServiceRegistry;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
@@ -19,6 +18,7 @@ use AIC\Module\Application\PluginWiring;
 use AIC\Module\Application\RootlessCommandWiring;
 use AIC\Module\Application\RootlessJobWiring;
 use AIC\Module\Application\RootlessMiddlewareWiring;
+use AIC\Module\Application\WebPresentation;
 use AIC\Module\Application\WebWiring;
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
@@ -175,12 +175,14 @@ final readonly class FacadeSource
             }
 
             /**
-             * @return ComponentTemplates The modules' component templates, ending at the framework's atoms (#98).
+             * @throws InvalidArgumentException When the compiled asset metadata is invalid.
+             *
+             * @return WebPresentation The compiled template and public asset catalogs.
              */
             #[Override]
-            public function templates(): ComponentTemplates
+            public function presentation(): WebPresentation
             {
-                return new ModuleTemplates();
+                return (new Presentation())->create();
             }
         PHP;
 
@@ -208,12 +210,14 @@ final readonly class FacadeSource
         PHP;
 
     /**
-     * @param PhpClassFile  $phpClassFile  Lays out each file.
-     * @param ExceptionDocs $exceptionDocs Reads freshly generated aggregator contracts.
+     * @param PhpClassFile          $phpClassFile          Lays out each file.
+     * @param ExceptionDocs         $exceptionDocs         Reads freshly generated aggregator contracts.
+     * @param WebPresentationSource $webPresentationSource Writes the inert presentation factory.
      */
     public function __construct(
         private PhpClassFile $phpClassFile = new PhpClassFile(),
         private ExceptionDocs $exceptionDocs = new ExceptionDocs(),
+        private WebPresentationSource $webPresentationSource = new WebPresentationSource(),
     ) {
     }
 
@@ -235,7 +239,8 @@ final readonly class FacadeSource
             RouteCollector::class,
             DuplicateRouteException::class,
             Schedule::class,
-            ComponentTemplates::class,
+            WebPresentation::class,
+            InvalidArgumentException::class,
             ...$scheduleTypes,
         ];
         $console = [ConsoleWiring::class, Override::class, Migration::class, Schedule::class, ...$scheduleTypes];
@@ -246,6 +251,7 @@ final readonly class FacadeSource
 
         return [
             'ConsoleModules.php' => $this->facade('ConsoleModules', 'console', $console, strtr(self::CONSOLE, $replace), $consoleParts),
+            'Presentation.php' => $this->webPresentationSource->file(),
             'WebModules.php' => $this->facade('WebModules', 'app', $web, strtr(self::WEB, $replace), $webParts),
         ];
     }
