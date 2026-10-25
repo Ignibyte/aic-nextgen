@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Workflow\Application\Wiki;
 
 use AIC\Workflow\Domain\CodeSymbol;
+use AIC\Workflow\Domain\Console\SurfaceDeclarations;
 
 use function array_filter;
 use function array_keys;
@@ -43,19 +44,20 @@ final readonly class WikiClasses
     }
 
     /**
-     * @param string           $module  The module.
-     * @param list<CodeSymbol> $symbols The symbols in its files.
-     * @param list<string>     $files   Its files as the index lists them.
+     * @param string              $module              The module.
+     * @param list<CodeSymbol>    $symbols             The symbols in its files.
+     * @param list<string>        $files               Its files as the index lists them.
+     * @param SurfaceDeclarations $surfaceDeclarations The actual declared template mappings.
      *
      * @return list<string> The classes section's lines.
      */
-    public function lines(string $module, array $symbols, array $files): array
+    public function lines(string $module, array $symbols, array $files, SurfaceDeclarations $surfaceDeclarations): array
     {
         $folders = self::folders($module, $symbols);
         $lines = [];
 
         foreach (array_keys($folders) as $folder) {
-            $lines = [...$lines, ...$this->folder($module, $folder, $folders[$folder], $files)];
+            $lines = [...$lines, ...$this->folder($module, $folder, $folders[$folder], $files, $surfaceDeclarations)];
         }
 
         return [...$this->wikiMarkdown->section('## Classes', $folders === [] ? ['none'] : []), ...$lines];
@@ -72,19 +74,25 @@ final readonly class WikiClasses
     }
 
     /**
-     * @param string           $module  The module.
-     * @param string           $folder  A folder under its `src/`.
-     * @param list<CodeSymbol> $symbols The folder's classes.
-     * @param list<string>     $files   The module's files.
+     * @param string              $module              The module.
+     * @param string              $folder              A folder under its `src/`.
+     * @param list<CodeSymbol>    $symbols             The folder's classes.
+     * @param list<string>        $files               The module's files.
+     * @param SurfaceDeclarations $surfaceDeclarations The actual declared template mappings.
      *
      * @return list<string> The folder's subsection: components with their templates, any other folder's classes with their files.
      */
-    private function folder(string $module, string $folder, array $symbols, array $files): array
-    {
+    private function folder(
+        string $module,
+        string $folder,
+        array $symbols,
+        array $files,
+        SurfaceDeclarations $surfaceDeclarations,
+    ): array {
         $component = $folder === 'Component';
         $table = $this->wikiMarkdown->table(
             $component ? ['Component', 'Template', 'Template class'] : ['Class', 'File'],
-            $component ? $this->components($module, $symbols, $files) : $this->classes($symbols),
+            $component ? $this->components($module, $symbols, $files, $surfaceDeclarations) : $this->classes($symbols),
             'bin/aic code:tree ' . $module,
         );
 
@@ -108,14 +116,19 @@ final readonly class WikiClasses
     }
 
     /**
-     * @param string           $module  The module.
-     * @param list<CodeSymbol> $symbols The classes of its `src/Component/`.
-     * @param list<string>     $files   Its files.
+     * @param string              $module              The module.
+     * @param list<CodeSymbol>    $symbols             The classes of its `src/Component/`.
+     * @param list<string>        $files               Its files.
+     * @param SurfaceDeclarations $surfaceDeclarations The actual declared template mappings.
      *
      * @return list<list<string>> Each component with its template file and template class; the template classes are not rows.
      */
-    private function components(string $module, array $symbols, array $files): array
-    {
+    private function components(
+        string $module,
+        array $symbols,
+        array $files,
+        SurfaceDeclarations $surfaceDeclarations,
+    ): array {
         $names = array_map(static fn (CodeSymbol $codeSymbol): string => $codeSymbol->name, $symbols);
         $components = array_filter(
             $symbols,
@@ -124,21 +137,34 @@ final readonly class WikiClasses
         );
 
         return array_values(array_map(
-            fn (CodeSymbol $codeSymbol): array => $this->component($module, $codeSymbol->name, $names, $files),
+            fn (CodeSymbol $codeSymbol): array => $this->component($module, $codeSymbol->name, $names, $files, $surfaceDeclarations),
             $components,
         ));
     }
 
     /**
-     * @param string       $module The module.
-     * @param string       $class  A component.
-     * @param list<string> $names  The classes of its folder.
-     * @param list<string> $files  The module's files.
+     * @param string              $module              The module.
+     * @param string              $class               A component.
+     * @param list<string>        $names               The classes of its folder.
+     * @param list<string>        $files               The module's files.
+     * @param SurfaceDeclarations $surfaceDeclarations The actual declared template mappings.
      *
      * @return list<string> Its row: the class, its template file, its template class.
      */
-    private function component(string $module, string $class, array $names, array $files): array
-    {
+    private function component(
+        string $module,
+        string $class,
+        array $names,
+        array $files,
+        SurfaceDeclarations $surfaceDeclarations,
+    ): array {
+        foreach ($surfaceDeclarations->templates as $mapping) {
+            if (($mapping['component'] ?? '') === $class) {
+                return [$this->wikiMarkdown->code($class), $this->fileLink($mapping['source'] ?? ''),
+                    $this->wikiMarkdown->code($mapping['templateClass'] ?? '')];
+            }
+        }
+
         $template = 'modules/' . $module . '/templates/components/' . self::short($class) . '.html.php';
 
         return [

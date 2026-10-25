@@ -8,6 +8,7 @@ use AIC\Http\Contracts\PublicAsset;
 use Gates\Domain\AssetCatalog;
 use Gates\Domain\AssetInput;
 use Gates\Domain\ModuleDefinition;
+use Gates\Domain\ThemeBinding;
 use InvalidArgumentException;
 use JsonException;
 
@@ -43,15 +44,19 @@ final readonly class AssetCatalogBuild
     /**
      * @param list<ModuleDefinition> $modules        The modules in dependency order.
      * @param array<string, string>  $tesseraOutputs Verified pinned release bytes by absolute public output path.
+     * @param ThemeBinding|null      $themeBinding   The selected theme, absent for bounded legacy apps.
      *
      * @throws InvalidArgumentException When declarations, paths, roles or output identities collide or are invalid.
      * @throws JsonException            When inventory metadata cannot be encoded.
      *
      * @return AssetCatalog The complete non-writing output plan.
      */
-    public function plan(array $modules, array $tesseraOutputs): AssetCatalog
+    public function plan(array $modules, array $tesseraOutputs, ?ThemeBinding $themeBinding = null): AssetCatalog
     {
-        $assetInputs = (new DeclaredAssetInputs($this->root))->read($modules);
+        $assetInputs = [
+            ...(new DeclaredAssetInputs($this->root))->read($modules),
+            ...(new ThemeAssetInputs($this->root))->read($themeBinding),
+        ];
         $outputs = (new AssetBundle($this->root))->outputs($assetInputs);
         $assets = [$this->asset('app/styles', 'aic.css', $outputs[$this->root . '/public/assets/aic.css'])];
 

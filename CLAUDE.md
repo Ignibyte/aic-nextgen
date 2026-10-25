@@ -17,8 +17,8 @@ The architecture set an app's agent reads, shipped in `aic/framework`, is
 ## Status
 
 Current order (Chad, 2026-10-23): upstream elephc tickets are parked. Codex integration
-(#136) and workflow recovery (#144, #145) are delivered. Public assets (#55) are verified for
-delivery; the operator accepted the unresolved native-session defect separately under #150.
+(#136) and workflow recovery (#144, #145) are delivered. Public assets (#55) are delivered;
+the operator accepted the unresolved native-session defect separately under #150.
 Continue framework fixes and declared themes (#146–#149) before further Lotline work
 (#128, #132). The Lotline bootstrap is
 held and unmerged in `/srv/stacks/aic-demo`; its resident agent stays open in the same tmux
@@ -30,7 +30,10 @@ active theme, HTML/page templates, named regions and assets. Feature modules dec
 component-to-template mappings. Author `themes/<name>/layouts/html.tpl.php` and `page.tpl.php`,
 with module-owned component `.tpl.php` files. Compile templates into `generated/templates/`
 and public assets into `public/assets/`. No separate theme registry or runtime discovery.
-This migration is pending; the existing build shape described below remains until its delivery.
+146/147 implement the declared app theme and Greetings pilot, verified by all32 gates, both full
+Psalm passes,446 native classes,84 site comparisons,186 workflow expectations and compiled
+desktop/mobile checks. The remaining .html.php sources,
+old generator defaults and root assets/ CSS are bounded transition work for148/149.
 
 #133 runtime, #134 gate tooling, #141/#142/#143 workflow source repairs, #135 dual-pass enforcement
 and #137 bounded teardown are delivered.
@@ -184,11 +187,14 @@ Background work is a job; the HTTP server's processes are its workers.
   gates need is added here with its framework change. Each module has its classes
   in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Component`, `Block`,
   `Form`, `Entity`, `Repository`, `Service`, `Command`, `Job`, `Migration`). There is no `app/`
-  and no hand-written composition class (#93). Page layouts compile from `templates/layouts/`.
+  and no hand-written composition class (#93). Selected HTML/page sources live in
+  `themes/<name>/layouts/*.tpl.php`; explicit module component templates compile into
+  `generated/templates/` with the dedicated `App\Generated\Templates` PSR-4 prefix. Legacy
+  sources remain under one bounded `TemplateBuild::legacyTemplates` bridge until149.
 - Module assets are explicit `ModuleAsset` declarations through the manifest's existing `with()`
   seam (#55). Nested owner-relative sources and typed Style, Script or File roles are validated
   at build time. Declared styles join the combined CSS in dependency/declaration order, followed
-  by the top-level `assets/` theme through one legacy adapter until #149.
+  by declared theme styles and the top-level `assets/` CSS through one legacy adapter until #149.
 - `composer run build` owns `public/assets/`, the typed `PublicAssets` lookup and private
   `build/assets.json`. A full-set SHA-256 directory supplies canonical URLs; exact compatibility
   aliases preserve bytes, including adjacent pinned Tessera script/map. Resolve logical names

@@ -28,6 +28,7 @@ use function in_array;
 use function interface_exists;
 use function is_a;
 use function str_replace;
+use function str_starts_with;
 use function ucwords;
 
 /**
@@ -63,12 +64,13 @@ final readonly class TemplateClassTypes
     /**
      * @param string $component The class the typing line names.
      * @param string $path      The template, relative to the repo root.
+     * @param bool   $declared  Whether an explicit declaration binds the input independently of its basename.
      *
      * @throws InvalidArgumentException When it is not a final component class, or not the module's own of the file's name.
      *
      * @return string The file the class is declared in.
      */
-    public function component(string $component, string $path): string
+    public function component(string $component, string $path, bool $declared = false): string
     {
         if (
             !class_exists($component)
@@ -80,7 +82,7 @@ final readonly class TemplateClassTypes
             );
         }
 
-        $this->owned($component, $path);
+        $this->owned($component, $path, $declared);
 
         return (string) (new ReflectionClass($component))->getFileName();
     }
@@ -136,10 +138,11 @@ final readonly class TemplateClassTypes
     /**
      * @param class-string $component The validated component class.
      * @param string       $path      Its template's relative path.
+     * @param bool         $declared  Whether ownership is declared independently of the basename.
      *
      * @throws InvalidArgumentException When the template names a different module's component.
      */
-    private function owned(string $component, string $path): void
+    private function owned(string $component, string $path, bool $declared): void
     {
         $match = self::regexMatch('#^modules/([a-z0-9_]+)/templates/components/#', $path);
 
@@ -147,9 +150,12 @@ final readonly class TemplateClassTypes
             return;
         }
 
-        $expected = 'App\\' . str_replace('_', '', ucwords($match[1], '_')) . '\\Component\\' . basename($path, '.html.php');
+        $owner = 'App\\' . str_replace('_', '', ucwords($match[1], '_')) . '\\Component\\';
+        $expected = $declared
+            ? $owner
+            : $owner . basename($path, '.html.php');
 
-        if ($component !== $expected) {
+        if ($declared ? !str_starts_with($component, $expected) : $component !== $expected) {
             throw new InvalidArgumentException(
                 TemplateRefusal::ComponentType->value . ": a component template renders its module's own " . $expected,
             );

@@ -170,7 +170,7 @@ final readonly class GateSuite
             ['php', 'aic-build', '--check'],
         ],
         25 => [
-            'Templates: every component template (*.html.php) uses only the plain PHP template grammar; deny by default.',
+            'Templates: declared *.tpl.php and bounded legacy *.html.php use the plain PHP template grammar; deny by default.',
             'app',
             ['php', 'gate-templates.php'],
         ],

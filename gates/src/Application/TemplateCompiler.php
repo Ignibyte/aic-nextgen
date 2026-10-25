@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\TemplateBinding;
 use Gates\Domain\TemplateClass;
 use Gates\Domain\TemplateMethods;
 use Gates\Domain\TemplateNode;
@@ -15,13 +16,11 @@ use function array_map;
 use function array_merge;
 use function array_reverse;
 use function lcfirst;
-use function max;
 use function mb_str_split;
 use function preg_split;
 use function str_contains;
 use function str_ends_with;
-use function str_pad;
-use function strlen;
+use function strrpos;
 use function substr;
 use function substr_count;
 
@@ -65,35 +64,49 @@ final readonly class TemplateCompiler
     private const int TEXT = 80;
 
     /**
-     * @param TemplateImports $templateImports Writes the generated file's opening and imports.
-     * @param TemplateLoops   $templateLoops   Writes the parts that run a template's loops.
+     * @param TemplateImports     $templateImports     Writes the generated file's opening and imports.
+     * @param TemplateLoops       $templateLoops       Writes the parts that run a template's loops.
+     * @param TemplateClassSource $templateClassSource Emits the compiled class.
      */
     public function __construct(
         private TemplateImports $templateImports = new TemplateImports(),
         private TemplateLoops $templateLoops = new TemplateLoops(),
+        private TemplateClassSource $templateClassSource = new TemplateClassSource(),
     ) {
     }
 
     /**
-     * @param list<TemplateNode> $nodes     The template's nodes.
-     * @param string             $namespace The component's namespace.
-     * @param string             $component The component's class name.
+     * @param list<TemplateNode>   $nodes           The template's nodes.
+     * @param string               $namespace       The component's namespace.
+     * @param string               $component       The component's class name.
+     * @param TemplateBinding|null $templateBinding Its explicit declared output identity.
      *
      * @throws InvalidArgumentException When the template is too big for one class.
      *
      * @return TemplateClass The source of `<component>Template`, in the same namespace, and whether its `render()`
      *                       takes the render pass.
      */
-    public function compile(array $nodes, string $namespace, string $component): TemplateClass
-    {
+    public function compile(
+        array $nodes,
+        string $namespace,
+        string $component,
+        ?TemplateBinding $templateBinding = null,
+    ): TemplateClass {
         $variable = lcfirst($component);
-        $templateMethods = new TemplateMethods($component . '.html.php', $variable);
+        $templateMethods = new TemplateMethods($templateBinding->source ?? $component . '.html.php', $variable);
         $scope = [$component . ' $' . $variable, 'RenderPass $renderPass'];
         $first = $templateMethods->call($this->sequence($nodes, $scope, $templateMethods));
         $takesPass = str_contains($first, '$renderPass');
         $parts = $templateMethods->source();
+
+        if ($templateBinding !== null) {
+            $namespace = substr($templateBinding->templateClass, 0, (int) strrpos($templateBinding->templateClass, '\\'));
+            $nodes[] = new TemplateNode(TemplateNodeKind::Import, $templateBinding->component);
+        }
+
         $class = $this->templateImports->head($nodes, $namespace, $parts . ($takesPass ? 'RenderPass $renderPass' : ''))
-            . $this->declaration($component, $variable, $takesPass, $parts) . '        return ' . $first . ";\n    }\n\n" . $parts . "}\n";
+            . $this->templateClassSource->opening($component, $variable, $takesPass, $parts, $templateBinding)
+            . '        return ' . $first . ";\n    }\n\n" . $parts . "}\n";
 
         if ($templateMethods->count() > self::PARTS || substr_count($class, "\n") > self::CLASS_LINES) {
             throw new InvalidArgumentException('too big for one class (' . $templateMethods->count()
@@ -119,45 +132,6 @@ final readonly class TemplateCompiler
         }
 
         return $this->chain($pieces === [] ? ["''"] : $pieces, $scope, $templateMethods);
-    }
-
-    /**
-     * @param string $component The component's class name.
-     * @param string $variable  Its variable.
-     * @param bool   $takesPass Whether `render()` takes the render pass.
-     * @param string $parts     The part methods' source.
-     *
-     * @return string The class docblock and declaration, then `render()` up to its body.
-     */
-    private function declaration(string $component, string $variable, bool $takesPass, string $parts): string
-    {
-        $width = max(strlen($component), $takesPass ? strlen('RenderPass') : 0);
-        $nameWidth = max(strlen($variable) + 1, $takesPass ? strlen('$renderPass') : 0);
-        $docblock = '     * @param ' . str_pad($component, $width) . ' ' . str_pad('$' . $variable, $nameWidth) . " The component.\n"
-            . ($takesPass ? '     * @param ' . str_pad('RenderPass', $width) . ' ' . str_pad('$renderPass', $nameWidth)
-                . " The pass that writes its children.\n" : '');
-
-        return "/**\n * " . $component . "'s markup, compiled from " . $component
-            . ".html.php by composer run build (#97, #98):\n * edit the template and run composer run build, never this file.\n */\n"
-            . 'final readonly class ' . $component . "Template\n{\n"
-            . (str_contains($parts, 'self::text(') ? "    use RendersMarkup;\n\n" : '')
-            . "    /**\n" . $docblock . "     *\n"
-            . $this->renderThrows($takesPass)
-            . "     * @return string Its markup.\n     */\n"
-            . '    public function render(' . $component . ' $' . $variable . ($takesPass ? ', RenderPass $renderPass' : '')
-            . "): string\n    {\n";
-    }
-
-    /**
-     * @param bool $takesPass Whether rendering writes child components.
-     *
-     * @return string The exception contract for a render pass, empty otherwise.
-     */
-    private function renderThrows(bool $takesPass): string
-    {
-        return $takesPass
-            ? "     * @throws UnknownComponent When a child has no registered template.\n     *\n"
-            : '';
     }
 
     /**

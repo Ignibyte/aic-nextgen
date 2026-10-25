@@ -97,6 +97,26 @@ final readonly class ModuleAssets
     }
 
     /**
+     * @param string          $source          The declared source.
+     * @param ModuleAssetKind $moduleAssetKind Its publication role.
+     *
+     * @throws InvalidArgumentException When its media type contradicts the role.
+     */
+    public function role(string $source, ModuleAssetKind $moduleAssetKind): void
+    {
+        $mediaType = $this->mediaType($source);
+        $valid = match ($moduleAssetKind) {
+            ModuleAssetKind::Style => $mediaType === 'text/css; charset=utf-8',
+            ModuleAssetKind::Script => $mediaType === 'text/javascript; charset=utf-8',
+            ModuleAssetKind::File => $mediaType !== 'text/css; charset=utf-8' && $mediaType !== 'text/javascript; charset=utf-8',
+        };
+
+        if (!$valid) {
+            throw new InvalidArgumentException($source . ': media type does not match its declared asset role.');
+        }
+    }
+
+    /**
      * @param string $root  The project folder.
      * @param string $owner The declared module identity.
      *
@@ -165,26 +185,6 @@ final readonly class ModuleAssets
         }
 
         return $path;
-    }
-
-    /**
-     * @param string          $source          The declared source.
-     * @param ModuleAssetKind $moduleAssetKind Its publication role.
-     *
-     * @throws InvalidArgumentException When its media type contradicts the role.
-     */
-    private function role(string $source, ModuleAssetKind $moduleAssetKind): void
-    {
-        $mediaType = $this->mediaType($source);
-        $valid = match ($moduleAssetKind) {
-            ModuleAssetKind::Style => $mediaType === 'text/css; charset=utf-8',
-            ModuleAssetKind::Script => $mediaType === 'text/javascript; charset=utf-8',
-            ModuleAssetKind::File => $mediaType !== 'text/css; charset=utf-8' && $mediaType !== 'text/javascript; charset=utf-8',
-        };
-
-        if (!$valid) {
-            throw new InvalidArgumentException($source . ': media type does not match its declared asset role.');
-        }
     }
 
     /**

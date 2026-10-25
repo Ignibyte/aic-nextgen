@@ -23,15 +23,16 @@ final readonly class AssetsPart5
         return [
             new PublicAsset(
                 'tessera/tessera.csp.iife.js.map',
-                '/assets/797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/tessera'
+                '/assets/1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/tessera'
                     . '-0.1.0/tessera.csp.iife.js.map',
-                '797ccbf6b1d70dea0ee50f0c53326ee801f7d4b333f71d6767b7c8b6781af1cf/tessera-0.1.0/t'
+                '1c21f2f8eb1139ec57847f1eac241ba41f7f363d70f8f8c92106c187df8f8976/tessera-0.1.0/t'
                     . 'essera.csp.iife.js.map',
                 'application/json; charset=utf-8',
                 '55ac49ce2c4ef4aa2aa6233669686641a6c07eb865898d9b708ab291e4087d56',
                 556_385,
                 '/assets/tessera-0.1.0/tessera.csp.iife.js.map',
             ),
+            ...(new AssetsPart6())->all(),
         ];
     }
 }

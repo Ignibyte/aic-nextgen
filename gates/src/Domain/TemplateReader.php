@@ -14,12 +14,13 @@ use InvalidArgumentException;
 interface TemplateReader
 {
     /**
-     * @param string $path   The template, relative to the repo root, for the messages.
-     * @param string $source Its source.
+     * @param string               $path            The template, relative to the repo root, for the messages.
+     * @param string               $source          Its source.
+     * @param TemplateBinding|null $templateBinding The explicit declaration, absent only for the bounded legacy reader.
      *
      * @throws InvalidArgumentException When it breaks the grammar or a type rule; the message holds one line per refusal.
      *
      * @return TemplateUnit The template read.
      */
-    public function read(string $path, string $source): TemplateUnit;
+    public function read(string $path, string $source, ?TemplateBinding $templateBinding = null): TemplateUnit;
 }

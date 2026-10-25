@@ -15,6 +15,11 @@
     text-decoration: none;
 }
 
+/* themes/app/assets/theme.css */
+.theme-page {
+    min-width: 0;
+}
+
 /* assets/10-tokens.css */
 /* Tokens: every colour, size and font the theme uses, light first, dark by the system's scheme. */
 :root {

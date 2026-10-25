@@ -99,9 +99,10 @@ none
 | Component | Template | Template class |
 | --- | --- | --- |
 | `App\Site\Component\AppLayout` | none | `App\Site\Component\AppLayoutTemplate` |
-| `App\Site\Component\Greetings` | [modules/site/templates/components/Greetings.html.php](../../../modules/site/templates/components/Greetings.html.php) | `App\Site\Component\GreetingsTemplate` |
+| `App\Site\Component\Greetings` | [modules/site/templates/components/greetings.tpl.php](../../../modules/site/templates/components/greetings.tpl.php) | `App\Generated\Templates\SiteGreetingsTemplate` |
 | `App\Site\Component\Home` | [modules/site/templates/components/Home.html.php](../../../modules/site/templates/components/Home.html.php) | `App\Site\Component\HomeTemplate` |
 | `App\Site\Component\LineList` | [modules/site/templates/components/LineList.html.php](../../../modules/site/templates/components/LineList.html.php) | `App\Site\Component\LineListTemplate` |
+| `App\Site\Component\Page` | [themes/app/layouts/page.tpl.php](../../../themes/app/layouts/page.tpl.php) | `App\Generated\Templates\ThemeAppPageTemplate` |
 | `App\Site\Component\SiteNav` | [modules/site/templates/components/SiteNav.html.php](../../../modules/site/templates/components/SiteNav.html.php) | `App\Site\Component\SiteNavTemplate` |
 | `App\Site\Component\Ticks` | [modules/site/templates/components/Ticks.html.php](../../../modules/site/templates/components/Ticks.html.php) | `App\Site\Component\TicksTemplate` |
 

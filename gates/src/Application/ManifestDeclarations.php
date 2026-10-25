@@ -14,6 +14,8 @@ use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\ModuleMiddleware;
 use AIC\Module\Contracts\ModuleRoute;
 use AIC\Module\Contracts\ModuleSchedule;
+use AIC\Module\Contracts\ModuleTemplate;
+use AIC\Module\Contracts\ModuleTheme;
 use AIC\Module\Contracts\PluginTag;
 use InvalidArgumentException;
 
@@ -34,6 +36,8 @@ final readonly class ManifestDeclarations
         ModuleMiddleware::class,
         ModuleRoute::class,
         ModuleSchedule::class,
+        ModuleTemplate::class,
+        ModuleTheme::class,
         PluginTag::class,
     ];
 

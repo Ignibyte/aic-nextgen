@@ -16,10 +16,12 @@ final readonly class Presentation
     /**
      * @throws InvalidArgumentException When compiled asset metadata is invalid.
      *
-     * @return WebPresentation The compiled template and public asset catalogs.
+     * @return WebPresentation The compiled template, asset and layout catalogs.
      */
     public function create(): WebPresentation
     {
-        return new WebPresentation(new ModuleTemplates(), new Assets());
+        $assets = new Assets();
+
+        return new WebPresentation(new ModuleTemplates(), $assets, new ThemeLayouts($assets));
     }
 }

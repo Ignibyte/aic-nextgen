@@ -4,14 +4,25 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\PresentationInventory;
+use Gates\Domain\TemplateBinding;
 use Gates\Domain\TemplateClass;
+use Gates\Domain\TemplateNode;
+use Gates\Domain\TemplateNodeKind;
 use Gates\Domain\TemplateReader;
 use Gates\Domain\TemplateUnit;
 use InvalidArgumentException;
 
+use function array_fill_keys;
+use function array_keys;
+use function array_map;
 use function file_get_contents;
 use function glob;
+use function in_array;
 use function ksort;
+use function lcfirst;
+use function preg_match;
+use function preg_quote;
 use function sort;
 use function strlen;
 use function strrpos;
@@ -27,14 +38,16 @@ use function substr;
 final readonly class TemplateBuild
 {
     /**
-     * @param TemplateReader   $templateReader   Validates, types and lowers a template.
-     * @param TemplateCompiler $templateCompiler Compiles the lowered template.
-     * @param string           $root             The repo root.
+     * @param TemplateReader             $templateReader        Validates, types and lowers a template.
+     * @param TemplateCompiler           $templateCompiler      Compiles the lowered template.
+     * @param string                     $root                  The repo root.
+     * @param PresentationInventory|null $presentationInventory The validated explicit inputs, with bounded legacy compatibility.
      */
     public function __construct(
         private TemplateReader $templateReader,
         private TemplateCompiler $templateCompiler,
         private string $root,
+        private ?PresentationInventory $presentationInventory = null,
     ) {
     }
 
@@ -48,7 +61,10 @@ final readonly class TemplateBuild
         $classes = [];
 
         foreach ($this->units() as $path => $templateUnit) {
-            $classes[$templateUnit->generated] = $this->compile($path, $templateUnit)->source;
+            $generated = $templateUnit->binding === null
+                ? $templateUnit->generated
+                : $this->root . '/' . $templateUnit->generated;
+            $classes[$generated] = $this->compile($path, $templateUnit)->source;
         }
 
         ksort($classes);
@@ -74,6 +90,40 @@ final readonly class TemplateBuild
     }
 
     /**
+     * @param list<TemplateNode> $nodes      The typed page template nodes.
+     * @param list<string>       $properties Declared Region property names.
+     * @param string             $component  The page data class.
+     *
+     * @throws InvalidArgumentException When a region is missing, repeated or placed only conditionally.
+     */
+    public function regions(array $nodes, array $properties, string $component): void
+    {
+        $variable = lcfirst(substr($component, (int) strrpos($component, '\\') + 1));
+        $pattern = '/^\\$renderPass->region\\(\\$' . preg_quote($variable, '/') . '->([A-Za-z_][A-Za-z0-9_]*)\\)\\z/';
+        $actual = $this->regionCounts($nodes, $pattern);
+        $expected = array_fill_keys($properties, 1);
+        ksort($expected);
+
+        if ($actual !== $expected) {
+            throw new InvalidArgumentException('The page template must render each declared Region property exactly once on every path.');
+        }
+    }
+
+    /**
+     * @param list<TemplateNode> $nodes The typed HTML wrapper.
+     *
+     * @throws InvalidArgumentException When the document omits or repeats its page or tracked resources.
+     */
+    public function document(array $nodes): void
+    {
+        $pattern = '/^\\$renderPass->inline\\(\\$themeLayout->(page|trackedAssets)\\)\\z/';
+
+        if ($this->regionCounts($nodes, $pattern) !== ['page' => 1, 'trackedAssets' => 1]) {
+            throw new InvalidArgumentException('The HTML template must render its page and tracked assets exactly once on every path.');
+        }
+    }
+
+    /**
      * @throws InvalidArgumentException When a template cannot be read or is refused.
      *
      * @return array<string, TemplateUnit> Each template read, by its path relative to the repo root.
@@ -82,15 +132,19 @@ final readonly class TemplateBuild
     {
         $units = [];
 
-        foreach ($this->templates() as $template) {
-            $source = file_get_contents($template);
+        foreach ($this->legacyTemplates() as $template) {
+            $path = substr($template, strlen($this->root) + 1);
+            $units[$path] = $this->read($path, null);
+        }
 
-            if ($source === false) {
-                throw new InvalidArgumentException('Cannot read ' . $template . '.');
+        foreach ($this->presentationInventory->templates ?? [] as $binding) {
+            $components = array_map(static fn (TemplateUnit $templateUnit): string => $templateUnit->component, $units);
+
+            if (in_array($binding->component, $components, true)) {
+                throw new InvalidArgumentException($binding->source . ': component already has a legacy or declared template.');
             }
 
-            $path = substr($template, strlen($this->root) + 1);
-            $units[$path] = $this->templateReader->read($path, $source);
+            $units[$binding->source] = $this->read($binding->source, $binding);
         }
 
         return $units;
@@ -111,37 +165,124 @@ final readonly class TemplateBuild
         $split = (int) strrpos($component, '\\');
 
         try {
-            return $this->templateCompiler->compile($templateUnit->nodes, substr($component, 0, $split), substr($component, $split + 1));
+            return $this->templateCompiler->compile(
+                $templateUnit->nodes,
+                substr($component, 0, $split),
+                substr($component, $split + 1),
+                $templateUnit->binding,
+            );
         } catch (InvalidArgumentException $invalidArgumentException) {
             throw new InvalidArgumentException($path . ': ' . $invalidArgumentException->getMessage(), 0, $invalidArgumentException);
         }
     }
 
     /**
-     * @return list<string> Every module component template and page layout template, sorted.
+     * @param string               $path            The project-relative authored source.
+     * @param TemplateBinding|null $templateBinding Its explicit declaration, absent for a bounded legacy input.
+     *
+     * @throws InvalidArgumentException When the source cannot be read or validated.
+     *
+     * @return TemplateUnit The checked and lowered source.
      */
-    private function templates(): array
+    private function read(string $path, ?TemplateBinding $templateBinding): TemplateUnit
     {
-        $templates = [
-            ...$this->glob($this->root . '/modules/*/templates/components/*.html.php'),
-            ...$this->glob($this->root . '/templates/layouts/*.html.php'),
-        ];
-        sort($templates);
+        $source = file_get_contents($this->root . '/' . $path);
 
-        return $templates;
+        if ($source === false) {
+            throw new InvalidArgumentException('Cannot read ' . $path . '.');
+        }
+
+        $templateUnit = $this->templateReader->read($path, $source, $templateBinding);
+        $this->placement($templateUnit);
+
+        return $templateUnit;
     }
 
     /**
-     * @param string $pattern A glob pattern.
+     * @param TemplateUnit $templateUnit The typed source, before any compiled output is emitted.
      *
-     * @return list<string> The files it matches.
+     * @throws InvalidArgumentException When the selected wrappers do not preserve the same render tree.
      */
-    private function glob(string $pattern): array
+    private function placement(TemplateUnit $templateUnit): void
     {
-        $files = glob($pattern);
+        $theme = $this->presentationInventory->theme ?? null;
 
-        return $files === false
-            ? []
-            : $files;
+        if ($theme === null) {
+            return;
+        }
+
+        $source = $templateUnit->binding->source ?? '';
+
+        if ($source === $theme->page->source) {
+            $this->regions($templateUnit->nodes, array_keys($theme->moduleTheme->regions), $templateUnit->component);
+        }
+
+        if ($source !== $theme->html->source) {
+            return;
+        }
+
+        $this->document($templateUnit->nodes);
+    }
+
+    /**
+     * @return list<string> The sole bounded old-input bridge, removed by the complete reference migration.
+     */
+    private function legacyTemplates(): array
+    {
+        $components = glob($this->root . '/modules/*/templates/components/*.html.php');
+        $layouts = glob($this->root . '/templates/layouts/*.html.php');
+        $files = [...($components === false ? [] : $components), ...($layouts === false ? [] : $layouts)];
+        sort($files);
+
+        return $files;
+    }
+
+    /**
+     * @param list<TemplateNode> $nodes   One sequential template body.
+     * @param non-empty-string   $pattern The exact lowered output expression.
+     *
+     * @throws InvalidArgumentException When control flow cannot preserve unique regions.
+     *
+     * @return array<string, int> Render counts common to all paths, sorted by property.
+     */
+    private function regionCounts(array $nodes, string $pattern): array
+    {
+        $counts = [];
+
+        foreach ($nodes as $node) {
+            foreach ($this->nodeRegions($node, $pattern) as $property => $count) {
+                $counts[$property] = ($counts[$property] ?? 0) + $count;
+            }
+        }
+
+        ksort($counts);
+
+        return $counts;
+    }
+
+    /**
+     * @param TemplateNode     $templateNode One lowered node.
+     * @param non-empty-string $pattern      The exact lowered output expression.
+     *
+     * @throws InvalidArgumentException When a branch or loop cannot guarantee each region once.
+     *
+     * @return array<string, int> Its region counts.
+     */
+    private function nodeRegions(TemplateNode $templateNode, string $pattern): array
+    {
+        if ($templateNode->kind === TemplateNodeKind::Raw) {
+            return preg_match($pattern, $templateNode->code, $matches) === 1
+                ? [$matches[1] ?? '' => 1]
+                : [];
+        }
+
+        $children = $this->regionCounts($templateNode->children, $pattern);
+        $otherwise = $this->regionCounts($templateNode->otherwise, $pattern);
+
+        if ($children !== $otherwise) {
+            throw new InvalidArgumentException('Page regions must occur equally in every branch and cannot occur in a loop.');
+        }
+
+        return $children;
     }
 }

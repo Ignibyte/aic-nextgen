@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Gates\Domain;
+
+use AIC\Component\Contracts\Component;
+
+/** A validated authored template's input and generated output identities. */
+final readonly class TemplateBinding
+{
+    /**
+     * @param string                  $owner         The declaring module.
+     * @param class-string<Component> $component     The actual typed input class.
+     * @param string                  $source        Its project-relative authored source.
+     * @param string                  $generated     Its project-relative generated PHP path.
+     * @param string                  $templateClass The generated class's fully qualified name.
+     * @param TemplateRole            $role          Whether children carry component markers or remain transparent.
+     */
+    public function __construct(
+        public string $owner,
+        public string $component,
+        public string $source,
+        public string $generated,
+        public string $templateClass,
+        public TemplateRole $role,
+    ) {
+    }
+
+    /**
+     * @return bool Whether the authored wrapper writes children without changing their target paths.
+     */
+    public function transparent(): bool
+    {
+        return $this->role !== TemplateRole::Component;
+    }
+}

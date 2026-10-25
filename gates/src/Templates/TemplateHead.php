@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Templates;
 
 use Gates\Domain\RegexCaptures;
+use Gates\Domain\TemplateBinding;
 use Gates\Domain\TemplateRefusal;
 use Gates\Domain\TemplateViolation;
 use PhpParser\Comment\Doc;
@@ -17,6 +18,7 @@ use function count;
 use function lcfirst;
 use function sprintf;
 use function str_starts_with;
+use function strrpos;
 use function substr;
 
 /**
@@ -38,18 +40,28 @@ final readonly class TemplateHead
         . ' \\$([A-Za-z_][A-Za-z0-9_]*) \\*\\/$/';
 
     /**
-     * @param string     $path   The template.
-     * @param string     $source Its source.
-     * @param list<Stmt> $stmts  Its statements; the first is marked as the typing line when it is one.
+     * @param string               $path            The template.
+     * @param string               $source          Its source.
+     * @param list<Stmt>           $stmts           Its statements; the first is marked as the typing line when it is one.
+     * @param TemplateBinding|null $templateBinding Its explicit input identity, absent for a legacy template.
      *
      * @return TemplateViolation|string The component variable's name, or the refusal.
      */
-    public function component(string $path, string $source, array $stmts): TemplateViolation|string
-    {
-        $short = substr(basename($path), 0, -9);
+    public function component(
+        string $path,
+        string $source,
+        array $stmts,
+        ?TemplateBinding $templateBinding = null,
+    ): TemplateViolation|string {
+        $short = $templateBinding === null
+            ? substr(basename($path), 0, -9)
+            : substr($templateBinding->component, (int) strrpos($templateBinding->component, '\\') + 1);
         $first = $stmts[0] ?? null;
 
-        if (!$first instanceof Nop || !$this->typed($source, $this->doc($first), $short)) {
+        if (
+            !$first instanceof Nop || !$this->typed($source, $this->doc($first), $short)
+            || $templateBinding !== null && $this->componentClass($stmts) !== $templateBinding->component
+        ) {
             return new TemplateViolation($path, 1, TemplateRefusal::ComponentType, sprintf(
                 'the file starts with <?php /** @var \\Fully\\Qualified\\%s $%s */ ?>',
                 $short,

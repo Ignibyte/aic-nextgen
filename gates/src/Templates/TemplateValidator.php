@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Templates;
 
+use Gates\Domain\TemplateBinding;
 use Gates\Domain\TemplateRefusal;
 use Gates\Domain\TemplateScope;
 use Gates\Domain\TemplateViolation;
@@ -38,6 +39,10 @@ final readonly class TemplateValidator
      */
     private const string PLACEMENT = 'a template sits in modules/<module>/templates/components/ or templates/layouts/';
 
+    /** Explicit tpl sources remain confined to authored component or theme layout folders. */
+    private const string DECLARED_PLACE = '#^(?:modules/[a-z0-9_]+/templates/components|themes/[a-z][a-z0-9_-]*/layouts)'
+        . '/(?:[a-z0-9][a-z0-9._-]*/)*[a-z0-9][a-z0-9._-]*\\.tpl\\.php\\z#';
+
     /**
      * The short open tag refusal's detail.
      */
@@ -54,14 +59,18 @@ final readonly class TemplateValidator
     }
 
     /**
-     * @param string $path   The template, relative to the root it was found under.
-     * @param string $source Its source.
+     * @param string               $path            The template, relative to the root it was found under.
+     * @param string               $source          Its source.
+     * @param TemplateBinding|null $templateBinding The actual declaration when checking a tpl source.
      *
      * @return list<TemplateViolation> Every construct it refuses; none when the template follows the grammar.
      */
-    public function violations(string $path, string $source): array
+    public function violations(string $path, string $source, ?TemplateBinding $templateBinding = null): array
     {
-        $placement = preg_match(self::PLACE, $path) === 1
+        $placed = $templateBinding === null
+            ? preg_match(self::PLACE, $path) === 1
+            : $templateBinding->source === $path && preg_match(self::DECLARED_PLACE, $path) === 1;
+        $placement = $placed
             ? []
             : [new TemplateViolation($path, 1, TemplateRefusal::Placement, self::PLACEMENT)];
 
@@ -73,7 +82,7 @@ final readonly class TemplateValidator
             return [...$placement, new TemplateViolation($path, $line, TemplateRefusal::Syntax, $error->getRawMessage())];
         }
 
-        $component = $this->templateHead->component($path, $source, $stmts);
+        $component = $this->templateHead->component($path, $source, $stmts, $templateBinding);
 
         if ($component instanceof TemplateViolation) {
             return [...$placement, $component];

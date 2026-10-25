@@ -37,6 +37,7 @@ final readonly class ProjectProfile
         'public/*',
         // The page layouts' templates (#93).
         'templates/layouts/*',
+        'themes/*',
         // The site theme's CSS, bundled last into public/assets/aic.css (#95).
         'assets/*',
         // surface.json, the build's manifest (#26).

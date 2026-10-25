@@ -134,19 +134,10 @@ final readonly class ModuleShowCommand implements Command
     private function files(SurfaceModule $surfaceModule, array $entries): array
     {
         $name = $surfaceModule->name;
-        $classes = [
-            ...self::classes($entries['routes'] ?? [], 'handler'),
-            ...self::classes($entries['commands'] ?? [], 'class'),
-            ...self::classes($entries['jobs'] ?? [], 'class'),
-            ...$surfaceModule->blocks,
-            ...$surfaceModule->migrations,
-            ...$surfaceModule->exports,
-            ...$surfaceModule->factories,
-            ...self::classes($surfaceModule->plugins, 'class'),
-            ...self::classes($surfaceModule->bindings, 'class'),
-            ...self::classes($surfaceModule->middleware, 'class'),
-        ];
-        $files = ['modules/' . $name . '/' . $name . '.module.php'];
+        $classes = self::moduleClasses($surfaceModule, $entries);
+        $files = ['modules/' . $name . '/' . $name . '.module.php',
+            ...self::classes($surfaceModule->declarations->templates, 'source'),
+            ...self::classes($surfaceModule->declarations->themeAssets, 'path')];
 
         foreach ($classes as $class) {
             foreach ($this->codeLookup->named($class) as $codeSymbol) {
@@ -155,6 +146,30 @@ final readonly class ModuleShowCommand implements Command
         }
 
         return array_values(array_unique($files));
+    }
+
+    /**
+     * @param SurfaceModule                              $surfaceModule The module.
+     * @param array<string, list<array<string, string>>> $entries       Its named runtime entries.
+     *
+     * @return list<string> Every class actually declared by the module.
+     */
+    private static function moduleClasses(SurfaceModule $surfaceModule, array $entries): array
+    {
+        return [
+            ...self::classes($entries['routes'] ?? [], 'handler'),
+            ...self::classes($entries['commands'] ?? [], 'class'),
+            ...self::classes($entries['jobs'] ?? [], 'class'),
+            ...$surfaceModule->blocks,
+            ...$surfaceModule->migrations,
+            ...$surfaceModule->exports,
+            ...$surfaceModule->factories,
+            ...self::classes($surfaceModule->declarations->plugins, 'class'),
+            ...self::classes($surfaceModule->declarations->bindings, 'class'),
+            ...self::classes($surfaceModule->declarations->middleware, 'class'),
+            ...self::classes($surfaceModule->declarations->templates, 'component'),
+            ...self::classes($surfaceModule->declarations->templates, 'templateClass'),
+        ];
     }
 
     /**
@@ -170,18 +185,19 @@ final readonly class ModuleShowCommand implements Command
     private static function data(SurfaceModule $surfaceModule, array $dependents, array $entries, array $users): array
     {
         return [
-            'bindings' => $surfaceModule->bindings,
+            ...$surfaceModule->declarations->rows(),
+            'bindings' => $surfaceModule->declarations->bindings,
             'blocks' => $surfaceModule->blocks,
             'commands' => $entries['commands'] ?? [],
             'dependents' => $dependents,
             'exports' => self::exports($users),
             'factories' => $surfaceModule->factories,
             'jobs' => $entries['jobs'] ?? [],
-            'middleware' => $surfaceModule->middleware,
+            'middleware' => $surfaceModule->declarations->middleware,
             'migrations' => $surfaceModule->migrations,
             'name' => $surfaceModule->name,
             'namespace' => $surfaceModule->namespace,
-            'plugins' => $surfaceModule->plugins,
+            'plugins' => $surfaceModule->declarations->plugins,
             'prefixes' => $surfaceModule->prefixes,
             'requires' => $surfaceModule->requires,
             'routes' => $entries['routes'] ?? [],

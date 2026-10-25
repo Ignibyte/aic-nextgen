@@ -11,7 +11,7 @@ the tool settings.
 modules/note/
   note.module.php            the manifest
   src/<Kind>/                the classes, namespace App\Note\<Kind>\
-  templates/components/      one *.html.php per component
+  templates/components/      explicitly declared *.tpl.php sources
   assets/                    CSS bundled into the site, other files copied
 ```
 
@@ -54,6 +54,8 @@ ordinary code with literal class names.
 | `->job('prune', PruneJob::class)` | a Job, queued by that name |
 | `->schedule('prune-nightly', 'prune', ['days' => '30'], '0 3 * * *')` | a job queued on a five-field UTC cron cadence, with its payload |
 | `->migration(CreateNotesTable::class)` | a migration, applied in order by `bin/aic migrate` |
+| `->with(new ModuleTemplate(Card::class, 'templates/components/card.tpl.php'))` | an owned component paired with its explicit typed template source |
+| `->with(new ModuleTheme(...))` | the site module's selected HTML/page templates, typed page data, regions and assets |
 | `->with(new ModuleAsset('styles', 'assets/site.css', ModuleAssetKind::Style))` | an explicitly typed declaration; assets name their local identity, owner-relative source and publication role |
 
 Everything else a class needs comes through its constructor. A constructor asks for what it uses
@@ -70,6 +72,8 @@ of a service.
   `ConsoleModules` that the framework's `AIC\Module\Application\AppKernel` and
   `AIC\Module\Application\ConsoleKernel` take;
 - the lookup from each component to its compiled template class;
+- declared template classes under `generated/templates/` (`App\Generated\Templates`), and
+  the selected-theme factory and transparent page adapter;
 - the exact public asset lookup and its data parts, joined with the template lookup by the
   generated `Presentation` factory.
 
@@ -89,7 +93,7 @@ kinds are described in [kinds.md](kinds.md).
 | `src/Controller/` | Page, Api and Stream |
 | `src/Command/` | Command |
 | `src/Job/` | Job |
-| `src/Component/` | Component, and the template classes the build compiles beside them |
+| `src/Component/` | authored Component data; bounded legacy compiled templates remain here until migration |
 | `src/Block/` | Block |
 | `src/Middleware/` | Middleware |
 | `src/Migration/` | Migration |
@@ -112,6 +116,53 @@ requires that module. gate:26 holds three rules:
 - requires name modules that exist and form no cycle;
 - nothing outside `modules/` but the shell.
 
+## Declared templates and themes
+
+Declarations use the manifest's existing `with()` seam. Feature modules declare
+`AIC\Module\Contracts\ModuleTemplate` with a final owned Component class and a source path
+relative to their module, under `templates/components/`. The typing line names that exact class:
+
+```php
+<?php /** @var \App\Site\Component\Greetings $greetings */ ?>
+```
+
+Only declared `.tpl.php` files are selected. Missing, duplicate, foreign, unclaimed, linked or
+nonportable sources fail the build before publication. gate:25 checks these sources and the
+bounded legacy `.html.php` sources against the same restricted PHP grammar: no new functions,
+calls or runtime includes. Static types determine automatic escaping.
+
+The site module selects one `AIC\Module\Contracts\ModuleTheme`:
+
+```php
+->with(new ModuleTheme('app', 'layouts/html.tpl.php', 'layouts/page.tpl.php', Page::class,
+    ['header' => 'header', 'content' => 'content', 'nav' => 'nav', 'footer' => 'footer'],
+    [new ModuleAsset('base', 'assets/theme.css', ModuleAssetKind::Style)]))
+```
+
+These paths are relative to `themes/app/`. `Page` is authored module Component data: final,
+readonly, with public promoted nonnullable Region properties in declaration order. Its page
+template reads properties such as `$page->header`. Every declared region must render exactly
+once on every branch; a loop or conditional omission is refused. The HTML template takes
+`AIC\Component\Domain\ThemeLayout`, reads title, identity and CSRF data, and places its page
+and tracked assets exactly once. HTML/page wrappers render transparently through the same pass.
+Region names and keyed component paths are shared with full pages and Tessera fragments.
+
+The generated implementation of `AIC\Component\Contracts\PageLayouts` creates documents.
+`AIC\Component\Domain\ThemePage` carries only the filled Regions; a compiled adapter constructs
+the authored typed page and renders its compiled template. Render data holds no factory service.
+The existing Renderer remains the only HTML constructor. No manifest, reflection or template
+include runs while serving a request.
+
+The dedicated Composer mapping `"App\\Generated\\Templates\\": "generated/templates/"` is
+required on case-sensitive filesystems. Compiled classes remain in static/native analysis.
+The build audits nested generated outputs, removes orphans and checks freshness without writes.
+`module:show` and the generated wiki report actual source and generated identities.
+
+The reference app currently declares its app theme and Greetings component. Existing `.html.php`
+inputs use one bounded `TemplateBuild::legacyTemplates` bridge while generators and the rest of
+the reference components migrate in the following work. Old layouts and root CSS remain during
+that transition; this does not describe the final migration as complete.
+
 ## Assets
 
 Declare every module asset in its module manifest through `->with(new ModuleAsset(...))`.
@@ -122,10 +173,12 @@ Nested portable paths are supported. Missing files, undeclared files, symlinks, 
 identities or paths, unsupported extensions and mismatched roles fail the build.
 
 Declared styles are published individually and bundled in module dependency and declaration
-order into `public/assets/aic.css`. The current top-level `assets/` theme CSS follows them;
-the declared-theme migration will replace this temporary root input. Scripts, images, maps,
+order into `public/assets/aic.css`, followed by declared selected-theme styles and the temporary
+top-level `assets/` CSS input. The remaining migration removes that root input. Scripts, images, maps,
 fonts and other declared files retain their bytes under `public/assets/<module>/`. Declaring
-a script publishes it; a page or component must still select it when needed.
+a script publishes it; a page or component must still select it when needed. Theme assets use
+the same ModuleAsset roles and validation, logical names such as `theme_app/base` and aliases
+under `public/assets/themes/app/`. They share the same fingerprint and HTTP policy.
 
 The generated `AIC\Http\Contracts\PublicAssets` lookup resolves logical names to canonical
 fingerprinted URLs. Its exact URL lookup accepts that URL or its declared compatibility alias.

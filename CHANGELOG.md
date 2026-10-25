@@ -6,6 +6,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **Declared theme and typed template compilation** (#146, #147).
+  Module manifests select the HTML/page layout, typed regions, theme assets and component
+  mappings. Explicit sources compile into `generated/templates/`; the app theme and Greetings
+  component consume this path. Full pages and fragments share the same render tree, escaping,
+  tracked assets and CSRF metadata. Invalid ownership, paths, declarations and region placement
+  fail before publication. Inspection reports the actual source and compiled identities.
+  - Existing generators, remaining `.html.php` components and root CSS remain bounded transition
+    work for #148/#149. All 32 gates pass with zero deferrals, both full Psalm passes are clean,
+    and the complete installed-app workflow passes all 186 expectations. Native coverage is
+    446 runtime classes and 84 site comparisons; compiled desktop/mobile checks pass.
+
 - **Declared and cacheable public assets** (#55).
   Module manifests declare typed, nested asset inputs. The build publishes a generated lookup,
   full-set fingerprint URLs and byte-identical compatibility aliases. The early framework handler

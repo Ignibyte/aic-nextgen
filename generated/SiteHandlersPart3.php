@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
 use AIC\Notification\Application\DatabaseChannel;
 use AIC\Notification\Application\Notifier;
@@ -28,11 +29,13 @@ final readonly class SiteHandlersPart3
     }
 
     /**
+     * @throws ContainerException When a called constructor or service fails.
+     *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->assets());
+        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
         $notifier = new Notifier(new PostgresQueue($this->handlerContext->database()));
 
         return [
