@@ -13,7 +13,7 @@ use AIC\Controller\Domain\PageDocument;
 use InvalidArgumentException;
 
 /**
- * Makes the app's pages on AppLayout, titled with the app's name.
+ * Makes the app's pages through its selected compiled theme, titled with the app's name.
  */
 final readonly class HtmlLayout
 {
@@ -31,7 +31,7 @@ final readonly class HtmlLayout
      * @param Regions $regions The regions the page fills.
      * @param int     $status  200, 404 or 422.
      *
-     * @throws InvalidArgumentException When the status is none of these, or a region is one AppLayout does not place.
+     * @throws InvalidArgumentException When the status is none of these, or a region is not declared by the selected theme.
      *
      * @return PageDocument The page.
      */

@@ -8,7 +8,7 @@ use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\Link;
 
 /**
- * The stock list's links, from StockLinks.html.php: each refreshes the list
+ * The stock list's links, from stock-links.tpl.php: each refreshes the list
  * alone, through Tessera.
  */
 final readonly class StockLinks implements Component

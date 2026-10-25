@@ -20,7 +20,7 @@ use AIC\Workflow\Domain\Probe\WriteStep;
 return new ProbeScenario([
     ...(new ProbePlan())->toCode(),
     new ReplaceStep(
-        'modules/note/templates/components/NoteCard.html.php',
+        'modules/note/templates/components/note-card.tpl.php',
         '<?= $noteCard->note->title ?>',
         '<?= strtoupper($noteCard->note->title) ?>',
     ),

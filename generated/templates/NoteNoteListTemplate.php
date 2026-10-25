@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Note\Component;
+namespace App\Generated\Templates;
 
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Exception\UnknownComponent;
+use App\Note\Component\NoteList;
 
 /**
- * NoteList's markup, compiled from NoteList.html.php by composer run build (#97, #98):
+ * NoteList's markup, compiled from
+ * modules/note/templates/components/note-list.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
-final readonly class NoteListTemplate
+final readonly class NoteNoteListTemplate
 {
     /**
      * @param NoteList   $noteList   The component.
@@ -28,7 +30,7 @@ final readonly class NoteListTemplate
     }
 
     /**
-     * @return string Markup from NoteList.html.php.
+     * @return string Markup from modules/note/templates/components/note-list.tpl.php.
      */
     private function part0(): string
     {
@@ -41,7 +43,7 @@ final readonly class NoteListTemplate
      *
      * @throws UnknownComponent When a child has no registered template.
      *
-     * @return string Markup from NoteList.html.php.
+     * @return string Markup from modules/note/templates/components/note-list.tpl.php.
      */
     private function part1(RenderPass $renderPass, KeyedComponent $keyedComponent): string
     {
@@ -56,7 +58,7 @@ final readonly class NoteListTemplate
      *
      * @throws UnknownComponent When a child has no registered template.
      *
-     * @return string Markup from NoteList.html.php.
+     * @return string Markup from modules/note/templates/components/note-list.tpl.php.
      */
     private function part2(NoteList $noteList, RenderPass $renderPass): string
     {
@@ -75,7 +77,7 @@ final readonly class NoteListTemplate
      *
      * @throws UnknownComponent When a child has no registered template.
      *
-     * @return string Markup from NoteList.html.php.
+     * @return string Markup from modules/note/templates/components/note-list.tpl.php.
      */
     private function part3(NoteList $noteList, RenderPass $renderPass): string
     {
@@ -92,7 +94,7 @@ final readonly class NoteListTemplate
      *
      * @throws UnknownComponent When a child has no registered template.
      *
-     * @return string Markup from NoteList.html.php.
+     * @return string Markup from modules/note/templates/components/note-list.tpl.php.
      */
     private function part4(NoteList $noteList, RenderPass $renderPass): string
     {

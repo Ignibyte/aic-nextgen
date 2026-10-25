@@ -1,0 +1,33 @@
+/* Tokens: every colour, size and font the theme uses, light first, dark by the system's scheme. */
+:root {
+    --aic-bg: #fbfaf7;
+    --aic-surface: #ffffff;
+    --aic-text: #1d1f24;
+    --aic-muted: #5b606b;
+    --aic-line: #dcd9d2;
+    --aic-accent: #2b5fd9;
+    --aic-accent-text: #ffffff;
+    --aic-danger: #b3261e;
+    --aic-danger-bg: #fbe9e7;
+    --aic-radius: 6px;
+    --aic-space: 1rem;
+    --aic-measure: 44rem;
+    --aic-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --aic-mono: ui-monospace, "SF Mono", Menlo, monospace;
+    color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --aic-bg: #15171b;
+        --aic-surface: #1d2026;
+        --aic-text: #e7e8ea;
+        --aic-muted: #a0a5ae;
+        --aic-line: #343842;
+        --aic-accent: #7aa2ff;
+        --aic-accent-text: #0d1220;
+        --aic-danger: #ffb4ab;
+        --aic-danger-bg: #3a1714;
+        color-scheme: dark;
+    }
+}

@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use Gates\Domain\PresentationInventory;
-use Gates\Domain\TemplateRole;
 use InvalidArgumentException;
-use ReflectionClass;
 
 use function array_diff;
-use function dirname;
 use function explode;
 use function file_exists;
-use function file_get_contents;
 use function is_dir;
 use function is_file;
 use function is_link;
@@ -21,12 +16,9 @@ use function preg_match;
 use function realpath;
 use function scandir;
 use function sort;
-use function str_contains;
 use function str_ends_with;
 use function str_starts_with;
-use function strrpos;
 use function strtolower;
-use function substr;
 
 /** Resolve explicitly owned presentation files and audit authored templates without following links. */
 final readonly class DeclaredPaths
@@ -86,34 +78,6 @@ final readonly class DeclaredPaths
         sort($files);
 
         return $files;
-    }
-
-    /**
-     * @param PresentationInventory $presentationInventory The complete checked declaration inventory.
-     *
-     * @throws InvalidArgumentException When an old class is linked, unreadable or not owned by the template compiler.
-     *
-     * @return list<string> Existing retired component template classes; no framework or vendor template is selected.
-     */
-    public function legacy(PresentationInventory $presentationInventory): array
-    {
-        $orphans = [];
-
-        foreach ($presentationInventory->templates as $binding) {
-            if ($binding->role !== TemplateRole::Component) {
-                continue;
-            }
-
-            $file = $this->legacyFile($binding->component);
-
-            if (!$this->retired($file, substr($binding->component, (int) strrpos($binding->component, '\\') + 1))) {
-                continue;
-            }
-
-            $orphans[] = $file;
-        }
-
-        return $orphans;
     }
 
     /**
@@ -197,54 +161,5 @@ final readonly class DeclaredPaths
         return str_ends_with(strtolower($relative), '.tpl.php')
             ? [$relative]
             : [];
-    }
-
-    /**
-     * @param class-string $component The validated component identity.
-     *
-     * @throws InvalidArgumentException When the actual component source is unavailable.
-     *
-     * @return string Its retired companion class path.
-     */
-    private function legacyFile(string $component): string
-    {
-        $source = (new ReflectionClass($component))->getFileName();
-
-        if ($source === false) {
-            throw new InvalidArgumentException($component . ': declared component source is unavailable.');
-        }
-
-        $short = substr($component, (int) strrpos($component, '\\') + 1);
-        return dirname($source) . '/' . $short . 'Template.php';
-    }
-
-    /**
-     * @param string $file      The old generated class beside its module's checked authored component.
-     * @param string $component The component's canonical short name.
-     *
-     * @throws InvalidArgumentException When deleting the candidate would affect an unowned or linked source.
-     *
-     * @return bool Whether the existing compiler-owned class is retired.
-     */
-    private function retired(string $file, string $component): bool
-    {
-        if (is_link($file)) {
-            throw new InvalidArgumentException($file . ': a retired template output cannot be a symlink.');
-        }
-
-        if (!is_file($file)) {
-            return false;
-        }
-
-        $source = file_get_contents($file);
-
-        if (
-            $source === false
-            || !str_contains($source, 'compiled from ' . $component . '.html.php by composer run build')
-        ) {
-            throw new InvalidArgumentException($file . ': refusing to remove a source not owned by the template compiler.');
-        }
-
-        return true;
     }
 }

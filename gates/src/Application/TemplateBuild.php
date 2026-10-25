@@ -17,23 +17,18 @@ use function array_fill_keys;
 use function array_keys;
 use function array_map;
 use function file_get_contents;
-use function glob;
 use function in_array;
 use function ksort;
 use function lcfirst;
 use function preg_match;
 use function preg_quote;
-use function sort;
-use function strlen;
 use function strrpos;
 use function substr;
 
 /**
- * Compiles every component template (#36, #97): each module's
- * `templates/components/X.html.php` and each page layout's
- * `templates/layouts/X.html.php`, read by the template reader (gate:25's
- * grammar, then the types) into `XTemplate.php` beside the component its
- * typing line names, in the component's namespace.
+ * Compiles the actual declared module/theme inventory into generated/templates.
+ * Source ownership, input identity and placement are validated before output;
+ * no directory or basename convention selects an authored template.
  */
 final readonly class TemplateBuild
 {
@@ -41,7 +36,7 @@ final readonly class TemplateBuild
      * @param TemplateReader             $templateReader        Validates, types and lowers a template.
      * @param TemplateCompiler           $templateCompiler      Compiles the lowered template.
      * @param string                     $root                  The repo root.
-     * @param PresentationInventory|null $presentationInventory The validated explicit inputs, with bounded legacy compatibility.
+     * @param PresentationInventory|null $presentationInventory The checked inputs; null resolves the actual module declarations.
      */
     public function __construct(
         private TemplateReader $templateReader,
@@ -131,20 +126,16 @@ final readonly class TemplateBuild
     private function units(): array
     {
         $units = [];
+        $presentationInventory = $this->inventory();
 
-        foreach ($this->legacyTemplates() as $template) {
-            $path = substr($template, strlen($this->root) + 1);
-            $units[$path] = $this->read($path, null);
-        }
-
-        foreach ($this->presentationInventory->templates ?? [] as $binding) {
+        foreach ($presentationInventory->templates as $binding) {
             $components = array_map(static fn (TemplateUnit $templateUnit): string => $templateUnit->component, $units);
 
             if (in_array($binding->component, $components, true)) {
-                throw new InvalidArgumentException($binding->source . ': component already has a legacy or declared template.');
+                throw new InvalidArgumentException($binding->source . ': component already has a declared template.');
             }
 
-            $units[$binding->source] = $this->read($binding->source, $binding);
+            $units[$binding->source] = $this->read($binding->source, $binding, $presentationInventory);
         }
 
         return $units;
@@ -177,15 +168,19 @@ final readonly class TemplateBuild
     }
 
     /**
-     * @param string               $path            The project-relative authored source.
-     * @param TemplateBinding|null $templateBinding Its explicit declaration, absent for a bounded legacy input.
+     * @param string                $path                  The project-relative authored source.
+     * @param TemplateBinding|null  $templateBinding       Its explicit declaration.
+     * @param PresentationInventory $presentationInventory The actual checked theme and component declarations.
      *
      * @throws InvalidArgumentException When the source cannot be read or validated.
      *
      * @return TemplateUnit The checked and lowered source.
      */
-    private function read(string $path, ?TemplateBinding $templateBinding): TemplateUnit
-    {
+    private function read(
+        string $path,
+        ?TemplateBinding $templateBinding,
+        PresentationInventory $presentationInventory,
+    ): TemplateUnit {
         $source = file_get_contents($this->root . '/' . $path);
 
         if ($source === false) {
@@ -193,19 +188,20 @@ final readonly class TemplateBuild
         }
 
         $templateUnit = $this->templateReader->read($path, $source, $templateBinding);
-        $this->placement($templateUnit);
+        $this->placement($templateUnit, $presentationInventory);
 
         return $templateUnit;
     }
 
     /**
-     * @param TemplateUnit $templateUnit The typed source, before any compiled output is emitted.
+     * @param TemplateUnit          $templateUnit          The typed source, before any compiled output is emitted.
+     * @param PresentationInventory $presentationInventory The actual checked declarations, including default consumers.
      *
      * @throws InvalidArgumentException When the selected wrappers do not preserve the same render tree.
      */
-    private function placement(TemplateUnit $templateUnit): void
+    private function placement(TemplateUnit $templateUnit, PresentationInventory $presentationInventory): void
     {
-        $theme = $this->presentationInventory->theme ?? null;
+        $theme = $presentationInventory->theme;
 
         if ($theme === null) {
             return;
@@ -225,16 +221,14 @@ final readonly class TemplateBuild
     }
 
     /**
-     * @return list<string> The sole bounded old-input bridge, removed by the complete reference migration.
+     * @throws InvalidArgumentException When actual module declarations or sources are invalid.
+     *
+     * @return PresentationInventory The sole explicit selection authority for every build consumer.
      */
-    private function legacyTemplates(): array
+    private function inventory(): PresentationInventory
     {
-        $components = glob($this->root . '/modules/*/templates/components/*.html.php');
-        $layouts = glob($this->root . '/templates/layouts/*.html.php');
-        $files = [...($components === false ? [] : $components), ...($layouts === false ? [] : $layouts)];
-        sort($files);
-
-        return $files;
+        return $this->presentationInventory
+            ?? (new PresentationBuild($this->root))->plan((new ModuleBuild($this->root))->modules());
     }
 
     /**

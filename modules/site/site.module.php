@@ -21,9 +21,12 @@ use App\Site\Block\PoweredByBlock;
 use App\Site\Block\SiteNavBlock;
 use App\Site\Command\DatabasePing;
 use App\Site\Command\Greet;
-use App\Site\Component\AppLayout;
 use App\Site\Component\Greetings;
+use App\Site\Component\Home;
+use App\Site\Component\LineList;
 use App\Site\Component\Page;
+use App\Site\Component\SiteNav;
+use App\Site\Component\Ticks;
 use App\Site\Controller\GreetingPage;
 use App\Site\Controller\GreetingPost;
 use App\Site\Controller\HealthApi;
@@ -45,13 +48,22 @@ use App\Site\Service\HtmlLayout;
 use App\Site\Service\SpanishGreeter;
 
 return (new ModuleManifest('site'))
+    ->with(new ModuleTemplate(Home::class, 'templates/components/home.tpl.php'))
+    ->with(new ModuleTemplate(LineList::class, 'templates/components/line-list.tpl.php'))
+    ->with(new ModuleTemplate(SiteNav::class, 'templates/components/site-nav.tpl.php'))
+    ->with(new ModuleTemplate(Ticks::class, 'templates/components/ticks.tpl.php'))
     ->with(new ModuleTheme(
         'app',
         'layouts/html.tpl.php',
         'layouts/page.tpl.php',
         Page::class,
         ['header' => 'header', 'content' => 'content', 'nav' => 'nav', 'footer' => 'footer'],
-        [new ModuleAsset('base', 'assets/theme.css', ModuleAssetKind::Style)],
+        [
+            new ModuleAsset('base', 'assets/theme.css', ModuleAssetKind::Style),
+            new ModuleAsset('tokens', 'assets/10-tokens.css', ModuleAssetKind::Style),
+            new ModuleAsset('structure', 'assets/20-base.css', ModuleAssetKind::Style),
+            new ModuleAsset('atoms', 'assets/30-atoms.css', ModuleAssetKind::Style),
+        ],
     ))
     ->with(new ModuleTemplate(Greetings::class, 'templates/components/greetings.tpl.php'))
     ->with(new ModuleAsset('styles', 'assets/site.css', ModuleAssetKind::Style))
@@ -78,5 +90,4 @@ return (new ModuleManifest('site'))
     ->schedule('demo-every-minute', 'demo', ['mode' => 'succeed'], '* * * * *')
     ->migration(CreateSubscribersTable::class)
     ->migration(MakeSubscriberEmailUnique::class)
-    ->export(HtmlLayout::class)
-    ->export(AppLayout::class);
+    ->export(HtmlLayout::class);

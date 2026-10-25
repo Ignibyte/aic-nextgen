@@ -35,11 +35,8 @@ final readonly class ProjectProfile
         'bootstrap/*',
         // index.php, and the built assets (#39, #70).
         'public/*',
-        // The page layouts' templates (#93).
-        'templates/layouts/*',
+        // Explicit selected-theme source.
         'themes/*',
-        // The site theme's CSS, bundled last into public/assets/aic.css (#95).
-        'assets/*',
         // surface.json, the build's manifest (#26).
         'build/*',
         // The console.

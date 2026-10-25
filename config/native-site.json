@@ -756,6 +756,24 @@
             "header": "If-Unmodified-Since: Mon, 01 Jan 1601 00:00:00 GMT",
             "status": 200,
             "captures": false
+        },
+        {
+            "name": "declared full theme greeting",
+            "method": "GET",
+            "path": "/hello/Declared149",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "declared same-tree component fragment",
+            "method": "GET",
+            "path": "/hello/Declared149",
+            "form": "",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Targets: content/c0\r\nTessera-Layout: app",
+            "status": 200,
+            "captures": false
         }
     ]
 }

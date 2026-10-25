@@ -93,7 +93,7 @@ kinds are described in [kinds.md](kinds.md).
 | `src/Controller/` | Page, Api and Stream |
 | `src/Command/` | Command |
 | `src/Job/` | Job |
-| `src/Component/` | authored Component data; bounded legacy compiled templates remain here until migration |
+| `src/Component/` | authored Component data, with declared compiled templates under `generated/templates/` |
 | `src/Block/` | Block |
 | `src/Middleware/` | Middleware |
 | `src/Migration/` | Migration |
@@ -158,10 +158,10 @@ required on case-sensitive filesystems. Compiled classes remain in static/native
 The build audits nested generated outputs, removes orphans and checks freshness without writes.
 `module:show` and the generated wiki report actual source and generated identities.
 
-The reference app currently declares its app theme and Greetings component. Existing `.html.php`
-inputs use one bounded `TemplateBuild::legacyTemplates` bridge while the rest of the reference
-components migrate in the following work. Old layouts and root CSS remain during
-that transition; this does not describe the final migration as complete.
+The reference app declares every component source and its selected HTML/page theme. All compiled
+templates are under `generated/templates/`; historical compiler-owned module companions are
+audited and retired by the builder. The compiler still has a temporary old-input API while its
+remaining compatibility code is removed.
 
 ## Generate authored rendering files
 
@@ -183,7 +183,7 @@ them in an open workflow's spec. Every target and the complete manifest edit pas
 write guard; the make records the files it wrote. Generated classes, public assets and wiki
 output belong to `composer run build`. Existing files, a selected theme, conflicting literal
 declarations or ambiguous imports refuse without writes. Rerunning a make refuses rather than
-replacing source. The reference app's remaining legacy migration is separate from these writers.
+replacing source. The reference app uses the same declared input model as these writers.
 
 ## Assets
 
@@ -195,8 +195,8 @@ Nested portable paths are supported. Missing files, undeclared files, symlinks, 
 identities or paths, unsupported extensions and mismatched roles fail the build.
 
 Declared styles are published individually and bundled in module dependency and declaration
-order into `public/assets/aic.css`, followed by declared selected-theme styles and the temporary
-top-level `assets/` CSS input. The remaining migration removes that root input. Scripts, images, maps,
+order into `public/assets/aic.css`, followed by selected-theme styles in their declaration order.
+Every bundled input is declared. Scripts, images, maps,
 fonts and other declared files retain their bytes under `public/assets/<module>/`. Declaring
 a script publishes it; a page or component must still select it when needed. Theme assets use
 the same ModuleAsset roles and validation, logical names such as `theme_app/base` and aliases

@@ -35,7 +35,14 @@ Psalm passes,446 native classes,84 site comparisons,186 workflow expectations an
 desktop/mobile checks. make:component/make:page declare .tpl.php sources; make:theme scaffolds
 the first selected site theme through the normal guard and manifest editor.148 verifies actual
 installed-app generation, native/browser behavior and the complete186-expectation workflow replay.
-The remaining .html.php sources and root assets/ CSS are bounded transition work for149.
+149A migrates all reference inputs and root CSS into declarations and retires the unused AppLayout.
+Its final32 gates and both full Psalm passes pass, with446 runtime classes and86 fresh site
+comparisons, complete186-expectation workflow replay and22 compiled desktop/mobile checks.
+The updated installed app also passes30 gates, all446 classes freshly probed and86 site steps.
+An earlier native upload403 remains preserved and unexplained; these passes do not establish
+a repair or its relationship to150.
+149B still must remove the unused compiler compatibility APIs and add all six architecture pages
+from120/121.149 and both documentation tickets remain open until that complete result is delivered.
 
 #133 runtime, #134 gate tooling, #141/#142/#143 workflow source repairs, #135 dual-pass enforcement
 and #137 bounded teardown are delivered.
@@ -191,12 +198,14 @@ Background work is a job; the HTTP server's processes are its workers.
   `Form`, `Entity`, `Repository`, `Service`, `Command`, `Job`, `Migration`). There is no `app/`
   and no hand-written composition class (#93). Selected HTML/page sources live in
   `themes/<name>/layouts/*.tpl.php`; explicit module component templates compile into
-  `generated/templates/` with the dedicated `App\Generated\Templates` PSR-4 prefix. Legacy
-  sources remain under one bounded `TemplateBuild::legacyTemplates` bridge until149.
+  `generated/templates/` with the dedicated `App\Generated\Templates` PSR-4 prefix. Every
+  reference input is explicitly declared; the old directory selector is removed. Remaining
+  nullable compiler compatibility APIs are removed in149B.
 - Module assets are explicit `ModuleAsset` declarations through the manifest's existing `with()`
   seam (#55). Nested owner-relative sources and typed Style, Script or File roles are validated
   at build time. Declared styles join the combined CSS in dependency/declaration order, followed
-  by declared theme styles and the top-level `assets/` CSS through one legacy adapter until #149.
+  by declared theme styles in declaration order. The root CSS adapter is removed; the same
+  source bytes now live in the selected theme's assets.
 - `composer run build` owns `public/assets/`, the typed `PublicAssets` lookup and private
   `build/assets.json`. A full-set SHA-256 directory supplies canonical URLs; exact compatibility
   aliases preserve bytes, including adjacent pinned Tessera script/map. Resolve logical names

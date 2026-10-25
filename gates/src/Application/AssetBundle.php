@@ -11,11 +11,11 @@ use InvalidArgumentException;
 use function file_get_contents;
 use function implode;
 
-/** Plans explicit module copies and their combined CSS, followed by the temporary root theme bridge. */
+/** Plans explicit module and selected-theme copies and their combined CSS in declaration order. */
 final readonly class AssetBundle
 {
-    /** The existing stylesheet header remains byte-identical during the declaration migration. */
-    private const string HEADER = "/* Built by composer run build (#95) from each module's assets/ CSS, then the site theme's assets/ CSS: "
+    /** Authored declarations determine every stylesheet contribution. */
+    private const string HEADER = '/* Built by composer run build from declared module and selected-theme CSS: '
         . 'edit those and run composer run build, never this file. */';
 
     /**
@@ -49,8 +49,7 @@ final readonly class AssetBundle
             $parts[] = $this->bundledCss->part($assetInput->source, $contents);
         }
 
-        $theme = (new LegacyThemeAssets($this->root))->parts();
-        $stylesheet = self::HEADER . "\n\n" . implode("\n", [...$parts, ...$theme]);
+        $stylesheet = self::HEADER . "\n\n" . implode("\n", $parts);
 
         return [$this->root . '/public/assets/aic.css' => $stylesheet, ...$copies];
     }

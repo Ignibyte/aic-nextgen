@@ -58,7 +58,7 @@ final readonly class BuildOutputs
 
         return array_keys(array_filter(
             $outputs,
-            static fn (string $output, string $file): bool => (is_file($file) ? file_get_contents($file) : '') !== $output,
+            static fn (string $output, string $file): bool => !is_file($file) || file_get_contents($file) !== $output,
             ARRAY_FILTER_USE_BOTH,
         ));
     }

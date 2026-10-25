@@ -300,6 +300,34 @@
         {
             "templates": [
                 {
+                    "component": "App\\Site\\Component\\Home",
+                    "generated": "generated/templates/SiteHomeTemplate.php",
+                    "role": "Component",
+                    "source": "modules/site/templates/components/home.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\SiteHomeTemplate"
+                },
+                {
+                    "component": "App\\Site\\Component\\LineList",
+                    "generated": "generated/templates/SiteLineListTemplate.php",
+                    "role": "Component",
+                    "source": "modules/site/templates/components/line-list.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\SiteLineListTemplate"
+                },
+                {
+                    "component": "App\\Site\\Component\\SiteNav",
+                    "generated": "generated/templates/SiteSiteNavTemplate.php",
+                    "role": "Component",
+                    "source": "modules/site/templates/components/site-nav.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\SiteSiteNavTemplate"
+                },
+                {
+                    "component": "App\\Site\\Component\\Ticks",
+                    "generated": "generated/templates/SiteTicksTemplate.php",
+                    "role": "Component",
+                    "source": "modules/site/templates/components/ticks.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\SiteTicksTemplate"
+                },
+                {
                     "component": "App\\Site\\Component\\Greetings",
                     "generated": "generated/templates/SiteGreetingsTemplate.php",
                     "role": "Component",
@@ -352,6 +380,21 @@
                     "kind": "Style",
                     "name": "base",
                     "path": "themes/app/assets/theme.css"
+                },
+                {
+                    "kind": "Style",
+                    "name": "tokens",
+                    "path": "themes/app/assets/10-tokens.css"
+                },
+                {
+                    "kind": "Style",
+                    "name": "structure",
+                    "path": "themes/app/assets/20-base.css"
+                },
+                {
+                    "kind": "Style",
+                    "name": "atoms",
+                    "path": "themes/app/assets/30-atoms.css"
                 }
             ],
             "bindings": [],
@@ -360,8 +403,7 @@
                 "App\\Site\\Block\\SiteNavBlock"
             ],
             "exports": [
-                "App\\Site\\Service\\HtmlLayout",
-                "App\\Site\\Component\\AppLayout"
+                "App\\Site\\Service\\HtmlLayout"
             ],
             "factories": [],
             "middleware": [],
@@ -425,7 +467,36 @@
             ]
         },
         {
-            "templates": [],
+            "templates": [
+                {
+                    "component": "App\\Note\\Component\\NoteCard",
+                    "generated": "generated/templates/NoteNoteCardTemplate.php",
+                    "role": "Component",
+                    "source": "modules/note/templates/components/note-card.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\NoteNoteCardTemplate"
+                },
+                {
+                    "component": "App\\Note\\Component\\NoteList",
+                    "generated": "generated/templates/NoteNoteListTemplate.php",
+                    "role": "Component",
+                    "source": "modules/note/templates/components/note-list.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\NoteNoteListTemplate"
+                },
+                {
+                    "component": "App\\Note\\Component\\StockLinks",
+                    "generated": "generated/templates/NoteStockLinksTemplate.php",
+                    "role": "Component",
+                    "source": "modules/note/templates/components/stock-links.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\NoteStockLinksTemplate"
+                },
+                {
+                    "component": "App\\Note\\Component\\StockListing",
+                    "generated": "generated/templates/NoteStockListingTemplate.php",
+                    "role": "Component",
+                    "source": "modules/note/templates/components/stock-listing.tpl.php",
+                    "templateClass": "App\\Generated\\Templates\\NoteStockListingTemplate"
+                }
+            ],
             "themes": [],
             "regions": [],
             "themeAssets": [],

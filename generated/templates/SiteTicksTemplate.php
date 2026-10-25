@@ -2,15 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Site\Component;
+namespace App\Generated\Templates;
 
 use AIC\Component\Domain\RendersMarkup;
+use App\Site\Component\Ticks;
 
 /**
- * Ticks's markup, compiled from Ticks.html.php by composer run build (#97, #98):
+ * Ticks's markup, compiled from
+ * modules/site/templates/components/ticks.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
-final readonly class TicksTemplate
+final readonly class SiteTicksTemplate
 {
     use RendersMarkup;
 
@@ -27,7 +29,7 @@ final readonly class TicksTemplate
     /**
      * @param Ticks $ticks The component.
      *
-     * @return string Markup from Ticks.html.php.
+     * @return string Markup from modules/site/templates/components/ticks.tpl.php.
      */
     private function part0(Ticks $ticks): string
     {

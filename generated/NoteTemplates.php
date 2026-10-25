@@ -8,14 +8,14 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
+use App\Generated\Templates\NoteNoteCardTemplate;
+use App\Generated\Templates\NoteNoteListTemplate;
+use App\Generated\Templates\NoteStockLinksTemplate;
+use App\Generated\Templates\NoteStockListingTemplate;
 use App\Note\Component\NoteCard;
-use App\Note\Component\NoteCardTemplate;
 use App\Note\Component\NoteList;
-use App\Note\Component\NoteListTemplate;
 use App\Note\Component\StockLinks;
-use App\Note\Component\StockLinksTemplate;
 use App\Note\Component\StockListing;
-use App\Note\Component\StockListingTemplate;
 use Override;
 
 /**
@@ -44,10 +44,10 @@ final readonly class NoteTemplates implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof NoteCard => (new NoteCardTemplate())->render($component),
-            $component instanceof NoteList => (new NoteListTemplate())->render($component, $renderPass),
-            $component instanceof StockLinks => (new StockLinksTemplate())->render($component, $renderPass),
-            $component instanceof StockListing => (new StockListingTemplate())->render($component),
+            $component instanceof NoteCard => (new NoteNoteCardTemplate())->render($component),
+            $component instanceof NoteList => (new NoteNoteListTemplate())->render($component, $renderPass),
+            $component instanceof StockLinks => (new NoteStockLinksTemplate())->render($component, $renderPass),
+            $component instanceof StockListing => (new NoteStockListingTemplate())->render($component),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }

@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Site\Component;
+namespace App\Generated\Templates;
 
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Exception\UnknownComponent;
+use App\Site\Component\SiteNav;
 
 /**
- * SiteNav's markup, compiled from SiteNav.html.php by composer run build (#97, #98):
+ * SiteNav's markup, compiled from
+ * modules/site/templates/components/site-nav.tpl.php by composer run build (#97, #98):
  * edit the template and run composer run build, never this file.
  */
-final readonly class SiteNavTemplate
+final readonly class SiteSiteNavTemplate
 {
     /**
      * @param SiteNav    $siteNav    The component.
@@ -33,7 +35,7 @@ final readonly class SiteNavTemplate
      *
      * @throws UnknownComponent When a child has no registered template.
      *
-     * @return string Markup from SiteNav.html.php.
+     * @return string Markup from modules/site/templates/components/site-nav.tpl.php.
      */
     private function part0(RenderPass $renderPass, KeyedComponent $keyedComponent): string
     {
@@ -46,7 +48,7 @@ final readonly class SiteNavTemplate
      *
      * @throws UnknownComponent When a child has no registered template.
      *
-     * @return string Markup from SiteNav.html.php.
+     * @return string Markup from modules/site/templates/components/site-nav.tpl.php.
      */
     private function part1(SiteNav $siteNav, RenderPass $renderPass): string
     {
@@ -65,7 +67,7 @@ final readonly class SiteNavTemplate
      *
      * @throws UnknownComponent When a child has no registered template.
      *
-     * @return string Markup from SiteNav.html.php.
+     * @return string Markup from modules/site/templates/components/site-nav.tpl.php.
      */
     private function part2(SiteNav $siteNav, RenderPass $renderPass): string
     {

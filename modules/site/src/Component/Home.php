@@ -10,7 +10,7 @@ use App\Site\Entity\HomeDemo;
 use App\Site\Entity\HomeFact;
 
 /**
- * The home page, from Home.html.php: every demo, what the kernel knows of
+ * The home page, from home.tpl.php: every demo, what the kernel knows of
  * this request, its query, and the greeting form.
  */
 final readonly class Home implements Component
