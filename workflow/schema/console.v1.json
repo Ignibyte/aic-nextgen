@@ -920,6 +920,7 @@
             "make:block",
             "make:command",
             "make:component",
+            "make:entity",
             "make:job",
             "make:layout",
             "make:migration",

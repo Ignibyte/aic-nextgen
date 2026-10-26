@@ -7,7 +7,8 @@ namespace AIC\Workflow\Application\Make\Source;
 use function strtr;
 
 /**
- * A migration (`make:migration`): a table with an id and a creation time (#122).
+ * A migration (`make:migration`): a table with an id and a creation time (#122), and the columns of an entity's fields
+ * (`make:entity`, #123).
  */
 final readonly class MigrationSource
 {
@@ -26,7 +27,7 @@ final readonly class MigrationSource
         use Override;
 
         /**
-         * The `{table}` table, made by bin/aic make:migration (#122).
+         * The `{table}` table, made by bin/aic {made}.
          */
         final readonly class {class} implements Migration
         {
@@ -46,7 +47,7 @@ final readonly class MigrationSource
             public function describe(Schema $schema): void
             {
                 $schema->create('{table}')
-                    ->identity('id')
+                    ->identity('id'){columns}
                     ->timestampTz('created_at')
                     ->primary(['id']);
             }
@@ -58,13 +59,23 @@ final readonly class MigrationSource
      * @param string $class     The migration.
      * @param string $table     Its table.
      * @param string $version   The version the ledger records.
+     * @param string $columns   The field columns after the id, each on its own line from its `->`; empty for none.
+     * @param string $made      The make that made it.
      *
      * @return string The file's bytes.
      */
-    public function source(string $namespace, string $class, string $table, string $version): string
-    {
+    public function source(
+        string $namespace,
+        string $class,
+        string $table,
+        string $version,
+        string $columns = '',
+        string $made = 'make:migration (#122)',
+    ): string {
         return strtr(self::TEMPLATE, [
             '{class}' => $class,
+            '{columns}' => $columns,
+            '{made}' => $made,
             '{namespace}' => $namespace,
             '{table}' => $table,
             '{version}' => $version,

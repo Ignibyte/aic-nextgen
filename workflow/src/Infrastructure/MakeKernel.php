@@ -9,16 +9,14 @@ use AIC\Workflow\Application\Make\MakeApiCommand;
 use AIC\Workflow\Application\Make\MakeBlockCommand;
 use AIC\Workflow\Application\Make\MakeCommandCommand;
 use AIC\Workflow\Application\Make\MakeJobCommand;
-use AIC\Workflow\Application\Make\MakeMigrationCommand;
 use AIC\Workflow\Application\Make\MakeModuleCommand;
 use AIC\Workflow\Application\Make\ModuleFolders;
 use AIC\Workflow\Application\ProjectFiles;
-use AIC\Workflow\Application\UtcTime;
 
 /**
  * The make commands (#122), dev-only like the rest of the workflow:
  * `make:module`, `make:page`, `make:api`, `make:component`, `make:block`,
- * `make:command`, `make:job`, `make:migration`, `make:theme` and `make:layout`, each writing files that
+ * `make:command`, `make:job`, `make:migration`, `make:theme`, `make:layout` and `make:entity`, each writing files that
  * pass every gate and editing its module's manifest. `CodeKernel` merges them;
  * gate:31 builds them over its in-memory files.
  */
@@ -62,10 +60,10 @@ final readonly class MakeKernel
             'make:component' => $themeMakes->component($makeRun),
             'make:job' => new MakeJobCommand($makeRun),
             'make:layout' => $themeMakes->layout($makeRun),
-            'make:migration' => new MakeMigrationCommand($makeRun, new UtcTime(new SystemClock())),
             'make:module' => new MakeModuleCommand($makeRun, $moduleFolders),
             'make:page' => $themeMakes->page($makeRun),
             'make:theme' => $themeMakes->theme($makeRun),
+            ...$makeParts->migrations($makeRun),
         ];
     }
 }

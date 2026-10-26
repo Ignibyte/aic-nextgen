@@ -207,6 +207,13 @@ component instead, and `--layout=<name>` makes the page pick one of the theme's 
 region only and `page--<name>.tpl.php`; the document falls back to `html.tpl.php`, and the next
 `composer run build` adds its case to `ThemeLayoutName`.
 
+`bin/aic make:entity <module> <Class> <table> --fields=<name>:<type>,…` writes a table slice in the
+module: the entity (one property per field and its row as one line), its repository (the newest
+rows, read with a limit), its create-table migration and a list page at the table's path (`_`
+becomes `-`) that shows the newest 50 rows in a heading and paragraphs. Types are `text`,
+`numeric`, `date` and `boolean`; every table also has `id` and `created_at`. One manifest edit
+routes the page and runs the migration; run `bin/aic migrate` before opening the page.
+
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
 (`Page.php` with four regions, header, content, nav and footer, and the HTML and page templates)
 and a stylesheet, then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module

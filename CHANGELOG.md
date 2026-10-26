@@ -4,6 +4,16 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Added
+
+- **`bin/aic make:entity`** (#123). `make:entity <module> <Class> <table> --fields=<name>:<type>,…`
+  writes a reachable table slice: the entity (a property per field and its row as one line), its
+  repository (the newest rows, read with a limit), its create-table migration and a list page at
+  the table's path showing the newest 50 rows as a heading and paragraphs. Types are `text`,
+  `numeric`, `date` and `boolean`. One manifest edit routes the page and runs the migration. Each
+  generated body names its entity, so two made entities pass phpcpd together. gate:31 runs a
+  twelfth line (`ScaffoldTask`), and gate:23 checks `/scaffold-tasks`.
+
 ### Fixed
 
 - **The stock page reads only the rows it shows** (#159). `/stock` loaded every stock row, and the

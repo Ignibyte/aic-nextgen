@@ -149,10 +149,10 @@ three-module fixture app; a module's handlers build in parts that fit (`HandlerP
 the gate suite is the dev package `aic/gates`, run by `vendor/bin/aic-gate`. #130: the app side,
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
-#122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme and
-layout (#157); dev-only in
+#122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
+layout (#157) and entity (#123); dev-only in
 `aic/workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the eleven make lines.
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the twelve make lines.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
 cases (`workflow/probes/sweep/`) in throwaway apps made by `workflow/probes/scratch-app.sh`, the
 builder the seeker probe shares; it ends `probe-summary: P passed, F failed, N not run.`, exits 0

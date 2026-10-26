@@ -8,7 +8,6 @@ use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Workflow\Application\Make\Source\MigrationSource;
-use AIC\Workflow\Application\UtcTime;
 use AIC\Workflow\Domain\Console\CommandUsage;
 use AIC\Workflow\Domain\Console\ParsedArguments;
 use AIC\Workflow\Domain\Make\MadeFile;
@@ -16,8 +15,6 @@ use AIC\Workflow\Domain\Make\MakeRecipe;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use InvalidArgumentException;
 use Override;
-
-use function str_replace;
 
 /**
  * `bin/aic make:migration <module> <Class> <table> [--version=<v>]` (#122): a
@@ -29,14 +26,14 @@ final readonly class MakeMigrationCommand implements Command
 {
     /**
      * @param MakeRun         $makeRun         The run.
-     * @param UtcTime         $utcTime         Now, for a version not given.
+     * @param MakeVersions    $makeVersions    The version.
      * @param MakeNames       $makeNames       The rules.
      * @param MakeCalls       $makeCalls       The migration call.
      * @param MigrationSource $migrationSource Writes the migration.
      */
     public function __construct(
         private MakeRun $makeRun,
-        private UtcTime $utcTime,
+        private MakeVersions $makeVersions,
         private MakeNames $makeNames = new MakeNames(),
         private MakeCalls $makeCalls = new MakeCalls(),
         private MigrationSource $migrationSource = new MigrationSource(),
@@ -77,19 +74,10 @@ final readonly class MakeMigrationCommand implements Command
     {
         [$module, $namespace, $class] = $this->makeNames->target('', $parsedArguments);
         $table = $this->makeNames->word($parsedArguments->positional(2), 'table');
-        $given = $parsedArguments->flag('version');
-        $version = $this->makeNames->version($given === '' ? $this->now() . '_' . $this->makeNames->snake($class) : $given);
+        $version = $this->makeVersions->version($parsedArguments, $this->makeNames->snake($class));
         $source = $this->migrationSource->source($namespace, $class, $table, $version);
         $madeFile = new MadeFile('modules/' . $module . '/src/Migration/' . $class . '.php', $source);
 
         return new MakeRecipe($module, $class, [$madeFile], $this->makeCalls->classOnly('migration', 'Migration', $class, $namespace));
-    }
-
-    /**
-     * @return string Now in UTC as a version's start, `YYYY_MM_DD_HHMMSS`.
-     */
-    private function now(): string
-    {
-        return str_replace(['-', 'T', ':', 'Z'], ['_', '_', '', ''], $this->utcTime->now());
     }
 }

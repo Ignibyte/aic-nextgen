@@ -203,7 +203,7 @@ final readonly class GateSuite
             ['php', 'gate-suite-files.php'],
         ],
         31 => [
-            'Made scaffold: modules/scaffold/ and its theme components and layout are byte for byte what the eleven bin/aic '
+            'Made scaffold: modules/scaffold/ and its theme components and layout are byte for byte what the twelve bin/aic '
                 . 'make:* lines make, the make commands run in memory over a project without them.',
             'aic',
             ['php', 'gate-make-scaffold.php'],

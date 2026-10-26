@@ -216,6 +216,13 @@
             "method": "GET",
             "module": "scaffold",
             "path": "/api/scaffold"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldTaskListPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "scaffold",
+            "path": "/scaffold-tasks"
         }
     ],
     "commands": [
@@ -394,7 +401,8 @@
             "factories": [],
             "middleware": [],
             "migrations": [
-                "App\\Scaffold\\Migration\\CreateScaffoldItemsTable"
+                "App\\Scaffold\\Migration\\CreateScaffoldItemsTable",
+                "App\\Scaffold\\Migration\\CreateScaffoldTasksTable"
             ],
             "name": "scaffold",
             "namespace": "App\\Scaffold\\",

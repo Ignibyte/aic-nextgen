@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
+use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPost;
+use App\Scaffold\Controller\ScaffoldTaskListPage;
+use App\Scaffold\Repository\ScaffoldTaskRepository;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -33,11 +36,16 @@ final readonly class ScaffoldHandlers
      */
     public function byId(): array
     {
+        $scaffoldTaskRepository = new ScaffoldTaskRepository(new EntityStore($this->handlerContext->database()));
+
         return [
             ScaffoldAboutPage::class => $this->handlerContext->page(new ScaffoldAboutPage($this->handlerContext->documents())),
             ScaffoldApi::class => $this->handlerContext->api(new ScaffoldApi()),
             ScaffoldPage::class => $this->handlerContext->page(new ScaffoldPage($this->handlerContext->documents())),
             ScaffoldPost::class => $this->handlerContext->page(new ScaffoldPost()),
+            ScaffoldTaskListPage::class => $this->handlerContext->page(
+                new ScaffoldTaskListPage($this->handlerContext->documents(), $scaffoldTaskRepository),
+            ),
         ];
     }
 }
