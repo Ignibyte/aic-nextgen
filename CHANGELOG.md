@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **gate:23 reaches every GET route** (#171). A GET route in `build/surface.json` that no step of
+  `config/native-site.json` reaches fails the gate with an `UNREACHED` line naming the pattern and
+  its handler. A step reaches a route when it is a GET expecting a status below 400 and the path it
+  was sent to, `{note}` filled and the query dropped, matches as the router matches it. An unreadable
+  surface fails the gate too. The HTML lint's lines now name the path a step was sent to.
 - **An HTML lint** (#170). gate:25 holds each template's markup to no inline style (`style`,
   `<style>`) and no inline script (`on*`, `javascript:` URLs, a `<script>` with no `src` or with a
   body), no echo in a tag or attribute name, double-quoted values, one space between attributes and

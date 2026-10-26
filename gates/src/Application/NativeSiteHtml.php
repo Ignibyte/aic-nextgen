@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use Gates\Domain\HtmlFinding;
 use Gates\Domain\HttpExchange;
+use Gates\Domain\NativeSiteAnswer;
 use Gates\Domain\NativeSiteStep;
 
 use function mb_strtolower;
@@ -33,18 +34,26 @@ final readonly class NativeSiteHtml
     }
 
     /**
-     * @param list<NativeSiteStep> $steps     The steps.
-     * @param list<HttpExchange>   $exchanges The PHP site's answers, one per step, as sent.
+     * @param list<NativeSiteStep>   $steps   The steps.
+     * @param list<NativeSiteAnswer> $answers The PHP site's answers, one per step, as sent.
      *
-     * @return list<string> One line per finding: the step, the line in its body, the rule and the fix.
+     * @return list<string> One line per finding: the step and the path it was sent to, the line in its body,
+     *                      the rule and the fix.
      */
-    public function findings(array $steps, array $exchanges): array
+    public function findings(array $steps, array $answers): array
     {
         $lines = [];
 
         foreach ($steps as $index => $step) {
-            foreach ($this->body(self::html($exchanges[$index] ?? null)) as $finding) {
-                $lines[] = sprintf('%s (%s %s): line %d: %s', $step->name, $step->method, $step->path, $finding->line, $finding->message());
+            $answer = $answers[$index] ?? null;
+
+            if (!$answer instanceof NativeSiteAnswer) {
+                continue;
+            }
+
+            foreach ($this->body(self::html($answer->httpExchange)) as $finding) {
+                $place = sprintf('%s (%s %s)', $step->name, $step->method, $answer->path);
+                $lines[] = sprintf('%s: line %d: %s', $place, $finding->line, $finding->message());
             }
         }
 
@@ -66,13 +75,13 @@ final readonly class NativeSiteHtml
     }
 
     /**
-     * @param HttpExchange|null $httpExchange A step's answer; null when it got none.
+     * @param HttpExchange $httpExchange A step's answer.
      *
      * @return string Its body when it is HTML; empty otherwise.
      */
-    private static function html(?HttpExchange $httpExchange): string
+    private static function html(HttpExchange $httpExchange): string
     {
-        return $httpExchange instanceof HttpExchange && str_starts_with(mb_strtolower($httpExchange->contentType), 'text/html')
+        return str_starts_with(mb_strtolower($httpExchange->contentType), 'text/html')
             ? $httpExchange->body
             : '';
     }

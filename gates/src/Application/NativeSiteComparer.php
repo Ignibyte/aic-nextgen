@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use Gates\Domain\HttpClient;
 use Gates\Domain\HttpExchange;
+use Gates\Domain\NativeSiteAnswer;
 use Gates\Domain\NativeSiteSession;
 use Gates\Domain\NativeSiteStep;
 
@@ -52,32 +53,34 @@ final readonly class NativeSiteComparer
      * @param list<NativeSiteStep> $steps    The steps to send, in order.
      * @param string               $password The gate user's password, for `{password}`; empty when there is none.
      *
-     * @return list<HttpExchange> One answer per step, as sent: the HTML lint reads it whole (#170).
+     * @return list<NativeSiteAnswer> One answer per step, with the path it was sent to (#171), as sent: the
+     *                                HTML lint reads it whole (#170).
      */
     public function run(string $origin, array $steps, string $password): array
     {
         $nativeSiteSession = new NativeSiteSession($password);
-        $exchanges = [];
+        $answers = [];
 
         foreach ($steps as $step) {
+            $path = $nativeSiteSession->path($step);
             $exchange = $this->httpClient->send(
                 $origin,
                 $step->method,
-                $nativeSiteSession->path($step),
+                $path,
                 $nativeSiteSession->form($step),
                 $nativeSiteSession->header($step),
             );
             $nativeSiteSession->absorb($step, $exchange, self::path($exchange->location));
-            $exchanges[] = $exchange;
+            $answers[] = new NativeSiteAnswer($path, $exchange);
         }
 
-        return $exchanges;
+        return $answers;
     }
 
     /**
-     * @param list<NativeSiteStep> $steps    The steps.
-     * @param list<HttpExchange>   $expected The interpreted site's answers, as sent.
-     * @param list<HttpExchange>   $actual   The compiled site's answers, as sent.
+     * @param list<NativeSiteStep>   $steps    The steps.
+     * @param list<NativeSiteAnswer> $expected The interpreted site's answers.
+     * @param list<NativeSiteAnswer> $actual   The compiled site's answers.
      *
      * @return list<string> One line per difference or wrong status; empty when the sites agree.
      */
@@ -86,8 +89,8 @@ final readonly class NativeSiteComparer
         $differences = [];
 
         foreach ($steps as $index => $step) {
-            $php = self::normalised($expected[$index] ?? new HttpExchange(0, '', '', ''));
-            $native = self::normalised($actual[$index] ?? new HttpExchange(0, '', '', ''));
+            $php = self::normalised(self::exchange($expected[$index] ?? null));
+            $native = self::normalised(self::exchange($actual[$index] ?? null));
 
             foreach (self::compared($step, $php, $native) as $difference) {
                 $differences[] = sprintf('%s (%s %s): %s', $step->name, $step->method, $step->path, $difference);
@@ -129,6 +132,18 @@ final readonly class NativeSiteComparer
         }
 
         return $found;
+    }
+
+    /**
+     * @param NativeSiteAnswer|null $nativeSiteAnswer A step's answer; null when the site gave none.
+     *
+     * @return HttpExchange Its exchange; status 0 and empty for none.
+     */
+    private static function exchange(?NativeSiteAnswer $nativeSiteAnswer): HttpExchange
+    {
+        return $nativeSiteAnswer instanceof NativeSiteAnswer
+            ? $nativeSiteAnswer->httpExchange
+            : new HttpExchange(0, '', '', '');
     }
 
     /**
