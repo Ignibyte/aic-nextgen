@@ -60,7 +60,7 @@ final readonly class GroundingSpec
         $entries = $specContract->entries();
 
         return [
-            ...$this->groundingRules->real($manifestRows, $entries),
+            ...$this->groundingRules->real($manifestRows, $entries, $runState->runStart->baseCommit),
             ...$this->groundingLooks->looks($codeQueries, $manifestRows, $entries),
         ];
     }

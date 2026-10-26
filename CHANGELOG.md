@@ -22,6 +22,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **A restarted run plans on its spec** (#172). Plan's grounding judges the File Manifest against
+  the run's base commit, as the code phase judges the change, instead of the working tree. After
+  `workflow:reset` with the earlier run's work kept, a create row whose file is already on disk and a
+  delete row whose file is already gone no longer block plan, and the operator no longer stashes the
+  tree. A file gone from the tree counts as looked up by its area or folder. New probe scenario
+  `11-restart`; `02-composition` expects gate:23 beside composition (#171).
+
 - **A background seeker counts** (#169). The Claude pack records an `aic-seeker`'s return on
   `SubagentStop` (its type and last message) instead of `PostToolUse` `Agent`, which an interactive
   Claude Code session fires at a background launch with no text, so `workflow:seeker-report` refused

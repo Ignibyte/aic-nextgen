@@ -137,9 +137,10 @@ answered from `build/surface.json` (now with each command's, job's and schedule'
 modules' bindings, middleware, prefixes and factories, and a `kinds` table), text or `--json`
 (`aic.console/1`, `workflow/schema/console.v1.json`), each lookup recorded as `code.queried`;
 make:* is #122. #118: plan's grounding check (`GroundingCheck`, after the contract): on an index it
-rebuilds in full, every File Manifest row and Entry Points class must be real, and the run's own
-`code.queried` events at plan must show `code:tree`, a lookup of each modified or deleted file
-and existing class (`code:refs` counts its subject only), the area of each created file, and a
+rebuilds in full, every File Manifest row and Entry Points class must be real (rows against the
+run's base commit since #172, so a run begun on a tree that holds its work plans unchanged), and the
+run's own `code.queried` events at plan must show `code:tree`, a lookup of each modified or deleted
+file (its area once the file is gone from the tree) and existing class (`code:refs` counts its subject only), the area of each created file, and a
 `code:search` before each new class; `var/index/` is walled. #108: the code wiki, `docs/wiki/`
 (`README.md` and `modules/<m>.md`), written by `composer run build` as its last step from the
 surface and the code index, held by gate:24, read live with `bin/aic code:wiki [<module>|<Class>]`;
@@ -162,8 +163,8 @@ is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the tw
 cases (`workflow/probes/sweep/`) in throwaway apps made by `workflow/probes/scratch-app.sh`, the
 builder the seeker probe shares; it ends `probe-summary: P passed, F failed, N not run.`, exits 0
 only with F = N = 0, runs here only and never beside a gate run, and is not a gate. **Run it in
-Code of every ticket that changes `workflow/`, the gate runner, the gate list or a tool config
-naming `workflow/`, and paste its summary in the notes** (about 25 minutes; while coding, run the
+Code of every ticket that changes `workflow/`, the gate runner, the gate list, a gate's verdicts
+or a tool config naming `workflow/`, and paste its summary in the notes** (about 25 minutes; while coding, run the
 scenarios the change touches by name).
 
 ## Five kinds

@@ -57,7 +57,7 @@ final readonly class PlanParts
         $codeParts = new CodeParts($this->root);
         $codeLookup = $codeParts->codeLookup();
         $codePsr4 = new CodePsr4($this->root);
-        $groundingRules = new GroundingRules($codeLookup, $codePsr4);
+        $groundingRules = new GroundingRules($codeLookup, $codePsr4, $parts->runHost());
         $groundingLooks = new GroundingLooks($codeLookup, $codePsr4, $groundingRules);
         $groundingSpec = new GroundingSpec($parts->specFile(), $groundingRules, $groundingLooks);
         $codeQueryLog = new CodeQueryLog($this->root);

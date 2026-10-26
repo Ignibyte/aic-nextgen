@@ -56,7 +56,9 @@ engine's next action rather than reusing a verdict for different bytes.
 Use `code:tree`, `code:search` and `code:refs` to inspect the area before adding or changing a class.
 `code:index` refreshes the index; plan grounding rebuilds it and checks the run's recorded queries
 against its File Manifest and Entry Points. Query each existing file/class being changed and the
-area of a new file. `code:wiki` reads the generated module map. Inspect commands read the build's
+area of a new file. Rows are judged against the run's base commit, as the code phase judges the
+change: a run begun on a tree that already holds its work, as after `workflow:reset`, plans on its
+spec unchanged, and a file already gone from the tree is looked up by its area or folder (#172). `code:wiki` reads the generated module map. Inspect commands read the build's
 surface inventory, rather than scanning runtime objects.
 
 Make commands create authored files and edit the owning manifest through the same guard. They
