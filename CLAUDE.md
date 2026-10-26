@@ -24,9 +24,9 @@ stream renders a theme component), #156 (gate:32, no HTML under `modules/`) and 
 rows it shows, through `EntityQuery::orderByDescending()` and `limit()`) are delivered. The elephc fork carry #152 (`?>`, inline HTML, `<?=`) and
 #155 (templates run as templates, no markup in any PHP class, Tessera framing in framework
 templates) are delivered; #158 (`htmlspecialchars` substitution) stays a parked fork carry. Lotline
-(#128, the port of the old site's theming; #132 closed) has its first slice: `/srv/stacks/aic-demo`
-runs current AIC with `themes/lotline/` (the drawer shell and stylesheet, Tailwind from
-`frontend/`); form controls, pagination, tiles and charts follow with their pages. Old `/srv/stacks/lotline` is product and design reference only. #150 (an
+(#128, the port of the old site's theming; #132 closed) has its theme: `/srv/stacks/aic-demo` runs
+current AIC with `themes/lotline/` (the drawer shell, every part of the old look as theme components on
+its `/theme` style guide, Tailwind from `frontend/`); its product pages are the next stage. Old `/srv/stacks/lotline` is product and design reference only. #150 (an
 intermittent native session-ID defect) is closed: about 42,000 stress requests never reproduced it.
 
 **The theme (#153, Chad 2026-10-25).** "There is no markup in php classes outside of components."

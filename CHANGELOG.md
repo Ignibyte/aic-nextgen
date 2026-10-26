@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Lotline's theming, complete** (#128, in Ignibyte/aic-demo). Slice 2 adds the rest of old Lotline's look as
+  typed theme components (forms, filters, tables, badges, cards, notices, pagination, tiles, panels, charts, the
+  signed-in menu, the icons) on a `/theme` style guide with sample data; chart geometry is computed by theme
+  builders. Two native gaps found and filed as compiler carries: #164 and #165.
 - **`bin/aic make:entity`** (#123). `make:entity <module> <Class> <table> --fields=<name>:<type>,…`
   writes a reachable table slice: the entity (a property per field and its row as one line), its
   repository (the newest rows, read with a limit), its create-table migration and a list page at
