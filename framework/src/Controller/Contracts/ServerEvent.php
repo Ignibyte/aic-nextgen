@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Controller\Contracts;
 
+use AIC\Component\Contracts\Component;
+
 use function explode;
 use function str_replace;
 
@@ -15,24 +17,29 @@ use function str_replace;
 final readonly class ServerEvent
 {
     /**
-     * @param string $name The event's name, the client's `addEventListener()` type; empty for a comment.
-     * @param string $data The data; each line becomes one `data:` field, or the comment's text.
-     * @param bool   $last Whether the stream ends after this event.
-     * @param string $id   Its id, which a reconnect sends back as `Last-Event-ID`; empty for none.
+     * @param string         $name     The event's name, the client's `addEventListener()` type; empty for a comment.
+     * @param string         $data     The data; each line becomes one `data:` field, or the comment's text.
+     * @param bool           $last     Whether the stream ends after this event.
+     * @param string         $id       Its id, which a reconnect sends back as `Last-Event-ID`; empty for none.
+     * @param Component|null $elements An element patch's component, rendered as `elements` lines after the data;
+     *                                 null for any other event.
      */
     public function __construct(
         public string $name,
         public string $data,
         public bool $last,
         public string $id = '',
+        public ?Component $elements = null,
     ) {
     }
 
     /**
-     * @return string The event on the wire: `event:`, `id:` when it has one, one `data:` per line, then a blank
-     *                line; a comment is one `:` line and a blank line.
+     * @param string $elements The event's component rendered, any number of lines; ignored when it has none.
+     *
+     * @return string The event on the wire: `event:`, `id:` when it has one, one `data:` per line, the component's
+     *                lines as `data: elements …`, then a blank line; a comment is one `:` line and a blank line.
      */
-    public function wire(): string
+    public function wire(string $elements): string
     {
         if ($this->name === '') {
             return ': ' . self::oneLine($this->data) . "\n\n";
@@ -44,11 +51,30 @@ final readonly class ServerEvent
             $wire .= 'id: ' . self::oneLine($this->id) . "\n";
         }
 
-        foreach (explode("\n", str_replace("\r", '', $this->data)) as $line) {
-            $wire .= 'data: ' . $line . "\n";
+        $wire .= self::fields('', $this->data);
+
+        if ($this->elements !== null) {
+            $wire .= self::fields('elements ', $elements);
         }
 
         return $wire . "\n";
+    }
+
+    /**
+     * @param string $key  What starts each field's value: empty, or `elements `.
+     * @param string $text The value, any number of lines.
+     *
+     * @return string One `data:` field per line.
+     */
+    private static function fields(string $key, string $text): string
+    {
+        $fields = '';
+
+        foreach (explode("\n", str_replace("\r", '', $text)) as $line) {
+            $fields .= 'data: ' . $key . $line . "\n";
+        }
+
+        return $fields;
     }
 
     /**

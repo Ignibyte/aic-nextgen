@@ -25,6 +25,7 @@ final class RenderingArchitectureTest
         return [
             'testOnlyTheGeneratedEnumNamesLayouts' => $this->testOnlyTheGeneratedEnumNamesLayouts(),
             'testRenderTreeHoldsNoMarkup' => $this->testRenderTreeHoldsNoMarkup(),
+            'testStreamEventsHoldNoMarkup' => $this->testStreamEventsHoldNoMarkup(),
         ];
     }
 
@@ -62,5 +63,25 @@ final class RenderingArchitectureTest
             ->implement()
             ->classes(Selector::classname('/^AIC\\\\Component\\\\Contracts\\\\LayoutName$/', true))
             ->because('the build generates the one layout name enum, a case per layout the theme ships (#154).');
+    }
+
+    /**
+     * A stream's events never carry `Html`: an element patch carries a component, which the response writer renders
+     * when the event goes on the wire (#115).
+     *
+     * @return Rule The rule.
+     */
+    private function testStreamEventsHoldNoMarkup(): Rule
+    {
+        return PHPat::rule()
+            ->classes(
+                Selector::classname('/^AIC\\\\Controller\\\\Contracts\\\\ServerEvent$/', true),
+                Selector::classname('/^AIC\\\\Tessera\\\\Domain\\\\TesseraEvents$/', true),
+                Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\EventSource$/', true),
+            )
+            ->shouldNot()
+            ->dependOn()
+            ->classes(Selector::classname('/^AIC\\\\Component\\\\Contracts\\\\Html$/', true))
+            ->because('an element patch carries a component; only the response writer renders it (#115).');
     }
 }

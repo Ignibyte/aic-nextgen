@@ -27,6 +27,7 @@ Every component, layout and asset lives in `themes/app/` (#153). The page `theme
 | `App\Theme\Components\SiteNav\SiteNav` | `themes/app/components/SiteNav/site-nav.tpl.php` |
 | `App\Theme\Components\StockLinks\StockLinks` | `themes/app/components/StockLinks/stock-links.tpl.php` |
 | `App\Theme\Components\StockListing\StockListing` | `themes/app/components/StockListing/stock-listing.tpl.php` |
+| `App\Theme\Components\Tick\Tick` | `themes/app/components/Tick/tick.tpl.php` |
 | `App\Theme\Components\Ticks\Ticks` | `themes/app/components/Ticks/ticks.tpl.php` |
 
 ## Requires

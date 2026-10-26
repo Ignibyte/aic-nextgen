@@ -494,6 +494,12 @@
                 "templateClass": "App\\Generated\\Templates\\StockListingTemplate"
             },
             {
+                "component": "App\\Theme\\Components\\Tick\\Tick",
+                "generated": "generated/templates/TickTemplate.php",
+                "source": "themes/app/components/Tick/tick.tpl.php",
+                "templateClass": "App\\Generated\\Templates\\TickTemplate"
+            },
+            {
                 "component": "App\\Theme\\Components\\Ticks\\Ticks",
                 "generated": "generated/templates/TicksTemplate.php",
                 "source": "themes/app/components/Ticks/ticks.tpl.php",

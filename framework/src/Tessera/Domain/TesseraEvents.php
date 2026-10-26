@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Tessera\Domain;
 
+use AIC\Component\Contracts\Component;
 use AIC\Controller\Contracts\ServerEvent;
 use InvalidArgumentException;
 
@@ -26,29 +27,34 @@ final readonly class TesseraEvents
     private const array MODES = ['morph', 'inner', 'append', 'prepend', 'remove'];
 
     /**
-     * @param string $target The target, `page` included.
-     * @param string $markup What a fragment response's template would hold for it; ignored for `remove`.
-     * @param string $mode   `morph`, `inner`, `append`, `prepend` or `remove`.
-     * @param string $id     The event's id, for resuming after it; empty for none.
-     * @param bool   $last   Whether the stream ends after it.
+     * @param string    $target    The target, `page` included.
+     * @param Component $component What lands there, rendered when the event goes on the wire (#115); ignored for
+     *                             `remove`.
+     * @param string    $mode      `morph`, `inner`, `append`, `prepend` or `remove`.
+     * @param string    $id        The event's id, for resuming after it; empty for none.
+     * @param bool      $last      Whether the stream ends after it.
      *
      * @throws InvalidArgumentException When the target or the mode is not one Tessera reads.
      *
      * @return ServerEvent A `tessera-patch-elements` event.
      */
-    public function patchElements(string $target, string $markup, string $mode, string $id, bool $last): ServerEvent
-    {
+    public function patchElements(
+        string $target,
+        Component $component,
+        string $mode,
+        string $id,
+        bool $last,
+    ): ServerEvent {
         if (preg_match(self::TARGET, $target) !== 1 || !in_array($mode, self::MODES, true)) {
             throw new InvalidArgumentException('A patch names a target and one of morph, inner, append, prepend or remove.');
         }
 
         $data = 'target ' . $target . ($mode === 'morph' ? '' : "\nmode " . $mode);
+        $elements = $mode === 'remove'
+            ? null
+            : $component;
 
-        if ($mode !== 'remove') {
-            $data .= self::lines('elements', $markup);
-        }
-
-        return new ServerEvent('tessera-patch-elements', $data, $last, $id);
+        return new ServerEvent('tessera-patch-elements', $data, $last, $id, $elements);
     }
 
     /**

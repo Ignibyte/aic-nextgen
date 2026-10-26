@@ -7,13 +7,14 @@ namespace App\Generated;
 use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
-use AIC\Component\Domain\ThemeLayout;
 use AIC\Component\Exception\UnknownComponent;
 use App\Generated\Templates\StockLinksTemplate;
 use App\Generated\Templates\StockListingTemplate;
 use App\Generated\Templates\TicksTemplate;
+use App\Generated\Templates\TickTemplate;
 use App\Theme\Components\StockLinks\StockLinks;
 use App\Theme\Components\StockListing\StockListing;
+use App\Theme\Components\Tick\Tick;
 use App\Theme\Components\Ticks\Ticks;
 use Override;
 
@@ -45,8 +46,8 @@ final readonly class ThemeTemplatesPart3 implements ComponentTemplates
         return match (true) {
             $component instanceof StockLinks => (new StockLinksTemplate())->render($component, $renderPass),
             $component instanceof StockListing => (new StockListingTemplate())->render($component),
+            $component instanceof Tick => (new TickTemplate())->render($component),
             $component instanceof Ticks => (new TicksTemplate())->render($component),
-            $component instanceof ThemeLayout => (new ThemeHtmlTemplate())->render($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace AIC\Controller\Application;
 
 use AIC\Controller\Contracts\EventSource;
+use AIC\Controller\Contracts\EventWriter;
+use LogicException;
 use Override;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
@@ -46,14 +48,16 @@ final class EventStreamBody implements StreamInterface
 
     /**
      * @param EventSource $eventSource Gives the events.
+     * @param EventWriter $eventWriter Puts each one on the wire, its component rendered (#115).
      */
     public function __construct(
         private readonly EventSource $eventSource,
+        private readonly EventWriter $eventWriter,
     ) {
     }
 
     /**
-     * @throws RuntimeException When the underlying operation fails.
+     * @throws LogicException When no template renders an event's component.
      *
      * @return string Every remaining event, pulled to the end.
      */
@@ -178,6 +182,8 @@ final class EventStreamBody implements StreamInterface
     /**
      * @param int $length At most this many bytes.
      *
+     * @throws LogicException When no template renders an event's component.
+     *
      * @return string The next bytes; empty at the end.
      */
     #[Override]
@@ -185,7 +191,7 @@ final class EventStreamBody implements StreamInterface
     {
         if ($this->buffer === '' && !$this->ended) {
             $event = $this->eventSource->next();
-            $this->buffer = $event->wire() . ($event->last ? self::CLOSE : '');
+            $this->buffer = $this->eventWriter->frame($event) . ($event->last ? self::CLOSE : '');
             $this->ended = $event->last;
         }
 
@@ -197,6 +203,8 @@ final class EventStreamBody implements StreamInterface
     }
 
     /**
+     * @throws LogicException When no template renders an event's component.
+     *
      * @return string Every remaining event, pulled to the end.
      */
     #[Override]

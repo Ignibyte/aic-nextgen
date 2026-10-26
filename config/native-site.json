@@ -596,6 +596,15 @@
             "captures": false
         },
         {
+            "name": "ticks page",
+            "method": "GET",
+            "path": "/ticks",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "stock, focus layout from app",
             "method": "GET",
             "path": "/stock",
