@@ -13,16 +13,15 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
 
-use function htmlspecialchars;
-
 /**
  * Request in, response out, across the SAPI boundary: the kernel turns a SAPI
  * request into a PSR-7 request (through the RequestExtractor contract, so it
  * stays above the SAPI adapter) and hands it to the PSR-15 stack.
  *
  * It is the one place a request becomes a response, so it holds the boundaries:
- * input that does not fit the field shapes answers 400, and anything else
- * uncaught answers a plain 500, so no error escapes into the SAPI.
+ * input that does not fit the field shapes answers a plain 400, and anything
+ * else uncaught a plain 500, so no error escapes into the SAPI. Neither repeats
+ * the input, and no framework class holds markup (#162).
  */
 final readonly class Kernel
 {
@@ -54,13 +53,8 @@ final readonly class Kernel
     {
         try {
             return $this->requestHandler->handle($this->requestExtractor->extract($sapiRequest));
-        } catch (MalformedInputException $malformedInputException) {
-            return $this->responseBuilder->create(
-                400,
-                'text/html; charset=utf-8',
-                '<!doctype html><title>Bad Request</title><h1>Bad Request</h1><p id="error">'
-                . htmlspecialchars($malformedInputException->getMessage()) . '</p>',
-            );
+        } catch (MalformedInputException) {
+            return $this->responseBuilder->create(400, self::PLAIN_TEXT, 'Bad Request');
         } catch (Throwable) {
             return $this->responseBuilder->create(500, self::PLAIN_TEXT, 'Internal Server Error');
         }
