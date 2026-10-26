@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
+use AIC\Controller\Contracts\Command;
+use AIC\Workflow\Application\Make\MakeEntityCommand;
+use AIC\Workflow\Application\Make\MakeMigrationCommand;
 use AIC\Workflow\Application\Make\MakePlanner;
 use AIC\Workflow\Application\Make\MakeReport;
 use AIC\Workflow\Application\Make\MakeRun;
+use AIC\Workflow\Application\Make\MakeVersions;
 use AIC\Workflow\Application\Make\ModuleFolders;
 use AIC\Workflow\Application\ProjectFiles;
+use AIC\Workflow\Application\UtcTime;
 
 use function array_keys;
 
@@ -62,5 +67,20 @@ final readonly class MakeParts
             $makeRunParts->recorder(),
             new MakeReport($this->projectFiles),
         );
+    }
+
+    /**
+     * @param MakeRun $makeRun The run every make goes through.
+     *
+     * @return array<string, Command> `make:migration` and `make:entity` (#123), which version a migration by now in UTC.
+     */
+    public function migrations(MakeRun $makeRun): array
+    {
+        $makeVersions = new MakeVersions(new UtcTime(new SystemClock()));
+
+        return [
+            'make:entity' => new MakeEntityCommand($makeRun, $makeVersions),
+            'make:migration' => new MakeMigrationCommand($makeRun, $makeVersions),
+        ];
     }
 }

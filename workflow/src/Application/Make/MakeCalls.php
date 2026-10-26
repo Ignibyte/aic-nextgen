@@ -66,4 +66,15 @@ final readonly class MakeCalls
             [$namespace . '\\' . $folder . '\\' . $class],
         );
     }
+
+    /**
+     * @param ManifestCall $first  A call.
+     * @param ManifestCall $second The call after it.
+     *
+     * @return ManifestCall Both, the second on the next line of the chain (`make:entity`, #123).
+     */
+    public function both(ManifestCall $first, ManifestCall $second): ManifestCall
+    {
+        return new ManifestCall($first->call . "\n    " . $second->call, [...$first->uses, ...$second->uses]);
+    }
 }

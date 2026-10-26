@@ -70,7 +70,7 @@ unchanged. A parent-written, changed, stale or duplicate ledger does not replace
 
 ## Generate components and the first theme
 
-`bin/aic command:list` includes `make:component`, `make:page`, `make:layout` and `make:theme`. Components live
+`bin/aic command:list` includes `make:component`, `make:page`, `make:layout`, `make:entity` and `make:theme`. Components live
 in the theme that `config/app.php` names (#153): `make:component <Class>` writes
 `themes/<theme>/components/<Class>/<Class>.php` and its lower-kebab `.tpl.php`, and edits no
 manifest. A default `make:page` writes its own view there and routes the page in its module's
@@ -83,6 +83,13 @@ falls back to `html.tpl.php`. After `composer run build` the generated `ThemeLay
 and `make:page <module> <Class> <path> --layout=<name>` passes it; the make refuses a layout the theme
 does not ship, and `--layout` with `--post`. It writes no `html--<name>.tpl.php`: until templates stop
 compiling to classes, a copy of the theme's document compiles to a phpcpd clone.
+
+`make:entity <module> <Class> <table> --fields=<name>:<type>,… [--version=<v>]` (#123) writes the
+entity, `<Class>Repository` (`latest(int)`), `Create<Table>Table` and `<Class>ListPage` (GET of the
+table's path, the newest 50 rows as a heading and paragraphs in the framework's atoms), and adds the
+route and the migration in one manifest edit. Types are `text`, `numeric`, `date` and `boolean`; a
+field named `id` or `created_at`, a repeated field or an unknown type is a usage refusal. Each body
+names its entity, so two made entities share no phpcpd run unless about five fields in a row match.
 
 `bin/aic make:theme <name> --dry-run --json` previews the first theme: `layouts/Page.php` with
 four regions, the HTML and page templates and real CSS. It prints the `config/app.php`, Composer

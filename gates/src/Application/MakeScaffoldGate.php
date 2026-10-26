@@ -48,7 +48,7 @@ final readonly class MakeScaffoldGate
      */
     private const string REGENERATE = 'to make it again: rm -rf modules/scaffold themes/app/components/Scaffold* '
         . 'themes/app/layouts/Scaffold* themes/app/layouts/page--scaffold* themes/app/layouts/html--scaffold*; composer run build; '
-        . 'run the eleven lines of Gates\\Application\\ScaffoldSequence with bin/aic; composer run build.';
+        . 'run the twelve lines of Gates\\Application\\ScaffoldSequence with bin/aic; composer run build.';
 
     /**
      * @param ScaffoldFiles          $scaffoldFiles The overlay the commands write to.

@@ -33,8 +33,8 @@ another file, add its row to the manifest first; the run records it as declared 
   `generated/templates/`), `build/surface.json`, `build/assets.json`, `public/assets/` and
   `docs/wiki/`; never edit those by hand. These exact inventories and generated directories
   are build outputs; declare every authored source and the edited module manifest.
-- **Make a new class.** For a new module, page, api, component, block, command, job or
-  migration or first site theme, prefer `bin/aic make:*` (`bin/aic command:list` lists them) to writing it by
+- **Make a new class.** For a new module, page, api, component, block, command, job,
+  migration, entity (`make:entity`: entity, repository, migration and list page) or first site theme, prefer `bin/aic make:*` (`bin/aic command:list` lists them) to writing it by
   hand: it writes the class in its folder, adds the manifest call, and the result passes every
   gate. `--dry-run` lists the paths it will write; add each to the manifest first.
 - **Themes and templates.** `make:component <Class>` writes the component and its template into

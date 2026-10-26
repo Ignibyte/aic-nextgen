@@ -15,8 +15,10 @@ use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPost;
+use App\Scaffold\Controller\ScaffoldTaskListPage;
 use App\Scaffold\Job\ScaffoldHelloJob;
 use App\Scaffold\Migration\CreateScaffoldItemsTable;
+use App\Scaffold\Migration\CreateScaffoldTasksTable;
 
 return (new ModuleManifest('scaffold'))
     ->requires('site')
@@ -27,4 +29,6 @@ return (new ModuleManifest('scaffold'))
     ->block(ScaffoldBlock::class)
     ->command('scaffold:hello', ScaffoldHello::class)
     ->job('scaffold-hello', ScaffoldHelloJob::class)
-    ->migration(CreateScaffoldItemsTable::class);
+    ->migration(CreateScaffoldItemsTable::class)
+    ->route(RouteMethod::Get, '/scaffold-tasks', ScaffoldTaskListPage::class)
+    ->migration(CreateScaffoldTasksTable::class);

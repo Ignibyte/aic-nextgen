@@ -137,6 +137,15 @@
             "captures": false
         },
         {
+            "name": "scaffold, a made entity's list",
+            "method": "GET",
+            "path": "/scaffold-tasks",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "scaffold, a made api",
             "method": "GET",
             "path": "/api/scaffold",

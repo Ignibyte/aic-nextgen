@@ -84,6 +84,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:block` | scaffold a Block |
 | `Command::make:command` | scaffold a Command |
 | `Command::make:component` | scaffold declared Component data and template |
+| `Command::make:entity` | scaffold an entity, its repository, migration and list page |
 | `Command::make:job` | scaffold a Job |
 | `Command::make:layout` | scaffold a named page layout in the theme |
 | `Command::make:migration` | scaffold a Migration |
