@@ -24,6 +24,18 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **Templates run as templates; every template is `.phtml`** (#155, epic #151). No PHP class
+  holds markup. `composer run build` writes an escaped copy of each template, every echo through
+  `$renderPass->text()`, `child()`, `region()` or `inline()`: an app's under
+  `generated/templates/`, the atoms' beside their lookups. Each generated lookup method opens the
+  render pass's buffer, requires its template by a literal path and closes it. Tessera's framing
+  (the region element, the child markers, the fragment answer) is framework templates in
+  `framework/templates/tessera/`, rendered through typed frames, and `RendersMarkup` is gone.
+  Authored layouts, components, atoms and make output are `.phtml` (`html.phtml`,
+  `page.phtml`, `page--<name>.phtml`); `.tpl.php` and `App\Generated\Templates\` are gone.
+  PHPStan's dead-code check reads the templates through `TemplateUsageProvider`, and gate:21
+  compiles each lookup with the templates it requires, which needs the fork's #152. Output is
+  unchanged: a 53-route crawl is byte for byte the same.
 - **The makes write named layouts** (#157, epic #151). `bin/aic make:layout <name>` writes a page
   layout into the theme: page data with the content region only and `page--<name>.tpl.php`, whose
   document falls back to `html.tpl.php`. `make:page … --layout=<name>` passes the layout's

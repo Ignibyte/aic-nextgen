@@ -146,7 +146,7 @@ final readonly class TemplateGrammarGate
                 $path,
                 1,
                 TemplateRefusal::Placement,
-                'a template lives in the configured theme: themes/<theme>/components/<Name>/<name>.tpl.php or themes/<theme>/layouts/',
+                'a template lives in the configured theme: themes/<theme>/components/<Name>/<name>.phtml or themes/<theme>/layouts/',
             )],
             default => $this->templateValidator->violations($path, $source, $templateBinding),
         };

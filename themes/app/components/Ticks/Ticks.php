@@ -7,7 +7,7 @@ namespace App\Theme\Components\Ticks;
 use AIC\Component\Contracts\Component;
 
 /**
- * The ticks demo, from ticks.tpl.php: a list Tessera fills from a stream, and
+ * The ticks demo, from ticks.phtml: a list Tessera fills from a stream, and
  * a count it keeps in a signal.
  */
 final readonly class Ticks implements Component

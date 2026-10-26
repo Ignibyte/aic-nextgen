@@ -17,7 +17,7 @@ One label in the home page's list of pages changes; the page reads it as before.
 
 | File | Change | Purpose |
 |---|---|---|
-| `themes/app/components/NoteCard/note-card.tpl.php` | modify | A function call |
+| `themes/app/components/NoteCard/note-card.phtml` | modify | A function call |
 | `modules/note/src/Entity/ProbePage.php` | create | A Page in Entity |
 | `modules/note/src/Service/ProbeRaw.php` | create | An ungranted RawHtml |
 | `modules/note/src/Controller/ProbeLiteralPage.php` | create | Markup in a controller |

@@ -37,7 +37,7 @@ final readonly class DeclaredPaths
      *
      * @return string The checked project-relative regular file.
      */
-    public function file(string $folder, string $source, string $suffix = '.tpl.php'): string
+    public function file(string $folder, string $source, string $suffix = '.phtml'): string
     {
         $this->portable($folder);
         $this->portable($source);
@@ -173,7 +173,7 @@ final readonly class DeclaredPaths
     {
         $lower = strtolower($relative);
 
-        return str_ends_with($lower, '.tpl.php') || str_ends_with($lower, '.html.php')
+        return str_ends_with($lower, '.phtml') || str_ends_with($lower, '.tpl.php') || str_ends_with($lower, '.html.php')
             || str_ends_with($lower, '.php')
                 && preg_match('#^(?:modules/[^/]+/templates/|templates/|framework/templates/)#', $relative) === 1;
     }

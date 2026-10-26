@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\Psr4Map;
+use Gates\Domain\RegexCaptures;
 use RuntimeException;
 
 use function array_intersect;
@@ -15,8 +16,10 @@ use function array_values;
 use function class_implements;
 use function class_parents;
 use function class_uses;
+use function dirname;
 use function file_get_contents;
 use function in_array;
+use function realpath;
 use function str_contains;
 
 /**
@@ -36,6 +39,8 @@ use function str_contains;
  */
 final readonly class ClosureBundler
 {
+    use RegexCaptures;
+
     /**
      * Built-in interfaces and classes a polyfill may shadow.
      */
@@ -78,6 +83,29 @@ final readonly class ClosureBundler
         }
 
         return $files;
+    }
+
+    /**
+     * The templates a closure's files require by a literal path (#155): a template is no class, so it joins the
+     * native gate's cache key here, not the bundle.
+     *
+     * @param list<string> $files A closure's files.
+     *
+     * @throws RuntimeException When a file cannot be read.
+     *
+     * @return list<string> The required templates, once each, in file order.
+     */
+    public function templates(array $files): array
+    {
+        $templates = [];
+
+        foreach ($files as $file) {
+            foreach ($this->required($file, $this->read($file)) as $template) {
+                $templates[$template] = true;
+            }
+        }
+
+        return array_keys($templates);
     }
 
     /**
@@ -129,16 +157,14 @@ final readonly class ClosureBundler
      */
     private function resolvedDependencies(string $fqcn, string $file, Psr4Map $psr4Map): array
     {
-        $source = file_get_contents($file);
-
-        if ($source === false) {
-            throw new RuntimeException('gate:21 — cannot read ' . $file);
-        }
-
         $resolved = [];
 
-        foreach ($this->classReferenceScanner->scan($source)->candidates as $candidate) {
-            if ($candidate === $fqcn || $psr4Map->fileFor($candidate) === null) {
+        foreach ($this->candidates($file) as $candidate) {
+            if (
+                $candidate === $fqcn
+                || $psr4Map->fileFor($candidate) === null
+                || in_array($candidate, $resolved, true)
+            ) {
                 continue;
             }
 
@@ -146,6 +172,64 @@ final readonly class ClosureBundler
         }
 
         return $resolved;
+    }
+
+    /**
+     * @param string $file A class file.
+     *
+     * @throws RuntimeException When it or a template it requires cannot be read.
+     *
+     * @return list<string> The class names it and the templates it requires name (#155).
+     */
+    private function candidates(string $file): array
+    {
+        $source = $this->read($file);
+        $candidates = $this->classReferenceScanner->scan($source)->candidates;
+
+        foreach ($this->required($file, $source) as $template) {
+            $candidates = [...$candidates, ...$this->classReferenceScanner->scan($this->read($template))->candidates];
+        }
+
+        return $candidates;
+    }
+
+    /**
+     * @param string $file   A class file.
+     * @param string $source Its source.
+     *
+     * @return list<string> The `.phtml` templates it requires by `__DIR__ . '/…'`, absolute.
+     */
+    private function required(string $file, string $source): array
+    {
+        $templates = [];
+
+        foreach (self::regexColumn('#\\brequire\\s+__DIR__\\s*\\.\\s*\'(/[^\']+\\.phtml)\'#', $source, 1) as $relative) {
+            $path = dirname($file) . $relative;
+            $real = realpath($path);
+            $templates[] = $real === false
+                ? $path
+                : $real;
+        }
+
+        return $templates;
+    }
+
+    /**
+     * @param string $file A file.
+     *
+     * @throws RuntimeException When it cannot be read.
+     *
+     * @return string Its contents.
+     */
+    private function read(string $file): string
+    {
+        $source = file_get_contents($file);
+
+        if ($source === false) {
+            throw new RuntimeException('gate:21 — cannot read ' . $file);
+        }
+
+        return $source;
     }
 
     /**

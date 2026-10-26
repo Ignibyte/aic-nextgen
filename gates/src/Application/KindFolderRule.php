@@ -143,7 +143,7 @@ final readonly class KindFolderRule implements ModuleRule
             ));
         }
 
-        $kind = $this->classKinds->kindOf($class, in_array($path, $moduleTree->templateClasses, true));
+        $kind = $this->classKinds->kindOf($class);
 
         return $this->kindPlace($path, $source, $folder, $class, $kind);
     }
@@ -214,7 +214,7 @@ final readonly class KindFolderRule implements ModuleRule
      */
     private function componentPlace(string $path, ?string $class): ?BoundaryViolation
     {
-        if ($class === null || ($this->classKinds->kindOf($class, false)[1] ?? '') !== ClassKinds::THEME_COMPONENTS) {
+        if ($class === null || ($this->classKinds->kindOf($class)[1] ?? '') !== ClassKinds::THEME_COMPONENTS) {
             return null;
         }
 

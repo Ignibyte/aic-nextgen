@@ -91,7 +91,7 @@ final readonly class RawHtmlScan
 
         $php = array_values(array_filter(
             $files,
-            static fn (string $file): bool => str_ends_with($file, '.php') && !str_ends_with($file, '.tpl.php'),
+            static fn (string $file): bool => str_ends_with($file, '.php'),
         ));
         sort($php);
 

@@ -7,7 +7,7 @@ namespace App\Theme\Components\NoteCard;
 use AIC\Component\Contracts\Component;
 
 /**
- * A note's article: its title, body and date, from note-card.tpl.php.
+ * A note's article: its title, body and date, from note-card.phtml.
  */
 final readonly class NoteCard implements Component
 {

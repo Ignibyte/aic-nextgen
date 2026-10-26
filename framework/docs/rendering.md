@@ -32,7 +32,7 @@ the app's name. The optional `AIC\Component\Contracts\LayoutName` picks a named 
 theme: a case of the generated `App\Generated\ThemeLayoutName`, one per layout the theme
 ships, so a controller cannot name a layout that does not exist. `ThemePage::$layout` carries the
 key the build resolved; the generated adapters render that layout's html and page templates, and
-each falls back on its own to `html.tpl.php` and `page.tpl.php` through its lookup's `default` arm.
+each falls back on its own to `html.phtml` and `page.phtml` through its lookup's `default` arm.
 
 ## One Renderer
 
@@ -45,10 +45,13 @@ each falls back on its own to `html.tpl.php` and `page.tpl.php` through its look
 | `Renderer::fragments()` | `fragments(Layout, list<string>): ?Html`, targets from the same tree; null when a target is absent |
 | `Renderer::elements()` | `elements(Component): Html`, one component inline with no marker around it, for a stream's element patch |
 
-The generated `App\Generated\ThemeTemplates` lookup maps the theme's component classes to their
-compiled classes, then delegates to the framework atoms. A component folder without its template
-is a build error. No runtime directory scan, template include or companion-class naming rule
-chooses a template.
+The generated `App\Generated\ThemeTemplates` lookup maps each of the theme's component classes to
+a method that opens the render pass's buffer, requires the component's escaped template by a
+literal path and closes it, then delegates to the framework atoms. A component folder without its
+template is a build error. No runtime directory scan, computed include path or companion-class
+naming rule chooses a template. The region element, the child markers and the fragment answer
+are the framework's runtime templates in `framework/templates/tessera/`, which
+`AIC\Component\Application\RenderPass::frame()` requires; no PHP class holds markup.
 
 `AIC\Component\Application\RenderPass` writes a child with component markers, a region with
 its `data-region` wrapper, or an inline transparent wrapper. Full documents and fragments use the

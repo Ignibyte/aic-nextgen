@@ -40,11 +40,75 @@ final readonly class AtomTemplatesPart3 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof Checkbox => (new CheckboxTemplate())->render($component),
-            $component instanceof FileInput => (new FileInputTemplate())->render($component),
-            $component instanceof HiddenInput => (new HiddenInputTemplate())->render($component),
-            $component instanceof Button => (new ButtonTemplate())->render($component),
+            $component instanceof Checkbox => $this->renderCheckbox($component, $renderPass),
+            $component instanceof FileInput => $this->renderFileInput($component, $renderPass),
+            $component instanceof HiddenInput => $this->renderHiddenInput($component, $renderPass),
+            $component instanceof Button => $this->renderButton($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param Checkbox   $checkbox   The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from checkbox.phtml.
+     */
+    private function renderCheckbox(Checkbox $checkbox, RenderPass $renderPass): string
+    {
+        $renderPass->open($checkbox);
+        require __DIR__ . '/checkbox.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param FileInput  $fileInput  The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from file-input.phtml.
+     */
+    private function renderFileInput(FileInput $fileInput, RenderPass $renderPass): string
+    {
+        $renderPass->open($fileInput);
+        require __DIR__ . '/file-input.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param HiddenInput $hiddenInput The component; its template reads it.
+     * @param RenderPass  $renderPass  The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from hidden-input.phtml.
+     */
+    private function renderHiddenInput(HiddenInput $hiddenInput, RenderPass $renderPass): string
+    {
+        $renderPass->open($hiddenInput);
+        require __DIR__ . '/hidden-input.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Button     $button     The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from button.phtml.
+     */
+    private function renderButton(Button $button, RenderPass $renderPass): string
+    {
+        $renderPass->open($button);
+        require __DIR__ . '/button.phtml';
+
+        return $renderPass->close();
     }
 }

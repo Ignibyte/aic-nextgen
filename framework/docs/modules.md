@@ -11,7 +11,7 @@ the tool settings.
 modules/note/
   note.module.php            the manifest
   src/<Kind>/                the classes, namespace App\Note\<Kind>\
-  templates/components/      explicitly declared *.tpl.php sources
+  templates/components/      explicitly declared *.phtml sources
   assets/                    CSS bundled into the site, other files copied
 ```
 
@@ -108,7 +108,7 @@ doing too much: split it into a second module, or group the work into fewer clas
 ## No markup
 
 A module holds no HTML at all. gate:32 reads every file under `modules/` on disk and refuses a
-template or markup file by its name (`.tpl.php`, `.html`, `.svg`, `.twig` and the rest), inline
+template or markup file by its name (`.phtml`, `.tpl.php`, `.html`, `.svg`, `.twig` and the rest), inline
 output outside `<?php`, an HTML tag, markup declaration or character reference in any string
 literal or text file, a `<` left for a computed tag, and the HTML functions; in `src/Controller/`
 any `<` fails. Markup belongs in the theme, built from components by the Renderer. A command's
@@ -131,13 +131,13 @@ folder, and nothing reads it while serving. A theme holds three folders:
 
 ```
 themes/app/
-  layouts/     html.tpl.php  page.tpl.php  Page.php
-  components/  Greetings/Greetings.php  Greetings/greetings.tpl.php  ...
+  layouts/     html.phtml  page.phtml  Page.php
+  components/  Greetings/Greetings.php  Greetings/greetings.phtml  ...
   assets/      10-tokens.css  site.css  favicon.svg  ...
 ```
 
 Each `components/<Name>/` holds the final Component `App\Theme\Components\<Name>\<Name>`, its
-template `<name>.tpl.php` (the class name in lower kebab case, `line-list.tpl.php` for
+template `<name>.phtml` (the class name in lower kebab case, `line-list.phtml` for
 `LineList`), and any value classes of the same namespace that are not Components. The template's
 typing line names its folder's class:
 
@@ -147,7 +147,7 @@ typing line names its folder's class:
 
 Nothing declares a component: the folder is the declaration. A folder without its class or
 template, a class whose name or namespace does not match its folder, a second Component in a
-folder, a stray file, a link, or a `.tpl.php` anywhere outside the theme fails the build before
+folder, a stray file, a link, or a `.phtml` anywhere outside the theme fails the build before
 publication. gate:25 checks every template against the restricted PHP grammar: no functions,
 calls or runtime includes. Static types determine automatic escaping.
 
@@ -175,24 +175,24 @@ is missing:
 <element key="themes/app/layouts" value="App\Theme\Layouts"/>
 ```
 
-Named layouts sit beside the default ones: `html--<name>.tpl.php`, `page--<name>.tpl.php`
+Named layouts sit beside the default ones: `html--<name>.phtml`, `page--<name>.phtml`
 or both, where `<name>` is lowercase words joined by single hyphens (not `class`). A named page may
 read its own page data, a class in `layouts/` that its first line names (`FocusPage`), with its own
 regions, which must include `content`; a page data class no page reads is refused. The build
 generates `App\Generated\ThemeLayoutName`, a case per name (`focus` gives `Focus`), and refuses two
 names that give the same case. A controller passes the case to `PageDocuments`; a file the named
-layout does not ship falls back to `html.tpl.php` or `page.tpl.php`. Its Tessera identity is
+layout does not ship falls back to `html.phtml` or `page.phtml`. Its Tessera identity is
 `<theme>-<name>`.
 
 The generated implementation of `AIC\Component\Contracts\PageLayouts` creates documents.
 `AIC\Component\Domain\ThemePage` carries only the filled Regions; a compiled adapter constructs
-the theme's typed page and renders its compiled template. Render data holds no factory service.
+the theme's typed page and renders its page template. Render data holds no factory service.
 The existing Renderer remains the only HTML constructor. No reflection or template include runs
 while serving a request.
 
-The Composer mapping `"App\\Generated\\Templates\\": "generated/templates/"` is required on
-case-sensitive filesystems. Compiled classes remain in static and native analysis. The build
-audits nested generated outputs, removes orphans and checks freshness without writes.
+Templates run as templates: the build escapes each into `generated/templates/`, where its lookup
+requires it, and no Composer mapping names them. The build audits nested generated outputs,
+removes orphans and checks freshness without writes.
 `build/surface.json` carries the theme as a top-level `theme` object, and the code wiki's index
 has a Theme section.
 
@@ -204,7 +204,7 @@ component and its template into the theme's `components/<Class>/` and edits no m
 module's manifest, and writes its own view into the theme; `--component=<Class>` reuses a theme
 component instead, and `--layout=<name>` makes the page pick one of the theme's named layouts.
 `bin/aic make:layout <name>` writes a named page layout into `layouts/`: page data with the content
-region only and `page--<name>.tpl.php`; the document falls back to `html.tpl.php`, and the next
+region only and `page--<name>.phtml`; the document falls back to `html.phtml`, and the next
 `composer run build` adds its case to `ThemeLayoutName`.
 
 `bin/aic make:entity <module> <Class> <table> --fields=<name>:<type>,…` writes a table slice in the

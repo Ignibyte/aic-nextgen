@@ -10,7 +10,7 @@ use AIC\Component\Domain\KeyedComponent;
 
 /**
  * The list of notes, each linking to its page, under a heading with their
- * count; from note-list.tpl.php.
+ * count; from note-list.phtml.
  */
 final readonly class NoteList implements Component
 {

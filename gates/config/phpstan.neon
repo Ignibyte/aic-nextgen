@@ -102,6 +102,10 @@ parameters:
                 # The PSR-7 message base: ServerRequest and Response share its
                 # eleven MessageInterface methods (abstract base, final subclasses).
                 - AIC\Http\Domain\Message
+                # shipmonk's documented extension point for usage providers: TemplateUsageProvider
+                # tells the dead-code detector what the templates read (#155), and the base
+                # class holds the one PHPStan-internal node check the API leaves to it.
+                - ShipMonk\PHPStan\DeadCode\Provider\ReflectionBasedMemberUsageProvider
         final:
             allowAbstractClasses: true
         noParameterWithContainerTypeDeclaration:

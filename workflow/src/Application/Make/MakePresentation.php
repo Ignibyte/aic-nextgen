@@ -20,9 +20,9 @@ use function substr;
 use const JSON_THROW_ON_ERROR;
 
 /**
- * Checks, before a make writes a theme component (#153), that Composer finds the component's class and its
- * compiled template: `App\Theme\Components\` maps to the theme's `components/`, and `App\Generated\Templates\` to
- * `generated/templates/`.
+ * Checks, before a make writes a theme component (#153), that Composer finds the component's class:
+ * `App\Theme\Components\` maps to the theme's `components/`. Its template is a `.phtml` the build escapes into
+ * `generated/templates/` and a lookup requires (#155), so no Composer line names it.
  */
 final readonly class MakePresentation
 {
@@ -42,7 +42,6 @@ final readonly class MakePresentation
             $psr4 = $this->psr4($projectFiles);
             $components = substr($madeFile->path, 0, (int) strpos($madeFile->path, '/components/') + 12);
             $this->line($psr4, 'App\\Theme\\Components\\', $components);
-            $this->line($psr4, 'App\\Generated\\Templates\\', 'generated/templates/');
 
             return;
         }

@@ -53,7 +53,6 @@
         "psr-4": {
             "App\\Account\\": "modules/account/src/",
             "App\\Generated\\": "generated/",
-            "App\\Generated\\Templates\\": "generated/templates/",
             "App\\Note\\": "modules/note/src/",
             "App\\Scaffold\\": "modules/scaffold/src/",
             "App\\Site\\": "modules/site/src/",

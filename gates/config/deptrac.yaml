@@ -68,6 +68,11 @@ deptrac:
       collectors:
         - type: classLike
           value: '^PHPStan\\(?!PhpDocParser\\)'
+    # shipmonk/dead-code-detector's provider API, which TemplateUsageProvider extends (#155).
+    - name: ShipmonkVendor
+      collectors:
+        - type: classLike
+          value: '^ShipMonk\\PHPStan\\DeadCode\\'
     # phpstan/phpdoc-parser, which the template build (#97) reads list element
     # types with.
     - name: PhpDocParserVendor
@@ -179,8 +184,10 @@ deptrac:
     # Renderer makes an Html, Psr7ResponseWriter reads one (#99).
     PhpStanRules:
       - Contracts
+      - Domain
       - Application
       - PhpstanVendor
+      - ShipmonkVendor
       - PhpParserVendor
     # gate:25's validator (#96) walks php-parser's tree and reports with
     # Gates' Domain values, reading files through Application.

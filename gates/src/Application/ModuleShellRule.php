@@ -126,7 +126,7 @@ final readonly class ModuleShellRule implements ModuleRule
      */
     private function prefixViolations(ModuleTree $moduleTree): array
     {
-        $allowed = ['App\\Generated\\' => 'generated/', 'App\\Generated\\Templates\\' => 'generated/templates/'];
+        $allowed = ['App\\Generated\\' => 'generated/'];
 
         foreach ($moduleTree->modules as $moduleDefinition) {
             $allowed[$moduleDefinition->namespace] = 'modules/' . $moduleDefinition->name . '/src/';
@@ -140,8 +140,8 @@ final readonly class ModuleShellRule implements ModuleRule
             }
 
             $violations[] = new BoundaryViolation('composer.json', sprintf(
-                "composer.json maps %s to %s; map each module's namespace to modules/<name>/src/, the generated namespaces"
-                    . ' to generated/ or generated/templates/, and App\\Theme\\Components\\ and App\\Theme\\Layouts\\ to'
+                "composer.json maps %s to %s; map each module's namespace to modules/<name>/src/, the generated namespace"
+                    . ' to generated/, and App\\Theme\\Components\\ and App\\Theme\\Layouts\\ to'
                     . ' themes/<theme>/components/ and themes/<theme>/layouts/.',
                 $prefix,
                 implode(', ', $folders),
@@ -202,7 +202,7 @@ final readonly class ModuleShellRule implements ModuleRule
      */
     private function folderFor(string $class): string
     {
-        $folder = $this->classKinds->kindOf($class, false)[1] ?? 'Service';
+        $folder = $this->classKinds->kindOf($class)[1] ?? 'Service';
 
         return $folder === ClassKinds::THEME_COMPONENTS
             ? $folder

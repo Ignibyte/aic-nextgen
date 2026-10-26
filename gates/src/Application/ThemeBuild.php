@@ -16,8 +16,6 @@ use function implode;
 use function in_array;
 use function is_dir;
 use function preg_match;
-use function str_replace;
-use function ucwords;
 
 /**
  * Finds the configured theme (#153): `config/app.php` names a folder under `themes/` holding `layouts/` (the
@@ -73,8 +71,8 @@ final readonly class ThemeBuild
         return new ThemeBinding(
             $theme,
             $regions,
-            $this->layout($theme, 'html.tpl.php', ThemeLayout::class, TemplateRole::Html),
-            $this->layout($theme, 'page.tpl.php', $page, TemplateRole::Page),
+            $this->layout($theme, 'html.phtml', ThemeLayout::class, TemplateRole::Html),
+            $this->layout($theme, 'page.phtml', $page, TemplateRole::Page),
             $themeComponents->bindings($theme),
             (new ThemeLayoutFiles($this->root))->variants($theme, $layouts, $regions),
         );
@@ -108,7 +106,7 @@ final readonly class ThemeBuild
         }
 
         if (array_diff(ThemeLayoutFiles::DEFAULTS, $themeComponents->entries($folder . '/layouts')) !== []) {
-            throw new InvalidArgumentException($folder . '/layouts: holds html.tpl.php, page.tpl.php and Page.php.');
+            throw new InvalidArgumentException($folder . '/layouts: holds html.phtml, page.phtml and Page.php.');
         }
     }
 
@@ -136,13 +134,10 @@ final readonly class ThemeBuild
      */
     private function layout(string $theme, string $file, string $component, TemplateRole $templateRole): TemplateBinding
     {
-        $class = 'Theme' . str_replace('-', '', ucwords($theme, '-')) . $templateRole->name . 'Template';
-
         return new TemplateBinding(
             $component,
             'themes/' . $theme . '/layouts/' . $file,
-            'generated/templates/' . $class . '.php',
-            'App\\Generated\\Templates\\' . $class,
+            'generated/templates/themes/' . $theme . '/layouts/' . $file,
             $templateRole,
         );
     }

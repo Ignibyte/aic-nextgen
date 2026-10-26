@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\LayoutName;
 use AIC\Component\Contracts\PageLayouts;
 use AIC\Component\Contracts\Regions;
 use AIC\Component\Domain\ThemeLayout;
 use AIC\Component\Domain\ThemePage;
 use AIC\Component\Domain\TrackedAssets;
-use AIC\Component\Exception\UnknownComponent;
 use AIC\Http\Contracts\PublicAsset;
 use AIC\Http\Contracts\PublicAssets;
 use Gates\Domain\ThemeBinding;
@@ -24,9 +22,8 @@ use function strtr;
 use function var_export;
 
 /**
- * The theme's layout lookups (#154): the `ThemeLayoutName` enum, `ThemeLayouts::create()` choosing each named
- * layout's identity and regions, and the html adapter choosing its document template (the page adapter is
- * ThemePageSource's). Each is a `match` whose
+ * The theme's layout lookups (#154): the `ThemeLayoutName` enum and `ThemeLayouts::create()` choosing each named
+ * layout's identity and regions (the html adapter is ThemeHtmlSource's, the page adapter ThemePageSource's). Each is a `match` whose
  * `default` arm is the default layout, which is also the fallback for a file a named layout does not ship. They hold
  * types and lookups, never markup.
  */
@@ -112,27 +109,6 @@ final readonly class ThemeLayoutsSource
         }
         PHP;
 
-    /** The html adapter: renders the layout's document template. */
-    private const string HTML = <<<'PHP'
-        final readonly class ThemeHtmlTemplate
-        {
-            /**
-             * @param ThemeLayout $themeLayout The document.
-             * @param RenderPass  $renderPass  The pass that writes its children.
-             *
-             * @throws UnknownComponent When a child has no registered template.
-             *
-             * @return string The layout's document markup; html.tpl.php's when it ships no html of its own.
-             */
-            public function render(ThemeLayout $themeLayout, RenderPass $renderPass): string
-            {
-                return match ($themeLayout->page->layout) {
-        {arms}            default => (new {template}())->render($themeLayout, $renderPass),
-                };
-            }
-        }
-        PHP;
-
     /** @param PhpClassFile $phpClassFile Emits checked generated source. */
     public function __construct(private PhpClassFile $phpClassFile = new PhpClassFile())
     {
@@ -169,35 +145,6 @@ final readonly class ThemeLayoutsSource
             PublicAssets::class, PublicAsset::class, TrackedAssets::class, InvalidArgumentException::class, Override::class];
 
         return $this->phpClassFile->file('App\\Generated', $classes, [], $this->generated('the document factory.'), $source);
-    }
-
-    /**
-     * @param ThemeBinding $themeBinding The theme.
-     *
-     * @throws InvalidArgumentException When generated imports or structure conflict.
-     *
-     * @return string `ThemeHtmlTemplate`, rendering each layout's document or `html.tpl.php`.
-     */
-    public function htmlTemplate(ThemeBinding $themeBinding): string
-    {
-        $arms = '';
-        $classes = [ThemeLayout::class, RenderPass::class, UnknownComponent::class, $themeBinding->html->templateClass];
-
-        foreach ($themeBinding->variants as $variant) {
-            $html = $variant->html;
-
-            if ($html === null) {
-                continue;
-            }
-
-            $arms .= '            ' . var_export($variant->name, true) . ' => (new '
-                . $this->phpClassFile->short($html->templateClass) . "())->render(\$themeLayout, \$renderPass),\n";
-            $classes[] = $html->templateClass;
-        }
-
-        $source = strtr(self::HTML, ['{arms}' => $arms, '{template}' => $this->phpClassFile->short($themeBinding->html->templateClass)]);
-
-        return $this->phpClassFile->file('App\\Generated', $classes, [], $this->generated('the document adapter.'), $source);
     }
 
     /**

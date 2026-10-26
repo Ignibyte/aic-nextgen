@@ -40,11 +40,75 @@ final readonly class AtomTemplatesPart1 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof Link => (new LinkTemplate())->render($component),
-            $component instanceof Badge => (new BadgeTemplate())->render($component),
-            $component instanceof Heading => (new HeadingTemplate())->render($component),
-            $component instanceof Paragraph => (new ParagraphTemplate())->render($component),
+            $component instanceof Link => $this->renderLink($component, $renderPass),
+            $component instanceof Badge => $this->renderBadge($component, $renderPass),
+            $component instanceof Heading => $this->renderHeading($component, $renderPass),
+            $component instanceof Paragraph => $this->renderParagraph($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param Link       $link       The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from link.phtml.
+     */
+    private function renderLink(Link $link, RenderPass $renderPass): string
+    {
+        $renderPass->open($link);
+        require __DIR__ . '/link.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Badge      $badge      The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from badge.phtml.
+     */
+    private function renderBadge(Badge $badge, RenderPass $renderPass): string
+    {
+        $renderPass->open($badge);
+        require __DIR__ . '/badge.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Heading    $heading    The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from heading.phtml.
+     */
+    private function renderHeading(Heading $heading, RenderPass $renderPass): string
+    {
+        $renderPass->open($heading);
+        require __DIR__ . '/heading.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Paragraph  $paragraph  The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from paragraph.phtml.
+     */
+    private function renderParagraph(Paragraph $paragraph, RenderPass $renderPass): string
+    {
+        $renderPass->open($paragraph);
+        require __DIR__ . '/paragraph.phtml';
+
+        return $renderPass->close();
     }
 }

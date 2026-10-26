@@ -7,11 +7,9 @@ namespace App\Generated;
 use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
+use AIC\Component\Domain\ThemeLayout;
+use AIC\Component\Domain\ThemePage;
 use AIC\Component\Exception\UnknownComponent;
-use App\Generated\Templates\GreetingsTemplate;
-use App\Generated\Templates\HomeTemplate;
-use App\Generated\Templates\LineListTemplate;
-use App\Generated\Templates\NoteCardTemplate;
 use App\Theme\Components\Greetings\Greetings;
 use App\Theme\Components\Home\Home;
 use App\Theme\Components\LineList\LineList;
@@ -44,11 +42,77 @@ final readonly class ThemeTemplatesPart1 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof Greetings => (new GreetingsTemplate())->render($component),
-            $component instanceof Home => (new HomeTemplate())->render($component, $renderPass),
-            $component instanceof LineList => (new LineListTemplate())->render($component),
-            $component instanceof NoteCard => (new NoteCardTemplate())->render($component),
+            $component instanceof ThemeLayout => (new ThemeHtmlTemplate())->render($component, $renderPass),
+            $component instanceof ThemePage => (new ThemePageTemplate())->render($component, $renderPass),
+            $component instanceof Greetings => $this->renderGreetings($component, $renderPass),
+            $component instanceof Home => $this->renderHome($component, $renderPass),
+            $component instanceof LineList => $this->renderLineList($component, $renderPass),
+            $component instanceof NoteCard => $this->renderNoteCard($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param Greetings  $greetings  The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/Greetings/greetings.phtml.
+     */
+    private function renderGreetings(Greetings $greetings, RenderPass $renderPass): string
+    {
+        $renderPass->open($greetings);
+        require __DIR__ . '/templates/themes/app/components/Greetings/greetings.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Home       $home       The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/Home/home.phtml.
+     */
+    private function renderHome(Home $home, RenderPass $renderPass): string
+    {
+        $renderPass->open($home);
+        require __DIR__ . '/templates/themes/app/components/Home/home.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param LineList   $lineList   The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/LineList/line-list.phtml.
+     */
+    private function renderLineList(LineList $lineList, RenderPass $renderPass): string
+    {
+        $renderPass->open($lineList);
+        require __DIR__ . '/templates/themes/app/components/LineList/line-list.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param NoteCard   $noteCard   The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/NoteCard/note-card.phtml.
+     */
+    private function renderNoteCard(NoteCard $noteCard, RenderPass $renderPass): string
+    {
+        $renderPass->open($noteCard);
+        require __DIR__ . '/templates/themes/app/components/NoteCard/note-card.phtml';
+
+        return $renderPass->close();
     }
 }

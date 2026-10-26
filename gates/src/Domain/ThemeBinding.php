@@ -10,8 +10,8 @@ final readonly class ThemeBinding
     /**
      * @param string                   $name       Its folder under `themes/`, also its Tessera layout identity.
      * @param non-empty-list<string>   $regions    The page's regions, in the order `layouts/Page.php` takes them.
-     * @param TemplateBinding          $html       The document wrapper, `layouts/html.tpl.php`.
-     * @param TemplateBinding          $page       The page, `layouts/page.tpl.php`, reading the region data.
+     * @param TemplateBinding          $html       The document wrapper, `layouts/html.phtml`.
+     * @param TemplateBinding          $page       The page, `layouts/page.phtml`, reading the region data.
      * @param list<TemplateBinding>    $components Each component's template, in folder name order.
      * @param list<ThemeLayoutBinding> $variants   The named layouts (#154), in name order.
      */

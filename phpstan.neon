@@ -35,8 +35,6 @@ parameters:
         - vendor/squizlabs/php_codesniffer/autoload.php
         - vendor/squizlabs/php_codesniffer/src/Util/Tokens.php
     excludePaths:
-        # Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
-        - */*.tpl.php
         - vendor
         - storage (?)
         - tools (?)

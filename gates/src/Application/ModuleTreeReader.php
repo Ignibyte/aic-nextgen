@@ -13,8 +13,6 @@ use RuntimeException;
 
 use function array_filter;
 use function array_key_exists;
-use function array_keys;
-use function array_map;
 use function array_values;
 use function explode;
 use function file_exists;
@@ -23,9 +21,6 @@ use function realpath;
 use function sort;
 use function str_ends_with;
 use function str_replace;
-use function str_starts_with;
-use function strlen;
-use function substr;
 use function trim;
 
 /**
@@ -43,7 +38,6 @@ final readonly class ModuleTreeReader
 
     /**
      * @param ProcessRunner         $processRunner         Runs git.
-     * @param TemplateBuild         $templateBuild         Lists the generated template classes.
      * @param ModuleReader          $moduleReader          Reads the manifests.
      * @param ComposerPsr4Loader    $composerPsr4Loader    Loads composer's PSR-4 map.
      * @param ClassReferenceScanner $classReferenceScanner Reads each file's symbols.
@@ -51,7 +45,6 @@ final readonly class ModuleTreeReader
      */
     public function __construct(
         private ProcessRunner $processRunner,
-        private TemplateBuild $templateBuild,
         private ModuleReader $moduleReader = new ModuleReader(),
         private ComposerPsr4Loader $composerPsr4Loader = new ComposerPsr4Loader(),
         private ClassReferenceScanner $classReferenceScanner = new ClassReferenceScanner(),
@@ -79,7 +72,6 @@ final readonly class ModuleTreeReader
             $this->moduleReader->read($root),
             $paths,
             $this->symbols($root, $paths),
-            $this->templateClasses($root),
             $this->prefixes($root),
             $this->composerPsr4Loader->load($root),
             $root,
@@ -137,24 +129,6 @@ final readonly class ModuleTreeReader
         }
 
         return $symbols;
-    }
-
-    /**
-     * @param string $root The repo root.
-     *
-     * @throws InvalidArgumentException When a template cannot be compiled.
-     *
-     * @return list<string> The generated template classes under `modules/`, relative.
-     */
-    private function templateClasses(string $root): array
-    {
-        $prefix = $root . '/modules/';
-        $files = array_filter(
-            array_keys($this->templateBuild->classes()),
-            static fn (string $file): bool => str_starts_with($file, $prefix),
-        );
-
-        return array_values(array_map(static fn (string $file): string => substr($file, strlen($root) + 1), $files));
     }
 
     /**

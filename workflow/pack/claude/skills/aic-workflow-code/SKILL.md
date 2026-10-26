@@ -25,12 +25,12 @@ another file, add its row to the manifest first; the run records it as declared 
   else; a helper goes in `src/Service/`.
 - **Components are data, in the theme.** A component's constructor takes the ready values as
   public promoted properties. It lives with its template in the theme `config/app.php` names:
-  `themes/<theme>/components/<Name>/<Name>.php` and `<name>.tpl.php`. The template is plain PHP
+  `themes/<theme>/components/<Name>/<Name>.php` and `<name>.phtml`. The template is plain PHP
   with `<?= expression ?>`, the alternative `if`/`foreach` syntax and property reads: no
   function or method calls. A module holds no template or asset; its controllers build components.
 - **The build.** After a change to a manifest, a template or a theme asset, run
-  `composer run build`. It writes `generated/` (including compiled classes in
-  `generated/templates/`), `build/surface.json`, `build/assets.json`, `public/assets/` and
+  `composer run build`. It writes `generated/` (including the escaped templates in
+  `generated/templates/` that the lookups require), `build/surface.json`, `build/assets.json`, `public/assets/` and
   `docs/wiki/`; never edit those by hand. These exact inventories and generated directories
   are build outputs; declare every authored source and the edited module manifest.
 - **Make a new class.** For a new module, page, api, component, block, command, job,
@@ -40,14 +40,14 @@ another file, add its row to the manifest first; the run records it as declared 
 - **Themes and templates.** `make:component <Class>` writes the component and its template into
   the theme and edits no manifest. A default `make:page` writes its own view there too;
   `make:page --component=<Class>` reuses a theme component. `make:theme <name>` writes
-  `themes/<name>/layouts/` (`Page.php`, `html.tpl.php`, `page.tpl.php`) and CSS, then prints the
+  `themes/<name>/layouts/` (`Page.php`, `html.phtml`, `page.phtml`) and CSS, then prints the
   `config/app.php`, Composer and PHPCS lines to add. A Page controller takes the framework's
   `PageDocuments` and may name a layout (`content([...], 200, ThemeLayoutName::Focus)`); a layout
-  ships `page--<name>.tpl.php`, `html--<name>.tpl.php` or both, each falling back to the default.
+  ships `page--<name>.phtml`, `html--<name>.phtml` or both, each falling back to the default.
   `make:layout <name>` writes a page layout (`<Case>Page.php`, the content region only, and
-  `page--<name>.tpl.php`); after `composer run build`, `make:page … --layout=<name>` names it. The
-  Composer prefixes for `App\\Theme\\Components\\` and `App\\Generated\\Templates\\` must be configured
-  first; run `composer dump-autoload`. Use the dry-run to declare every path it lists.
+  `page--<name>.phtml`); after `composer run build`, `make:page … --layout=<name>` names it. The
+  Composer prefix for `App\\Theme\\Components\\` must be configured first; run
+  `composer dump-autoload`. Use the dry-run to declare every path it lists.
 - **Find before you add.** `bin/aic code:search` and `bin/aic code:refs` before you write a
   class: reuse what the app has instead of a second copy.
 

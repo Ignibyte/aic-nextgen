@@ -12,7 +12,7 @@ interface PageLayouts
     /**
      * @param string          $title      The document title.
      * @param Regions         $regions    The page's filled regions.
-     * @param LayoutName|null $layoutName The theme layout to use (#154); null for `html.tpl.php` and `page.tpl.php`.
+     * @param LayoutName|null $layoutName The theme layout to use (#154); null for `html.phtml` and `page.phtml`.
      *
      * @throws InvalidArgumentException When a region cannot be constructed.
      *

@@ -15,8 +15,8 @@ use InvalidArgumentException;
 
 /**
  * A Page controller's documents (#154): its regions in the theme's layout, titled with the app's name. A controller
- * may name a layout (`ThemeLayoutName::Focus`); each of its two files falls back on its own to `html.tpl.php` and
- * `page.tpl.php` when the theme ships no variant.
+ * may name a layout (`ThemeLayoutName::Focus`); each of its two files falls back on its own to `html.phtml` and
+ * `page.phtml` when the theme ships no variant.
  */
 final readonly class PageDocuments
 {

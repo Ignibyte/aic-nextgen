@@ -12,25 +12,23 @@ use function substr;
 /**
  * What gate:26 checks (#94), read once: the modules from their manifests, every
  * path git knows (tracked and untracked, ignored ones left out), the symbols of
- * each PHP file, the generated template classes, and the PSR-4 prefixes
+ * each PHP file, and the PSR-4 prefixes
  * composer.json declares and the map that resolves them.
  */
 final readonly class ModuleTree
 {
     /**
-     * @param list<ModuleDefinition>       $modules         The modules, in name order.
-     * @param list<string>                 $paths           Every path git lists, relative to the repo root.
-     * @param array<string, SourceSymbols> $symbols         Each PHP file's symbols, by relative path.
-     * @param list<string>                 $templateClasses The generated template classes' paths, relative.
-     * @param array<string, list<string>>  $prefixes        composer.json's PSR-4 prefixes and their folders, as written.
-     * @param Psr4Map                      $psr4Map         Resolves a class to its file.
-     * @param string                       $root            The repo root, absolute.
+     * @param list<ModuleDefinition>       $modules  The modules, in name order.
+     * @param list<string>                 $paths    Every path git lists, relative to the repo root.
+     * @param array<string, SourceSymbols> $symbols  Each PHP file's symbols, by relative path.
+     * @param array<string, list<string>>  $prefixes composer.json's PSR-4 prefixes and their folders, as written.
+     * @param Psr4Map                      $psr4Map  Resolves a class to its file.
+     * @param string                       $root     The repo root, absolute.
      */
     public function __construct(
         public array $modules,
         public array $paths,
         public array $symbols,
-        public array $templateClasses,
         public array $prefixes,
         public Psr4Map $psr4Map,
         public string $root,
