@@ -58,7 +58,8 @@ fi
 
 VIOLATIONS=()
 
-if [ "$(detect_active_command "$TRANSCRIPT_PATH")" = "complete" ]; then
+if [ "$(detect_active_command "$TRANSCRIPT_PATH")" = "complete" ] \
+    && ! session_pipelines_delivered "$TRANSCRIPT_PATH"; then
     if ! grep -qE '^CHANGELOG' <<< "$WRITTEN"; then
         VIOLATIONS+=("CHANGELOG.md was not updated. Every delivered pipeline gets a changelog entry with its ticket number.")
     fi

@@ -239,3 +239,28 @@ detect_active_command() {
     latest_pipeline_command "$1" | grep -oE '^pipeline[-:](plan|implement|check|complete)$' \
         | sed -E 's/^pipeline[-:]//' || true
 }
+
+# Whether every pipeline this session wrote has been delivered: each spec it
+# wrote in active/ now sits in completed/ with `Phase 4 — Documentation PASS`,
+# and its notes there hold an `## AAR`. A delivery made by hand rather than
+# through /commit leaves /pipeline:complete as the latest command, with
+# active/ empty and the decision record possibly written from the shell; the
+# archived pair is the evidence then (found 2026-10-26, after #167).
+session_pipelines_delivered() {
+    local transcript_path="$1" written spec name completed
+    completed="${PROJECT_ROOT}/docs/planning/pipeline/completed"
+    written=$(jq -sr '
+        [.[] | (.message // .) | select(.role == "assistant") |
+         (.content // [])[] | select(.type == "tool_use") |
+         select(.name == "Write" or .name == "Edit") |
+         .input.file_path // empty] | unique | .[]
+    ' "$transcript_path" 2>/dev/null | while IFS= read -r spec; do normalize_path "$spec"; done \
+        | grep -E '^docs/planning/pipeline/active/[^/]+\.spec\.md$' || true)
+    [ -n "$written" ] || return 1
+    while IFS= read -r spec; do
+        name=$(basename "$spec" .spec.md)
+        [ ! -e "${PROJECT_ROOT}/${spec}" ] || return 1
+        grep -qP '^status:.*Phase\s+4\s+[—-]\s+Documentation\s+PASS' "${completed}/${name}.spec.md" 2>/dev/null || return 1
+        grep -qE '^## AAR' "${completed}/${name}.notes.md" 2>/dev/null || return 1
+    done <<< "$written"
+}

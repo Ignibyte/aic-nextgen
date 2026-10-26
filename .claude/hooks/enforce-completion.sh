@@ -95,7 +95,7 @@ case "${COMMAND_NAME:-$LATEST}" in
         fi
         ;;
     complete)
-        if ! notes_has_aar; then
+        if ! notes_has_aar && ! session_pipelines_delivered "$TRANSCRIPT_PATH"; then
             MISSING+=("notes.md AAR — write an '## AAR' section in the active notes.md: failures, decisions, outcome, lessons worth keeping. [CONSTITUTION.md §4]")
         fi
         if ! grep -qE 'gate:19|gate-doc-todos\.php' <<< "$BASH_COMMANDS"; then
