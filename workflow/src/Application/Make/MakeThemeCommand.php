@@ -72,13 +72,24 @@ final readonly class MakeThemeCommand implements Command
             $name,
             $this->makeThemes->files($name),
             null,
-            lines: [
-                "set theme: '" . $name . "' in config/app.php",
-                'add to composer.json\'s autoload.psr-4: "App\\\\Theme\\\\Components\\\\": "themes/' . $name . '/components/"',
-                'add to composer.json\'s autoload.psr-4: "App\\\\Theme\\\\Layouts\\\\": "themes/' . $name . '/layouts/"',
-                'add to phpcs.xml.dist\'s rootNamespaces: <element key="themes/' . $name . '/components" value="App\\Theme\\Components"/>',
-                'add to phpcs.xml.dist\'s rootNamespaces: <element key="themes/' . $name . '/layouts" value="App\\Theme\\Layouts"/>',
-            ],
+            lines: $this->lines($name),
         );
+    }
+
+    /**
+     * @param string $name The theme's name.
+     *
+     * @return list<string> The lines to add by hand: the theme in config/app.php, and its `src/` folders (#167) in
+     *                      Composer and PHPCS.
+     */
+    private function lines(string $name): array
+    {
+        return [
+            "set theme: '" . $name . "' in config/app.php",
+            'add to composer.json\'s autoload.psr-4: "App\\\\Theme\\\\Components\\\\": "themes/' . $name . '/src/Components/"',
+            'add to composer.json\'s autoload.psr-4: "App\\\\Theme\\\\Layouts\\\\": "themes/' . $name . '/src/Layouts/"',
+            'add to phpcs.xml.dist\'s rootNamespaces: <element key="themes/' . $name . '/src/Components" value="App\\Theme\\Components"/>',
+            'add to phpcs.xml.dist\'s rootNamespaces: <element key="themes/' . $name . '/src/Layouts" value="App\\Theme\\Layouts"/>',
+        ];
     }
 }

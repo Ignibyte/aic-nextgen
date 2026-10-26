@@ -7,6 +7,7 @@ namespace Gates\Rendering;
 use Gates\Application\FileLister;
 use Gates\Application\ProjectProfile;
 use Gates\Application\QuietFileReader;
+use Gates\Domain\BuildPaths;
 use Gates\Domain\GateProfile;
 use Gates\Domain\RawHtmlUse;
 use PhpParser\Error;
@@ -71,21 +72,37 @@ final readonly class RawHtmlScan
     }
 
     /**
+     * @param string $root The project's root.
+     *
+     * @return list<string> The folders whose PHP holds `new RawHtml`: the framework's source in AIC, each module's
+     *                      `src/`, each theme's `src/` (#167) and the generated wiring.
+     */
+    private function roots(string $root): array
+    {
+        $modules = glob($root . '/modules/*/src', GLOB_ONLYDIR);
+        $themes = glob($root . '/themes/*/src', GLOB_ONLYDIR);
+        $framework = $this->projectProfile->profile($root) === GateProfile::Aic
+            ? [$root . '/framework/src']
+            : [];
+
+        return [
+            ...$framework,
+            ...($modules === false ? [] : $modules),
+            ...($themes === false ? [] : $themes),
+            $root . '/' . BuildPaths::GENERATED,
+        ];
+    }
+
+    /**
      * @param string $root The root.
      *
      * @return list<string> Every PHP file under its roots, sorted.
      */
     private function files(string $root): array
     {
-        $modules = glob($root . '/modules/*/src', GLOB_ONLYDIR);
-        $themes = glob($root . '/themes/*', GLOB_ONLYDIR);
-        $framework = $this->projectProfile->profile($root) === GateProfile::Aic
-            ? [$root . '/framework/src']
-            : [];
-        $roots = [...$framework, ...($modules === false ? [] : $modules), ...($themes === false ? [] : $themes), $root . '/generated'];
         $files = [];
 
-        foreach ($roots as $directory) {
+        foreach ($this->roots($root) as $directory) {
             $files = [...$files, ...$this->fileLister->files($directory)];
         }
 

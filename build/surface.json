@@ -443,62 +443,62 @@
         "components": [
             {
                 "component": "App\\Theme\\Components\\Greetings\\Greetings",
-                "generated": "generated/templates/themes/app/components/Greetings/greetings.phtml",
+                "generated": "build/generated/templates/themes/app/components/Greetings/greetings.phtml",
                 "source": "themes/app/components/Greetings/greetings.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\Home\\Home",
-                "generated": "generated/templates/themes/app/components/Home/home.phtml",
+                "generated": "build/generated/templates/themes/app/components/Home/home.phtml",
                 "source": "themes/app/components/Home/home.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\LineList\\LineList",
-                "generated": "generated/templates/themes/app/components/LineList/line-list.phtml",
+                "generated": "build/generated/templates/themes/app/components/LineList/line-list.phtml",
                 "source": "themes/app/components/LineList/line-list.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\NoteCard\\NoteCard",
-                "generated": "generated/templates/themes/app/components/NoteCard/note-card.phtml",
+                "generated": "build/generated/templates/themes/app/components/NoteCard/note-card.phtml",
                 "source": "themes/app/components/NoteCard/note-card.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\NoteList\\NoteList",
-                "generated": "generated/templates/themes/app/components/NoteList/note-list.phtml",
+                "generated": "build/generated/templates/themes/app/components/NoteList/note-list.phtml",
                 "source": "themes/app/components/NoteList/note-list.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\ScaffoldAboutView\\ScaffoldAboutView",
-                "generated": "generated/templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml",
+                "generated": "build/generated/templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml",
                 "source": "themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\ScaffoldCard\\ScaffoldCard",
-                "generated": "generated/templates/themes/app/components/ScaffoldCard/scaffold-card.phtml",
+                "generated": "build/generated/templates/themes/app/components/ScaffoldCard/scaffold-card.phtml",
                 "source": "themes/app/components/ScaffoldCard/scaffold-card.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\SiteNav\\SiteNav",
-                "generated": "generated/templates/themes/app/components/SiteNav/site-nav.phtml",
+                "generated": "build/generated/templates/themes/app/components/SiteNav/site-nav.phtml",
                 "source": "themes/app/components/SiteNav/site-nav.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\StockLinks\\StockLinks",
-                "generated": "generated/templates/themes/app/components/StockLinks/stock-links.phtml",
+                "generated": "build/generated/templates/themes/app/components/StockLinks/stock-links.phtml",
                 "source": "themes/app/components/StockLinks/stock-links.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\StockListing\\StockListing",
-                "generated": "generated/templates/themes/app/components/StockListing/stock-listing.phtml",
+                "generated": "build/generated/templates/themes/app/components/StockListing/stock-listing.phtml",
                 "source": "themes/app/components/StockListing/stock-listing.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\Tick\\Tick",
-                "generated": "generated/templates/themes/app/components/Tick/tick.phtml",
+                "generated": "build/generated/templates/themes/app/components/Tick/tick.phtml",
                 "source": "themes/app/components/Tick/tick.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\Ticks\\Ticks",
-                "generated": "generated/templates/themes/app/components/Ticks/ticks.phtml",
+                "generated": "build/generated/templates/themes/app/components/Ticks/ticks.phtml",
                 "source": "themes/app/components/Ticks/ticks.phtml"
             }
         ],
@@ -601,7 +601,7 @@
         {
             "contract": "AIC\\Component\\Contracts\\Component",
             "entry": false,
-            "folder": "themes/<theme>/components/<Name>",
+            "folder": "themes/<theme>/src/Components/<Name>",
             "kind": "Component",
             "method": "",
             "response": ""

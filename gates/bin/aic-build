@@ -16,17 +16,17 @@ declare(strict_types=1);
  * connects on its first query. The theme config/app.php names (#153) holds
  * every component, layout and asset: each `.phtml` there, plain PHP, is
  * checked by gate:25's grammar, typed, and compiled to its class under
- * `generated/templates/`; the lookup that finds each component's template is
- * generated/ThemeTemplates and its parts (#98), and a template anywhere else
+ * `build/generated/templates/`; the lookup that finds each component's template is
+ * build/generated/ThemeTemplates and its parts (#98), and a template anywhere else
  * is refused. The theme's stylesheets, in path order, build
- * public/assets/aic.css; its other files are copied to their catalog paths.
- * The build owns public/assets/: a file there it would not write is deleted,
+ * build/assets/aic.css; its other files are copied to their catalog paths.
+ * The build owns build/assets/: a file there it would not write is deleted,
  * and --check calls it stale.
  *
  * The modules come first (#92): every modules/<name>/<name>.module.php is read
- * and checked, and the wiring under generated/ is written (or, with --check,
+ * and checked, and the wiring under build/generated/ is written (or, with --check,
  * compared) before any composition class loads, since those classes load the
- * generated ones. The build owns generated/: a file there that no module
+ * generated ones. The build owns build/generated/: a file there that no module
  * generates any more is deleted, and --check calls it stale. The routes are
  * the modules', in the build order the app kernel adds them in, so
  * surface.json lists exactly what the app serves.
@@ -63,6 +63,7 @@ use Gates\Application\ThemeHtmlSource;
 use Gates\Application\ThemeLayoutsSource;
 use Gates\Application\ThemePageSource;
 use Gates\Application\WebPresentationSource;
+use Gates\Domain\BuildPaths;
 use Gates\Domain\GateProfile;
 use Gates\Infrastructure\ProjectConfig;
 use Gates\Infrastructure\ProjectRoot;
@@ -107,19 +108,24 @@ try {
 
     $tessera = (new TesseraBuild($root, $appConfig->tessera, new SystemProcessRunner()))->files();
     $assetCatalog = (new AssetCatalogBuild($root))->plan($tessera, $presentation->theme);
-    $generated = $moduleBuild->files($modules) + $templates + $atoms;
+    $generated = $templates + $atoms;
+
+    foreach ($moduleBuild->files($modules) as $file => $source) {
+        $generated[$root . '/' . BuildPaths::GENERATED . '/' . $file] = $source;
+    }
+
     $theme = $presentation->theme;
-    $generated[$root . '/generated/Presentation.php'] = (new WebPresentationSource())->file($theme);
+    $generated[$root . '/' . BuildPaths::GENERATED . '/Presentation.php'] = (new WebPresentationSource())->file($theme);
 
     if ($theme !== null) {
         $themeLayoutsSource = new ThemeLayoutsSource();
-        $generated[$root . '/generated/ThemeLayouts.php'] = $themeLayoutsSource->layouts($theme, $appConfig->tessera->scriptPath());
-        $generated[$root . '/generated/ThemePageTemplate.php'] = (new ThemePageSource())->pageTemplate($theme);
-        $generated[$root . '/generated/ThemeHtmlTemplate.php'] = (new ThemeHtmlSource())->htmlTemplate($theme);
+        $generated[$root . '/' . BuildPaths::GENERATED . '/ThemeLayouts.php'] = $themeLayoutsSource->layouts($theme, $appConfig->tessera->scriptPath());
+        $generated[$root . '/' . BuildPaths::GENERATED . '/ThemePageTemplate.php'] = (new ThemePageSource())->pageTemplate($theme);
+        $generated[$root . '/' . BuildPaths::GENERATED . '/ThemeHtmlTemplate.php'] = (new ThemeHtmlSource())->htmlTemplate($theme);
         $layoutNames = $themeLayoutsSource->layoutNames($theme);
 
         if ($layoutNames !== null) {
-            $generated[$root . '/generated/ThemeLayoutName.php'] = $layoutNames;
+            $generated[$root . '/' . BuildPaths::GENERATED . '/ThemeLayoutName.php'] = $layoutNames;
         }
 
         $adapters[ThemeLayout::class] = 'App\\Generated\\ThemeHtmlTemplate';
@@ -127,16 +133,16 @@ try {
     }
 
     foreach ((new AssetCatalogSource())->files($assetCatalog->assets) as $file => $source) {
-        $generated[$root . '/generated/' . $file] = $source;
+        $generated[$root . '/' . BuildPaths::GENERATED . '/' . $file] = $source;
     }
 
     foreach ((new TemplatesSource())->files($lookups, $adapters) as $file => $source) {
-        $generated[$root . '/generated/' . $file] = $source;
+        $generated[$root . '/' . BuildPaths::GENERATED . '/' . $file] = $source;
     }
     $buildOutputs = new BuildOutputs($root);
     $orphans = [
-        ...$buildOutputs->orphans($root . '/generated', $generated, '*.php', true),
-        ...$buildOutputs->orphans($root . '/generated', $generated, '*.phtml', true),
+        ...$buildOutputs->orphans($root . '/' . BuildPaths::GENERATED, $generated, '*.php', true),
+        ...$buildOutputs->orphans($root . '/' . BuildPaths::GENERATED, $generated, '*.phtml', true),
         ...($atoms === [] ? [] : [
             ...$buildOutputs->orphans($root . '/framework/src/Component/Application/Templates', $atoms, '*.php', true),
             ...$buildOutputs->orphans($root . '/framework/src/Component/Application/Templates', $atoms, '*.phtml', true),
@@ -190,7 +196,7 @@ try {
 }
 
 $publicAssetOrphans = new PublicAssetOrphans();
-$assetOrphans = $publicAssetOrphans->orphans($root . '/public/assets', $outputs);
+$assetOrphans = $publicAssetOrphans->orphans($root . '/' . BuildPaths::ASSETS, $outputs);
 $stale = [...$buildOutputs->stale($outputs), ...$assetOrphans];
 
 if ($checking) {
@@ -225,7 +231,7 @@ foreach ($outputs as $file => $output) {
     file_put_contents($file, $output);
 }
 
-$publicAssetOrphans->delete($assetOrphans, $root . '/public/assets');
+$publicAssetOrphans->delete($assetOrphans, $root . '/' . BuildPaths::ASSETS);
 
 // The code wiki (#108) is written last, from the surface and the tree the build just left.
 [$wiki, $wikiOrphans] = wiki($root, $buildOutputs);
@@ -244,7 +250,7 @@ foreach ($wikiOrphans as $orphan) {
     unlink($orphan);
 }
 
-fwrite(\STDOUT, 'aic-build: wrote generated/ (' . count($modules) . ' module(s)), build/surface.json, public/assets/, ' . count($templates) . ' app templates and ' . count($atoms) . ' library outputs, Tessera ' . $appConfig->tessera->version . ' and ' . count($wiki) . " wiki pages in docs/wiki/.\n");
+fwrite(\STDOUT, 'aic-build: wrote build/generated/ (' . count($modules) . ' module(s)), build/surface.json, build/assets/, ' . count($templates) . ' app templates and ' . count($atoms) . ' library outputs, Tessera ' . $appConfig->tessera->version . ' and ' . count($wiki) . " wiki pages in docs/wiki/.\n");
 
 exit(0);
 

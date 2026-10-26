@@ -85,7 +85,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 21 | native | every runtime class compiles, links, runs and matches PHP under elephc | reshape the class into a form elephc compiles; report a compiler defect |
 | 22 | pipeline docs | *AIC only*: its own process documents | not run in an app |
 | 23 | native site | the app compiled with `elephc --web` answers each step as the PHP app does | find the step that differs and the class behind it |
-| 24 | build outputs | `generated/`, `build/surface.json`, the template classes and `public/assets/` match what the build writes | `composer run build` |
+| 24 | build outputs | everything under `build/` (the generated wiring and templates, `build/assets/`, the manifests) and the wiki match what the build writes | `composer run build` |
 | 25 | templates | the theme's `*.phtml` files and the atoms use the grammar; a template anywhere else, or an unsupported source, fails | move the logic into the component's props |
 | 26 | module boundaries | kind folders, the 15-file cap, exports and requires, no cycles, no component, template or asset in a module, nothing outside `modules/` but the shell and the theme's classes | move the class (a component to the theme), export it, require the module, or split the module |
 | 27 | raw html | every `RawHtml` use is listed, matches its grant in `config/raw-html.php`, and sits in a theme component | use a component; or grant the theme component's use with its reason |

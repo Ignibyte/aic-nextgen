@@ -10,7 +10,7 @@
     <file>framework/src</file>
     <file>modules</file>
     <file>themes</file>
-    <file>generated</file>
+    <file>build/generated</file>
     <file>public</file>
     <file>bootstrap</file>
     <file>config</file>
@@ -39,9 +39,9 @@
                 <element key="modules/note/src" value="App\Note"/>
                 <element key="modules/scaffold/src" value="App\Scaffold"/>
                 <element key="modules/site/src" value="App\Site"/>
-                <element key="themes/app/components" value="App\Theme\Components"/>
-                <element key="themes/app/layouts" value="App\Theme\Layouts"/>
-                <element key="generated" value="App\Generated"/>
+                <element key="themes/app/src/Components" value="App\Theme\Components"/>
+                <element key="themes/app/src/Layouts" value="App\Theme\Layouts"/>
+                <element key="build/generated" value="App\Generated"/>
                 <element key="gates/src" value="Gates"/>
                 <element key="gates/architecture" value="Gates\Architecture"/>
             </property>

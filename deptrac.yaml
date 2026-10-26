@@ -11,7 +11,7 @@ deptrac:
     - ./framework/src
     - ./modules
     - ./themes
-    - ./generated
+    - ./build/generated
     - ./gates/src
     - ./gates/architecture
     - ./workflow/src

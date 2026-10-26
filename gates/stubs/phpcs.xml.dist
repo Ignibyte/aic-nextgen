@@ -9,7 +9,7 @@
 
     <file>modules</file>
     <file>themes</file>
-    <file>generated</file>
+    <file>build/generated</file>
     <file>public</file>
     <file>bootstrap</file>
     <file>config</file>
@@ -24,7 +24,7 @@
     <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
         <properties>
             <property name="rootNamespaces" type="array">
-                <element key="generated" value="App\Generated"/>
+                <element key="build/generated" value="App\Generated"/>
             </property>
         </properties>
     </rule>

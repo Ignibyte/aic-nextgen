@@ -99,7 +99,7 @@ final readonly class PresentationBuild
 
         if ($undeclared !== []) {
             throw new InvalidArgumentException("Templates outside the theme's components and layouts: " . implode(', ', $undeclared)
-                . '. Components live in themes/<theme>/components/<Name>/.');
+                . '. Components live in themes/<theme>/src/Components/<Name>/, their templates in themes/<theme>/components/<Name>/.');
         }
     }
 }

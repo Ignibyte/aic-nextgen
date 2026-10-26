@@ -38,7 +38,7 @@
     <projectFiles>
         <directory name="modules"/>
         <directory name="themes"/>
-        <directory name="generated"/>
+        <directory name="build/generated"/>
         <directory name="public"/>
         <directory name="bootstrap"/>
         <directory name="config"/>

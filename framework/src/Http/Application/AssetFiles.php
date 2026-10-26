@@ -58,7 +58,7 @@ final readonly class AssetFiles
      */
     private function path(PublicAsset $publicAsset): ?string
     {
-        $base = $this->root . '/public/assets';
+        $base = $this->root . '/build/assets';
 
         if (is_link($this->root . '/public') || is_link($base)) {
             return null;

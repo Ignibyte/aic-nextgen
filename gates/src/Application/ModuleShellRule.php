@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\BoundaryViolation;
+use Gates\Domain\BuildPaths;
 use Gates\Domain\ClassKinds;
 use Gates\Domain\ModuleRule;
 use Gates\Domain\ModuleTree;
@@ -87,7 +88,8 @@ final readonly class ModuleShellRule implements ModuleRule
             ? null
             : new BoundaryViolation($path, sprintf(
                 '%s is outside modules/ and the shell; move it into modules/<name>/'
-                    . ' (a component goes in themes/<theme>/components/<Name>/, a layout in themes/<theme>/layouts/).',
+                    . ' (a component goes in themes/<theme>/src/Components/<Name>/ with its template in components/<Name>/,'
+                    . ' a layout in themes/<theme>/layouts/).',
                 $path,
             ));
     }
@@ -100,33 +102,35 @@ final readonly class ModuleShellRule implements ModuleRule
      */
     private function appPlace(string $path, ?string $class): bool
     {
-        return str_starts_with($path, 'modules/') || str_starts_with($path, 'generated/') || $this->themeClass($path, $class);
+        return str_starts_with($path, 'modules/')
+            || str_starts_with($path, BuildPaths::GENERATED . '/')
+            || $this->themeClass($path, $class);
     }
 
     /**
      * @param string      $path  A path git lists.
      * @param string|null $class The class the file declares, if any.
      *
-     * @return bool Whether it is a theme's class (#153): an `App\Theme\Components\` class in a component folder, or
-     *              an `App\Theme\Layouts\` class in `layouts/`.
+     * @return bool Whether it is a theme's class (#153, #167): an `App\Theme\Components\` class in a component's
+     *              folder under `src/Components/`, or an `App\Theme\Layouts\` class in `src/Layouts/`.
      */
     private function themeClass(string $path, ?string $class): bool
     {
         return $class !== null && (
-            str_starts_with($class, 'App\\Theme\\Components\\') && fnmatch('themes/*/components/*/*.php', $path)
-            || str_starts_with($class, 'App\\Theme\\Layouts\\') && fnmatch('themes/*/layouts/*.php', $path)
+            str_starts_with($class, 'App\\Theme\\Components\\') && fnmatch('themes/*/src/Components/*/*.php', $path)
+            || str_starts_with($class, 'App\\Theme\\Layouts\\') && fnmatch('themes/*/src/Layouts/*.php', $path)
         );
     }
 
     /**
      * @param ModuleTree $moduleTree composer.json's prefixes and the modules.
      *
-     * @return list<BoundaryViolation> Every `App\` prefix that maps anywhere but a module's `src/`, `generated/` or the
-     *                                 theme's folders.
+     * @return list<BoundaryViolation> Every `App\` prefix that maps anywhere but a module's `src/`, `build/generated/`
+     *                                 or the theme's `src/` folders.
      */
     private function prefixViolations(ModuleTree $moduleTree): array
     {
-        $allowed = ['App\\Generated\\' => 'generated/'];
+        $allowed = ['App\\Generated\\' => BuildPaths::GENERATED . '/'];
 
         foreach ($moduleTree->modules as $moduleDefinition) {
             $allowed[$moduleDefinition->namespace] = 'modules/' . $moduleDefinition->name . '/src/';
@@ -141,8 +145,8 @@ final readonly class ModuleShellRule implements ModuleRule
 
             $violations[] = new BoundaryViolation('composer.json', sprintf(
                 "composer.json maps %s to %s; map each module's namespace to modules/<name>/src/, the generated namespace"
-                    . ' to generated/, and App\\Theme\\Components\\ and App\\Theme\\Layouts\\ to'
-                    . ' themes/<theme>/components/ and themes/<theme>/layouts/.',
+                    . ' to ' . BuildPaths::GENERATED . '/, and App\\Theme\\Components\\ and App\\Theme\\Layouts\\ to'
+                    . ' themes/<theme>/src/Components/ and themes/<theme>/src/Layouts/.',
                 $prefix,
                 implode(', ', $folders),
             ));
@@ -169,13 +173,13 @@ final readonly class ModuleShellRule implements ModuleRule
      * @param string       $prefix  An `App\` prefix.
      * @param list<string> $folders Its configured folders.
      *
-     * @return bool Whether it is one of the theme's two prefixes, mapped to that folder of one theme.
+     * @return bool Whether it is one of the theme's two prefixes, mapped to that `src/` folder of one theme.
      */
     private function themePrefix(string $prefix, array $folders): bool
     {
         $folder = match ($prefix) {
-            'App\\Theme\\Components\\' => 'components',
-            'App\\Theme\\Layouts\\' => 'layouts',
+            'App\\Theme\\Components\\' => 'src/Components',
+            'App\\Theme\\Layouts\\' => 'src/Layouts',
             default => null,
         };
 

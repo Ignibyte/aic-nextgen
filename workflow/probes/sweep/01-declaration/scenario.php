@@ -33,12 +33,12 @@ $shell = static fn (string $command): string => '{"session_id":"probe","cwd":"{r
 $verifyAsset = <<<'PHP'
 require 'vendor/autoload.php';
 $source = file_get_contents('themes/app/assets/workflow-probe.txt');
-$published = file_get_contents('public/assets/themes/app/workflow-probe.txt');
+$published = file_get_contents('build/assets/themes/app/workflow-probe.txt');
 $inventory = json_decode(file_get_contents('build/assets.json'), true, 512, JSON_THROW_ON_ERROR);
 $rows = array_values(array_filter($inventory['assets'], static fn (array $row): bool => $row['name'] === 'theme_app/workflow-probe.txt'));
 $assets = new App\Generated\Assets();
 $asset = $assets->named('theme_app/workflow-probe.txt');
-$canonical = $asset === null ? false : file_get_contents('public/assets/' . $asset->file);
+$canonical = $asset === null ? false : file_get_contents('build/assets/' . $asset->file);
 $ok = $source !== false && $source === $published && $source === $canonical && $inventory['schema'] === 'aic.assets/1'
     && count($rows) === 1 && $rows[0]['aliasPath'] === '/assets/themes/app/workflow-probe.txt'
     && preg_match('#^/assets/[a-f0-9]{64}/themes/app/workflow-probe[.]txt$#D', $rows[0]['path']) === 1
@@ -98,16 +98,16 @@ return new ProbeScenario([
     new GuardStep(
         'a direct generated asset lookup write',
         'edit',
-        $write('generated/Assets.php'),
+        $write('build/generated/Assets.php'),
         2,
-        "generated/Assets.php is the build's: composer run build writes it.",
+        "build/generated/Assets.php is the build's: composer run build writes it.",
     ),
     new GuardStep(
         'a direct generated presentation write',
         'edit',
-        $write('generated/Presentation.php'),
+        $write('build/generated/Presentation.php'),
         2,
-        "generated/Presentation.php is the build's: composer run build writes it.",
+        "build/generated/Presentation.php is the build's: composer run build writes it.",
     ),
     new GuardStep(
         'a direct asset inventory shell write',

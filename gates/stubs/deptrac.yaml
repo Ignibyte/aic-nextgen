@@ -10,4 +10,4 @@ deptrac:
   paths:
     - ./modules
     - ./themes
-    - ./generated
+    - ./build/generated

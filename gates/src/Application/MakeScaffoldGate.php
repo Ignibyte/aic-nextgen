@@ -47,7 +47,8 @@ final readonly class MakeScaffoldGate
      * How to make the module again.
      */
     private const string REGENERATE = 'to make it again: rm -rf modules/scaffold themes/app/components/Scaffold* '
-        . 'themes/app/layouts/Scaffold* themes/app/layouts/page--scaffold* themes/app/layouts/html--scaffold*; composer run build; '
+        . 'themes/app/src/Components/Scaffold* themes/app/src/Layouts/Scaffold* themes/app/layouts/page--scaffold* '
+        . 'themes/app/layouts/html--scaffold*; composer run build; '
         . 'run the twelve lines of Gates\\Application\\ScaffoldSequence with bin/aic; composer run build.';
 
     /**
@@ -185,15 +186,14 @@ final readonly class MakeScaffoldGate
      * @param string $root The project's root.
      *
      * @return list<string> Every authored module, component and layout file, sorted; compiled classes live under
-     *                      generated/.
+     *                      build/generated/.
      */
     private function committed(string $root): array
     {
         $files = $this->layouts($root);
-        $components = glob($root . '/' . ScaffoldFiles::THEME . '*', GLOB_ONLYDIR);
         $folders = [ScaffoldFiles::FOLDER, ...array_map(
             static fn (string $folder): string => substr($folder, strlen($root) + 1) . '/',
-            $components === false ? [] : $components,
+            $this->components($root),
         )];
 
         foreach ($folders as $folder) {
@@ -205,6 +205,23 @@ final readonly class MakeScaffoldGate
         sort($files);
 
         return $files;
+    }
+
+    /**
+     * @param string $root The project's root.
+     *
+     * @return list<string> The scaffold's component folders, templates and classes (#167), absolute.
+     */
+    private function components(string $root): array
+    {
+        $components = [];
+
+        foreach (ScaffoldFiles::THEME as $prefix) {
+            $matches = glob($root . '/' . $prefix . '*', GLOB_ONLYDIR);
+            $components = [...$components, ...($matches === false ? [] : $matches)];
+        }
+
+        return $components;
     }
 
     /**

@@ -85,11 +85,11 @@ final readonly class MakeLayouts
     public function files(string $name): array
     {
         $case = $this->case($name);
-        $folder = $this->folder();
+        $classes = 'themes/' . $this->makeTheme->name() . '/src/Layouts/';
 
         return [
-            new MadeFile($folder . $case . 'Page.php', $this->layoutSource->data($name, $case)),
-            new MadeFile($folder . 'page--' . $name . '.phtml', $this->layoutSource->page($name, $case)),
+            new MadeFile($classes . $case . 'Page.php', $this->layoutSource->data($name, $case)),
+            new MadeFile($this->folder() . 'page--' . $name . '.phtml', $this->layoutSource->page($name, $case)),
         ];
     }
 

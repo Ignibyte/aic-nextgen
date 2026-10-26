@@ -38,9 +38,10 @@ use function usort;
 final readonly class ClassKinds
 {
     /**
-     * Where a component lives (#153): its own folder in the theme.
+     * Where a component's class lives (#153, #167): its own folder under the theme's `src/Components/`; its template
+     * sits in `components/<Name>/`.
      */
-    public const string THEME_COMPONENTS = 'themes/<theme>/components/<Name>';
+    public const string THEME_COMPONENTS = 'themes/<theme>/src/Components/<Name>';
 
     /**
      * The folders a plain class may sit in.

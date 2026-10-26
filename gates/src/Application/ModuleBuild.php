@@ -72,17 +72,11 @@ final readonly class ModuleBuild
      *
      * @throws InvalidArgumentException When a controller cannot be wired, or the set cannot be generated gate-clean.
      *
-     * @return array<string, string> The source of each generated file, by absolute path.
+     * @return array<string, string> The source of each generated file, by its name in the generated folder.
      */
     public function files(array $modules): array
     {
-        $files = [];
-
-        foreach ($this->wiringWriter->files($this->moduleWirer->wire($modules)) as $file => $source) {
-            $files[$this->root . '/generated/' . $file] = $source;
-        }
-
-        return $files;
+        return $this->wiringWriter->files($this->moduleWirer->wire($modules));
     }
 
     /**

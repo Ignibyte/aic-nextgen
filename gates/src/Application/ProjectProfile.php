@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\BuildPaths;
 use Gates\Domain\GateProfile;
 use Gates\Domain\GateRoots;
 
@@ -25,22 +26,17 @@ final readonly class ProjectProfile
      * What may sit outside `modules/` in an app, as `fnmatch` patterns: the app's shape and its root files.
      */
     private const array APP_SHELL = [
-        // The wiring the build writes from the manifests (#93).
-        'generated/*',
         // The code wiki the build writes from the surface and the code index (#108).
         'docs/wiki/*',
         // The app's settings, gate:23's steps among them (#130).
         'config/*',
         // serve.php, the one request the compiled site and php-fpm serve.
         'bootstrap/*',
-        // index.php, and the built assets (#39, #70).
+        // index.php, the one entry (#167).
         'public/*',
-        // The theme: its components, layouts and assets (#153).
+        // The theme: its templates, its classes in src/, its assets and its front-end sources in frontend/ (#153, #167).
         'themes/*',
-        // A front-end build's sources (package.json, lockfile, input CSS), whose output is committed into the theme's
-        // assets/ (#163); nothing in it is published.
-        'frontend/*',
-        // surface.json, the build's manifest (#26).
+        // Everything the build writes: the generated wiring, the assets, the manifests (#26, #167).
         'build/*',
         // The console.
         'bin/aic',
@@ -99,7 +95,7 @@ final readonly class ProjectProfile
         'framework/src',
         'modules',
         'themes',
-        'generated',
+        BuildPaths::GENERATED,
         'gates/src',
         'gates/architecture',
         'workflow/src',
@@ -132,18 +128,18 @@ final readonly class ProjectProfile
         return $this->profile($root) === GateProfile::Aic
             ? new GateRoots(
                 self::AIC_CLASS_ROOTS,
-                ['framework/src', 'modules', 'themes', 'generated', 'gates/src', 'gates/architecture', 'workflow/src'],
-                ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'themes', 'generated']],
-                ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'themes', 'generated']],
+                ['framework/src', 'modules', 'themes', BuildPaths::GENERATED, 'gates/src', 'gates/architecture', 'workflow/src'],
+                ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
+                ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
                 ['composer.json', 'framework/composer.json', 'workflow/composer.json'],
                 ['.claude/hooks', 'bin', 'gates/bin', 'workflow/bin', 'workflow/probes'],
                 [...self::APP_SHELL, ...self::AIC_SHELL],
             )
             : new GateRoots(
-                ['modules', 'themes', 'generated'],
-                ['modules', 'themes', 'generated'],
-                ['App\\' => ['modules', 'themes', 'generated']],
-                ['AIC\\' => 'vendor/aic/framework/src', 'App\\' => ['modules', 'themes', 'generated']],
+                ['modules', 'themes', BuildPaths::GENERATED],
+                ['modules', 'themes', BuildPaths::GENERATED],
+                ['App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
+                ['AIC\\' => 'vendor/aic/framework/src', 'App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
                 ['composer.json'],
                 ['.claude/hooks', 'bin'],
                 self::APP_SHELL,

@@ -7,6 +7,7 @@ namespace Gates\PhpStan;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Frame;
+use Gates\Domain\BuildPaths;
 use Gates\Domain\RegexCaptures;
 use Override;
 use ReflectionClassConstant;
@@ -46,7 +47,7 @@ final class TemplateUsageProvider extends ReflectionBasedMemberUsageProvider
      * (in the source package or an installed one), and the framework's runtime templates.
      */
     private const array FOLDERS = [
-        'generated/templates',
+        BuildPaths::GENERATED . '/templates',
         'framework/src/Component/Application/Templates',
         'framework/templates/tessera',
         'vendor/aic/framework/src/Component/Application/Templates',

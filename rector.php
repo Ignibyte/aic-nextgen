@@ -10,7 +10,7 @@ return (new RectorSetup())->configure(__DIR__, [
     'framework/src',
     'modules',
     'themes',
-    'generated',
+    'build/generated',
     'public',
     'bootstrap',
     'config',

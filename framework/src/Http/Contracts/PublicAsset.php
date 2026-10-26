@@ -14,7 +14,7 @@ final readonly class PublicAsset
     /**
      * @param string $name      The logical owner/name identifier.
      * @param string $path      Its canonical /assets/ URL.
-     * @param string $file      Its trusted path relative to public/assets/.
+     * @param string $file      Its trusted path relative to build/assets/.
      * @param string $mediaType The declared response media type.
      * @param string $sha256    The lowercase SHA-256 of the published bytes.
      * @param int    $size      The published byte count.

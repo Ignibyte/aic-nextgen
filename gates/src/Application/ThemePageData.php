@@ -32,7 +32,7 @@ final readonly class ThemePageData
     public function page(string $class): string
     {
         if (!class_exists($class) || !is_a($class, Component::class, true)) {
-            throw new InvalidArgumentException($class . ': the theme needs layouts/Page.php, a Component holding its regions.');
+            throw new InvalidArgumentException($class . ': the theme needs src/Layouts/Page.php, a Component holding its regions.');
         }
 
         return $class;

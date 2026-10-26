@@ -3,8 +3,8 @@
 An app is a set of modules and a theme. A module is a folder, `modules/<name>/`, holding its
 classes and one manifest that says what it brings to the app; the theme holds every component,
 template and asset. Nothing outside `modules/` and the theme holds app code; the app's own shell
-is config, the entry points, the build's output, the tool settings and `frontend/`, the sources
-of a front-end build.
+is config, the entry (`public/index.php`), everything the build writes (under `build/`) and the
+tool settings.
 
 ## A module's folder
 
@@ -33,7 +33,7 @@ return (new ModuleManifest('note'))
 ```
 
 Nothing reads a manifest at run time. `composer run build` reads every manifest, checks it, and
-writes the wiring as PHP under `generated/`. That is why the app compiles natively: the wiring is
+writes the wiring as PHP under `build/generated/`. That is why the app compiles natively: the wiring is
 ordinary code with literal class names.
 
 ### Declarations
@@ -61,24 +61,25 @@ of a service.
 
 ### What the build writes
 
-`composer run build` writes, under `generated/` (namespace `App\Generated\`):
+`composer run build` writes everything under `build/` (#167). Under `build/generated/` (namespace
+`App\Generated\`):
 
 - per module, the classes for its routes, handlers, middleware, commands, jobs, provider,
   migrations, schedules and protected prefixes;
 - the aggregators that join every module's pieces, and the facades `WebModules` and
   `ConsoleModules` that the framework's `AIC\Module\Application\AppKernel` and
   `AIC\Module\Application\ConsoleKernel` take;
-- the lookup from each component to its compiled template class (`ThemeTemplates` and its parts);
-- the theme's compiled template classes under `generated/templates/` (`App\Generated\Templates`),
-  and the theme's document factory and transparent page adapter;
+- the lookup from each component to its escaped template (`ThemeTemplates` and its parts);
+- the theme's escaped templates under `build/generated/templates/`, and the theme's document factory
+  and transparent page adapter;
 - the exact public asset lookup and its data parts, joined with the template lookup by the
   generated `Presentation` factory.
 
 It also writes `build/surface.json` (every route, command and job with its kind),
-`build/assets.json` (the private public-asset inventory) and
-`public/assets/`. Never edit what the build writes: change the manifest or the source and build
-again. gate:24 fails when any of it is stale, and when `generated/` or `public/assets/` holds a file
-the build would not write.
+`build/assets.json` (the private public-asset inventory) and `build/assets/`, the published files
+AIC's asset handler serves at `/assets/`. `public/` holds only `index.php`. Never edit what the
+build writes: change the manifest or the source and build again. gate:24 fails when any of it is
+stale, and when `build/generated/` or `build/assets/` holds a file the build would not write.
 
 ## Folders
 
@@ -126,33 +127,38 @@ requires that module. gate:26 holds three rules:
 ## The theme
 
 `config/app.php` names the theme (`theme: 'app'`); the build reads `themes/<theme>/` and no other
-folder, and nothing reads it while serving. A theme holds three folders:
+folder, and nothing reads it while serving. The templates sit on top, where people look; the PHP
+behind them sits in `src/` (#167):
 
 ```
 themes/app/
-  layouts/     html.phtml  page.phtml  Page.php
-  components/  Greetings/Greetings.php  Greetings/greetings.phtml  ...
+  layouts/     html.phtml  page.phtml  page--focus.phtml
+  components/  Greetings/greetings.phtml  NoteCard/note-card.phtml  ...
+  src/
+    Layouts/     Page.php  FocusPage.php
+    Components/  Greetings/Greetings.php  NoteCard/NoteCard.php  ...
   assets/      10-tokens.css  site.css  favicon.svg  ...
+  frontend/    (optional) the sources of a front-end build
 ```
 
-Each `components/<Name>/` holds the final Component `App\Theme\Components\<Name>\<Name>`, its
-template `<name>.phtml` (the class name in lower kebab case, `line-list.phtml` for
-`LineList`), and any value classes of the same namespace that are not Components. The template's
-typing line names its folder's class:
+Each `components/<Name>/` holds only the template `<name>.phtml` (the class name in lower kebab
+case, `line-list.phtml` for `LineList`). Its twin `src/Components/<Name>/` holds the final
+Component `App\Theme\Components\<Name>\<Name>` and any value classes of the same namespace that
+are not Components. The template's typing line names its component's class:
 
 ```php
 <?php /** @var \App\Theme\Components\Greetings\Greetings $greetings */ ?>
 ```
 
-Nothing declares a component: the folder is the declaration. A folder without its class or
-template, a class whose name or namespace does not match its folder, a second Component in a
-folder, a stray file, a link, or a `.phtml` anywhere outside the theme fails the build before
-publication. gate:25 checks every template against the restricted PHP grammar: no functions,
+Nothing declares a component: the folders are the declaration. A template folder without its
+class folder or the reverse, a `.php` file under `components/` or `layouts/`, a class whose name or
+namespace does not match its folder, a second Component in a folder, a stray file, a link, or a
+`.phtml` anywhere outside the theme fails the build before publication. gate:25 checks every template against the restricted PHP grammar: no functions,
 calls or runtime includes. Static types determine automatic escaping.
 
-`layouts/` holds exactly the document, the page and the page's region data. `Page.php` declares
-`App\Theme\Layouts\Page`: final, readonly, one public promoted nonnullable Region per region. The
-regions are its constructor's parameters, named after their properties, in order; renaming a
+`layouts/` holds exactly the document and the page templates; the page's region data is
+`src/Layouts/Page.php`, which declares `App\Theme\Layouts\Page`: final, readonly, one public
+promoted nonnullable Region per region. The regions are its constructor's parameters, named after their properties, in order; renaming a
 property renames a Tessera region. The page template reads them (`$page->header`), and each
 must render exactly once on every branch: a loop or conditional omission is refused. The HTML
 template takes `AIC\Component\Domain\ThemeLayout`, reads title, identity and CSRF data, and
@@ -168,15 +174,15 @@ The app maps the theme's two namespaces in Composer and PHPCS, and the build pri
 is missing:
 
 ```
-"App\\Theme\\Components\\": "themes/app/components/",
-"App\\Theme\\Layouts\\": "themes/app/layouts/"
-<element key="themes/app/components" value="App\Theme\Components"/>
-<element key="themes/app/layouts" value="App\Theme\Layouts"/>
+"App\\Theme\\Components\\": "themes/app/src/Components/",
+"App\\Theme\\Layouts\\": "themes/app/src/Layouts/"
+<element key="themes/app/src/Components" value="App\Theme\Components"/>
+<element key="themes/app/src/Layouts" value="App\Theme\Layouts"/>
 ```
 
 Named layouts sit beside the default ones: `html--<name>.phtml`, `page--<name>.phtml`
 or both, where `<name>` is lowercase words joined by single hyphens (not `class`). A named page may
-read its own page data, a class in `layouts/` that its first line names (`FocusPage`), with its own
+read its own page data, a class in `src/Layouts/` that its first line names (`FocusPage`), with its own
 regions, which must include `content`; a page data class no page reads is refused. The build
 generates `App\Generated\ThemeLayoutName`, a case per name (`focus` gives `Focus`), and refuses two
 names that give the same case. A controller passes the case to `PageDocuments`; a file the named
@@ -189,7 +195,7 @@ the theme's typed page and renders its page template. Render data holds no facto
 The existing Renderer remains the only HTML constructor. No reflection or template include runs
 while serving a request.
 
-Templates run as templates: the build escapes each into `generated/templates/`, where its lookup
+Templates run as templates: the build escapes each into `build/generated/templates/`, where its lookup
 requires it, and no Composer mapping names them. The build audits nested generated outputs,
 removes orphans and checks freshness without writes.
 `build/surface.json` carries the theme as a top-level `theme` object, and the code wiki's index
@@ -198,12 +204,13 @@ has a Theme section.
 ## Generate theme files
 
 With the workflow development package installed, `bin/aic make:component <Class>` writes the
-component and its template into the theme's `components/<Class>/` and edits no manifest.
+component's template into the theme's `components/<Class>/` and its class into
+`src/Components/<Class>/`, and edits no manifest.
 `bin/aic make:page <module> <Class> <path>` writes the controller in the module, routes it in the
 module's manifest, and writes its own view into the theme; `--component=<Class>` reuses a theme
 component instead, and `--layout=<name>` makes the page pick one of the theme's named layouts.
-`bin/aic make:layout <name>` writes a named page layout into `layouts/`: page data with the content
-region only and `page--<name>.phtml`; the document falls back to `html.phtml`, and the next
+`bin/aic make:layout <name>` writes a named page layout: its page data in `src/Layouts/`, with the
+content region only, and `layouts/page--<name>.phtml`; the document falls back to `html.phtml`, and the next
 `composer run build` adds its case to `ThemeLayoutName`.
 
 `bin/aic make:entity <module> <Class> <table> --fields=<name>:<type>,…` writes a table slice in the
@@ -214,14 +221,14 @@ becomes `-`) that shows the newest 50 rows in a heading and paragraphs. Types ar
 routes the page and runs the migration; run `bin/aic migrate` before opening the page.
 
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
-(`Page.php` with four regions, header, content, nav and footer, and the HTML and page templates)
+(the HTML and page templates), `src/Layouts/Page.php` (four regions: header, content, nav, footer)
 and a stylesheet, then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module
 is assumed. Names are lowercase words joined by hyphens, at most 32 bytes.
 
-Map `App\Theme\Components\` and `App\Generated\Templates\` in Composer and run
+Map `App\Theme\Components\` (to `src/Components/`) in Composer and run
 `composer dump-autoload` first. Use `--dry-run --json` to inspect every path before declaring it
 in an open workflow's spec. Every target passes the normal write guard; the make records the files
-it wrote. Generated classes, public assets and wiki output belong to `composer run build`.
+it wrote. Everything under `build/` and the wiki belong to `composer run build`.
 Existing files refuse without writes; rerunning a make refuses rather than replacing source.
 
 ## Assets
@@ -232,15 +239,17 @@ any other supported type a file. The catalog identity is `theme_<theme>/<path>`,
 `theme_app/site.css`. Nested portable paths are supported. Symlinks, nonportable names and
 unsupported extensions fail the build.
 
-Stylesheets are published individually and bundled in path order into `public/assets/aic.css`;
+Stylesheets are published individually and bundled in path order into `build/assets/aic.css`;
 number a file's name (`10-tokens.css`) to order the cascade. Scripts, images, maps, fonts and
-other files keep their bytes under `public/assets/themes/<theme>/`. Publishing a script does not
+other files keep their bytes under `build/assets/themes/<theme>/`. AIC's asset handler serves
+`build/assets/` at `/assets/` under PHP and compiled alike; in production Caddy may map `/assets/`
+there directly. Publishing a script does not
 select it; a page or component must still load it when needed. Every asset shares the same
 fingerprint and HTTP policy.
 
-A theme whose stylesheet is built (Tailwind, for one) keeps the build's sources in the app's root
-`frontend/` folder: its `package.json`, lockfile and input CSS, with `node_modules/` ignored. No
-gate walks it and nothing in it is published. The build writes its output into the theme's
+A theme whose stylesheet is built (Tailwind, for one) keeps the build's sources in its own
+`frontend/` folder, as a Drupal theme does: its `package.json`, lockfile and input CSS and
+scripts, with `node_modules/` ignored. Nothing in it is published or read as a template. The build writes its output into the theme's
 `assets/`, where it is committed and published like any other stylesheet; rerun it after changing
 a template's classes, then `composer run build`.
 
@@ -263,8 +272,8 @@ bodyless 304; HEAD ignores ranges and keeps the full representation's length. A 
 If-Range tag permits a range. Weak tags, mismatches and date-form If-Range return the whole
 representation because publication does not prove a strong date history.
 
-The build owns every output under `public/assets/`; edit declarations and source files, then
-rebuild. It removes old fingerprint directories. Deploy the native binary, catalog and public
+The build owns every output under `build/assets/`; edit declarations and source files, then
+rebuild. It removes old fingerprint directories. Deploy the native binary, catalog and assets
 tree together in isolated release roots, retaining old releases while clients can reference
 them. Building in place under an old running binary is not an atomic deployment. The direct
 application implements this HTTP policy; a static proxy needs equivalent publication selection,

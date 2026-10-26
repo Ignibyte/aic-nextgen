@@ -37,7 +37,7 @@ final readonly class WriteScope
     /**
      * What `composer run build` writes.
      */
-    private const array BUILD = ['build/', 'generated/', 'public/assets/', 'docs/wiki/'];
+    private const array BUILD = ['build/', 'docs/wiki/'];
 
     /**
      * What a write that leaves the project hears (#125).

@@ -43,12 +43,10 @@ final readonly class MakeComponents
      */
     public function files(string $class, string $made): array
     {
-        $folder = $this->folder($class);
-
         return [
-            new MadeFile($folder . $class . '.php', $this->componentSource->source($class, $made)),
+            new MadeFile($this->classFolder($class) . $class . '.php', $this->componentSource->source($class, $made)),
             new MadeFile(
-                $folder . $this->makeNames->kebab($class) . '.phtml',
+                $this->folder($class) . $this->makeNames->kebab($class) . '.phtml',
                 $this->componentTemplateSource->source($class, lcfirst($class)),
             ),
         ];
@@ -75,7 +73,7 @@ final readonly class MakeComponents
 
         $component = $this->makeNames->class($named, '');
 
-        return [$component, [], $this->folder($component) . $component . '.php'];
+        return [$component, [], $this->classFolder($component) . $component . '.php'];
     }
 
     /**
@@ -83,10 +81,23 @@ final readonly class MakeComponents
      *
      * @throws WorkflowRefusal When the app names no theme.
      *
-     * @return string Its folder in the theme, relative to the project, with its last `/`.
+     * @return string Its template's folder in the theme, relative to the project, with its last `/`.
      */
     public function folder(string $class): string
     {
         return 'themes/' . $this->makeTheme->name() . '/components/' . $class . '/';
+    }
+
+    /**
+     * @param string $class The component.
+     *
+     * @throws WorkflowRefusal When the app names no theme.
+     *
+     * @return string Its class folder under the theme's `src/Components/` (#167), relative to the project, with its
+     *                last `/`.
+     */
+    private function classFolder(string $class): string
+    {
+        return 'themes/' . $this->makeTheme->name() . '/src/Components/' . $class . '/';
     }
 }

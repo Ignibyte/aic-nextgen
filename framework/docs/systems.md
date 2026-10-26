@@ -71,7 +71,7 @@ The development engine and its guard are described in [workflow.md](workflow.md)
   the rest), and `AIC\Component\Application\Renderer`, the only class that makes HTML. Every value
   a template writes is escaped by its type; `AIC\Component\Domain\RawHtml` is the one way round
   that, and each use needs a grant in `config/raw-html.php` (gate:27).
-  The theme's HTML, page and component templates are escaped into `generated/templates/` and
+  The theme's HTML, page and component templates are escaped into `build/generated/templates/` and
   required by the generated lookups; no PHP class holds markup. A generated
   `AIC\Component\Contracts\PageLayouts` implementation constructs the theme's document, in the
   layout an `AIC\Component\Contracts\LayoutName` names;
@@ -95,7 +95,7 @@ See [rendering.md](rendering.md) and [templates.md](templates.md) for the comple
 ## 7. The browser runtime
 
 - `AIC\Tessera`: the server side of Tessera, the browser runtime AIC pins and serves from
-  `public/assets/`. It answers an enhanced request with the regions that changed instead of a whole
+  `build/assets/`. It answers an enhanced request with the regions that changed instead of a whole
   document, turns redirects into a header the runtime follows, applies each write once by its id,
   and verifies the signed props a keyed component carries.
 

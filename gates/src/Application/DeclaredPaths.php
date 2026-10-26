@@ -143,11 +143,17 @@ final readonly class DeclaredPaths
      *
      * @throws InvalidArgumentException When an entry is linked or not a regular file or directory.
      *
-     * @return list<string> Its authored candidate or descendant candidates.
+     * @return list<string> Its authored candidate or descendant candidates; none under a theme's `frontend/`, the
+     *                      sources of a front-end build (#167), whose `node_modules/` holds links.
      */
     private function entry(string $relative): array
     {
         $path = $this->root . '/' . $relative;
+
+        if (preg_match('#^themes/[^/]+/frontend\\z#', $relative) === 1) {
+            return [];
+        }
+
         $this->unlinked($relative);
 
         if (is_dir($path)) {
@@ -166,8 +172,8 @@ final readonly class DeclaredPaths
     /**
      * @param string $relative A project-relative regular file, independent of the project's directory name.
      *
-     * @return bool Whether it has a template suffix or is PHP inside an old template folder; a theme's classes
-     *              (`layouts/Page.php`, a component's class) are not candidates.
+     * @return bool Whether it has a template suffix or is PHP inside an old template folder; a theme's classes under
+     *              `src/` are not candidates.
      */
     private function candidate(string $relative): bool
     {

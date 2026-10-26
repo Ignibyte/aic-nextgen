@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use Gates\Domain\AssetInput;
 use Gates\Domain\AssetKind;
+use Gates\Domain\BuildPaths;
 use InvalidArgumentException;
 
 use function file_get_contents;
@@ -40,7 +41,7 @@ final readonly class AssetBundle
 
         foreach ($assetInputs as $assetInput) {
             $contents = $this->contents($assetInput->source);
-            $copies[$this->root . '/public/assets/' . $assetInput->file] = $contents;
+            $copies[$this->root . '/' . BuildPaths::ASSETS . '/' . $assetInput->file] = $contents;
 
             if ($assetInput->assetKind !== AssetKind::Style) {
                 continue;
@@ -51,7 +52,7 @@ final readonly class AssetBundle
 
         $stylesheet = self::HEADER . "\n\n" . implode("\n", $parts);
 
-        return [$this->root . '/public/assets/aic.css' => $stylesheet, ...$copies];
+        return [$this->root . '/' . BuildPaths::ASSETS . '/aic.css' => $stylesheet, ...$copies];
     }
 
     /**

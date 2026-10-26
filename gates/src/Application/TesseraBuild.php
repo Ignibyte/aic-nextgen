@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use AIC\Tessera\Domain\TesseraRelease;
+use Gates\Domain\BuildPaths;
 use Gates\Domain\ProcessRunner;
 use RuntimeException;
 
@@ -23,7 +24,7 @@ use const ARRAY_FILTER_USE_BOTH;
 
 /**
  * The pinned Tessera release in the public assets (#70, Tessera's
- * docs/consumers.md): each pinned file at public/assets/tessera-VERSION/,
+ * docs/consumers.md): each pinned file at build/assets/tessera-VERSION/,
  * checked against its SHA-256. A file already there with the right sum is
  * kept; a missing or changed one is downloaded from the release with `gh`
  * and checked again, and a mismatch fails the build.
@@ -50,11 +51,11 @@ final readonly class TesseraBuild
     /**
      * @throws RuntimeException When a file cannot be downloaded or does not match its pinned sum.
      *
-     * @return array<string, string> Each file's content by its path under public/assets.
+     * @return array<string, string> Each file's content by its path under build/assets.
      */
     public function files(): array
     {
-        $directory = $this->root . '/public/assets/' . $this->tesseraRelease->directory();
+        $directory = $this->root . '/' . BuildPaths::ASSETS . '/' . $this->tesseraRelease->directory();
         $sums = $this->tesseraRelease->sums;
         $missing = array_filter(
             $sums,

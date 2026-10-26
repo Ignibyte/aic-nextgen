@@ -11,7 +11,7 @@ parameters:
     paths:
         - modules
         - themes
-        - generated
+        - build/generated
         - public
         - bootstrap
         - config

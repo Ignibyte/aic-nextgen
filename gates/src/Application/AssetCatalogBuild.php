@@ -7,6 +7,7 @@ namespace Gates\Application;
 use AIC\Http\Contracts\PublicAsset;
 use Gates\Domain\AssetCatalog;
 use Gates\Domain\AssetInput;
+use Gates\Domain\BuildPaths;
 use Gates\Domain\ThemeBinding;
 use InvalidArgumentException;
 use JsonException;
@@ -53,7 +54,7 @@ final readonly class AssetCatalogBuild
     {
         $assetInputs = (new ThemeAssetInputs($this->root))->read($themeBinding);
         $outputs = (new AssetBundle($this->root))->outputs($assetInputs);
-        $assets = [$this->asset('app/styles', 'aic.css', $outputs[$this->root . '/public/assets/aic.css'])];
+        $assets = [$this->asset('app/styles', 'aic.css', $outputs[$this->root . '/' . BuildPaths::ASSETS . '/aic.css'])];
 
         foreach ($assetInputs as $assetInput) {
             $assets = $this->append($assets, $this->input($assetInput, $outputs));
@@ -83,7 +84,7 @@ final readonly class AssetCatalogBuild
      */
     private function input(AssetInput $assetInput, array $outputs): PublicAsset
     {
-        $path = $this->root . '/public/assets/' . $assetInput->file;
+        $path = $this->root . '/' . BuildPaths::ASSETS . '/' . $assetInput->file;
 
         if (!array_key_exists($path, $outputs)) {
             throw new InvalidArgumentException($assetInput->source . ': planned asset output is missing.');
@@ -102,10 +103,10 @@ final readonly class AssetCatalogBuild
      */
     private function tessera(string $path, string $contents): PublicAsset
     {
-        $prefix = $this->root . '/public/assets/';
+        $prefix = $this->root . '/' . BuildPaths::ASSETS . '/';
 
         if (!str_starts_with($path, $prefix)) {
-            throw new InvalidArgumentException($path . ': Tessera output leaves public/assets/.');
+            throw new InvalidArgumentException($path . ': Tessera output leaves ' . BuildPaths::ASSETS . '/.');
         }
 
         $file = substr($path, strlen($prefix));
@@ -119,7 +120,7 @@ final readonly class AssetCatalogBuild
 
     /**
      * @param string $name     The logical identity.
-     * @param string $file     Its canonical publication path below public/assets/.
+     * @param string $file     Its canonical publication path below build/assets/.
      * @param string $contents The exact planned bytes.
      *
      * @throws InvalidArgumentException When its media type is unsupported.
@@ -128,7 +129,7 @@ final readonly class AssetCatalogBuild
      */
     private function asset(string $name, string $file, string $contents): PublicAsset
     {
-        $this->unlinkedOutput('public/assets/' . $file);
+        $this->unlinkedOutput(BuildPaths::ASSETS . '/' . $file);
 
         return new PublicAsset(
             $name,

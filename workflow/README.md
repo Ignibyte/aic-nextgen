@@ -77,8 +77,8 @@ manifest. A default `make:page` writes its own view there and routes the page in
 manifest; `make:page --component=<Class>` reuses a theme component. The entity generator's list
 page uses this shared writer when that generator is implemented.
 
-`make:layout <name>` (#157) writes a named page layout into the theme's `layouts/`: `<Case>Page.php`,
-page data with the content region only, and `page--<name>.phtml`, and edits no manifest. Its document
+`make:layout <name>` (#157) writes a named page layout: `src/Layouts/<Case>Page.php`, page data with
+the content region only, and `layouts/page--<name>.phtml`, and edits no manifest. Its document
 falls back to `html.phtml`. After `composer run build` the generated `ThemeLayoutName` has the case,
 and `make:page <module> <Class> <path> --layout=<name>` passes it; the make refuses a layout the theme
 does not ship, and `--layout` with `--post`. It writes no `html--<name>.phtml`; write one by hand
@@ -91,17 +91,17 @@ route and the migration in one manifest edit. Types are `text`, `numeric`, `date
 field named `id` or `created_at`, a repeated field or an unknown type is a usage refusal. Each body
 names its entity, so two made entities share no phpcpd run unless about five fields in a row match.
 
-`bin/aic make:theme <name> --dry-run --json` previews the first theme: `layouts/Page.php` with
-four regions, the HTML and page templates and real CSS. It prints the `config/app.php`, Composer
+`bin/aic make:theme <name> --dry-run --json` previews the first theme: `src/Layouts/Page.php` with
+four regions, the HTML and page templates in `layouts/` and real CSS. It prints the `config/app.php`, Composer
 and PHPCS lines to add. Pages take the framework's `PageDocuments` (#154). Use lowercase words joined by hyphens, at
 most 32 bytes. An existing file refuses before writes; reruns refuse instead of overwriting.
 
-Composer must map `"App\\Theme\\Components\\": "themes/<theme>/components/"`; run
+Composer must map `"App\\Theme\\Components\\": "themes/<theme>/src/Components/"`; run
 `composer dump-autoload` before generation. Templates are `.phtml` and need no mapping: the build
-escapes each into `generated/templates/`, where a lookup requires it (#155). Makes validate these mappings and do not edit tool configuration. Inspect the dry-run, declare every authored path and the module manifest,
+escapes each into `build/generated/templates/`, where a lookup requires it (#155). Makes validate these mappings and do not edit tool configuration. Inspect the dry-run, declare every authored path and the module manifest,
 and ground those paths with the code index. The ordinary path-based guard checks them all;
 there is no special exemption for theme or template sources. The engine records `code.made`.
-The build owns `generated/templates/`, public assets and wiki output. No generated file is
+The build owns everything under `build/` and the wiki. No generated file is
 written by a make. Run `composer run build` after generation.
 
 ## Read stored gate diagnostics

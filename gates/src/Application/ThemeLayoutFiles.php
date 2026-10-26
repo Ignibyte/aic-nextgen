@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\ThemeLayout;
+use Gates\Domain\BuildPaths;
 use Gates\Domain\TemplateBinding;
 use Gates\Domain\TemplateRole;
 use Gates\Domain\ThemeLayoutBinding;
@@ -30,16 +31,17 @@ use function substr;
 use function ucwords;
 
 /**
- * A theme's named layouts (#154). Besides `html.phtml`, `page.phtml` and `Page.php`, `layouts/` may hold
- * `html--<name>.phtml`, `page--<name>.phtml` and the page data classes those pages read; nothing else. A name is
- * lowercase words joined by single hyphens, and becomes a case of the generated `ThemeLayoutName` enum.
+ * A theme's named layouts (#154, #167). Besides `html.phtml` and `page.phtml`, `layouts/` may hold
+ * `html--<name>.phtml` and `page--<name>.phtml`; nothing else. The page data classes those pages read sit with
+ * `Page.php` in `src/Layouts/`. A name is lowercase words joined by single hyphens, and becomes a case of the
+ * generated `ThemeLayoutName` enum.
  */
 final readonly class ThemeLayoutFiles
 {
-    /** The files every theme's `layouts/` holds. */
-    public const array DEFAULTS = ['Page.php', 'html.phtml', 'page.phtml'];
+    /** The templates every theme's `layouts/` holds. */
+    public const array DEFAULTS = ['html.phtml', 'page.phtml'];
 
-    /** The namespace of `layouts/`'s classes. */
+    /** The namespace of `src/Layouts/`'s classes. */
     private const string NAMESPACE = 'App\\Theme\\Layouts\\';
 
     /**
@@ -53,6 +55,7 @@ final readonly class ThemeLayoutFiles
     /**
      * @param string                 $theme   The theme's folder name.
      * @param list<string>           $entries `layouts/`'s entries, sorted.
+     * @param list<string>           $classes `src/Layouts/`'s entries, sorted.
      * @param non-empty-list<string> $regions The default page's regions.
      *
      * @throws InvalidArgumentException When a file is out of place, a name is invalid or repeats as a case, a page's
@@ -60,9 +63,9 @@ final readonly class ThemeLayoutFiles
      *
      * @return list<ThemeLayoutBinding> The named layouts, in name order.
      */
-    public function variants(string $theme, array $entries, array $regions): array
+    public function variants(string $theme, array $entries, array $classes, array $regions): array
     {
-        $found = ['html' => [], 'page' => [], 'class' => []];
+        $found = ['html' => [], 'page' => []];
 
         foreach (array_diff($entries, self::DEFAULTS) as $entry) {
             [$kind, $value] = $this->entry($theme, $entry);
@@ -81,10 +84,8 @@ final readonly class ThemeLayoutFiles
             $variants[] = $variant;
         }
 
-        $classes = $found['class'];
-
         $this->cases($variants);
-        $this->used($theme, $classes, $used);
+        $this->used($theme, $this->classes($theme, $classes), $used);
 
         return $variants;
     }
@@ -93,9 +94,9 @@ final readonly class ThemeLayoutFiles
      * @param string $theme The theme.
      * @param string $entry One file in `layouts/`.
      *
-     * @throws InvalidArgumentException When it is none of a named layout file and a page data class.
+     * @throws InvalidArgumentException When it is not a named layout file.
      *
-     * @return array{'html'|'page'|'class', string} What it is, with the layout's name or the class's.
+     * @return array{'html'|'page', string} What it is, with the layout's name.
      */
     private function entry(string $theme, string $entry): array
     {
@@ -105,12 +106,38 @@ final readonly class ThemeLayoutFiles
             }
         }
 
-        if (preg_match('/^[A-Z][A-Za-z0-9]*\\.php\\z/', $entry) === 1) {
-            return ['class', substr($entry, 0, -4)];
+        if (str_ends_with($entry, '.php')) {
+            throw new InvalidArgumentException('themes/' . $theme . '/layouts/' . $entry . ': layouts/ holds templates only; '
+                . 'a page data class goes in themes/' . $theme . '/src/Layouts/.');
         }
 
         throw new InvalidArgumentException('themes/' . $theme . '/layouts/' . $entry . ': a layout file is html.phtml, page.phtml, '
-            . 'html--<name>.phtml or page--<name>.phtml, or a page data class.');
+            . 'html--<name>.phtml or page--<name>.phtml.');
+    }
+
+    /**
+     * @param string       $theme   The theme.
+     * @param list<string> $entries `src/Layouts/`'s entries.
+     *
+     * @throws InvalidArgumentException When one is not a class file.
+     *
+     * @return list<string> The page data classes' short names, `Page` among them.
+     */
+    private function classes(string $theme, array $entries): array
+    {
+        $classes = [];
+
+        foreach ($entries as $entry) {
+            if (preg_match('/^[A-Z][A-Za-z0-9]*\\.php\\z/', $entry) !== 1) {
+                throw new InvalidArgumentException(
+                    'themes/' . $theme . '/src/Layouts/' . $entry . ': src/Layouts/ holds the page data classes only.',
+                );
+            }
+
+            $classes[] = substr($entry, 0, -4);
+        }
+
+        return $classes;
     }
 
     /**
@@ -163,7 +190,7 @@ final readonly class ThemeLayoutFiles
      * @param string $theme The theme.
      * @param string $name  A page variant's name.
      *
-     * @throws InvalidArgumentException When its typing line names no class in `layouts/`.
+     * @throws InvalidArgumentException When its typing line names no class in `src/Layouts/`.
      *
      * @return class-string<Component> The page data class its typing line names.
      */
@@ -177,7 +204,7 @@ final readonly class ThemeLayoutFiles
             : (string) strtok(substr($line, $start + 6), ' ');
 
         if (preg_match('/^App\\\\Theme\\\\Layouts\\\\[A-Z][A-Za-z0-9]*\\z/', $class) !== 1) {
-            throw new InvalidArgumentException($file . ': its first line names its page data, a class in layouts/ such as '
+            throw new InvalidArgumentException($file . ': its first line names its page data, a class in src/Layouts/ such as '
                 . '\\App\\Theme\\Layouts\\' . $this->case($name) . 'Page.');
         }
 
@@ -220,7 +247,7 @@ final readonly class ThemeLayoutFiles
         return new TemplateBinding(
             $component,
             $file,
-            'generated/templates/' . $file,
+            BuildPaths::GENERATED . '/templates/' . $file,
             $role === 'html'
                 ? TemplateRole::Html
                 : TemplateRole::Page,
@@ -258,7 +285,7 @@ final readonly class ThemeLayoutFiles
         $unused = array_diff($classes, $used);
 
         if ($unused !== []) {
-            throw new InvalidArgumentException('themes/' . $theme . '/layouts: no page reads ' . implode(', ', $unused)
+            throw new InvalidArgumentException('themes/' . $theme . '/src/Layouts: no page reads ' . implode(', ', $unused)
                 . '; a page data class goes with the page--<name>.phtml whose first line names it.');
         }
     }

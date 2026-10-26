@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use AIC\Component\Application\AtomTemplates;
+use Gates\Domain\BuildPaths;
 use InvalidArgumentException;
 
 use function array_chunk;
@@ -99,11 +100,11 @@ final readonly class TemplatesSource
         $relative = [];
 
         foreach ($templates as $component => $path) {
-            if (!str_starts_with($path, 'generated/')) {
+            if (!str_starts_with($path, BuildPaths::GENERATED . '/')) {
                 throw new InvalidArgumentException($path . ': a theme template is written under generated/.');
             }
 
-            $relative[$component] = substr($path, strlen('generated/'));
+            $relative[$component] = substr($path, strlen(BuildPaths::GENERATED . '/'));
         }
 
         return $relative;

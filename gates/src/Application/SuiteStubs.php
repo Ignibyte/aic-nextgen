@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\BuildPaths;
+
 use function array_filter;
 use function array_map;
 use function array_values;
@@ -43,7 +45,7 @@ final readonly class SuiteStubs
     /**
      * The generated wiring's root, which every module's root goes before.
      */
-    private const string GENERATED = '                <element key="generated" value="App\\Generated"/>';
+    private const string GENERATED = '                <element key="' . BuildPaths::GENERATED . '" value="App\\Generated"/>';
 
     /**
      * @param string $package aic/gates' directory.
@@ -100,8 +102,8 @@ final readonly class SuiteStubs
         $roots = [];
 
         foreach ($names as $name) {
-            $roots[] = '                <element key="themes/' . $name . '/components" value="App\\Theme\\Components"/>' . "\n";
-            $roots[] = '                <element key="themes/' . $name . '/layouts" value="App\\Theme\\Layouts"/>' . "\n";
+            $roots[] = '                <element key="themes/' . $name . '/src/Components" value="App\\Theme\\Components"/>' . "\n";
+            $roots[] = '                <element key="themes/' . $name . '/src/Layouts" value="App\\Theme\\Layouts"/>' . "\n";
         }
 
         return $roots;

@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\ThemeLayout;
+use Gates\Domain\BuildPaths;
 use Gates\Domain\TemplateBinding;
 use Gates\Domain\TemplateRole;
 use Gates\Domain\ThemeBinding;
@@ -18,20 +19,21 @@ use function is_dir;
 use function preg_match;
 
 /**
- * Finds the configured theme (#153): `config/app.php` names a folder under `themes/` holding `layouts/` (the
- * document, the page and the page's region data), `components/` and `assets/`. The build reads only that folder;
- * nothing reads `themes/` while serving.
+ * Finds the configured theme (#153, #167): `config/app.php` names a folder under `themes/` holding `layouts/` and
+ * `components/` (templates only), `src/` (their classes: `src/Layouts/` with the page's region data, and
+ * `src/Components/`), `assets/` and, optionally, `frontend/` (the sources of a front-end build, read by nothing here).
+ * The build reads only that folder; nothing reads `themes/` while serving.
  */
 final readonly class ThemeBuild
 {
-    /** The page region data class every theme declares in `layouts/Page.php`. */
+    /** The page region data class every theme declares in `src/Layouts/Page.php`. */
     public const string PAGE = self::LAYOUTS_NAMESPACE . 'Page';
 
-    /** The namespace of a theme's layouts folder. */
+    /** The namespace of a theme's `src/Layouts/` classes. */
     private const string LAYOUTS_NAMESPACE = 'App\\Theme\\Layouts\\';
 
     /** The entries a theme folder may hold. */
-    private const array ENTRIES = ['assets', 'components', 'layouts'];
+    private const array ENTRIES = ['assets', 'components', 'frontend', 'layouts', 'src'];
 
     /**
      * @param string          $root            The project folder.
@@ -67,6 +69,7 @@ final readonly class ThemeBuild
         $page = $this->themePageData->page(self::PAGE);
         $regions = $this->themePageData->regions($page);
         $layouts = $themeComponents->entries('themes/' . $theme . '/layouts');
+        $layoutClasses = $themeComponents->entries('themes/' . $theme . '/src/Layouts');
 
         return new ThemeBinding(
             $theme,
@@ -74,7 +77,7 @@ final readonly class ThemeBuild
             $this->layout($theme, 'html.phtml', ThemeLayout::class, TemplateRole::Html),
             $this->layout($theme, 'page.phtml', $page, TemplateRole::Page),
             $themeComponents->bindings($theme),
-            (new ThemeLayoutFiles($this->root))->variants($theme, $layouts, $regions),
+            (new ThemeLayoutFiles($this->root))->variants($theme, $layouts, $layoutClasses, $regions),
         );
     }
 
@@ -101,12 +104,27 @@ final readonly class ThemeBuild
 
         if ($stray !== [] || !in_array('layouts', $entries, true)) {
             throw new InvalidArgumentException(
-                $folder . ': a theme holds layouts/, components/ and assets/ only; found ' . implode(', ', $entries) . '.',
+                $folder . ': a theme holds layouts/, components/, src/, assets/ and frontend/ only; found ' . implode(', ', $entries) . '.',
             );
         }
 
+        $this->layoutFiles($folder, $themeComponents);
+    }
+
+    /**
+     * @param string          $folder          The theme's folder.
+     * @param ThemeComponents $themeComponents Lists its folders.
+     *
+     * @throws InvalidArgumentException When `layouts/` lacks a default template or `src/Layouts/` lacks the page data.
+     */
+    private function layoutFiles(string $folder, ThemeComponents $themeComponents): void
+    {
         if (array_diff(ThemeLayoutFiles::DEFAULTS, $themeComponents->entries($folder . '/layouts')) !== []) {
-            throw new InvalidArgumentException($folder . '/layouts: holds html.phtml, page.phtml and Page.php.');
+            throw new InvalidArgumentException($folder . '/layouts: holds html.phtml and page.phtml.');
+        }
+
+        if (!in_array('Page.php', $themeComponents->entries($folder . '/src/Layouts'), true)) {
+            throw new InvalidArgumentException($folder . "/src/Layouts: holds Page.php, the page's region data.");
         }
     }
 
@@ -137,7 +155,7 @@ final readonly class ThemeBuild
         return new TemplateBinding(
             $component,
             'themes/' . $theme . '/layouts/' . $file,
-            'generated/templates/themes/' . $theme . '/layouts/' . $file,
+            BuildPaths::GENERATED . '/templates/themes/' . $theme . '/layouts/' . $file,
             $templateRole,
         );
     }

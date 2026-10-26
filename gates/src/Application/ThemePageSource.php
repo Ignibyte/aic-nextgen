@@ -8,6 +8,7 @@ use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Regions;
 use AIC\Component\Domain\ThemePage;
 use AIC\Component\Exception\UnknownComponent;
+use Gates\Domain\BuildPaths;
 use Gates\Domain\TemplateBinding;
 use Gates\Domain\ThemeBinding;
 use InvalidArgumentException;
@@ -136,7 +137,7 @@ final readonly class ThemePageSource
             '{page}' => $this->phpClassFile->short($templateBinding->component),
             '{renderMethod}' => $this->templateRequireSource->method(
                 $templateBinding->component,
-                substr($templateBinding->generated, strlen('generated/')),
+                substr($templateBinding->generated, strlen(BuildPaths::GENERATED . '/')),
                 $render,
             ),
             '{render}' => $render,

@@ -30,15 +30,19 @@ its `/theme` style guide, Tailwind from `frontend/`); its product pages are the 
 intermittent native session-ID defect) is closed: about 42,000 stress requests never reproduced it.
 
 **The theme (#153, Chad 2026-10-25).** "There is no markup in php classes outside of components."
-`config/app.php` names the theme; `themes/<theme>/` holds `layouts/` (`html.phtml`,
-`page.phtml`, `Page.php` whose constructor's Region properties are the regions),
-`components/<Name>/` (the Component class and its kebab `.phtml`, PascalCase folders) and
-`assets/` (every public file; CSS bundles in path order). Modules hold controllers, services,
+`config/app.php` names the theme; `themes/<theme>/` shows templates on top and keeps the code
+behind them in `src/` (#167, Chad 2026-10-26): `layouts/` (`html.phtml`, `page.phtml`, named
+variants), `components/<Name>/` (each component's kebab `.phtml` alone, PascalCase folders),
+`src/Layouts/` (`Page.php`, whose constructor's Region properties are the regions, and named page
+data), `src/Components/<Name>/` (the Component class and its value classes), `assets/` (every
+public file; CSS bundles in path order) and, optionally, `frontend/` (a front-end build's sources,
+as in a Drupal theme). Modules hold controllers, services,
 entities, forms, blocks and migrations, never a component, template or asset; their manifests
 declare no presentation. Modules use theme classes; Deptrac's Theme layer keeps the theme off the
 modules. No theme registry, no runtime discovery. Since #155 every template is `.phtml` and runs
-as a template: the build escapes it into `generated/templates/`, a lookup requires it, and no PHP
-class holds markup.
+as a template: the build escapes it into `build/generated/templates/`, a lookup requires it, and no
+PHP class holds markup. Everything the build writes is under `build/` (`build/generated/`,
+`build/assets/`, the manifests); `public/` holds only `index.php`.
 
 #114 moved the 15 catalog atoms into `framework/templates/components/*.phtml`, compiled by the
 same reader and compiler; installed apps consume the shipped classes without package writes.
@@ -198,13 +202,14 @@ Background work is a job; the HTTP server's processes are its workers.
   in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Block`, `Form`,
   `Entity`, `Repository`, `Service`, `Command`, `Job`, `Migration`). There is no `app/`
   and no hand-written composition class (#93).
-- The theme (#153) is `themes/app/` (`config/app.php`'s `theme`): `layouts/` (`html.phtml`,
-  `page.phtml`, `Page.php`), `components/<Name>/` (`App\Theme\Components\<Name>\<Name>` and
-  its kebab `.phtml`) and `assets/`. The build finds them; nothing declares them. Templates
-  run as templates (#155): the build escapes each into `generated/templates/`, and a generated
+- The theme (#153, #167) is `themes/app/` (`config/app.php`'s `theme`): `layouts/` (`html.phtml`,
+  `page.phtml`), `components/<Name>/` (its kebab `.phtml`), `src/Layouts/` (`Page.php`),
+  `src/Components/<Name>/` (`App\Theme\Components\<Name>\<Name>`) and `assets/`. The build finds
+  them; nothing declares them. Templates
+  run as templates (#155): the build escapes each into `build/generated/templates/`, and a generated
   lookup method requires it inside the render pass's buffer. Every file in `assets/` is
   published, its role from its extension; stylesheets join `aic.css` in path order.
-- `composer run build` owns `public/assets/`, the typed `PublicAssets` lookup and private
+- `composer run build` owns `build/assets/` (served at `/assets/` by AIC's asset handler), the typed `PublicAssets` lookup and private
   `build/assets.json`. A full-set SHA-256 directory supplies canonical URLs; exact compatibility
   aliases preserve bytes, including adjacent pinned Tessera script/map. Resolve logical names
   through the catalog; publishing a script does not automatically select it for a page.
@@ -308,7 +313,7 @@ Background work is a job; the HTTP server's processes are its workers.
   - `#[Tagged(Type::class)]` on a constructor's list parameter takes the plugins of that type.
   - A factory is a readonly module class whose methods return services built from values; a
     constructor asking for a method's return type gets its product.
-  - `composer run build` checks every manifest and writes the wiring into `generated/`
+  - `composer run build` checks every manifest and writes the wiring into `build/generated/`
     (`App\Generated\`). Per module, `<M>Routes`, `<M>Handlers`, `<M>Middleware`, `<M>Commands`,
     `<M>Jobs`, `<M>Provider`, `<M>Migrations`, `<M>Schedules` and `<M>Prefixes`. Then the
     aggregators, chained in `…Part2` and on, and the facades `WebModules` and `ConsoleModules`
@@ -417,7 +422,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 - **Profiles** (#130): `ProjectProfile` decides `Aic` when `gates/composer.json` names
   `aic/gates`, `App` otherwise, and gives `GateRoots` (class, source, runtime and site roots, the
   manifests, the script folders, gate:26's shell). An app runs every gate but 22, 28 and 29;
-  gate:21 probes its `modules/` and `generated/`, and gate:23 compiles them with the framework from
+  gate:21 probes its `modules/`, `themes/` and `build/generated/`, and gate:23 compiles them with the framework from
   `vendor/`. gate:23's steps are `config/native-site.json` (`aic.native-site/1`, one step a
   line; with none the gate defers).
 - **An app's suite files** (#130): `gates/stubs/` holds the eight root files an app keeps.
@@ -439,7 +444,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   coupling <= 15). Raise one only when code needs it, with the reason beside the value.
 - A new gate or rule is done only when it has been seen to fail on a planted violation.
 - Before a final run: `rm -f .phpcs-cache` (a stale cache passes PHPCS falsely).
-- gate:21 probes each class under `framework/src`, `modules` and `generated` on its own: its class-graph closure,
+- gate:21 probes each class under `framework/src`, `modules`, `themes` and `build/generated` on its own: its class-graph closure,
   compiled with the fork's elephc in place (`/srv/stacks/elephc/target/release/elephc`;
   `ELEPHC_BIN` overrides), run, and compared with host PHP. Work files land in `.native-gate/`
   (gitignored); pcre2 and oniguruma are pinned in aic/gates' `native/elephc.{toml,lock}`. Everything
@@ -511,7 +516,7 @@ Every file:
 - No `static` caches, no globals, no singletons: state lives in the objects the composition root
   wires.
 - No `new` in business logic; the generated wiring and the framework kernels compose the app
-  (`generated/`, `AIC\Module\Application\AppKernel`, `ConsoleKernel`).
+  (`build/generated/`, `AIC\Module\Application\AppKernel`, `ConsoleKernel`).
 - PSR interfaces at every seam.
 
 ## On this box

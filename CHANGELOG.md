@@ -4,6 +4,18 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Changed
+
+- **Themes show templates; the build writes only into `build/`** (#167, Chad 2026-10-26). A theme's
+  `components/<Name>/` and `layouts/` hold only `.phtml` templates; its PHP moves to `src/`
+  (`src/Components/<Name>/` for each component and its value classes, `src/Layouts/` for `Page.php`
+  and named page data), with PSR-4 and PHPCS roots to match. A template folder or a class folder
+  alone, or a `.php` among the templates, is refused. A theme may hold `frontend/`, the sources of a
+  front-end build, as a Drupal theme does; #163's root `frontend/` shell entry is gone.
+  `generated/` is `build/generated/` and `public/assets/` is `build/assets/`, which AIC's asset
+  handler serves at `/assets/`; `public/` holds only `index.php`. The build, gates 21, 24, 25, 26
+  and 31, the makes, the code index, the stubs, the workflow pack and the docs follow.
+
 ### Added
 
 - **Lotline's theming, complete** (#128, in Ignibyte/aic-demo). Slice 2 adds the rest of old Lotline's look as
