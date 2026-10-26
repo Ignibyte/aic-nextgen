@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Account\Controller;
 
 use AIC\Component\Domain\Heading;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use App\Account\Form\LoginForm;
-use App\Site\Service\HtmlLayout;
 use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -22,11 +22,11 @@ use function is_string;
 final readonly class LoginPage implements Page
 {
     /**
-     * @param HtmlLayout $htmlLayout Makes the page.
-     * @param LoginForm  $loginForm  The form.
+     * @param PageDocuments $pageDocuments Makes the page.
+     * @param LoginForm     $loginForm     The form.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         private LoginForm $loginForm,
     ) {
     }
@@ -46,7 +46,7 @@ final readonly class LoginPage implements Page
             ? $query['next']
             : '';
 
-        return $this->htmlLayout->content(
+        return $this->pageDocuments->content(
             [new Heading('Sign in'), $this->loginForm->form($serverRequest, '', $next, '')],
             200,
         );

@@ -70,7 +70,8 @@ The development engine and its guard are described in [workflow.md](workflow.md)
   a template writes is escaped by its type; `AIC\Component\Domain\RawHtml` is the one way round
   that, and each use needs a grant in `config/raw-html.php` (gate:27).
   The theme's HTML, page and component templates compile into `generated/templates/`. A generated
-  `AIC\Component\Contracts\PageLayouts` implementation constructs the theme's document;
+  `AIC\Component\Contracts\PageLayouts` implementation constructs the theme's document, in the
+  layout an `AIC\Component\Contracts\LayoutName` names;
   data-only `AIC\Component\Domain\ThemeLayout` and `AIC\Component\Domain\ThemePage` preserve
   the same region tree used by full and fragment rendering. See [modules.md](modules.md#the-theme).
 

@@ -7,6 +7,7 @@ namespace Gates\Application;
 use Gates\Domain\AssetInput;
 use Gates\Domain\TemplateBinding;
 use Gates\Domain\ThemeBinding;
+use Gates\Domain\ThemeLayoutBinding;
 use InvalidArgumentException;
 
 use function array_map;
@@ -28,7 +29,7 @@ final readonly class SurfaceTheme
     /**
      * @throws InvalidArgumentException When an asset cannot be read.
      *
-     * @return array<string, list<array<string, string>>|list<string>|string>|null The theme, keys in order.
+     * @return array<string, list<array<string, list<string>|string>>|list<string>|string>|null The theme, keys in order.
      */
     public function row(): ?array
     {
@@ -45,10 +46,29 @@ final readonly class SurfaceTheme
             ),
             'components' => array_map($this->component(...), $theme->components),
             'html' => $theme->html->source,
+            'layouts' => array_map($this->layout(...), $theme->variants),
             'name' => $theme->name,
             'page' => $theme->page->source,
             'pageData' => $theme->page->component,
             'regions' => $theme->regions,
+        ];
+    }
+
+    /**
+     * @param ThemeLayoutBinding $themeLayoutBinding A named layout.
+     *
+     * @return array<string, list<string>|string> Its name, identity, page data and regions, and the files it ships
+     *                                            (empty for a file that falls back to the default).
+     */
+    private function layout(ThemeLayoutBinding $themeLayoutBinding): array
+    {
+        return [
+            'html' => $themeLayoutBinding->html->source ?? '',
+            'identity' => $themeLayoutBinding->identity,
+            'name' => $themeLayoutBinding->name,
+            'page' => $themeLayoutBinding->page->source ?? '',
+            'pageData' => $themeLayoutBinding->pageData,
+            'regions' => $themeLayoutBinding->regions,
         ];
     }
 

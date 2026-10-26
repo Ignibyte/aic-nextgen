@@ -8,6 +8,7 @@ use AIC\Container\Exception\ContainerException;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
 use App\Note\Controller\NoteCreatePost;
+use App\Note\Controller\NoteDeletePost;
 use App\Note\Controller\NoteListPage;
 use App\Note\Controller\NoteShowPage;
 use App\Note\Controller\NoteUpdatePost;
@@ -16,7 +17,6 @@ use App\Note\Form\NoteForms;
 use App\Note\Repository\NoteRepository;
 use App\Note\Service\NoteRequest;
 use App\Note\Service\NoteViews;
-use App\Site\Service\HtmlLayout;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -44,14 +44,16 @@ final readonly class NoteHandlers
     {
         $entityStore = new EntityStore($this->handlerContext->database());
         $noteRepository = new NoteRepository($entityStore);
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
-        $noteViews = new NoteViews($htmlLayout);
+        $noteViews = new NoteViews($this->handlerContext->documents());
         $noteEnvelope = new NoteEnvelope($this->handlerContext->envelopeCodec());
         $noteForms = new NoteForms($noteEnvelope);
         $noteRequest = new NoteRequest();
 
         return [
             NoteCreatePost::class => $this->handlerContext->page(new NoteCreatePost($noteRepository, $noteRequest, $noteViews, $noteForms)),
+            NoteDeletePost::class => $this->handlerContext->page(
+                new NoteDeletePost($noteRepository, $noteRequest, $noteViews, $noteEnvelope),
+            ),
             NoteListPage::class => $this->handlerContext->page(new NoteListPage($noteRepository, $noteViews, $noteForms)),
             NoteShowPage::class => $this->handlerContext->page(new NoteShowPage($noteRepository, $noteRequest, $noteViews, $noteForms)),
             NoteUpdatePost::class => $this->handlerContext->page(

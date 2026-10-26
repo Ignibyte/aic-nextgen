@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
+use AIC\Form\Application\FormTokens;
 use AIC\Module\Application\HandlerContext;
 use App\Site\Controller\HealthApi;
+use App\Site\Controller\HomePage;
 use App\Site\Controller\ResourceDownload;
 use App\Site\Controller\StatusApi;
 use App\Site\Controller\TickEvents;
 use App\Site\Controller\TicksPage;
-use App\Site\Service\HtmlLayout;
+use App\Site\Form\GreetingForm;
 use App\Site\Service\RequestedFile;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -36,10 +38,16 @@ final readonly class SiteHandlers
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
-
         return [
             HealthApi::class => $this->handlerContext->api(new HealthApi($this->handlerContext->database())),
+            HomePage::class => $this->handlerContext->page(
+                new HomePage(
+                    $this->handlerContext->documents(),
+                    new GreetingForm(new FormTokens()),
+                    $this->handlerContext->appConfig(),
+                    $this->handlerContext->bootedAt(),
+                ),
+            ),
             ResourceDownload::class => $this->handlerContext->stream(
                 new ResourceDownload(new RequestedFile($this->handlerContext->root())),
             ),
@@ -47,7 +55,7 @@ final readonly class SiteHandlers
                 new StatusApi($this->handlerContext->appConfig(), $this->handlerContext->bootedAt(), $this->handlerContext->database()),
             ),
             TickEvents::class => $this->handlerContext->stream(new TickEvents()),
-            TicksPage::class => $this->handlerContext->page(new TicksPage($htmlLayout)),
+            TicksPage::class => $this->handlerContext->page(new TicksPage($this->handlerContext->documents())),
         ];
     }
 }

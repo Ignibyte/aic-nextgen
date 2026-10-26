@@ -10,6 +10,7 @@ use Gates\Domain\TemplateClass;
 use Gates\Domain\TemplateNode;
 use Gates\Domain\TemplateNodeKind;
 use Gates\Domain\TemplateReader;
+use Gates\Domain\TemplateRole;
 use Gates\Domain\TemplateUnit;
 use InvalidArgumentException;
 
@@ -127,7 +128,7 @@ final readonly class TemplateBuild
         foreach ($presentationInventory->templates as $binding) {
             $components = array_map(static fn (TemplateUnit $templateUnit): string => $templateUnit->binding->component, $units);
 
-            if (in_array($binding->component, $components, true)) {
+            if (!$binding->transparent() && in_array($binding->component, $components, true)) {
                 throw new InvalidArgumentException($binding->source . ': component already has a declared template.');
             }
 
@@ -198,13 +199,11 @@ final readonly class TemplateBuild
             return;
         }
 
-        $source = $templateUnit->binding->source;
-
-        if ($source === $theme->page->source) {
-            $this->regions($templateUnit->nodes, $theme->regions, $templateUnit->binding->component);
+        if ($templateUnit->binding->role === TemplateRole::Page) {
+            $this->regions($templateUnit->nodes, $theme->regionsOf($templateUnit->binding->source), $templateUnit->binding->component);
         }
 
-        if ($source !== $theme->html->source) {
+        if ($templateUnit->binding->role !== TemplateRole::Html) {
             return;
         }
 

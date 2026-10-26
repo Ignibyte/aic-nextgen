@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Component\Contracts\PageLayouts;
 use AIC\Config\Domain\AppConfig;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Database\Contracts\Database;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Http\Application\ResponseBuilder;
@@ -35,7 +35,7 @@ final readonly class WiringContexts
                 AppConfig::class => 'appConfig',
                 Database::class => 'database',
                 EnvelopeCodec::class => 'envelopeCodec',
-                PageLayouts::class => 'layouts',
+                PageDocuments::class => 'documents',
                 PublicAssets::class => 'assets',
                 ResponseBuilder::class => 'responseBuilder',
             ],

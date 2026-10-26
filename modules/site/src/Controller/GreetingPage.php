@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Site\Controller;
 
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Module\Attribute\Tagged;
+use App\Generated\ThemeLayoutName;
 use App\Site\Service\Greeter;
-use App\Site\Service\HtmlLayout;
 use App\Theme\Components\Greetings\Greetings;
 use InvalidArgumentException;
 use Override;
@@ -24,11 +25,11 @@ use function is_string;
 final readonly class GreetingPage implements Page
 {
     /**
-     * @param HtmlLayout   $htmlLayout The document around the page.
-     * @param list<object> $greeters   The Greeter plugins, in tag order (`#[Tagged]`).
+     * @param PageDocuments $pageDocuments The document around the page.
+     * @param list<object>  $greeters      The Greeter plugins, in tag order (`#[Tagged]`).
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         #[Tagged(Greeter::class)]
         private array $greeters,
     ) {
@@ -58,6 +59,6 @@ final readonly class GreetingPage implements Page
             $greetings[] = $greeter->greet($name);
         }
 
-        return $this->htmlLayout->content([new Greetings($greetings)], 200);
+        return $this->pageDocuments->content([new Greetings($greetings)], 200, ThemeLayoutName::Plain);
     }
 }

@@ -11,12 +11,10 @@ use AIC\Queue\Application\PostgresQueue;
 use AIC\Schedule\Application\Scheduler;
 use App\Site\Controller\GreetingPage;
 use App\Site\Controller\GreetingPost;
-use App\Site\Controller\HomePage;
 use App\Site\Controller\JobsPage;
 use App\Site\Controller\JobsPost;
 use App\Site\Form\GreetingForm;
 use App\Site\Service\Greeter;
-use App\Site\Service\HtmlLayout;
 use App\Site\Service\ScheduleLines;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -41,22 +39,23 @@ final readonly class SiteHandlersPart2
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
-        $formTokens = new FormTokens();
-        $greetingForm = new GreetingForm($formTokens);
         $postgresQueue = new PostgresQueue($this->handlerContext->database());
         $scheduler = new Scheduler($this->handlerContext->database(), $postgresQueue, $this->handlerContext->schedules());
 
         return [
             GreetingPage::class => $this->handlerContext->page(
-                new GreetingPage($htmlLayout, $this->handlerContext->tagged(Greeter::class)),
+                new GreetingPage($this->handlerContext->documents(), $this->handlerContext->tagged(Greeter::class)),
             ),
-            GreetingPost::class => $this->handlerContext->page(new GreetingPost($htmlLayout, $greetingForm)),
-            HomePage::class => $this->handlerContext->page(
-                new HomePage($htmlLayout, $greetingForm, $this->handlerContext->appConfig(), $this->handlerContext->bootedAt()),
+            GreetingPost::class => $this->handlerContext->page(
+                new GreetingPost($this->handlerContext->documents(), new GreetingForm(new FormTokens())),
             ),
             JobsPage::class => $this->handlerContext->page(
-                new JobsPage($htmlLayout, $postgresQueue, new ScheduleLines($scheduler), $this->handlerContext->schedules()),
+                new JobsPage(
+                    $this->handlerContext->documents(),
+                    $postgresQueue,
+                    new ScheduleLines($scheduler),
+                    $this->handlerContext->schedules(),
+                ),
             ),
             JobsPost::class => $this->handlerContext->page(new JobsPost($postgresQueue)),
         ];

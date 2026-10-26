@@ -7,13 +7,13 @@ namespace App\Site\Controller;
 use AIC\Component\Domain\Button;
 use AIC\Component\Domain\Form;
 use AIC\Component\Domain\Heading;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\FormTokens;
 use AIC\Queue\Application\PostgresQueue;
 use AIC\Schedule\Domain\Schedule;
-use App\Site\Service\HtmlLayout;
 use App\Site\Service\ScheduleLines;
 use App\Theme\Components\LineList\LineList;
 use LogicException;
@@ -28,14 +28,14 @@ use Psr\Http\Message\ServerRequestInterface;
 final readonly class JobsPage implements Page
 {
     /**
-     * @param HtmlLayout     $htmlLayout    Makes the page.
+     * @param PageDocuments  $pageDocuments Makes the page.
      * @param PostgresQueue  $postgresQueue The queue.
      * @param ScheduleLines  $scheduleLines The schedules as lines.
      * @param list<Schedule> $schedules     The app's schedules.
      * @param FormTokens     $formTokens    Issues the visitor's CSRF token.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         private PostgresQueue $postgresQueue,
         private ScheduleLines $scheduleLines,
         private array $schedules,
@@ -59,7 +59,7 @@ final readonly class JobsPage implements Page
         $succeed = new Form('', '/jobs?mode=succeed', [$button], $formToken);
         $fail = new Form('', '/jobs?mode=fail', [new Button('Queue a failing job', 'submit', 'queue-fail')], $formToken);
 
-        return $this->htmlLayout->content(
+        return $this->pageDocuments->content(
             [
                 new Heading('Schedules'),
                 new LineList('schedules', $this->scheduleLines->lines($this->schedules), 'None.'),

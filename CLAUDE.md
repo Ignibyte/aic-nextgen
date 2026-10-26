@@ -17,8 +17,8 @@ The architecture set an app's agent reads, shipped in `aic/framework`, is
 ## Status
 
 Current order (Chad, 2026-10-25): finish epic #151, the theme owns all markup. #153 (components,
-layouts and assets in `themes/<theme>/`) is delivered; then #154 (a controller names a layout,
-falling back to `html.tpl.php`/`page.tpl.php`), #115 (the tick stream renders a theme component),
+layouts and assets in `themes/<theme>/`) and #154 (a controller names a layout through
+`PageDocuments`, each file falling back to `html.tpl.php`/`page.tpl.php`) are delivered; then #115 (the tick stream renders a theme component),
 #156 (gate:32, no HTML under `modules/`), #157 (layout generators) and #159 (the stock page reads
 only the rows it shows). The elephc fork carries #152 (`?>`, inline HTML, `<?=`) and #158
 (`htmlspecialchars` substitution) are unparked, fork only; #155 (templates run as templates, no
@@ -115,7 +115,7 @@ is data: its constructor takes the ready values as promoted public props, comput
 builds it, and a class-typed loop variable is named for its class (`$keyedComponent`). #98: one
 Renderer makes HTML. `Component` declares no method; `AIC\Component\Application\Renderer` is the
 only `new Html`, and `Psr7ResponseWriter` the only reader of `markup()`. A page answers a layout of
-regions holding components (`HtmlLayout::content(list<Component>, int)`), never a string. A
+regions holding components (`PageDocuments::content(list<Component>, int, ?LayoutName)`, #154), never a string. A
 template writes children through a `RenderPass` (`child()` with markers, `region()`, `inline()` in a
 layout), and a Tessera fragment is the same tree rendered by its path. The build generates the
 lookup (`generated/ThemeTemplates` and its parts, #153), ending at the compiled

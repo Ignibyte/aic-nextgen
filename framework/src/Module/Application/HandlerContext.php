@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
-use AIC\Component\Contracts\PageLayouts;
 use AIC\Config\Domain\AppConfig;
 use AIC\Container\Exception\ContainerException;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\Stream;
@@ -155,12 +155,15 @@ final readonly class HandlerContext
     }
 
     /**
-     * @throws ContainerException When the selected-theme root cannot be resolved.
+     * @throws ContainerException When the app names no theme.
      *
-     * @return PageLayouts The generated selected-theme factory.
+     * @return PageDocuments A Page controller's documents in the theme's layouts (#154).
      */
-    public function layouts(): PageLayouts
+    public function documents(): PageDocuments
     {
-        return $this->webRoots->pageLayouts ?? throw new ContainerException('The generated presentation declares no theme.');
+        return new PageDocuments(
+            $this->webRoots->appConfig,
+            $this->webRoots->pageLayouts ?? throw new ContainerException('The generated presentation declares no theme.'),
+        );
     }
 }

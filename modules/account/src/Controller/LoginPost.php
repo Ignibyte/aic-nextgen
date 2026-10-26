@@ -6,6 +6,7 @@ namespace App\Account\Controller;
 
 use AIC\Auth\Application\Authenticator;
 use AIC\Component\Domain\Heading;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
@@ -13,7 +14,6 @@ use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\PostedFields;
 use AIC\Form\Domain\SameOriginPath;
 use App\Account\Form\LoginForm;
-use App\Site\Service\HtmlLayout;
 use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -26,13 +26,13 @@ use Psr\Http\Message\ServerRequestInterface;
 final readonly class LoginPost implements Page
 {
     /**
-     * @param HtmlLayout    $htmlLayout    Makes the page.
+     * @param PageDocuments $pageDocuments Makes the page.
      * @param LoginForm     $loginForm     The form, shown again on a failure.
      * @param Authenticator $authenticator Signs the user in.
      * @param PostedFields  $postedFields  Reads the posted fields.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         private LoginForm $loginForm,
         private Authenticator $authenticator,
         private PostedFields $postedFields = new PostedFields(),
@@ -56,7 +56,7 @@ final readonly class LoginPost implements Page
         if (!$this->authenticator->login($serverRequest, $login, $this->postedFields->value($serverRequest, 'password'))) {
             $form = $this->loginForm->form($serverRequest, $login, $next, 'Wrong login or password.');
 
-            return $this->htmlLayout->content([new Heading('Sign in'), $form], 422);
+            return $this->pageDocuments->content([new Heading('Sign in'), $form], 422);
         }
 
         return new PageRedirect((new SameOriginPath('/account'))->resolve($next));

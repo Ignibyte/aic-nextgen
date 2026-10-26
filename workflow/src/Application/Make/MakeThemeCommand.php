@@ -17,20 +17,18 @@ use Override;
 
 use function strlen;
 
-/** Make the first selected site theme, its typed regions and usable exported layout service. */
+/** Make a theme (#148, #153): its page data, layouts and stylesheet, and print the lines to add by hand. */
 final readonly class MakeThemeCommand implements Command
 {
     /**
      * @param MakeRun    $makeRun    The shared guarded run.
-     * @param MakeThemes $makeThemes The theme's files and the site's layout service.
+     * @param MakeThemes $makeThemes The theme's files.
      * @param MakeNames  $makeNames  Portable names.
-     * @param MakeCalls  $makeCalls  The layout service's export.
      */
     public function __construct(
         private MakeRun $makeRun,
         private MakeThemes $makeThemes = new MakeThemes(),
         private MakeNames $makeNames = new MakeNames(),
-        private MakeCalls $makeCalls = new MakeCalls(),
     ) {
     }
 
@@ -56,7 +54,7 @@ final readonly class MakeThemeCommand implements Command
      *
      * @throws WorkflowRefusal When the name is invalid or exceeds the bounded scaffold size.
      *
-     * @return MakeRecipe The theme, the site's layout service and its export, and the lines to add by hand.
+     * @return MakeRecipe The theme, and the lines to add by hand.
      */
     private function recipe(ParsedArguments $parsedArguments): MakeRecipe
     {
@@ -70,10 +68,10 @@ final readonly class MakeThemeCommand implements Command
         }
 
         return new MakeRecipe(
-            'site',
+            '',
             $name,
             $this->makeThemes->files($name),
-            $this->makeCalls->classOnly('export', 'Service', 'HtmlLayout', 'App\\Site'),
+            null,
             lines: [
                 "set theme: '" . $name . "' in config/app.php",
                 'add to composer.json\'s autoload.psr-4: "App\\\\Theme\\\\Components\\\\": "themes/' . $name . '/components/"',

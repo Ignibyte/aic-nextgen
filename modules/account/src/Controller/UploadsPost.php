@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Account\Controller;
 
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageDocument;
@@ -12,7 +13,6 @@ use AIC\Form\Application\UploadCheck;
 use AIC\Form\Exception\RefusedUpload;
 use AIC\Session\Application\RequestSession;
 use App\Account\Form\UploadForm;
-use App\Site\Service\HtmlLayout;
 use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -27,13 +27,13 @@ use RuntimeException;
 final readonly class UploadsPost implements Page
 {
     /**
-     * @param HtmlLayout     $htmlLayout     Makes the page.
+     * @param PageDocuments  $pageDocuments  Makes the page.
      * @param RequestSession $requestSession Reads the session off the request.
      * @param UploadForm     $uploadForm     The form, shown again on a refusal.
      * @param UploadCheck    $uploadCheck    Checks the file.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         private RequestSession $requestSession,
         private UploadForm $uploadForm,
         private UploadCheck $uploadCheck,
@@ -95,6 +95,6 @@ final readonly class UploadsPost implements Page
      */
     private function refused(ServerRequestInterface $serverRequest, string $reason): PageDocument
     {
-        return $this->htmlLayout->content([$this->uploadForm->form($serverRequest, $reason)], 422);
+        return $this->pageDocuments->content([$this->uploadForm->form($serverRequest, $reason)], 422);
     }
 }

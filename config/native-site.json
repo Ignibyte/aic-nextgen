@@ -537,7 +537,7 @@
             "method": "GET",
             "path": "/stock",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content/stock-list",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app-focus\r\nTessera-Targets: content/stock-list",
             "status": 200,
             "captures": false
         },
@@ -582,7 +582,7 @@
             "method": "GET",
             "path": "/stock",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content/nope",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app-focus\r\nTessera-Targets: content/nope",
             "status": 200,
             "captures": false
         },
@@ -591,8 +591,44 @@
             "method": "GET",
             "path": "/stock",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content/stock-list e30.forged",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app-focus\r\nTessera-Targets: content/stock-list e30.forged",
             "status": 400,
+            "captures": false
+        },
+        {
+            "name": "stock, focus layout from app",
+            "method": "GET",
+            "path": "/stock",
+            "form": "",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content, nav",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "stock, a region focus lacks",
+            "method": "GET",
+            "path": "/stock",
+            "form": "",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app-focus\r\nTessera-Targets: header",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "greeting, plain layout from app",
+            "method": "GET",
+            "path": "/hello/Ada",
+            "form": "",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "greeting, plain fragments",
+            "method": "GET",
+            "path": "/hello/Ada",
+            "form": "",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app-plain\r\nTessera-Targets: content",
+            "status": 200,
             "captures": false
         },
         {
@@ -771,7 +807,7 @@
             "method": "GET",
             "path": "/hello/Declared149",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Targets: content/c0\r\nTessera-Layout: app",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Targets: content/c0\r\nTessera-Layout: app-plain",
             "status": 200,
             "captures": false
         }

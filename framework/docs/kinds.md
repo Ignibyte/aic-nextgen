@@ -26,6 +26,8 @@ What holds the kinds:
 - gate:8 refuses a controller method that returns anything but its kind's response, and any string
   holding `<` in a module's `src/Controller/`. Helpers go to `src/Service/`.
 - gate:26 refuses a kind outside its folder.
+- A Page answers a document from `AIC\Controller\Application\PageDocuments`, optionally naming a
+  theme layout (`ThemeLayoutName::Focus`); see [rendering.md](rendering.md).
 - `composer run build` lists every route and command with its kind in `build/surface.json`, and
   gate:24 fails when that file is stale.
 
@@ -87,5 +89,5 @@ These are not entry points; each has a contract or a name suffix and a folder of
 
 A class of none of these kinds is plain, and sits in `src/Entity/`, `src/Service/` or
 `src/Form/`. A component is the one kind that never sits in a module: it lives in the theme with
-its `*.tpl.php` (#153), and the build compiles the template into `generated/templates/`.
+its `*.tpl.php`, and the build compiles the template into `generated/templates/`.
 See [rendering.md](rendering.md) and [templates.md](templates.md) for the complete page contract.

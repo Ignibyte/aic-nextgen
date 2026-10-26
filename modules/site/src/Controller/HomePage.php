@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Site\Controller;
 
 use AIC\Config\Domain\AppConfig;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use App\Site\Form\GreetingForm;
-use App\Site\Service\HtmlLayout;
 use App\Theme\Components\Home\Home;
 use App\Theme\Components\Home\HomeDemo;
 use App\Theme\Components\Home\HomeFact;
@@ -52,13 +52,13 @@ final readonly class HomePage implements Page
     private const array PLAIN = ['/api/status', '/download/hello.txt', '/events?count=5', '/health'];
 
     /**
-     * @param HtmlLayout   $htmlLayout   The document around the page.
-     * @param GreetingForm $greetingForm The form posting a name to /hello.
-     * @param AppConfig    $appConfig    The app's settings.
-     * @param string       $bootedAt     When the app booted to serve this request, ISO 8601 in UTC.
+     * @param PageDocuments $pageDocuments The document around the page.
+     * @param GreetingForm  $greetingForm  The form posting a name to /hello.
+     * @param AppConfig     $appConfig     The app's settings.
+     * @param string        $bootedAt      When the app booted to serve this request, ISO 8601 in UTC.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         private GreetingForm $greetingForm,
         private AppConfig $appConfig,
         private string $bootedAt,
@@ -90,6 +90,6 @@ final readonly class HomePage implements Page
         $query = $serverRequest->getUri()->getQuery();
         $pairs = array_map(urldecode(...), $query === '' ? [] : explode('&', $query));
 
-        return $this->htmlLayout->content([new Home($demos, $facts, $pairs, $this->greetingForm->form($serverRequest, '', ''))], 200);
+        return $this->pageDocuments->content([new Home($demos, $facts, $pairs, $this->greetingForm->form($serverRequest, '', ''))], 200);
     }
 }

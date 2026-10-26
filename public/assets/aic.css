@@ -246,3 +246,13 @@ time {
 .theme-page {
     min-width: 0;
 }
+
+/* The focus layout (#154): the content alone, a little narrower. */
+.theme-focus {
+    max-width: 48rem;
+}
+
+/* The plain layout (#154): no banner, so the page starts with its content. */
+body.plain {
+    padding-top: 1rem;
+}

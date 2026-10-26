@@ -9,10 +9,8 @@ use AIC\Module\Application\HandlerContext;
 use AIC\Session\Application\RequestSession;
 use App\Account\Controller\UploadsPage;
 use App\Account\Controller\UploadsPost;
-use App\Account\Controller\VisitsForget;
 use App\Account\Form\UploadForm;
 use App\Account\Service\UploadRules;
-use App\Site\Service\HtmlLayout;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -37,15 +35,15 @@ final readonly class AccountHandlersPart2
     public function byId(): array
     {
         $requestSession = new RequestSession();
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
         $uploadForm = new UploadForm();
 
         return [
-            UploadsPage::class => $this->handlerContext->page(new UploadsPage($htmlLayout, $requestSession, $uploadForm)),
-            UploadsPost::class => $this->handlerContext->page(
-                new UploadsPost($htmlLayout, $requestSession, $uploadForm, (new UploadRules())->uploadCheck()),
+            UploadsPage::class => $this->handlerContext->page(
+                new UploadsPage($this->handlerContext->documents(), $requestSession, $uploadForm),
             ),
-            VisitsForget::class => $this->handlerContext->page(new VisitsForget($requestSession)),
+            UploadsPost::class => $this->handlerContext->page(
+                new UploadsPost($this->handlerContext->documents(), $requestSession, $uploadForm, (new UploadRules())->uploadCheck()),
+            ),
         ];
     }
 }

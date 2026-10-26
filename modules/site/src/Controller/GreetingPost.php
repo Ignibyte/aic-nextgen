@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Site\Controller;
 
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
 use App\Site\Form\GreetingForm;
-use App\Site\Service\HtmlLayout;
 use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -26,11 +26,11 @@ use function trim;
 final readonly class GreetingPost implements Page
 {
     /**
-     * @param HtmlLayout   $htmlLayout   The document around the page.
-     * @param GreetingForm $greetingForm The form, shown again on an error.
+     * @param PageDocuments $pageDocuments The document around the page.
+     * @param GreetingForm  $greetingForm  The form, shown again on an error.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         private GreetingForm $greetingForm,
     ) {
     }
@@ -51,7 +51,7 @@ final readonly class GreetingPost implements Page
             : '';
 
         if ($name === '') {
-            return $this->htmlLayout->content([$this->greetingForm->form($serverRequest, '', 'A name is required.')], 422);
+            return $this->pageDocuments->content([$this->greetingForm->form($serverRequest, '', 'A name is required.')], 422);
         }
 
         return new PageRedirect('/hello/' . rawurlencode($name));

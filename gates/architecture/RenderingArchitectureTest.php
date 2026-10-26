@@ -23,6 +23,7 @@ final class RenderingArchitectureTest
     public function __invoke(): array
     {
         return [
+            'testOnlyTheGeneratedEnumNamesLayouts' => $this->testOnlyTheGeneratedEnumNamesLayouts(),
             'testRenderTreeHoldsNoMarkup' => $this->testRenderTreeHoldsNoMarkup(),
         ];
     }
@@ -44,5 +45,22 @@ final class RenderingArchitectureTest
             ->dependOn()
             ->classes(Selector::classname('/^AIC\\\\Component\\\\Contracts\\\\Html$/', true))
             ->because('a page is components; only the Renderer turns them into Html (#87).');
+    }
+
+    /**
+     * Only the build's `ThemeLayoutName` names a layout (#154): a hand-written name would fall back to the default
+     * layout without a word, where the generated enum has a case only for a layout the theme ships.
+     *
+     * @return Rule The rule.
+     */
+    private function testOnlyTheGeneratedEnumNamesLayouts(): Rule
+    {
+        return PHPat::rule()
+            ->classes(Selector::inNamespace('App'), Selector::inNamespace('AIC'))
+            ->excluding(Selector::classname('/^App\\\\Generated\\\\ThemeLayoutName$/', true))
+            ->shouldNot()
+            ->implement()
+            ->classes(Selector::classname('/^AIC\\\\Component\\\\Contracts\\\\LayoutName$/', true))
+            ->because('the build generates the one layout name enum, a case per layout the theme ships (#154).');
     }
 }
