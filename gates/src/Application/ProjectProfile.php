@@ -37,6 +37,9 @@ final readonly class ProjectProfile
         'public/*',
         // The theme: its components, layouts and assets (#153).
         'themes/*',
+        // A front-end build's sources (package.json, lockfile, input CSS), whose output is committed into the theme's
+        // assets/ (#163); nothing in it is published.
+        'frontend/*',
         // surface.json, the build's manifest (#26).
         'build/*',
         // The console.

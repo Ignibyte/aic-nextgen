@@ -1,9 +1,10 @@
 # Modules
 
-An app is a set of modules. A module is a folder, `modules/<name>/`, holding its classes, its
-templates, its assets and one manifest that says what it brings to the app. Nothing outside
-`modules/` holds app code; the app's own shell is config, the entry points, the build's output and
-the tool settings.
+An app is a set of modules and a theme. A module is a folder, `modules/<name>/`, holding its
+classes and one manifest that says what it brings to the app; the theme holds every component,
+template and asset. Nothing outside `modules/` and the theme holds app code; the app's own shell
+is config, the entry points, the build's output, the tool settings and `frontend/`, the sources
+of a front-end build.
 
 ## A module's folder
 
@@ -11,8 +12,6 @@ the tool settings.
 modules/note/
   note.module.php            the manifest
   src/<Kind>/                the classes, namespace App\Note\<Kind>\
-  templates/components/      explicitly declared *.phtml sources
-  assets/                    CSS bundled into the site, other files copied
 ```
 
 A new module needs one PSR-4 line in `composer.json` (`"App\\Note\\": "modules/note/src/"`, then
@@ -238,6 +237,12 @@ number a file's name (`10-tokens.css`) to order the cascade. Scripts, images, ma
 other files keep their bytes under `public/assets/themes/<theme>/`. Publishing a script does not
 select it; a page or component must still load it when needed. Every asset shares the same
 fingerprint and HTTP policy.
+
+A theme whose stylesheet is built (Tailwind, for one) keeps the build's sources in the app's root
+`frontend/` folder: its `package.json`, lockfile and input CSS, with `node_modules/` ignored. No
+gate walks it and nothing in it is published. The build writes its output into the theme's
+`assets/`, where it is committed and published like any other stylesheet; rerun it after changing
+a template's classes, then `composer run build`.
 
 The generated `AIC\Http\Contracts\PublicAssets` lookup resolves logical names to canonical
 fingerprinted URLs. Its exact URL lookup accepts that URL or its declared compatibility alias.
