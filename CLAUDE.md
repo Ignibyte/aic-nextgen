@@ -400,7 +400,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | 9 | phpat, `gates/architecture/` | 20 | captainhook hooks installed |
 | 10 | PHPMD, every ruleset | 21 | native: elephc compile, link, run, match PHP |
 | | | 22 | pipeline docs: frontmatter, line caps, links |
-| | | 23 | native site: the compiled app answers as PHP does; HTML answers pass the lint |
+| | | 23 | native site: the compiled app answers as PHP does; steps reach every GET route; HTML answers pass the lint |
 | | | 24 | build manifests: `build/surface.json` is fresh |
 | | | 25 | templates: the plain PHP grammar, deny by default; the HTML lint |
 | | | 26 | module boundaries: kind folders, the 15-file cap, exports and requires, the shell |
@@ -542,6 +542,8 @@ Every file:
 - The compiled site is a build: after a PHP change, rerun `composer run native:serve` (or
   gate:23) before a browser check on it, or it still runs the old binary. The php-fpm reference in
   DDEV picks changes up per request.
+- gate:23 fails on a GET route of `build/surface.json` no step reaches (#171): a page a ticket adds
+  needs a step in `config/native-site.json` that expects a status below 400.
 - gate:23 and `native:serve` find Postgres through `PG*` or `ddev describe` (its published port
   moves on every restart). Every route opens a Postgres session, so when the app's `bin/aic
   db:ping` does not answer (DDEV down; a host Postgres on 5432 refuses the app), gate:23 defers

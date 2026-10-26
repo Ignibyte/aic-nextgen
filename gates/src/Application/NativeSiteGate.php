@@ -11,6 +11,7 @@ use Gates\Domain\ServerLauncher;
 use InvalidArgumentException;
 use RuntimeException;
 
+use function array_map;
 use function array_slice;
 use function count;
 use function explode;
@@ -46,6 +47,7 @@ final readonly class NativeSiteGate
      * @param GateUser           $gateUser           Gives the signed-in steps their user.
      * @param NativeSiteScript   $nativeSiteScript   The steps.
      * @param NativeSiteHtml     $nativeSiteHtml     Lints the PHP site's HTML answers (#170).
+     * @param NativeSiteCoverage $nativeSiteCoverage Finds the GET routes no step reaches (#171).
      */
     public function __construct(
         private NativeToolchain $nativeToolchain,
@@ -55,6 +57,7 @@ final readonly class NativeSiteGate
         private GateUser $gateUser,
         private NativeSiteScript $nativeSiteScript = new NativeSiteScript(),
         private NativeSiteHtml $nativeSiteHtml = new NativeSiteHtml(),
+        private NativeSiteCoverage $nativeSiteCoverage = new NativeSiteCoverage(),
     ) {
     }
 
@@ -177,9 +180,12 @@ final readonly class NativeSiteGate
         $this->serverLauncher->stopAll();
 
         $differences = $this->nativeSiteComparer->differences($steps, $php, $native);
-        $html = $this->nativeSiteHtml->findings($steps, $php);
+        $findings = [
+            ...self::prefixed('HTML ', $this->nativeSiteHtml->findings($steps, $php)),
+            ...$this->nativeSiteCoverage->unreached($root, $steps, $php),
+        ];
 
-        return $this->report($differences, $html, count($steps), $stdout, $stderr);
+        return $this->report($differences, $findings, count($steps), $stdout, $stderr);
     }
 
     /**
@@ -203,33 +209,41 @@ final readonly class NativeSiteGate
 
     /**
      * @param list<string> $differences What the sites disagreed on.
-     * @param list<string> $html        What the PHP site's HTML answers break (#170).
+     * @param list<string> $findings    What the PHP site's HTML answers break (#170), and each GET route no step
+     *                                  reaches (#171).
      * @param int          $run         How many steps ran.
      * @param resource     $stdout      Stream the summary is written to.
      * @param resource     $stderr      Stream failures are written to.
      *
      * @return int The exit code.
      */
-    private function report(array $differences, array $html, int $run, mixed $stdout, mixed $stderr): int
+    private function report(array $differences, array $findings, int $run, mixed $stdout, mixed $stderr): int
     {
-        foreach ($differences as $difference) {
-            fwrite($stderr, 'gate:23 — DIFF ' . $difference . PHP_EOL);
+        foreach ([...self::prefixed('DIFF ', $differences), ...$findings] as $line) {
+            fwrite($stderr, 'gate:23 — ' . $line . PHP_EOL);
         }
 
-        foreach ($html as $finding) {
-            fwrite($stderr, 'gate:23 — HTML ' . $finding . PHP_EOL);
-        }
-
-        if ($differences !== [] || $html !== []) {
-            $summary = 'gate:23 — native site: %d difference(s) from PHP and %d HTML finding(s) over %d step(s).';
-            fwrite($stderr, sprintf($summary, count($differences), count($html), $run) . PHP_EOL);
+        if ($differences !== [] || $findings !== []) {
+            $summary = 'gate:23 — native site: %d difference(s) from PHP and %d other finding(s) over %d step(s).';
+            fwrite($stderr, sprintf($summary, count($differences), count($findings), $run) . PHP_EOL);
 
             return 1;
         }
 
-        $summary = 'gate:23 — native site: %d of %d step(s) answer as PHP does, and their HTML passes the lint.';
+        $summary = 'gate:23 — native site: %d of %d step(s) answer as PHP does, reach every GET route, and their HTML passes the lint.';
         fwrite($stdout, sprintf($summary, $run, $run) . PHP_EOL);
 
         return 0;
+    }
+
+    /**
+     * @param string       $prefix What each line starts with.
+     * @param list<string> $lines  The lines.
+     *
+     * @return list<string> Each line after the prefix.
+     */
+    private static function prefixed(string $prefix, array $lines): array
+    {
+        return array_map(static fn (string $line): string => $prefix . $line, $lines);
     }
 }

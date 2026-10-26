@@ -181,7 +181,7 @@ $consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTra
 try {
     $routes = $moduleBuild->routes($modules, new RouteCollector(new RoutePatternCompiler()))->table();
     $outputs = [
-        $root . '/build/surface.json' => (new SurfaceManifest(surfaceTheme: new SurfaceTheme($root, $presentation->theme)))->json($routes->routes(), $consoleKernel->commands(), $consoleKernel->jobs(), $consoleKernel->schedules(), $modules),
+        $root . '/' . BuildPaths::SURFACE => (new SurfaceManifest(surfaceTheme: new SurfaceTheme($root, $presentation->theme)))->json($routes->routes(), $consoleKernel->commands(), $consoleKernel->jobs(), $consoleKernel->schedules(), $modules),
     ] + $assetCatalog->outputs + $templates;
     // Only the package's source checkout owns these outputs; an app never writes vendor/.
     if ((new ProjectProfile())->profile($root) === GateProfile::Aic) {

@@ -16,6 +16,11 @@ final readonly class BuildPaths
     public const string GENERATED = 'build/generated';
 
     /**
+     * The surface manifest (#26): every route, command, job and schedule, relative to the project.
+     */
+    public const string SURFACE = 'build/surface.json';
+
+    /**
      * The published assets AIC's asset handler serves at `/assets/`, relative to the project.
      */
     public const string ASSETS = 'build/assets';
