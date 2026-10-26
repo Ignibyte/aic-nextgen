@@ -43,6 +43,7 @@ each falls back on its own to `html.tpl.php` and `page.tpl.php` through its look
 |---|---|
 | `Renderer::document()` | `document(Layout): Html`, the whole document through its registered template |
 | `Renderer::fragments()` | `fragments(Layout, list<string>): ?Html`, targets from the same tree; null when a target is absent |
+| `Renderer::elements()` | `elements(Component): Html`, one component inline with no marker around it, for a stream's element patch |
 
 The generated `App\Generated\ThemeTemplates` lookup maps the theme's component classes to their
 compiled classes, then delegates to the framework atoms. A component folder without its template
@@ -53,7 +54,8 @@ chooses a template.
 its `data-region` wrapper, or an inline transparent wrapper. Full documents and fragments use the
 same pass and lookup. A fragment contains title, current CSRF metadata and tracked resources,
 followed by one template element per target. It is not a second view implementation.
-`AIC\Controller\Application\Psr7ResponseWriter` alone reads Html's markup for the response.
+`AIC\Controller\Application\Psr7ResponseWriter` alone reads Html's markup for the response. It also
+frames a stream's events (`frame(ServerEvent)`), rendering an element patch's component there.
 
 ## Blocks and keys
 

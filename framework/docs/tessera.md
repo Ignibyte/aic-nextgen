@@ -66,14 +66,15 @@ or domain validation.
 ## Streams and props
 
 An EventSource yields `AIC\Controller\Contracts\ServerEvent` values through an EventStream.
-`AIC\Tessera\Domain\TesseraEvents` supplies the event helpers below; it still takes a markup
-string for element patches. Render and escape that content deliberately rather than concatenating
-untrusted data. Renderer exposes document and fragment operations, not a general component-to-string
-operation.
+`AIC\Tessera\Domain\TesseraEvents` supplies the event helpers below. An element patch carries a
+component, never markup: the response writer, as `AIC\Controller\Contracts\EventWriter`, renders it
+through `Renderer::elements()` when the stream pulls the event, with the same templates and escaping
+as a page and no marker around the patched component. Signals and keep-alive events carry no
+component.
 
 | Operation | Contract |
 |---|---|
-| `TesseraEvents::patchElements()` | target, markup, mode, id and last; emits tessera-patch-elements |
+| `TesseraEvents::patchElements()` | target, component, mode, id and last; emits tessera-patch-elements |
 | `TesseraEvents::patchSignals()` | scope, JSON object, only-if-missing, id and last; emits tessera-patch-signals |
 | `TesseraEvents::keepAlive()` | keep-alive comment, with the last flag |
 | `TesseraProps::forTarget()` | verifies the requested target's props envelope and returns string values; empty when absent |

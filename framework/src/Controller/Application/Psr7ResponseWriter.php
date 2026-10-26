@@ -8,7 +8,9 @@ use AIC\Component\Application\Renderer;
 use AIC\Component\Contracts\Layout;
 use AIC\Component\Exception\UnknownComponent;
 use AIC\Controller\Contracts\EventSource;
+use AIC\Controller\Contracts\EventWriter;
 use AIC\Controller\Contracts\ResponseWriter;
+use AIC\Controller\Contracts\ServerEvent;
 use AIC\Http\Application\FileResponses;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Tessera\Domain\TesseraRequest;
@@ -28,7 +30,7 @@ use const JSON_UNESCAPED_UNICODE;
 /**
  * Writes the kinds' response shapes as PSR-7 responses.
  */
-final readonly class Psr7ResponseWriter implements ResponseWriter
+final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
 {
     /**
      * @param ResponseBuilder $responseBuilder Makes the PSR-7 responses.
@@ -152,11 +154,31 @@ final readonly class Psr7ResponseWriter implements ResponseWriter
     #[Override]
     public function events(EventSource $eventSource): ResponseInterface
     {
-        $response = $this->responseBuilder->createFromStream(200, 'text/event-stream; charset=utf-8', new EventStreamBody($eventSource));
+        $eventStreamBody = new EventStreamBody($eventSource, $this);
+        $response = $this->responseBuilder->createFromStream(200, 'text/event-stream; charset=utf-8', $eventStreamBody);
         $response = $this->responseBuilder->withHeader($response, 'Cache-Control', 'no-store');
         $response = $this->responseBuilder->withHeader($response, 'X-Accel-Buffering', 'no');
 
         return $this->varied($this->responseBuilder->withHeader($response, TesseraRequest::PROTOCOL, TesseraRequest::VERSION));
+    }
+
+    /**
+     * @param ServerEvent $serverEvent The event the source sent.
+     *
+     * @throws UnknownComponent When no template renders the event's component.
+     *
+     * @return string The event on the wire, its element patch's component rendered by the one Renderer (#115).
+     */
+    #[Override]
+    public function frame(ServerEvent $serverEvent): string
+    {
+        $component = $serverEvent->elements;
+
+        if ($component === null) {
+            return $serverEvent->wire('');
+        }
+
+        return $serverEvent->wire($this->renderer->elements($component)->markup());
     }
 
     /**

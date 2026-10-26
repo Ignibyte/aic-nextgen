@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **A stream's element patch carries a component** (#115, epic #151). `TesseraEvents::patchElements()`
+  takes a `Component` instead of a markup string; the response writer, as the new `EventWriter`,
+  renders it through `Renderer::elements()` when the event body pulls the event. The tick stream
+  hands Tessera the theme's `Tick` component, so no module class holds HTML. `Renderer` stays the
+  only `Html` constructor and `Psr7ResponseWriter` the only reader of its markup; gate:9 keeps
+  stream events off `Html`. The `/events` bytes are unchanged; gate:23 gains a `/ticks` step.
+
 - **A controller names a theme layout** (#154, epic #151). A Page builds its document through the
   framework's `PageDocuments` (`content()`, `page()`), which replaces the site module's
   `HtmlLayout`, and may pass a layout name: `ThemeLayoutName::Focus`. A theme ships named layouts

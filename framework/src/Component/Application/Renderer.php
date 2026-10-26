@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Component\Application;
 
+use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Html;
 use AIC\Component\Contracts\Layout;
 use AIC\Component\Exception\UnknownComponent;
@@ -29,6 +30,18 @@ final readonly class Renderer
     public function __construct(
         private ComponentTemplates $componentTemplates,
     ) {
+    }
+
+    /**
+     * @param Component $component One component, such as a stream's element patch (#115).
+     *
+     * @throws UnknownComponent When no template renders it or one of its children.
+     *
+     * @return Html Its markup inline: no region and no marker around it; its children keep theirs.
+     */
+    public function elements(Component $component): Html
+    {
+        return new Html((new RenderPass($this->componentTemplates, ''))->inline($component));
     }
 
     /**

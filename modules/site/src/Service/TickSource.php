@@ -7,15 +7,16 @@ namespace App\Site\Service;
 use AIC\Controller\Contracts\EventSource;
 use AIC\Controller\Contracts\ServerEvent;
 use AIC\Tessera\Domain\TesseraEvents;
+use App\Theme\Components\Tick\Tick;
 use InvalidArgumentException;
 use Override;
 
 use function usleep;
 
 /**
- * Ticks as Tessera events (#73): each appends `<li>tick N</li>` to the
- * `ticks` region under the id N, so a reconnect resumes after the last tick
- * the page saw, and then sets the document's `ticks` signal to N.
+ * Ticks as Tessera events (#73): each appends a Tick component to the
+ * `ticks` region under the id N (#115), so a reconnect resumes after the last
+ * tick the page saw, and then sets the document's `ticks` signal to N.
  */
 final class TickSource implements EventSource
 {
@@ -68,6 +69,6 @@ final class TickSource implements EventSource
         $this->given += 1;
         $this->signalDue = true;
 
-        return $this->tesseraEvents->patchElements('ticks', '<li>tick ' . $this->given . '</li>', 'append', (string) $this->given, false);
+        return $this->tesseraEvents->patchElements('ticks', new Tick($this->given), 'append', (string) $this->given, false);
     }
 }
