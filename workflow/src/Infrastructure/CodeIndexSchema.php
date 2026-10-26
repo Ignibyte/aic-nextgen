@@ -23,9 +23,9 @@ final readonly class CodeIndexSchema
     public const string DIRECTORY = 'var/index';
 
     /**
-     * The index's version.
+     * The index's version: 2 since themes have an area of their own (#157), so stored rows rebuild.
      */
-    private const int VERSION = 1;
+    private const int VERSION = 2;
 
     /**
      * Version 1: files, symbols, edges and the surface's hash.
@@ -54,7 +54,6 @@ final readonly class CodeIndexSchema
         CREATE INDEX edge_source ON edge (source);
         CREATE INDEX edge_file ON edge (file);
         CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
-        PRAGMA user_version = 1;
         SQL;
 
     /**
@@ -85,7 +84,7 @@ final readonly class CodeIndexSchema
             $version = (int) $this->statement($pdo, 'PRAGMA user_version', [])->fetchColumn();
 
             if ($wipe || $version !== self::VERSION) {
-                $pdo->exec(self::TABLES);
+                $pdo->exec(self::TABLES . 'PRAGMA user_version = ' . self::VERSION . ';');
             }
         } catch (PDOException $pdoException) {
             throw new WorkflowRefusal(

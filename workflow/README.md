@@ -70,12 +70,19 @@ unchanged. A parent-written, changed, stale or duplicate ledger does not replace
 
 ## Generate components and the first theme
 
-`bin/aic command:list` includes `make:component`, `make:page` and `make:theme`. Components live
+`bin/aic command:list` includes `make:component`, `make:page`, `make:layout` and `make:theme`. Components live
 in the theme that `config/app.php` names (#153): `make:component <Class>` writes
 `themes/<theme>/components/<Class>/<Class>.php` and its lower-kebab `.tpl.php`, and edits no
 manifest. A default `make:page` writes its own view there and routes the page in its module's
 manifest; `make:page --component=<Class>` reuses a theme component. The entity generator's list
 page uses this shared writer when that generator is implemented.
+
+`make:layout <name>` (#157) writes a named page layout into the theme's `layouts/`: `<Case>Page.php`,
+page data with the content region only, and `page--<name>.tpl.php`, and edits no manifest. Its document
+falls back to `html.tpl.php`. After `composer run build` the generated `ThemeLayoutName` has the case,
+and `make:page <module> <Class> <path> --layout=<name>` passes it; the make refuses a layout the theme
+does not ship, and `--layout` with `--post`. It writes no `html--<name>.tpl.php`: until templates stop
+compiling to classes, a copy of the theme's document compiles to a phpcpd clone.
 
 `bin/aic make:theme <name> --dry-run --json` previews the first theme: `layouts/Page.php` with
 four regions, the HTML and page templates and real CSS. It prints the `config/app.php`, Composer

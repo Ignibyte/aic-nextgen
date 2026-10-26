@@ -48,22 +48,28 @@ final readonly class CodeTree
     /**
      * @throws WorkflowRefusal When the index cannot be read.
      *
-     * @return CodeAnswer The systems, the modules and the rest of the project, with their counts.
+     * @return CodeAnswer The systems, the modules, the themes and the rest of the project, with their counts.
      */
     public function overview(): CodeAnswer
     {
-        $placed = ['module' => [], 'rest' => [], 'system' => []];
+        $placed = ['module' => [], 'rest' => [], 'system' => [], 'theme' => []];
 
         foreach ($this->codeLookup->areas() as $area => $counts) {
             [$bucket, $line] = $this->placed($area, $counts);
             $placed[$bucket][] = $line;
         }
 
-        return new CodeAnswer(['systems:', ...$placed['system'], 'modules:', ...$placed['module'], ...$placed['rest']], [], ['*']);
+        $themes = $placed['theme'] === []
+            ? []
+            : ['themes:', ...$placed['theme']];
+
+        $lines = ['systems:', ...$placed['system'], 'modules:', ...$placed['module'], ...$themes, ...$placed['rest']];
+
+        return new CodeAnswer($lines, [], ['*']);
     }
 
     /**
-     * @param string $target A module, a system or a path.
+     * @param string $target A module, a system, an area's key (`theme:app`, #157) or a path.
      *
      * @throws WorkflowRefusal When the index cannot be read.
      *
@@ -74,13 +80,22 @@ final readonly class CodeTree
         $areas = array_keys($this->codeLookup->areas());
 
         foreach ($areas as $area) {
-            if ($area === 'module:' . $target || strtolower($area) === 'system:' . strtolower($target)) {
+            if (
+                $area === $target
+                || $area === 'module:' . $target
+                || strtolower($area) === 'system:' . strtolower($target)
+            ) {
                 return $this->codeOutline->area($area);
             }
         }
 
         return $this->codeLookup->filesUnder($target) === []
-            ? new CodeAnswer(['code:tree — nothing in the index is called ' . $target . '; name a module, system or path.'], [], [], false)
+            ? new CodeAnswer(
+                ['code:tree — nothing in the index is called ' . $target . '; name a module, system, theme:<name> or path.'],
+                [],
+                [],
+                false,
+            )
             : $this->codeOutline->path($target);
     }
 
@@ -141,7 +156,7 @@ final readonly class CodeTree
      *
      * @throws WorkflowRefusal When the index cannot be read.
      *
-     * @return array{'module'|'rest'|'system', string} Where its overview line goes, and the line.
+     * @return array{'module'|'rest'|'system'|'theme', string} Where its overview line goes, and the line.
      */
     private function placed(string $area, array $counts): array
     {
@@ -152,6 +167,7 @@ final readonly class CodeTree
         return match ($kind) {
             'system' => ['system', '  ' . $name . ' — ' . $this->counted($counts) . $this->codeOutline->layers($area)],
             'module' => ['module', $this->codeModuleView->line($name)],
+            'theme' => ['theme', '  ' . $name . ' (theme:' . $name . ') — ' . $this->counted($counts)],
             default => ['rest', $area . ' — ' . $this->counted($counts)],
         };
     }

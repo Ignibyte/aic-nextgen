@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 /**
- * The ten `bin/aic make:*` lines that make `modules/scaffold/` (#122), run in
+ * The eleven `bin/aic make:*` lines that make `modules/scaffold/` (#122), run in
  * order by gate:31 and by anyone regenerating the module: every writer, a
- * page naming its component and a page making its own view.
+ * page naming its component, a named layout (#157) and a page making its own
+ * view in that layout.
  */
 final readonly class ScaffoldSequence
 {
@@ -18,7 +19,8 @@ final readonly class ScaffoldSequence
         ['make:module', 'scaffold'],
         ['make:component', 'ScaffoldCard'],
         ['make:page', 'scaffold', 'ScaffoldPage', '/scaffold', '--component=ScaffoldCard'],
-        ['make:page', 'scaffold', 'ScaffoldAboutPage', '/scaffold/about'],
+        ['make:layout', 'scaffold-solo'],
+        ['make:page', 'scaffold', 'ScaffoldAboutPage', '/scaffold/about', '--layout=scaffold-solo'],
         ['make:page', 'scaffold', 'ScaffoldPost', '/scaffold', '--post'],
         ['make:api', 'scaffold', 'ScaffoldApi', '/api/scaffold'],
         ['make:block', 'scaffold', 'ScaffoldBlock', '--prefix=/scaffold'],

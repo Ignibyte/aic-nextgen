@@ -21,6 +21,26 @@ use Override;
  */
 final readonly class ThemeLayouts implements PageLayouts
 {
+    /** Each layout's Tessera identity and region names, by its name; the empty name is the theme's own layout. */
+    private const array LAYOUTS = [
+        '' => [
+            'identity' => 'app',
+            'regions' => ['header', 'content', 'nav', 'footer'],
+        ],
+        'focus' => [
+            'identity' => 'app-focus',
+            'regions' => ['content', 'nav'],
+        ],
+        'plain' => [
+            'identity' => 'app-plain',
+            'regions' => ['header', 'content', 'nav', 'footer'],
+        ],
+        'scaffold-solo' => [
+            'identity' => 'app-scaffold-solo',
+            'regions' => ['content'],
+        ],
+    ];
+
     /** @param PublicAssets $publicAssets The same compiled catalog used for public delivery. */
     public function __construct(private PublicAssets $publicAssets)
     {
@@ -38,41 +58,30 @@ final readonly class ThemeLayouts implements PageLayouts
     #[Override]
     public function create(string $title, Regions $regions, ?LayoutName $layoutName = null): ThemeLayout
     {
-        return match ($layoutName) {
-            ThemeLayoutName::Focus => $this->layout(
-                new ThemePage($regions, 'focus'),
-                $title,
-                'app-focus',
-                ['content', 'nav'],
-            ),
-            ThemeLayoutName::Plain => $this->layout(
-                new ThemePage($regions, 'plain'),
-                $title,
-                'app-plain',
-                ['header', 'content', 'nav', 'footer'],
-            ),
-            default => $this->layout(
-                new ThemePage($regions),
-                $title,
-                'app',
-                ['header', 'content', 'nav', 'footer'],
-            ),
-        };
+        $name = $this->name($layoutName);
+
+        return new ThemeLayout(
+            new ThemePage($regions, $name),
+            $title,
+            $this->trackedAssets(),
+            self::LAYOUTS[$name]['identity'],
+            self::LAYOUTS[$name]['regions'],
+        );
     }
 
     /**
-     * @param ThemePage    $themePage The page's regions and its layout's key.
-     * @param string       $title     The document title.
-     * @param string       $identity  The layout's Tessera identity.
-     * @param list<string> $names     The layout's region names.
+     * @param LayoutName|null $layoutName The layout a controller named; null for the default.
      *
-     * @throws InvalidArgumentException When required public resources are absent.
-     *
-     * @return ThemeLayout The document.
+     * @return string Its name; empty for the theme's own layout.
      */
-    private function layout(ThemePage $themePage, string $title, string $identity, array $names): ThemeLayout
+    private function name(?LayoutName $layoutName): string
     {
-        return new ThemeLayout($themePage, $title, $this->trackedAssets(), $identity, $names);
+        return match ($layoutName) {
+            ThemeLayoutName::Focus => 'focus',
+            ThemeLayoutName::Plain => 'plain',
+            ThemeLayoutName::ScaffoldSolo => 'scaffold-solo',
+            default => '',
+        };
     }
 
     /**

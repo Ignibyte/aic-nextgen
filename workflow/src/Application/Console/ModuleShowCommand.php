@@ -14,6 +14,7 @@ use AIC\Workflow\Domain\Console\CommandUsage;
 use AIC\Workflow\Domain\Console\InspectAnswer;
 use AIC\Workflow\Domain\Console\ParsedArguments;
 use AIC\Workflow\Domain\Console\SurfaceModule;
+use AIC\Workflow\Domain\Console\SurfaceTheme;
 use AIC\Workflow\Domain\Console\SurfaceView;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use InvalidArgumentException;
@@ -25,7 +26,9 @@ use function array_map;
 use function array_unique;
 use function array_values;
 use function json_encode;
+use function ksort;
 use function sort;
+use function str_starts_with;
 
 use const JSON_THROW_ON_ERROR;
 use const JSON_UNESCAPED_SLASHES;
@@ -95,9 +98,10 @@ final readonly class ModuleShowCommand implements Command
         }
 
         $dependents = $surfaceView->dependents($name);
-        $module = self::data($surfaceModule, $dependents, $entries, $users);
+        $components = $this->components($name, $surfaceView);
+        $module = [...self::data($surfaceModule, $dependents, $entries, $users), 'components' => $components];
         $data = json_encode(['module' => $module], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $lines = $this->moduleShowLines->lines($surfaceModule, $dependents, $entries, $users);
+        $lines = $this->moduleShowLines->lines($surfaceModule, $dependents, $entries, $users, $components);
 
         return new InspectAnswer($lines, $data, true, $this->files($surfaceModule, $entries), ['module:' . $name]);
     }
@@ -124,6 +128,34 @@ final readonly class ModuleShowCommand implements Command
     }
 
     /**
+     * @param string      $module      A module.
+     * @param SurfaceView $surfaceView The surface.
+     *
+     * @throws WorkflowRefusal When the index cannot be read.
+     *
+     * @return list<array{class: string, template: string}> The theme components its classes name (#157), by class.
+     */
+    private function components(string $module, SurfaceView $surfaceView): array
+    {
+        $templates = self::templates($surfaceView->theme);
+        $components = [];
+
+        foreach ($this->codeLookup->crossing('module:' . $module) as $codeCrossing) {
+            $class = $codeCrossing->target;
+
+            if (!str_starts_with($codeCrossing->targetArea, 'theme:') || !array_key_exists($class, $templates)) {
+                continue;
+            }
+
+            $components[$class] = ['class' => $class, 'template' => $templates[$class]];
+        }
+
+        ksort($components);
+
+        return array_values($components);
+    }
+
+    /**
      * @param SurfaceModule                              $surfaceModule The module.
      * @param array<string, list<array<string, string>>> $entries       Its routes, commands, jobs and schedules.
      *
@@ -144,6 +176,26 @@ final readonly class ModuleShowCommand implements Command
         }
 
         return array_values(array_unique($files));
+    }
+
+    /**
+     * @param SurfaceTheme|null $surfaceTheme The theme; null when the app has none.
+     *
+     * @return array<string, string> Each component's template, by class.
+     */
+    private static function templates(?SurfaceTheme $surfaceTheme): array
+    {
+        if ($surfaceTheme === null) {
+            return [];
+        }
+
+        $templates = [];
+
+        foreach ($surfaceTheme->components as $component) {
+            $templates[$component['component']] = $component['source'];
+        }
+
+        return $templates;
     }
 
     /**

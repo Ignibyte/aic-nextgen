@@ -204,11 +204,11 @@ final readonly class GroundingLooks
      * @param string $path A created row's path.
      * @param string $area Its area.
      *
-     * @return bool Whether its module or system, or its top folder elsewhere, holds no indexed file yet.
+     * @return bool Whether its module, system or theme, or its top folder elsewhere, holds no indexed file yet.
      */
     private function isNew(string $path, string $area): bool
     {
-        return str_starts_with($area, 'module:') || str_starts_with($area, 'system:')
+        return str_starts_with($area, 'module:') || str_starts_with($area, 'system:') || str_starts_with($area, 'theme:')
             ? !array_key_exists($area, $this->codeLookup->areas())
             : $this->codeLookup->filesUnder(explode('/', $path)[0] . '/') === [];
     }

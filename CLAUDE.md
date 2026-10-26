@@ -19,7 +19,8 @@ The architecture set an app's agent reads, shipped in `aic/framework`, is
 Current order (Chad, 2026-10-25): finish epic #151, the theme owns all markup. #153 (components,
 layouts and assets in `themes/<theme>/`) and #154 (a controller names a layout through
 `PageDocuments`, each file falling back to `html.tpl.php`/`page.tpl.php`) and #115 (the tick
-stream renders a theme component) are delivered; then #156 (gate:32, no HTML under `modules/`), #157 (layout generators) and #159 (the stock page reads
+stream renders a theme component), #156 (gate:32, no HTML under `modules/`) and #157 (`make:layout`,
+`make:page --layout`, the `theme:<t>` code-index area) are delivered; then #159 (the stock page reads
 only the rows it shows). The elephc fork carries #152 (`?>`, inline HTML, `<?=`) and #158
 (`htmlspecialchars` substitution) are unparked, fork only; #155 (templates run as templates, no
 markup in any PHP class, Tessera framing in framework templates) waits on #152. Lotline (#128,
@@ -148,9 +149,10 @@ three-module fixture app; a module's handlers build in parts that fit (`HandlerP
 the gate suite is the dev package `aic/gates`, run by `vendor/bin/aic-gate`. #130: the app side,
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
-#122: `bin/aic make:*` (module, page, api, component, block, command, job, migration; dev-only in
+#122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme and
+layout (#157); dev-only in
 `aic/workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the ten make lines.
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the eleven make lines.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
 cases (`workflow/probes/sweep/`) in throwaway apps made by `workflow/probes/scratch-app.sh`, the
 builder the seeker probe shares; it ends `probe-summary: P passed, F failed, N not run.`, exits 0

@@ -43,7 +43,9 @@ another file, add its row to the manifest first; the run records it as declared 
   `themes/<name>/layouts/` (`Page.php`, `html.tpl.php`, `page.tpl.php`) and CSS, then prints the
   `config/app.php`, Composer and PHPCS lines to add. A Page controller takes the framework's
   `PageDocuments` and may name a layout (`content([...], 200, ThemeLayoutName::Focus)`); a layout
-  ships `page--<name>.tpl.php`, `html--<name>.tpl.php` or both, each falling back to the default. The
+  ships `page--<name>.tpl.php`, `html--<name>.tpl.php` or both, each falling back to the default.
+  `make:layout <name>` writes a page layout (`<Case>Page.php`, the content region only, and
+  `page--<name>.tpl.php`); after `composer run build`, `make:page … --layout=<name>` names it. The
   Composer prefixes for `App\\Theme\\Components\\` and `App\\Generated\\Templates\\` must be configured
   first; run `composer dump-autoload`. Use the dry-run to declare every path it lists.
 - **Find before you add.** `bin/aic code:search` and `bin/aic code:refs` before you write a

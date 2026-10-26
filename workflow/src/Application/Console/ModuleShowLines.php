@@ -17,15 +17,21 @@ use function implode;
 final readonly class ModuleShowLines
 {
     /**
-     * @param SurfaceModule                              $surfaceModule The module.
-     * @param list<string>                               $dependents    The modules that require it.
-     * @param array<string, list<array<string, string>>> $entries       Its routes, commands, jobs and schedules, by section.
-     * @param array<string, list<string>>                $users         Each export's users, by class.
+     * @param SurfaceModule                                $surfaceModule The module.
+     * @param list<string>                                 $dependents    The modules that require it.
+     * @param array<string, list<array<string, string>>>   $entries       Its routes, commands, jobs and schedules, by section.
+     * @param array<string, list<string>>                  $users         Each export's users, by class.
+     * @param list<array{class: string, template: string}> $components    The theme components it uses (#157).
      *
      * @return list<string> Its lines.
      */
-    public function lines(SurfaceModule $surfaceModule, array $dependents, array $entries, array $users): array
-    {
+    public function lines(
+        SurfaceModule $surfaceModule,
+        array $dependents,
+        array $entries,
+        array $users,
+        array $components,
+    ): array {
         return [
             'module ' . $surfaceModule->name . ' (' . $surfaceModule->namespace . ')',
             ...self::section('requires', $surfaceModule->requires),
@@ -42,6 +48,7 @@ final readonly class ModuleShowLines
             ...self::section('prefixes', $surfaceModule->prefixes),
             ...self::section('factories', $surfaceModule->factories),
             ...self::section('exports', self::exports($users)),
+            ...self::section('components', self::rows($components, ['class', 'template'])),
         ];
     }
 

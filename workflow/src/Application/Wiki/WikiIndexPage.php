@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Wiki;
 
+use AIC\Workflow\Domain\Console\SurfaceLayout;
 use AIC\Workflow\Domain\Console\SurfaceModule;
 use AIC\Workflow\Domain\Console\SurfaceTheme;
 use AIC\Workflow\Domain\Console\SurfaceView;
@@ -88,7 +89,7 @@ final readonly class WikiIndexPage
     /**
      * @param SurfaceTheme|null $surfaceTheme The theme, if the app has one.
      *
-     * @return list<string> Its folder, layouts and regions, then its components with their templates.
+     * @return list<string> Its folder, layouts and regions, its components with their templates, then its named layouts.
      */
     private function theme(?SurfaceTheme $surfaceTheme): array
     {
@@ -107,6 +108,37 @@ final readonly class WikiIndexPage
                 static fn (array $component): array => [$markdown->code($component['component']), $markdown->code($component['source'])],
                 $surfaceTheme->components,
             ), 'bin/aic code:tree themes'),
+            '',
+            ...$this->layouts($surfaceTheme),
+        ];
+    }
+
+    /**
+     * @param SurfaceTheme $surfaceTheme The theme.
+     *
+     * @return list<string> Its named layouts (#157), each with its files, page data and regions.
+     */
+    private function layouts(SurfaceTheme $surfaceTheme): array
+    {
+        $markdown = $this->wikiMarkdown;
+        $file = static fn (string $path): string => $path === ''
+            ? "the theme's"
+            : $markdown->code($path);
+
+        return [
+            "Named layouts: a Page passes a `ThemeLayoutName` case; a file a layout leaves out falls back to the theme's own "
+                . '(`bin/aic make:layout <name>`).',
+            '',
+            ...$markdown->table(['Layout', 'Page', 'Document', 'Page data', 'Regions'], array_map(
+                static fn (SurfaceLayout $surfaceLayout): array => [
+                    $markdown->code($surfaceLayout->name),
+                    $file($surfaceLayout->page),
+                    $file($surfaceLayout->html),
+                    $markdown->code($surfaceLayout->pageData),
+                    $markdown->inline($surfaceLayout->regions),
+                ],
+                $surfaceTheme->layouts,
+            ), 'bin/aic code:tree theme:' . $surfaceTheme->name),
         ];
     }
 

@@ -50,9 +50,11 @@ final readonly class CodeOutline
         $module = str_starts_with($area, 'module:')
             ? substr($area, 7)
             : '';
-        $prefix = $module === ''
-            ? $this->systemPrefix($symbols)
-            : 'modules/' . $module . '/';
+        $prefix = match (true) {
+            $module !== '' => 'modules/' . $module . '/',
+            str_starts_with($area, 'theme:') => 'themes/' . substr($area, 6) . '/',
+            default => $this->systemPrefix($symbols),
+        };
         $files = $prefix === ''
             ? []
             : $this->codeLookup->filesUnder($prefix);
