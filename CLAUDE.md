@@ -20,8 +20,8 @@ Current order (Chad, 2026-10-25): finish epic #151, the theme owns all markup. #
 layouts and assets in `themes/<theme>/`) and #154 (a controller names a layout through
 `PageDocuments`, each file falling back to `html.tpl.php`/`page.tpl.php`) and #115 (the tick
 stream renders a theme component), #156 (gate:32, no HTML under `modules/`) and #157 (`make:layout`,
-`make:page --layout`, the `theme:<t>` code-index area) are delivered; then #159 (the stock page reads
-only the rows it shows). The elephc fork carries #152 (`?>`, inline HTML, `<?=`) and #158
+`make:page --layout`, the `theme:<t>` code-index area) and #159 (the stock page reads only the
+rows it shows, through `EntityQuery::orderByDescending()` and `limit()`) are delivered. The elephc fork carries #152 (`?>`, inline HTML, `<?=`) and #158
 (`htmlspecialchars` substitution) are unparked, fork only; #155 (templates run as templates, no
 markup in any PHP class, Tessera framing in framework templates) waits on #152. Lotline (#128,
 #132) waits on the epic: its bootstrap is held and unmerged in `/srv/stacks/aic-demo` on the

@@ -60,7 +60,9 @@ The development engine and its guard are described in [workflow.md](workflow.md)
   `AIC\Schema\Contracts\Schema`; `AIC\Schema\Application\Migrator` applies each version once, in a
   transaction, and keeps a ledger with a checksum of each, so a changed migration shows as changed.
 - `AIC\Entity`: tables as entity types with typed fields; `AIC\Entity\Application\EntityStore`
-  queries, inserts, updates and deletes rows by key. A module's repository builds on it.
+  queries, inserts, updates and deletes rows by key. A query takes equality conditions, ascending
+  and descending order and a row limit, so a page reads only the rows it shows. A module's
+  repository builds on it.
 
 ## 4. Components
 

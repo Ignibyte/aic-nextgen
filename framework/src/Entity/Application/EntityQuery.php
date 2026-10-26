@@ -15,7 +15,8 @@ use function in_array;
 
 /**
  * A query over one entity type: the key and every field of the rows that match
- * each `where()` (equality, with bound values), in `orderBy()` order.
+ * each `where()` (equality, with bound values), in `orderBy()` and
+ * `orderByDescending()` order, at most `limit()` of them.
  */
 final class EntityQuery
 {
@@ -34,11 +35,16 @@ final class EntityQuery
     private array $params = [];
 
     /**
-     * The columns to sort by, ascending.
+     * The columns to sort by, each ascending or with `DESC`.
      *
      * @var list<string>
      */
     private array $order = [];
+
+    /**
+     * How many rows it returns at most; 0 for no limit.
+     */
+    private int $limit = 0;
 
     /**
      * @param Database   $database   The database.
@@ -76,6 +82,38 @@ final class EntityQuery
     public function orderBy(string $field): self
     {
         $this->order[] = $this->column($field);
+
+        return $this;
+    }
+
+    /**
+     * @param string $field A column of the entity type, sorted descending.
+     *
+     * @throws InvalidArgumentException When the entity type has no such column.
+     *
+     * @return self The query.
+     */
+    public function orderByDescending(string $field): self
+    {
+        $this->order[] = $this->column($field) . ' DESC';
+
+        return $this;
+    }
+
+    /**
+     * @param int $count How many rows it returns at most.
+     *
+     * @throws InvalidArgumentException When the count is below 1.
+     *
+     * @return self The query.
+     */
+    public function limit(int $count): self
+    {
+        if ($count < 1) {
+            throw new InvalidArgumentException('A query limit must be at least 1, not ' . $count . '.');
+        }
+
+        $this->limit = $count;
 
         return $this;
     }
@@ -120,6 +158,10 @@ final class EntityQuery
 
         if ($this->order !== []) {
             $sql .= ' ORDER BY ' . implode(', ', $this->order);
+        }
+
+        if ($this->limit > 0) {
+            $sql .= ' LIMIT ' . $this->limit;
         }
 
         return $sql;
