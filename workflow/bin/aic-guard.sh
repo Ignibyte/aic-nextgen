@@ -4,8 +4,8 @@
 # =============================================================================
 #
 # Claude Code runs it with the hook's payload on stdin; the verb is edit,
-# shell, record, stop or returned (#103, PostToolUse Agent: the guard notes
-# what a subagent returned) (workflow/pack/hooks.json). It finds the project's
+# shell, record, stop or returned (#103; SubagentStop since #169: the guard
+# notes what a subagent returned) (workflow/pack/hooks.json). It finds the project's
 # root, stays silent where the workflow is not installed, and hands the call
 # to aic-guard.php. Exit 0 allows, exit 2 refuses with the reason on stderr.
 #

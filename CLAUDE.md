@@ -282,7 +282,7 @@ Background work is a job; the HTTP server's processes are its workers.
     `workflow/pack/seeker/checklist.md`, and answers each item `pass` or `fail <file>:<line>` before
     a ledger the agent pipes to `bin/aic workflow:seeker-report`. The ledger names the subject it
     read and cites a checklist id per finding; it counts only when the guard's `returned` row
-    (PostToolUse `Agent`) holds its digest. No finding holds the run at any severity: the row
+    (`SubagentStop`, #169) holds its digest. No finding holds the run at any severity: the row
     passes and names each open one, and `workflow:status` shows it. `seeker-report` opens at code
     only and refuses a second counted ledger. `seeker_inspection` and `seeker_finding` (evidence
     schema v3) and `seeker.filed` keep the record. The guard refuses every write made inside an

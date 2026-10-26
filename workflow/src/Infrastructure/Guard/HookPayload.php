@@ -11,7 +11,6 @@ use function array_filter;
 use function array_keys;
 use function array_values;
 use function get_object_vars;
-use function implode;
 use function is_array;
 use function is_string;
 use function json_decode;
@@ -21,8 +20,10 @@ use function json_decode;
  * the tool, the paths and command its input names, the directory it
  * started in, and the session. Stop's `stop_hook_active` is the shim's. Unknown keys are
  * ignored; a payload that is not a JSON object reads as nothing. Since #103 it
- * also reads the subagent type making a call (`agent_type`) and, on
- * PostToolUse `Agent`, the type and text a completed subagent returned.
+ * also reads the subagent type making a call (`agent_type`). A SubagentStop
+ * payload (#169) is a return: the type that ended and its last message, the
+ * text it returned. It fires for a foreground and a background subagent alike,
+ * where PostToolUse `Agent` fires at a background launch with no text.
  */
 final readonly class HookPayload
 {
@@ -41,15 +42,32 @@ final readonly class HookPayload
     public function read(string $payload, string $verb, string $root): ?HookCall
     {
         $decoded = json_decode($payload);
-        $input = [$decoded instanceof stdClass
-            ? get_object_vars($decoded)['tool_input'] ?? null
-            : null];
 
-        if (!$decoded instanceof stdClass || ($verb !== 'stop' && !$input[0] instanceof stdClass)) {
+        if (!$decoded instanceof stdClass) {
             return null;
         }
 
-        return $this->call($decoded, $input[0] instanceof stdClass ? $input[0] : new stdClass(), $root);
+        return $this->text($decoded, 'hook_event_name') === 'SubagentStop'
+            ? $this->stopped($decoded, $root)
+            : $this->tool($decoded, $verb, $root);
+    }
+
+    /**
+     * @param stdClass $payload A tool call's or Stop's payload.
+     * @param string   $verb    The verb; every verb but `stop` needs a tool.
+     * @param string   $root    The project's root.
+     *
+     * @return HookCall|null The call; null when a tool's call has no input.
+     */
+    private function tool(stdClass $payload, string $verb, string $root): ?HookCall
+    {
+        $input = [get_object_vars($payload)['tool_input'] ?? null];
+
+        if ($verb !== 'stop' && !$input[0] instanceof stdClass) {
+            return null;
+        }
+
+        return $this->call($payload, $input[0] instanceof stdClass ? $input[0] : new stdClass(), $root);
     }
 
     /**
@@ -68,8 +86,6 @@ final readonly class HookPayload
             return null;
         }
 
-        [$returned, $text] = $this->returned($payload);
-
         return new HookCall(
             $tool,
             $this->paths($input),
@@ -77,48 +93,29 @@ final readonly class HookPayload
             $cwd === '' ? $root : $cwd,
             $this->text($payload, 'session_id'),
             $this->text($payload, 'agent_type'),
-            $returned,
-            $text,
         );
     }
 
     /**
-     * @param stdClass $payload The payload.
+     * @param stdClass $payload A SubagentStop payload.
+     * @param string   $root    The project's root.
      *
-     * @return array{string, string} A completed subagent's type and the text it returned; empty strings otherwise.
+     * @return HookCall The return: the subagent type that ended and the text it returned.
      */
-    private function returned(stdClass $payload): array
+    private function stopped(stdClass $payload, string $root): HookCall
     {
-        $response = get_object_vars($payload)['tool_response'] ?? null;
+        $cwd = $this->text($payload, 'cwd');
 
-        if (!$response instanceof stdClass || $this->text($response, 'status') !== 'completed') {
-            return ['', ''];
-        }
-
-        return [$this->text($response, 'agentType'), $this->texts($response)];
-    }
-
-    /**
-     * @param stdClass $response A completed subagent's response.
-     *
-     * @return string The text blocks of its content, joined.
-     */
-    private function texts(stdClass $response): string
-    {
-        $content = [get_object_vars($response)['content'] ?? null];
-        $texts = [];
-
-        if (!is_array($content[0])) {
-            return '';
-        }
-
-        foreach (array_keys($content[0]) as $index) {
-            $texts[] = $content[0][$index] instanceof stdClass
-                ? $this->text($content[0][$index], 'text')
-                : '';
-        }
-
-        return implode("\n", $texts);
+        return new HookCall(
+            'Agent',
+            [],
+            '',
+            $cwd === '' ? $root : $cwd,
+            $this->text($payload, 'session_id'),
+            '',
+            $this->text($payload, 'agent_type'),
+            $this->text($payload, 'last_assistant_message'),
+        );
     }
 
     /**

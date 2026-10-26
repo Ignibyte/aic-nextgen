@@ -20,7 +20,7 @@ use function preg_match;
 
 /**
  * The guard's record of returned subagents (#103 over #102's ledger): the
- * `returned` rows `aic-guard.sh returned` writes on PostToolUse `Agent`, read
+ * `returned` rows `aic-guard.sh returned` writes on SubagentStop (#169), read
  * straight from the append-only ledger. The record is wired when the
  * project's settings name that hook.
  */
