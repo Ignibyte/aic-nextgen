@@ -400,9 +400,9 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | 9 | phpat, `gates/architecture/` | 20 | captainhook hooks installed |
 | 10 | PHPMD, every ruleset | 21 | native: elephc compile, link, run, match PHP |
 | | | 22 | pipeline docs: frontmatter, line caps, links |
-| | | 23 | native site: the compiled app answers as PHP does |
+| | | 23 | native site: the compiled app answers as PHP does; HTML answers pass the lint |
 | | | 24 | build manifests: `build/surface.json` is fresh |
-| | | 25 | templates: the plain PHP grammar, deny by default |
+| | | 25 | templates: the plain PHP grammar, deny by default; the HTML lint |
 | | | 26 | module boundaries: kind folders, the 15-file cap, exports and requires, the shell |
 | | | 27 | raw html: every RawHtml use listed and held to its grant |
 | | | 28 | house rules: every shipped rule bites on its probe |
@@ -462,6 +462,14 @@ The settings of each gate are in `CONSTITUTION.md` §0.
     `do`/`while`, `<?php echo`, declarations, superglobals, and anything else.
   - **Placement:** `themes/<theme>/components/<Name>/<name>.phtml` or
     `themes/<theme>/layouts/`; a template anywhere else is refused.
+  - **The HTML lint (#170):** `TemplateHtml` reads the markup with each echo as a NUL marker and
+    refuses (`html`) inline style (`style`, `<style>`), inline script (`on*`, `javascript:`, a
+    `<script>` with no `src` or a body), an echoed tag or attribute name, values not in double
+    quotes, spacing other than one space between attributes; `TemplateWhitespace` (`whitespace`)
+    refuses tabs, CR, trailing whitespace, indents off a step of 4, two blank lines and a blank last
+    line. gate:23's `NativeSiteHtml` lints the PHP site's HTML answers as sent: the inline rules,
+    duplicate ids, `<img>` without `alt`, and `Dom\HTMLDocument` parse errors on a full document.
+    Write JSON in an attribute as `data-x="{&quot;a&quot;:1}"`.
   - **The class tools skip templates,** by Chad's decision, and so do the Stop hooks. A tool
     handed a template by explicit path ignores its excludes (Pint and phpcbf then rewrite it),
     so never pass a template to a fixer.

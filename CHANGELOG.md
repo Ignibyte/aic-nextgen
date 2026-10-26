@@ -4,6 +4,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Added
+
+- **An HTML lint** (#170). gate:25 holds each template's markup to no inline style (`style`,
+  `<style>`) and no inline script (`on*`, `javascript:` URLs, a `<script>` with no `src` or with a
+  body), no echo in a tag or attribute name, double-quoted values, one space between attributes and
+  none around `=` or before `>`, and to its line rules (no tab, CR or trailing whitespace, indents in
+  steps of 4, no two blank lines, no blank last line). gate:23 holds every HTML answer the PHP site
+  gives its steps to the inline rules, one use of each `id`, an `alt` on every `<img>`, and no error
+  from PHP's HTML5 parser on a full document. The fixture's ticks template now writes its JSON
+  attribute in double quotes. `aic/gates` requires `ext-dom` and `ext-libxml`.
+
 ### Fixed
 
 - **A background seeker counts** (#169). The Claude pack records an `aic-seeker`'s return on

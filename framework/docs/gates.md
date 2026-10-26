@@ -84,9 +84,9 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 20 | captainhook | the git hooks are installed | `composer install` |
 | 21 | native | every runtime class compiles, links, runs and matches PHP under elephc | reshape the class into a form elephc compiles; report a compiler defect |
 | 22 | pipeline docs | *AIC only*: its own process documents | not run in an app |
-| 23 | native site | the app compiled with `elephc --web` answers each step as the PHP app does | find the step that differs and the class behind it |
+| 23 | native site | the app compiled with `elephc --web` answers each step as the PHP app does, and every HTML answer passes the HTML lint: no inline style or script, each `id` once, an `alt` on every `<img>`, no HTML5 parser error on a full document | find the step that differs and the class behind it; fix the markup in the template that writes it |
 | 24 | build outputs | everything under `build/` (the generated wiring and templates, `build/assets/`, the manifests) and the wiki match what the build writes | `composer run build` |
-| 25 | templates | the theme's `*.phtml` files and the atoms use the grammar; a template anywhere else, or an unsupported source, fails | move the logic into the component's props |
+| 25 | templates | the theme's `*.phtml` files and the atoms use the grammar and the HTML lint (see [templates.md](templates.md#markup-and-whitespace)); a template anywhere else, or an unsupported source, fails | move the logic into the component's props; style through a class in the theme's stylesheet, script from a script file |
 | 26 | module boundaries | kind folders, the 15-file cap, exports and requires, no cycles, no component, template or asset in a module, nothing outside `modules/` but the shell and the theme's classes | move the class (a component to the theme), export it, require the module, or split the module |
 | 27 | raw html | every `RawHtml` use is listed, matches its grant in `config/raw-html.php`, and sits in a theme component | use a component; or grant the theme component's use with its reason |
 | 28 | house rules | *AIC only*: the workflow's shipped rules bite on their probes | not run in an app |
@@ -103,8 +103,9 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
   returns, small value objects, no runtime reflection on dynamic names); legal PHP elephc still
   gets wrong is a compiler defect to report to AIC.
 - **gate:23** builds the whole app natively, serves it beside the PHP app, and replays a script of
-  requests against both: status, content type, location and body must match. Every route opens a
-  Postgres session, so when the database does not answer the gate defers as a whole.
+  requests against both: status, content type, location and body must match. It also lints every
+  HTML body the PHP app answers with, as sent (#170). Every route opens a Postgres session, so when
+  the database does not answer the gate defers as a whole, the lint with it.
 - **gate:24** runs the build in check mode. A stale file means the build was not run after a change.
 
 ## Templates and the class tools
