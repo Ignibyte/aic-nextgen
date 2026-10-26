@@ -110,6 +110,7 @@ final readonly class ProbeHookSteps implements ProbeStepRunner
     {
         $subject = $this->probeJson->subject($this->probeShell->run($probeApp, ['php', 'bin/aic', 'workflow:seeker-brief'])->output);
         $ledger = "## Seeker Inspection\n\nInspector: independent\nSubject: " . $subject . "\n\n(no findings)\n";
+        $this->probeShell->run($probeApp, ['bash', self::GUARD, 'returned'], [], $this->launched($probeApp));
         $processResult = $this->probeShell->run($probeApp, ['bash', self::GUARD, 'returned'], [], $this->returned($probeApp, $ledger));
         $report = $this->probeShell->run($probeApp, ['php', 'bin/aic', 'workflow:seeker-report'], [], $ledger);
         $filed = $subject !== '' && $processResult->exitCode === 0 && $report->exitCode === 0;
@@ -148,11 +149,11 @@ final readonly class ProbeHookSteps implements ProbeStepRunner
 
     /**
      * @param ProbeApp $probeApp The app.
-     * @param string   $ledger   The ledger the seeker returns.
      *
-     * @return string The PostToolUse payload of an `aic-seeker` Agent call that returned it.
+     * @return string The PostToolUse payload of an `aic-seeker` Agent call an interactive session launches in the
+     *                background (#169): no type, no text, so it records no return.
      */
-    private function returned(ProbeApp $probeApp, string $ledger): string
+    private function launched(ProbeApp $probeApp): string
     {
         return json_encode([
             'cwd' => $probeApp->root,
@@ -160,7 +161,25 @@ final readonly class ProbeHookSteps implements ProbeStepRunner
             'session_id' => 'probe',
             'tool_input' => ['description' => 'Inspect the open run', 'prompt' => 'Inspect the open run.', 'subagent_type' => 'aic-seeker'],
             'tool_name' => 'Agent',
-            'tool_response' => ['agentType' => 'aic-seeker', 'content' => [['text' => $ledger, 'type' => 'text']], 'status' => 'completed'],
+            'tool_response' => ['agentType' => null, 'isAsync' => true, 'status' => 'async_launched'],
+        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * @param ProbeApp $probeApp The app.
+     * @param string   $ledger   The ledger the seeker returns.
+     *
+     * @return string The SubagentStop payload of an `aic-seeker` that ended returning it (#169).
+     */
+    private function returned(ProbeApp $probeApp, string $ledger): string
+    {
+        return json_encode([
+            'agent_type' => 'aic-seeker',
+            'cwd' => $probeApp->root,
+            'hook_event_name' => 'SubagentStop',
+            'last_assistant_message' => $ledger,
+            'session_id' => 'probe',
+            'stop_hook_active' => false,
         ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
     }
 }

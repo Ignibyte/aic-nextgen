@@ -20,7 +20,7 @@ final readonly class HookCall
      * @param string         $cwd            The directory the call started in.
      * @param string         $agent          The session that called.
      * @param string         $caller         The subagent type making the call, when a subagent makes it (#103); empty otherwise.
-     * @param string         $returned       A PostToolUse `Agent` call's returned subagent type, when it completed (#103).
+     * @param string         $returned       The subagent type a SubagentStop says ended (#103, #169).
      * @param string         $text           What that subagent returned.
      * @param WorkflowClient $workflowClient The actual adapter, with the legacy default.
      */

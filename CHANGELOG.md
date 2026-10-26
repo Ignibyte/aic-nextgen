@@ -4,6 +4,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Fixed
+
+- **A background seeker counts** (#169). The Claude pack records an `aic-seeker`'s return on
+  `SubagentStop` (its type and last message) instead of `PostToolUse` `Agent`, which an interactive
+  Claude Code session fires at a background launch with no text, so `workflow:seeker-report` refused
+  every ledger. The probe's seeker step sends the interactive sequence. Installed apps rerun
+  `bin/aic workflow:init --force`.
+
 ### Changed
 
 - **Themes show templates; the build writes only into `build/`** (#167, Chad 2026-10-26). A theme's

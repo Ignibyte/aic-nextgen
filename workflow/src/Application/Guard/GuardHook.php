@@ -20,7 +20,7 @@ use function str_starts_with;
 /**
  * The guard's verbs (#102): `edit` (the editors and MCP tools with a path),
  * `shell` (Bash), `record` (every other tool) and `stop`; and `returned`
- * (#103, PostToolUse `Agent`), whose row names the subagent that returned and
+ * (#103; SubagentStop since #169), whose row names the subagent that returned and
  * the digest of the ledger it returned. A state it cannot read refuses; an
  * input it cannot read is allowed, as AIC's hooks are without a transcript.
  * Every call leaves one ledger row: `record` leaves none for the tools the
