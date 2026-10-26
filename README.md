@@ -86,7 +86,7 @@ forwards the rest. Without a proxy, the app's `/assets/{file}` route answers the
 ```bash
 vendor/bin/aic-gate tools   # once: gitleaks (pinned, into tools/), semgrep, shellcheck
 composer run gate           # every gate, on the host; ends with one gate-summary line
-composer run gate:8         # one gate alone (gate:0 to gate:31)
+composer run gate:8         # one gate alone (gate:0 to gate:32)
 composer run gate:21        # the native gate: every runtime class through elephc
 ```
 

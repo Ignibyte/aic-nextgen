@@ -208,6 +208,12 @@ final readonly class GateSuite
             'aic',
             ['php', 'gate-make-scaffold.php'],
         ],
+        32 => [
+            'Module markup: no file under modules/ holds HTML: no template or markup file, no inline output, no tag, markup '
+                . 'declaration or character reference in any literal or text file, no HTML function; the theme holds it all.',
+            'app',
+            ['php', 'gate-module-markup.php'],
+        ],
     ];
 
     /**

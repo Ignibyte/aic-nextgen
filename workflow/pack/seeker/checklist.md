@@ -8,8 +8,9 @@ finding matters; none holds the run.
 
 ## A1 — No HTML in pages or controllers
 
-The gates hold: no `Html` built outside the Renderer, no markup string in a controller, a
-controller returns only its kind's response, and every `RawHtml` use sits within its grant in
+The gates hold: no `Html` built outside the Renderer, no markup anywhere under `modules/` (no
+template or markup file, no HTML in any string or text file, gate:32), a controller returns only
+its kind's response, and every `RawHtml` use is a theme component's, within its grant in
 `config/raw-html.php`.
 
 Judge: markup built anywhere but a component's template and carried in (a Service string, a

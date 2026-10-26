@@ -400,6 +400,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | | | 29 | architecture docs: `framework/docs/` states what the code has |
 | | | 30 | suite files: the root configs are aic/gates' stubs, composer.json's suite lines as shipped |
 | | | 31 | make scaffold: `modules/scaffold/` is what the make lines make |
+| | | 32 | module markup: no HTML anywhere under `modules/` |
 
 - The gate code is the dev-only package `aic/gates` in `gates/` (#116; namespace `Gates\`,
   outside `AIC\` and `App\`), required by path like `aic/workflow`; a phpat rule keeps runtime
@@ -466,15 +467,20 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 - Components only (#99), as gate:8 rules (`gates/src/PhpStan`) and a gate:9 phpat test:
   - `aic.htmlConstruction`: only `Renderer` makes an `Html`.
   - `aic.htmlMarkupRead`: only `Psr7ResponseWriter` reads one, a first-class callable included.
-  - In a module's `src/Controller/`: `aic.controllerMarkupLiteral` refuses any string holding
-    `<`, and `aic.controllerReturnType` refuses a method returning anything but its kind's
-    response, so helpers go to `src/Service/`.
+  - In a module's `src/Controller/`: `aic.controllerReturnType` refuses a method returning
+    anything but its kind's response, so helpers go to `src/Service/`.
   - `aic.renderTreeInput` and `RenderingArchitectureTest`: `Region`, `Regions` and every
     `Layout` take components, blocks, regions, enums and scalars, never `Html`.
 - gate:27 (`gates/bin/gate-raw-html.php`, `Gates\Rendering`, #99) lists every `new RawHtml` and holds
-  each module class to its grant in `config/raw-html.php` (`RawHtmlGrant`: class, exact uses,
-  reason). `RawHtml::` may appear only in `Renderer` and `RenderPass`. `GATE_RAW_HTML_ROOT`
+  each class to its grant in `config/raw-html.php` (`RawHtmlGrant`: class, exact uses, reason);
+  only a theme component class may hold a grant (#156). `RawHtml::` may appear only in `Renderer` and `RenderPass`. `GATE_RAW_HTML_ROOT`
   takes a plant root.
+- gate:32 (`gates/bin/gate-module-markup.php`, `Gates\Markup`, #156) holds `modules/` to no HTML:
+  template and markup file types by name, PHP literals folded with php-parser (concat and
+  interpolation, holes for values) against an HTML element list, custom element names, markup
+  declarations, computed brackets and character references, inline output, HTML functions, raw
+  text files, links and unparsable files; any `<` in `src/Controller/`. A usage placeholder named
+  like an element is refused: write `{table}`. `GATE_MODULE_MARKUP_ROOT` takes a plant root.
 - gate:28 (`gates/bin/gate-house-rules.php`, #104) runs every `workflow/rules/*.php` rule on its
   `.probe/` cases in a temporary directory: each `held-*` must exit 0, each `broken-*` 1.
 - gate:21 caches (#110): a class whose closure files, compiler, bridge libraries, PHP, pinned

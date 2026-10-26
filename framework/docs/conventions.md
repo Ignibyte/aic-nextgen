@@ -42,8 +42,10 @@ Every PHP file in a module follows these rules. Each names the gate that refuses
 ## Entry points and markup
 
 - **Every entry point is one of the five kinds.** See [kinds.md](kinds.md). gate:9 holds it.
-- **A controller holds no markup.** No string with `<` in `src/Controller/`, and each controller
-  method returns its kind's response; helpers go to `src/Service/`. gate:8 holds it.
+- **A module holds no markup.** No template or markup file, no inline output, and no HTML tag,
+  markup declaration or character reference in any string or text file under `modules/`; in
+  `src/Controller/` no string holds `<` at all. Markup lives in the theme. gate:32 holds it.
+- **A controller returns its kind's response.** Helpers go to `src/Service/`. gate:8 holds it.
 - **Templates are plain PHP, read only.** `<?= ?>`, the alternative control syntax, the component
   variable and loop variables; no function, method or static call, no `new`, no assignment. Values
   are escaped by their type when the build compiles the template. gate:25 holds it.

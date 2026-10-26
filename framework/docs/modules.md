@@ -105,6 +105,15 @@ sources). A Component class, a template or a public asset in a module is refused
 theme. A folder holds at most 15 files; `src/Migration/` has no cap. A sixteenth file means the module is
 doing too much: split it into a second module, or group the work into fewer classes.
 
+## No markup
+
+A module holds no HTML at all. gate:32 reads every file under `modules/` on disk and refuses a
+template or markup file by its name (`.tpl.php`, `.html`, `.svg`, `.twig` and the rest), inline
+output outside `<?php`, an HTML tag, markup declaration or character reference in any string
+literal or text file, a `<` left for a computed tag, and the HTML functions; in `src/Controller/`
+any `<` fails. Markup belongs in the theme, built from components by the Renderer. A command's
+usage placeholder named like an element (`<table>`) is refused: write `{table}`.
+
 ## Exports and requires
 
 A module may use its own classes, the framework's, and the classes another module exports, if it

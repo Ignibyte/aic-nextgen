@@ -88,7 +88,7 @@ final readonly class RawHtmlGate
      * @param list<RawHtmlUse>            $references Every `RawHtml::` reference.
      * @param array<string, RawHtmlGrant> $grants     The grants, by class.
      *
-     * @return list<string> Every violation: ungranted uses, miscounted grants, grants outside the modules, references.
+     * @return list<string> Every violation: ungranted uses, miscounted grants, grants outside the theme's components, references.
      */
     private static function violations(array $uses, array $references, array $grants): array
     {
@@ -162,18 +162,19 @@ final readonly class RawHtmlGate
     /**
      * @param array<string, RawHtmlGrant> $grants The grants, by class.
      *
-     * @return list<string> A line per grant on a class that is not a module's.
+     * @return list<string> A line per grant on a class that is not a theme component's.
      */
     private static function foreign(array $grants): array
     {
         $violations = [];
 
         foreach ($grants as $class => $grant) {
-            if (str_starts_with($class, 'App\\') && !str_starts_with($class, 'App\\Generated\\')) {
+            if (str_starts_with($class, 'App\\Theme\\Components\\')) {
                 continue;
             }
 
-            $violations[] = 'config/raw-html.php grants ' . $grant->class . ', not a module class: only a module may build RawHtml.';
+            $violations[] = 'config/raw-html.php grants ' . $grant->class . ', not a theme component class: only a theme component may '
+                . 'build RawHtml, since a module holds no markup (#156).';
         }
 
         return $violations;

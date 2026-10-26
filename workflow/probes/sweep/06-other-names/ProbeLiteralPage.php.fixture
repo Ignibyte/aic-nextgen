@@ -11,7 +11,7 @@ use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * A Page whose string holds markup, which gate:8 refuses (#119).
+ * A Page whose string holds markup, which gate:32 refuses (#119, #156).
  */
 final readonly class ProbeLiteralPage implements Page
 {

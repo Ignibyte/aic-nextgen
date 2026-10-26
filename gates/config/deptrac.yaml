@@ -91,6 +91,11 @@ deptrac:
       collectors:
         - type: classLike
           value: '^AIC\\Workflow\\Parsing\\'
+    # gate:32, module markup (#156).
+    - name: ModuleMarkupGate
+      collectors:
+        - type: classLike
+          value: '^Gates\\Markup\\'
     # gate:27, the RawHtml count (#99).
     - name: RawHtmlGate
       collectors:
@@ -189,6 +194,10 @@ deptrac:
       - Domain
       - Exception
       - PsrVendor
+      - PhpParserVendor
+    ModuleMarkupGate:
+      - Domain
+      - Application
       - PhpParserVendor
     RawHtmlGate:
       - Contracts
