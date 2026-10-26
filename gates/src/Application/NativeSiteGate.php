@@ -45,6 +45,7 @@ final readonly class NativeSiteGate
      * @param NativeSiteComparer $nativeSiteComparer Sends the steps and compares the answers.
      * @param GateUser           $gateUser           Gives the signed-in steps their user.
      * @param NativeSiteScript   $nativeSiteScript   The steps.
+     * @param NativeSiteHtml     $nativeSiteHtml     Lints the PHP site's HTML answers (#170).
      */
     public function __construct(
         private NativeToolchain $nativeToolchain,
@@ -53,6 +54,7 @@ final readonly class NativeSiteGate
         private NativeSiteComparer $nativeSiteComparer,
         private GateUser $gateUser,
         private NativeSiteScript $nativeSiteScript = new NativeSiteScript(),
+        private NativeSiteHtml $nativeSiteHtml = new NativeSiteHtml(),
     ) {
     }
 
@@ -175,8 +177,9 @@ final readonly class NativeSiteGate
         $this->serverLauncher->stopAll();
 
         $differences = $this->nativeSiteComparer->differences($steps, $php, $native);
+        $html = $this->nativeSiteHtml->findings($steps, $php);
 
-        return $this->report($differences, count($steps), $stdout, $stderr);
+        return $this->report($differences, $html, count($steps), $stdout, $stderr);
     }
 
     /**
@@ -200,26 +203,32 @@ final readonly class NativeSiteGate
 
     /**
      * @param list<string> $differences What the sites disagreed on.
+     * @param list<string> $html        What the PHP site's HTML answers break (#170).
      * @param int          $run         How many steps ran.
      * @param resource     $stdout      Stream the summary is written to.
      * @param resource     $stderr      Stream failures are written to.
      *
      * @return int The exit code.
      */
-    private function report(array $differences, int $run, mixed $stdout, mixed $stderr): int
+    private function report(array $differences, array $html, int $run, mixed $stdout, mixed $stderr): int
     {
         foreach ($differences as $difference) {
             fwrite($stderr, 'gate:23 — DIFF ' . $difference . PHP_EOL);
         }
 
-        if ($differences !== []) {
-            $summary = sprintf('gate:23 — native site: %d difference(s) from PHP over %d step(s).', count($differences), $run);
-            fwrite($stderr, $summary . PHP_EOL);
+        foreach ($html as $finding) {
+            fwrite($stderr, 'gate:23 — HTML ' . $finding . PHP_EOL);
+        }
+
+        if ($differences !== [] || $html !== []) {
+            $summary = 'gate:23 — native site: %d difference(s) from PHP and %d HTML finding(s) over %d step(s).';
+            fwrite($stderr, sprintf($summary, count($differences), count($html), $run) . PHP_EOL);
 
             return 1;
         }
 
-        fwrite($stdout, sprintf('gate:23 — native site: %d of %d step(s) answer as PHP does.%s', $run, $run, PHP_EOL));
+        $summary = 'gate:23 — native site: %d of %d step(s) answer as PHP does, and their HTML passes the lint.';
+        fwrite($stdout, sprintf($summary, $run, $run) . PHP_EOL);
 
         return 0;
     }

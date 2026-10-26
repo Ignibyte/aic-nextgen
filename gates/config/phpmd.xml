@@ -37,12 +37,13 @@
         API is class-static by design: phpat's rule builder and selectors
         (gates/architecture), Closure, Composer's InstalledVersions, and
         shipmonk's VirtualUsageData (a private constructor behind withNote(), the
-        one way a usage provider names a usage, #155). Static access to AIC's
-        own code stays forbidden.
+        one way a usage provider names a usage, #155), and PHP's Dom\HTMLDocument
+        (a private constructor behind createFromString(), the one way to run the
+        HTML5 parser, #170). Static access to AIC's own code stays forbidden.
     -->
     <rule ref="rulesets/cleancode.xml/StaticAccess">
         <properties>
-            <property name="exceptions" value="\PHPat\Test\PHPat,\PHPat\Selector\Selector,\Closure,\Composer\InstalledVersions,\ShipMonk\PHPStan\DeadCode\Provider\VirtualUsageData"/>
+            <property name="exceptions" value="\PHPat\Test\PHPat,\PHPat\Selector\Selector,\Closure,\Composer\InstalledVersions,\ShipMonk\PHPStan\DeadCode\Provider\VirtualUsageData,\Dom\HTMLDocument"/>
         </properties>
     </rule>
 

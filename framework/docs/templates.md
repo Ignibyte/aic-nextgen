@@ -63,6 +63,29 @@ superglobals, variable variables, backticks and error suppression. Syntax or nod
 allowed table fail closed. Short open tags are refused regardless of PHP's setting. Prepare the
 values in the controller's helpers or services, rather than adding logic to the template.
 
+## Markup and whitespace
+
+Gate:25 also reads each template's markup (#170): the inline HTML as written, each `<?= ?>` as one
+marker and every other PHP block as its newlines, so both branches of a condition count and each
+line keeps its number. It refuses, as `html`:
+
+- inline style: a `style` attribute or a `<style>` element. Style an element through a class in the
+  theme's stylesheet; a script file may still set styles.
+- inline script: an `on*` handler, a `javascript:` URL, or a `<script>` with no `src` or with a body.
+- an echo that writes a tag or attribute name: write the name, and echo only its value.
+- a value not in double quotes, anything but one space (or a new line and its indentation) between
+  attributes, a space around `=`, and a space before `>` or `/>`. Write JSON in an attribute as
+  `data-x="{&quot;a&quot;:1}"`.
+
+As `whitespace`, it refuses a tab, a carriage return, trailing whitespace, indentation that is not a
+multiple of 4, two blank lines together and a blank line at the end. A template may end with or
+without its newline; an atom ends without one, so its output carries none.
+
+Gate:23 holds what the templates make together: every HTML answer the PHP app sends for its steps
+passes the inline rules, uses each `id` once, gives every `<img>` an `alt`, and, when it starts with
+a doctype, parses without an error from PHP's HTML5 parser (`Dom\HTMLDocument`). The output's own
+spacing is not linted.
+
 ## Types and output
 
 The build's type categories are checked against its actual enum:

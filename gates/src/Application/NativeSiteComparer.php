@@ -21,7 +21,8 @@ use const PHP_URL_PATH;
 /**
  * Runs the step script against one site, and compares two sites' answers
  * (gate:23): status, content type, location and body, with what changes from
- * run to run normalised away: timestamps, note ids, and the host in a location.
+ * run to run normalised away at comparison: timestamps, note ids, and the host
+ * in a location.
  */
 final readonly class NativeSiteComparer
 {
@@ -51,7 +52,7 @@ final readonly class NativeSiteComparer
      * @param list<NativeSiteStep> $steps    The steps to send, in order.
      * @param string               $password The gate user's password, for `{password}`; empty when there is none.
      *
-     * @return list<HttpExchange> One answer per step, normalised.
+     * @return list<HttpExchange> One answer per step, as sent: the HTML lint reads it whole (#170).
      */
     public function run(string $origin, array $steps, string $password): array
     {
@@ -67,7 +68,7 @@ final readonly class NativeSiteComparer
                 $nativeSiteSession->header($step),
             );
             $nativeSiteSession->absorb($step, $exchange, self::path($exchange->location));
-            $exchanges[] = self::normalised($exchange);
+            $exchanges[] = $exchange;
         }
 
         return $exchanges;
@@ -75,8 +76,8 @@ final readonly class NativeSiteComparer
 
     /**
      * @param list<NativeSiteStep> $steps    The steps.
-     * @param list<HttpExchange>   $expected The interpreted site's answers.
-     * @param list<HttpExchange>   $actual   The compiled site's answers.
+     * @param list<HttpExchange>   $expected The interpreted site's answers, as sent.
+     * @param list<HttpExchange>   $actual   The compiled site's answers, as sent.
      *
      * @return list<string> One line per difference or wrong status; empty when the sites agree.
      */
@@ -85,8 +86,8 @@ final readonly class NativeSiteComparer
         $differences = [];
 
         foreach ($steps as $index => $step) {
-            $php = $expected[$index] ?? new HttpExchange(0, '', '', '');
-            $native = $actual[$index] ?? new HttpExchange(0, '', '', '');
+            $php = self::normalised($expected[$index] ?? new HttpExchange(0, '', '', ''));
+            $native = self::normalised($actual[$index] ?? new HttpExchange(0, '', '', ''));
 
             foreach (self::compared($step, $php, $native) as $difference) {
                 $differences[] = sprintf('%s (%s %s): %s', $step->name, $step->method, $step->path, $difference);

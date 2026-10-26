@@ -5,6 +5,8 @@
     "type": "library",
     "require": {
         "php": "^8.5",
+        "ext-dom": "*",
+        "ext-libxml": "*",
         "aic/framework": "0.1.x-dev",
         "composer-runtime-api": "^2.2",
         "captainhook/captainhook": "^5.24",

@@ -27,22 +27,27 @@ use const STDOUT;
 /**
  * Gate #25: the plain PHP template grammar (#96, part 1 of #88). Every
  * authored candidate is matched to its declaration; each refused construct
- * is one line, sorted by path and line. It defers, named, when no template
- * exists.
+ * is one line, sorted by path and line. Each bound template is also held to
+ * the HTML lint's markup and line rules (#170). It defers, named, when no
+ * template exists.
  */
 final readonly class TemplateGrammarGate
 {
     /**
-     * @param TemplateGrammar   $templateGrammar   The roots.
-     * @param TemplateFinder    $templateFinder    Finds the templates.
-     * @param TemplateValidator $templateValidator Checks each one.
-     * @param QuietFileReader   $quietFileReader   Reads each one.
+     * @param TemplateGrammar    $templateGrammar    The roots.
+     * @param TemplateFinder     $templateFinder     Finds the templates.
+     * @param TemplateValidator  $templateValidator  Checks each one.
+     * @param QuietFileReader    $quietFileReader    Reads each one.
+     * @param TemplateHtml       $templateHtml       Its markup rules (#170).
+     * @param TemplateWhitespace $templateWhitespace Its line rules (#170).
      */
     public function __construct(
         private TemplateGrammar $templateGrammar = new TemplateGrammar(),
         private TemplateFinder $templateFinder = new TemplateFinder(),
         private TemplateValidator $templateValidator = new TemplateValidator(),
         private QuietFileReader $quietFileReader = new QuietFileReader(),
+        private TemplateHtml $templateHtml = new TemplateHtml(),
+        private TemplateWhitespace $templateWhitespace = new TemplateWhitespace(),
     ) {
     }
 
@@ -93,7 +98,7 @@ final readonly class TemplateGrammarGate
         }
 
         $summary = $violations === []
-            ? sprintf('gate:25 — %d template(s) follow the template grammar.', $templates)
+            ? sprintf('gate:25 — %d template(s) follow the template grammar and the HTML lint.', $templates)
             : sprintf('gate:25 — %d violation(s) in %d template(s).', count($violations), $templates);
         fwrite($violations === [] ? $stdout : $stderr, $summary . PHP_EOL);
 
@@ -136,7 +141,7 @@ final readonly class TemplateGrammarGate
      *
      * @throws InvalidArgumentException When the fixed library catalog is invalid.
      *
-     * @return list<TemplateViolation> Read/declaration refusals, or the declared source's grammar violations.
+     * @return list<TemplateViolation> Read/declaration refusals, or the declared source's grammar, markup and line violations.
      */
     private function sourceViolations(string $path, ?string $source, ?TemplateBinding $templateBinding): array
     {
@@ -148,7 +153,11 @@ final readonly class TemplateGrammarGate
                 TemplateRefusal::Placement,
                 'a template lives in the configured theme: themes/<theme>/components/<Name>/<name>.phtml or themes/<theme>/layouts/',
             )],
-            default => $this->templateValidator->violations($path, $source, $templateBinding),
+            default => [
+                ...$this->templateValidator->violations($path, $source, $templateBinding),
+                ...$this->templateHtml->violations($path, $source),
+                ...$this->templateWhitespace->violations($path, $source),
+            ],
         };
     }
 

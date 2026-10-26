@@ -10,7 +10,8 @@ namespace Gates\Domain;
  * (Chad, 2026-10-21): anything outside it is `not in the grammar`. The build
  * (#97) adds the type categories: what the grammar allows but a static type
  * forbids (an echo of a bool, a condition that is not one, a null test on a
- * value that cannot be null).
+ * value that cannot be null). The HTML lint (#170) adds `html`, the markup
+ * rules, and `whitespace`, the line rules.
  */
 enum TemplateRefusal: string
 {
@@ -47,4 +48,6 @@ enum TemplateRefusal: string
     case EchoType = 'echo type';
     case ComponentKey = 'component key';
     case NotCompilable = 'not compilable';
+    case Html = 'html';
+    case Whitespace = 'whitespace';
 }
