@@ -26,6 +26,14 @@ The authored page class has promoted nonnullable Region properties. Its template
 declared region exactly once on every path. The HTML template renders the page and tracked assets
 exactly once. These wrappers stay transparent to component target paths.
 
+A Page controller builds its document through `AIC\Controller\Application\PageDocuments`
+(`content(list<Component>, int, ?LayoutName)` or `page(Regions, int, ?LayoutName)`), titled with
+the app's name. The optional `AIC\Component\Contracts\LayoutName` picks a named layout of the
+theme: a case of the generated `App\Generated\ThemeLayoutName`, one per layout the theme
+ships, so a controller cannot name a layout that does not exist. `ThemePage::$layout` carries the
+key the build resolved; the generated adapters render that layout's html and page templates, and
+each falls back on its own to `html.tpl.php` and `page.tpl.php` through its lookup's `default` arm.
+
 ## One Renderer
 
 `AIC\Component\Application\Renderer` is the only code that constructs

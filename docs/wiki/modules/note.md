@@ -145,9 +145,7 @@ none
 
 ### Other modules
 
-| Module | Classes it uses |
-| --- | --- |
-| [site](site.md) | `App\Site\Service\HtmlLayout` |
+none
 
 ## Used by
 

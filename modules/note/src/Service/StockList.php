@@ -18,6 +18,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 use function array_key_exists;
 use function array_slice;
+use function count;
 use function ctype_digit;
 use function is_string;
 use function max;
@@ -68,6 +69,22 @@ final readonly class StockList
             self::listing(array_slice($items, -$limit), $limit),
             $this->envelopeCodec->seal(['limit' => (string) $limit]),
         );
+    }
+
+    /**
+     * @param list<StockItem> $items Every item, oldest first.
+     *
+     * @return string The latest item's line, or that there is none.
+     */
+    public function summary(array $items): string
+    {
+        $latest = $items === []
+            ? null
+            : $items[count($items) - 1];
+
+        return $latest instanceof StockItem
+            ? 'Latest: ' . $latest->line() . '.'
+            : 'Nothing in stock yet.';
     }
 
     /**

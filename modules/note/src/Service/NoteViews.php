@@ -11,9 +11,9 @@ use AIC\Component\Domain\Badge;
 use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\Link;
 use AIC\Component\Domain\Paragraph;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Domain\PageDocument;
 use App\Note\Entity\Note;
-use App\Site\Service\HtmlLayout;
 use App\Theme\Components\NoteList\NoteList;
 use InvalidArgumentException;
 
@@ -27,10 +27,10 @@ use function count;
 final readonly class NoteViews
 {
     /**
-     * @param HtmlLayout $htmlLayout The document around each page.
+     * @param PageDocuments $pageDocuments The document around each page.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
     ) {
     }
 
@@ -44,7 +44,7 @@ final readonly class NoteViews
      */
     public function page(array $content, int $status): PageDocument
     {
-        return $this->htmlLayout->page(
+        return $this->pageDocuments->page(
             new Regions([new Region('content', $content), new Region('nav', [new Link('All notes', '/notes')])]),
             $status,
         );

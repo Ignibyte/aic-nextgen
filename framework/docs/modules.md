@@ -166,6 +166,15 @@ is missing:
 <element key="themes/app/layouts" value="App\Theme\Layouts"/>
 ```
 
+Named layouts sit beside the default ones: `html--<name>.tpl.php`, `page--<name>.tpl.php`
+or both, where `<name>` is lowercase words joined by single hyphens (not `class`). A named page may
+read its own page data, a class in `layouts/` that its first line names (`FocusPage`), with its own
+regions, which must include `content`; a page data class no page reads is refused. The build
+generates `App\Generated\ThemeLayoutName`, a case per name (`focus` gives `Focus`), and refuses two
+names that give the same case. A controller passes the case to `PageDocuments`; a file the named
+layout does not ship falls back to `html.tpl.php` or `page.tpl.php`. Its Tessera identity is
+`<theme>-<name>`.
+
 The generated implementation of `AIC\Component\Contracts\PageLayouts` creates documents.
 `AIC\Component\Domain\ThemePage` carries only the filled Regions; a compiled adapter constructs
 the theme's typed page and renders its compiled template. Render data holds no factory service.
@@ -186,10 +195,9 @@ component and its template into the theme's `components/<Class>/` and edits no m
 module's manifest, and writes its own view into the theme; `--component=<Class>` reuses a theme
 component instead.
 
-For an app without a theme or a layout service, run `bin/aic make:theme <name>`. It writes
-`themes/<name>/layouts/` (`Page.php` with four regions, header, content, nav and footer, and the
-HTML and page templates), a stylesheet, and an exported `HtmlLayout` service in the site module,
-then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module
+For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
+(`Page.php` with four regions, header, content, nav and footer, and the HTML and page templates)
+and a stylesheet, then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module
 is assumed. Names are lowercase words joined by hyphens, at most 32 bytes.
 
 Map `App\Theme\Components\` and `App\Generated\Templates\` in Composer and run

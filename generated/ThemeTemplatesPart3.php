@@ -11,7 +11,6 @@ use AIC\Component\Domain\ThemeLayout;
 use AIC\Component\Exception\UnknownComponent;
 use App\Generated\Templates\StockLinksTemplate;
 use App\Generated\Templates\StockListingTemplate;
-use App\Generated\Templates\ThemeAppHtmlTemplate;
 use App\Generated\Templates\TicksTemplate;
 use App\Theme\Components\StockLinks\StockLinks;
 use App\Theme\Components\StockListing\StockListing;
@@ -47,7 +46,7 @@ final readonly class ThemeTemplatesPart3 implements ComponentTemplates
             $component instanceof StockLinks => (new StockLinksTemplate())->render($component, $renderPass),
             $component instanceof StockListing => (new StockListingTemplate())->render($component),
             $component instanceof Ticks => (new TicksTemplate())->render($component),
-            $component instanceof ThemeLayout => (new ThemeAppHtmlTemplate())->render($component, $renderPass),
+            $component instanceof ThemeLayout => (new ThemeHtmlTemplate())->render($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }

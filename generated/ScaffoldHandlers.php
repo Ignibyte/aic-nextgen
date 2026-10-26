@@ -10,7 +10,6 @@ use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPost;
-use App\Site\Service\HtmlLayout;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -34,12 +33,10 @@ final readonly class ScaffoldHandlers
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
-
         return [
-            ScaffoldAboutPage::class => $this->handlerContext->page(new ScaffoldAboutPage($htmlLayout)),
+            ScaffoldAboutPage::class => $this->handlerContext->page(new ScaffoldAboutPage($this->handlerContext->documents())),
             ScaffoldApi::class => $this->handlerContext->api(new ScaffoldApi()),
-            ScaffoldPage::class => $this->handlerContext->page(new ScaffoldPage($htmlLayout)),
+            ScaffoldPage::class => $this->handlerContext->page(new ScaffoldPage($this->handlerContext->documents())),
             ScaffoldPost::class => $this->handlerContext->page(new ScaffoldPost()),
         ];
     }

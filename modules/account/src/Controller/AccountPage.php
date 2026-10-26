@@ -9,10 +9,10 @@ use AIC\Component\Domain\Button;
 use AIC\Component\Domain\Form;
 use AIC\Component\Domain\Heading;
 use AIC\Component\Domain\Paragraph;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Form\Application\FormTokens;
-use App\Site\Service\HtmlLayout;
 use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -24,12 +24,12 @@ use Psr\Http\Message\ServerRequestInterface;
 final readonly class AccountPage implements Page
 {
     /**
-     * @param HtmlLayout    $htmlLayout    Makes the page.
+     * @param PageDocuments $pageDocuments Makes the page.
      * @param Authenticator $authenticator Knows who is signed in.
      * @param FormTokens    $formTokens    Issues the visitor's CSRF token.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         private Authenticator $authenticator,
         private FormTokens $formTokens = new FormTokens(),
     ) {
@@ -48,7 +48,7 @@ final readonly class AccountPage implements Page
         $user = $this->authenticator->userId($serverRequest);
         $form = new Form('', '/logout', [new Button('Sign out', 'submit', 'sign-out')], $this->formTokens->issue($serverRequest)->value());
 
-        return $this->htmlLayout->content(
+        return $this->pageDocuments->content(
             [new Heading('Account'), new Paragraph('Signed in as ' . $user . '.', 'signed-in'), $form],
             200,
         );

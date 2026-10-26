@@ -8,11 +8,11 @@ use AIC\Component\Domain\Button;
 use AIC\Component\Domain\Form;
 use AIC\Component\Domain\HiddenInput;
 use AIC\Component\Domain\Paragraph;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Form\Application\FormTokens;
 use AIC\Session\Application\RequestSession;
-use App\Site\Service\HtmlLayout;
 use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -24,12 +24,12 @@ use Psr\Http\Message\ServerRequestInterface;
 final readonly class VisitsPage implements Page
 {
     /**
-     * @param HtmlLayout     $htmlLayout     Makes the page.
+     * @param PageDocuments  $pageDocuments  Makes the page.
      * @param RequestSession $requestSession Reads the session off the request.
      * @param FormTokens     $formTokens     Issues the visitor's CSRF token.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         private RequestSession $requestSession,
         private FormTokens $formTokens,
     ) {
@@ -52,6 +52,6 @@ final readonly class VisitsPage implements Page
         $form = new Form('forget', '/visits/forget', $fields, $this->formTokens->issue($serverRequest)->value());
         $seen = 'This session has seen this page ' . $visits . ($visits === 1 ? ' time.' : ' times.');
 
-        return $this->htmlLayout->content([new Paragraph($seen, 'visits'), $form], 200);
+        return $this->pageDocuments->content([new Paragraph($seen, 'visits'), $form], 200);
     }
 }

@@ -6,6 +6,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **A controller names a theme layout** (#154, epic #151). A Page builds its document through the
+  framework's `PageDocuments` (`content()`, `page()`), which replaces the site module's
+  `HtmlLayout`, and may pass a layout name: `ThemeLayoutName::Focus`. A theme ships named layouts
+  as `html--<name>.tpl.php`, `page--<name>.tpl.php` or both; each file it leaves out falls back to
+  `html.tpl.php` or `page.tpl.php`. The build generates the `ThemeLayoutName` enum from the files,
+  so a controller cannot name a missing layout, and resolves every fallback into a `match` with a
+  `default` arm. A named page may read its own page data and regions (with `content`). Each layout
+  has its own Tessera identity (`app-focus`), so moving between layouts answers a whole document.
+  The fixture's `/stock` uses a focus layout (content and nav) and `/hello/{name}` a plain
+  document with no banner. gate:9 keeps `LayoutName` to the generated enum.
+
 - **The theme owns every component, layout and asset** (#153, epic #151). `config/app.php` names
   the theme; `themes/app/` holds `layouts/` (`html.tpl.php`, `page.tpl.php` and `Page.php`, whose
   Region properties are the regions), `components/<Name>/` (each Component class with its

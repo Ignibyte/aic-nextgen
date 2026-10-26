@@ -6,22 +6,20 @@ namespace App\Note\Controller;
 
 use AIC\Component\Domain\Heading;
 use AIC\Component\Domain\Paragraph;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
 use AIC\Form\Exception\InvalidEnvelope;
-use App\Note\Entity\StockItem;
+use App\Generated\ThemeLayoutName;
 use App\Note\Form\StockEntry;
 use App\Note\Form\StockForm;
 use App\Note\Repository\StockRepository;
 use App\Note\Service\StockList;
-use App\Site\Service\HtmlLayout;
 use JsonException;
 use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
-
-use function count;
 
 /**
  * GET /stock (#65): every stock item, the latest in full, and the form that
@@ -32,13 +30,13 @@ use function count;
 final readonly class StockPage implements Page
 {
     /**
-     * @param HtmlLayout      $htmlLayout      Makes the page.
+     * @param PageDocuments   $pageDocuments   Makes the page.
      * @param StockRepository $stockRepository Holds the items.
      * @param StockForm       $stockForm       The form.
      * @param StockList       $stockList       The list, the component Tessera refreshes alone.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         private StockRepository $stockRepository,
         private StockForm $stockForm,
         private StockList $stockList,
@@ -63,21 +61,19 @@ final readonly class StockPage implements Page
         try {
             $list = $this->stockList->component($serverRequest, $items);
         } catch (InvalidEnvelope) {
-            return $this->htmlLayout->content([new Paragraph('The list could not be refreshed. Reload the page.', '')], 400);
+            return $this->pageDocuments->content(
+                [new Paragraph('The list could not be refreshed. Reload the page.', '')],
+                400,
+                ThemeLayoutName::Focus,
+            );
         }
 
-        $latest = $items === []
-            ? null
-            : $items[count($items) - 1];
-        $summary = $latest instanceof StockItem
-            ? 'Latest: ' . $latest->line() . '.'
-            : 'Nothing in stock yet.';
-        return $this->htmlLayout->content([
+        return $this->pageDocuments->content([
             new Heading('Stock'),
-            new Paragraph($summary, 'stock-latest'),
+            new Paragraph($this->stockList->summary($items), 'stock-latest'),
             $list,
             $this->stockList->links(),
             $this->stockForm->form($serverRequest, new StockEntry('', '', '', false), ''),
-        ], 200);
+        ], 200, ThemeLayoutName::Focus);
     }
 }

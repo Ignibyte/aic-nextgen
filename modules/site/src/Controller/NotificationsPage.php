@@ -9,12 +9,12 @@ use AIC\Component\Domain\Form;
 use AIC\Component\Domain\FormField;
 use AIC\Component\Domain\Heading;
 use AIC\Component\Domain\Input;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\FormTokens;
 use AIC\Notification\Application\DatabaseChannel;
-use App\Site\Service\HtmlLayout;
 use App\Theme\Components\LineList\LineList;
 use LogicException;
 use Override;
@@ -33,12 +33,12 @@ final readonly class NotificationsPage implements Page
     public const string USER = 'demo';
 
     /**
-     * @param HtmlLayout      $htmlLayout      Makes the page.
+     * @param PageDocuments   $pageDocuments   Makes the page.
      * @param DatabaseChannel $databaseChannel Reads the notifications.
      * @param FormTokens      $formTokens      Issues the visitor's CSRF token.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         private DatabaseChannel $databaseChannel,
         private FormTokens $formTokens = new FormTokens(),
     ) {
@@ -61,7 +61,7 @@ final readonly class NotificationsPage implements Page
             new Button('Send a notification', 'submit', 'notify'),
         ];
 
-        return $this->htmlLayout->content(
+        return $this->pageDocuments->content(
             [
                 new Heading('Notifications'),
                 new LineList('notifications', $latest, 'None yet.'),

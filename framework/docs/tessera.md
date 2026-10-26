@@ -16,7 +16,10 @@ HTML/page wrappers are transparent, so changing a wrapper does not add target se
 syntax. A valid visit naming a region also refreshes the layout's other regions so navigation state
 follows the page. A visit naming only components gets exactly those components. Refresh, submit
 and action requests receive their requested targets. Missing targets, overlapping or malformed
-paths, a different layout or a different protocol fall back to a whole document.
+paths, a different layout or a different protocol fall back to a whole document. Each theme layout
+has its own identity: the theme's name for the default (`app`), `<theme>-<name>` for a
+named one (`app-focus`). A visit from a page in one layout to a page in another therefore gets a
+whole document, and a fragment never crosses layouts.
 
 A fragment response carries title, CSRF metadata and tracked resources, then
 `<template data-target="content">...</template>` for each target. It renders the same bytes for

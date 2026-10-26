@@ -78,9 +78,8 @@ manifest; `make:page --component=<Class>` reuses a theme component. The entity g
 page uses this shared writer when that generator is implemented.
 
 `bin/aic make:theme <name> --dry-run --json` previews the first theme: `layouts/Page.php` with
-four regions, the HTML and page templates, real CSS, and an exported `HtmlLayout` service in the
-site module. It assumes the site module exists and no theme or layout service does, and prints
-the `config/app.php`, Composer and PHPCS lines to add. Use lowercase words joined by hyphens, at
+four regions, the HTML and page templates and real CSS. It prints the `config/app.php`, Composer
+and PHPCS lines to add. Pages take the framework's `PageDocuments` (#154). Use lowercase words joined by hyphens, at
 most 32 bytes. An existing file refuses before writes; reruns refuse instead of overwriting.
 
 Composer must map `"App\\Theme\\Components\\": "themes/<theme>/components/"` and

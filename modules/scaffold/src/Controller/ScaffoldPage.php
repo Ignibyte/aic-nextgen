@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace App\Scaffold\Controller;
 
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
-use App\Site\Service\HtmlLayout;
 use App\Theme\Components\ScaffoldCard\ScaffoldCard;
 use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * GET /scaffold, made by bin/aic make:page (#122): ScaffoldCard in the site's layout.
+ * GET /scaffold, made by bin/aic make:page (#122): ScaffoldCard in the theme's layout.
  */
 final readonly class ScaffoldPage implements Page
 {
     /**
-     * @param HtmlLayout $htmlLayout Makes the page.
+     * @param PageDocuments $pageDocuments Makes the page.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
     ) {
     }
 
@@ -35,6 +35,6 @@ final readonly class ScaffoldPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        return $this->htmlLayout->content([new ScaffoldCard('Scaffold')], 200);
+        return $this->pageDocuments->content([new ScaffoldCard('Scaffold')], 200);
     }
 }

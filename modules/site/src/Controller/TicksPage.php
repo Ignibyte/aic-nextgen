@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Site\Controller;
 
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
-use App\Site\Service\HtmlLayout;
 use App\Theme\Components\Ticks\Ticks;
 use InvalidArgumentException;
 use Override;
@@ -20,10 +20,10 @@ use Psr\Http\Message\ServerRequestInterface;
 final readonly class TicksPage implements Page
 {
     /**
-     * @param HtmlLayout $htmlLayout Makes the page.
+     * @param PageDocuments $pageDocuments Makes the page.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
     ) {
     }
 
@@ -37,6 +37,6 @@ final readonly class TicksPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        return $this->htmlLayout->content([new Ticks('/events?count=5')], 200);
+        return $this->pageDocuments->content([new Ticks('/events?count=5')], 200);
     }
 }

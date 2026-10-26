@@ -10,8 +10,6 @@ use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\ThemePage;
 use AIC\Component\Exception\UnknownComponent;
-use App\Generated\Templates\ThemeAppPageTemplate;
-use App\Theme\Layouts\Page;
 use Override;
 
 /**
@@ -40,7 +38,6 @@ final readonly class ThemeTemplatesPart4 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof Page => (new ThemeAppPageTemplate())->render($component, $renderPass),
             $component instanceof ThemePage => (new ThemePageTemplate())->render($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };

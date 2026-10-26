@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Make\Source;
 
-use function implode;
-use function str_replace;
-use function strcasecmp;
 use function strtr;
-use function usort;
 
 /**
  * A GET page (`make:page`): its component in the site's layout (#122).
@@ -16,8 +12,7 @@ use function usort;
 final readonly class PageSource
 {
     /**
-     * The file, each `{name}` standing for the value of the parameter it names, and
-     * `{appUses}` for its two `App\` imports in the order Pint keeps.
+     * The file, each `{name}` standing for the value of the parameter it names.
      */
     private const string TEMPLATE = <<<'PHP'
         <?php
@@ -26,23 +21,24 @@ final readonly class PageSource
 
         namespace {namespace}\Controller;
 
+        use AIC\Controller\Application\PageDocuments;
         use AIC\Controller\Contracts\Page;
         use AIC\Controller\Contracts\PageResponse;
-        {appUses}
+        use App\Theme\Components\{component}\{component};
         use InvalidArgumentException;
         use Override;
         use Psr\Http\Message\ServerRequestInterface;
 
         /**
-         * GET {path}, made by bin/aic make:page (#122): {component} in the site's layout.
+         * GET {path}, made by bin/aic make:page (#122): {component} in the theme's layout.
          */
         final readonly class {class} implements Page
         {
             /**
-             * @param HtmlLayout $htmlLayout Makes the page.
+             * @param PageDocuments $pageDocuments Makes the page.
              */
             public function __construct(
-                private HtmlLayout $htmlLayout,
+                private PageDocuments $pageDocuments,
             ) {
             }
 
@@ -56,7 +52,7 @@ final readonly class PageSource
             #[Override]
             public function page(ServerRequestInterface $serverRequest): PageResponse
             {
-                return $this->htmlLayout->content([new {component}('{title}')], 200);
+                return $this->pageDocuments->content([new {component}('{title}')], 200);
             }
         }
         PHP;
@@ -72,14 +68,7 @@ final readonly class PageSource
      */
     public function source(string $namespace, string $class, string $path, string $component, string $title): string
     {
-        $uses = ['use App\\Theme\\Components\\' . $component . '\\' . $component . ';', 'use App\\Site\\Service\\HtmlLayout;'];
-        usort(
-            $uses,
-            static fn (string $left, string $right): int => strcasecmp(str_replace('\\', ' ', $left), str_replace('\\', ' ', $right)),
-        );
-
         return strtr(self::TEMPLATE, [
-            '{appUses}' => implode("\n", $uses),
             '{class}' => $class,
             '{component}' => $component,
             '{namespace}' => $namespace,

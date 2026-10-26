@@ -11,7 +11,6 @@ use AIC\Notification\Application\Notifier;
 use AIC\Queue\Application\PostgresQueue;
 use App\Site\Controller\NotificationsPage;
 use App\Site\Controller\NotificationsPost;
-use App\Site\Service\HtmlLayout;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -35,12 +34,11 @@ final readonly class SiteHandlersPart3
      */
     public function byId(): array
     {
-        $htmlLayout = new HtmlLayout($this->handlerContext->appConfig(), $this->handlerContext->layouts());
         $notifier = new Notifier(new PostgresQueue($this->handlerContext->database()));
 
         return [
             NotificationsPage::class => $this->handlerContext->page(
-                new NotificationsPage($htmlLayout, new DatabaseChannel($this->handlerContext->database())),
+                new NotificationsPage($this->handlerContext->documents(), new DatabaseChannel($this->handlerContext->database())),
             ),
             NotificationsPost::class => $this->handlerContext->page(new NotificationsPost($notifier)),
         ];

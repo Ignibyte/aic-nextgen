@@ -56,7 +56,14 @@ final readonly class ThemeLayout implements Layout
     #[Override]
     public function withRegions(Regions $regions): self
     {
-        return new self(new ThemePage($regions), $this->name, $this->trackedAssets, $this->identity, $this->regionNames, $this->token);
+        return new self(
+            new ThemePage($regions, $this->page->layout),
+            $this->name,
+            $this->trackedAssets,
+            $this->identity,
+            $this->regionNames,
+            $this->token,
+        );
     }
 
     /**

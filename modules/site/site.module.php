@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 /*
- * The site module's manifest (#93; the fixture app's since #126): the layout
- * service every page renders through, the home page, the status and health
- * APIs, file downloads, the tick stream and its page, the greeting pages and
- * their greeters, the jobs and notifications pages with the demo job and its
+ * The site module's manifest (#93; the fixture app's since #126): the home
+ * page, the status and health APIs, file downloads, the tick stream and its
+ * page, the greeting pages and their greeters, the jobs and notifications pages with the demo job and its
  * schedule, the site's blocks, db:ping and greet. Its components, layouts and
  * assets live in the theme (#153). The build reads it; nothing reads it at
  * run time.
@@ -35,7 +34,6 @@ use App\Site\Migration\CreateSubscribersTable;
 use App\Site\Migration\MakeSubscriberEmailUnique;
 use App\Site\Service\EnglishGreeter;
 use App\Site\Service\Greeter;
-use App\Site\Service\HtmlLayout;
 use App\Site\Service\SpanishGreeter;
 
 return (new ModuleManifest('site'))
@@ -60,5 +58,4 @@ return (new ModuleManifest('site'))
     ->job('demo', DemoJob::class)
     ->schedule('demo-every-minute', 'demo', ['mode' => 'succeed'], '* * * * *')
     ->migration(CreateSubscribersTable::class)
-    ->migration(MakeSubscriberEmailUnique::class)
-    ->export(HtmlLayout::class);
+    ->migration(MakeSubscriberEmailUnique::class);

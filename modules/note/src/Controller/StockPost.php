@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace App\Note\Controller;
 
 use AIC\Component\Domain\Heading;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
 use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\PostedFields;
+use App\Generated\ThemeLayoutName;
 use App\Note\Form\StockEntry;
 use App\Note\Form\StockForm;
 use App\Note\Repository\StockRepository;
-use App\Site\Service\HtmlLayout;
 use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -25,13 +26,13 @@ use Psr\Http\Message\ServerRequestInterface;
 final readonly class StockPost implements Page
 {
     /**
-     * @param HtmlLayout      $htmlLayout      Makes the page.
+     * @param PageDocuments   $pageDocuments   Makes the page.
      * @param StockRepository $stockRepository Holds the items.
      * @param StockForm       $stockForm       The form, shown again on a refusal.
      * @param PostedFields    $postedFields    Reads the posted fields.
      */
     public function __construct(
-        private HtmlLayout $htmlLayout,
+        private PageDocuments $pageDocuments,
         private StockRepository $stockRepository,
         private StockForm $stockForm,
         private PostedFields $postedFields,
@@ -60,7 +61,7 @@ final readonly class StockPost implements Page
         if ($problem !== '') {
             $form = $this->stockForm->form($serverRequest, $stockEntry, $problem);
 
-            return $this->htmlLayout->content([new Heading('Stock'), $form], 422);
+            return $this->pageDocuments->content([new Heading('Stock'), $form], 422, ThemeLayoutName::Focus);
         }
 
         $this->stockRepository->add($stockEntry);

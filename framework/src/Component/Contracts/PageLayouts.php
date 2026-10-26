@@ -10,12 +10,13 @@ use InvalidArgumentException;
 interface PageLayouts
 {
     /**
-     * @param string  $title   The document title.
-     * @param Regions $regions The page's filled regions.
+     * @param string          $title      The document title.
+     * @param Regions         $regions    The page's filled regions.
+     * @param LayoutName|null $layoutName The theme layout to use (#154); null for `html.tpl.php` and `page.tpl.php`.
      *
      * @throws InvalidArgumentException When a region cannot be constructed.
      *
      * @return Layout The document and page over those same regions.
      */
-    public function create(string $title, Regions $regions): Layout;
+    public function create(string $title, Regions $regions, ?LayoutName $layoutName = null): Layout;
 }

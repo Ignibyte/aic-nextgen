@@ -303,9 +303,7 @@
                 "App\\Site\\Block\\PoweredByBlock",
                 "App\\Site\\Block\\SiteNavBlock"
             ],
-            "exports": [
-                "App\\Site\\Service\\HtmlLayout"
-            ],
+            "exports": [],
             "factories": [],
             "middleware": [],
             "migrations": [
@@ -503,6 +501,32 @@
             }
         ],
         "html": "themes/app/layouts/html.tpl.php",
+        "layouts": [
+            {
+                "html": "",
+                "identity": "app-focus",
+                "name": "focus",
+                "page": "themes/app/layouts/page--focus.tpl.php",
+                "pageData": "App\\Theme\\Layouts\\FocusPage",
+                "regions": [
+                    "content",
+                    "nav"
+                ]
+            },
+            {
+                "html": "themes/app/layouts/html--plain.tpl.php",
+                "identity": "app-plain",
+                "name": "plain",
+                "page": "",
+                "pageData": "App\\Theme\\Layouts\\Page",
+                "regions": [
+                    "header",
+                    "content",
+                    "nav",
+                    "footer"
+                ]
+            }
+        ],
         "name": "app",
         "page": "themes/app/layouts/page.tpl.php",
         "pageData": "App\\Theme\\Layouts\\Page",

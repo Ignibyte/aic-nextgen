@@ -36,7 +36,7 @@ final readonly class PresentationBuild
         $themeBinding = (new ThemeBuild($this->root))->read($theme);
         $templates = $themeBinding === null
             ? []
-            : [...$themeBinding->components, $themeBinding->html, $themeBinding->page];
+            : [...$themeBinding->components, ...$themeBinding->layoutTemplates()];
 
         $this->claims($templates);
 
@@ -68,13 +68,14 @@ final readonly class PresentationBuild
     /**
      * @param TemplateBinding $templateBinding One template binding.
      *
-     * @return list<string> Independently unique source, input, output path and PHP class claims.
+     * @return list<string> Independently unique source, output path and PHP class claims, and the input for a
+     *                      component; every html layout reads `ThemeLayout`, and pages may share their data (#154).
      */
     private function identities(TemplateBinding $templateBinding): array
     {
         return [
             'source:' . $templateBinding->source,
-            'input:' . strtolower($templateBinding->component),
+            ...($templateBinding->transparent() ? [] : ['input:' . strtolower($templateBinding->component)]),
             'output:' . $templateBinding->generated,
             'class:' . strtolower($templateBinding->templateClass),
         ];

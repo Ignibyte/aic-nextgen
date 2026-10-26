@@ -35,9 +35,6 @@ final readonly class ThemeBuild
     /** The entries a theme folder may hold. */
     private const array ENTRIES = ['assets', 'components', 'layouts'];
 
-    /** The files `layouts/` holds, sorted. */
-    private const array LAYOUTS = ['Page.php', 'html.tpl.php', 'page.tpl.php'];
-
     /**
      * @param string          $root            The project folder.
      * @param ThemePageData   $themePageData   Reads the page's regions.
@@ -67,20 +64,19 @@ final readonly class ThemeBuild
 
         $themeComponents = new ThemeComponents($this->root);
         $this->folder($theme, $themeComponents);
-        $this->themeChecks->check(
-            $theme,
-            $this->quietFileReader->read($this->root . '/composer.json') ?? '',
-            $this->quietFileReader->read($this->root . '/phpcs.xml.dist') ?? '',
-        );
+        $this->lines($theme);
 
         $page = $this->themePageData->page(self::PAGE);
+        $regions = $this->themePageData->regions($page);
+        $layouts = $themeComponents->entries('themes/' . $theme . '/layouts');
 
         return new ThemeBinding(
             $theme,
-            $this->themePageData->regions($page),
+            $regions,
             $this->layout($theme, 'html.tpl.php', ThemeLayout::class, TemplateRole::Html),
             $this->layout($theme, 'page.tpl.php', $page, TemplateRole::Page),
             $themeComponents->bindings($theme),
+            (new ThemeLayoutFiles($this->root))->variants($theme, $layouts, $regions),
         );
     }
 
@@ -111,9 +107,23 @@ final readonly class ThemeBuild
             );
         }
 
-        if ($themeComponents->entries($folder . '/layouts') !== self::LAYOUTS) {
-            throw new InvalidArgumentException($folder . '/layouts: holds exactly html.tpl.php, page.tpl.php and Page.php.');
+        if (array_diff(ThemeLayoutFiles::DEFAULTS, $themeComponents->entries($folder . '/layouts')) !== []) {
+            throw new InvalidArgumentException($folder . '/layouts: holds html.tpl.php, page.tpl.php and Page.php.');
         }
+    }
+
+    /**
+     * @param string $theme The configured theme.
+     *
+     * @throws InvalidArgumentException When composer.json or phpcs.xml.dist lacks one of the theme's lines.
+     */
+    private function lines(string $theme): void
+    {
+        $this->themeChecks->check(
+            $theme,
+            $this->quietFileReader->read($this->root . '/composer.json') ?? '',
+            $this->quietFileReader->read($this->root . '/phpcs.xml.dist') ?? '',
+        );
     }
 
     /**
