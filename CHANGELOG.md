@@ -16,6 +16,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **An app's front-end build sources have a place** (#163). gate:26's App shell admits
+  `frontend/*`: a theme built with Tailwind keeps its `package.json`, lockfile and input CSS there,
+  never published, and commits the output into the theme's `assets/`. Found porting Lotline's
+  theme (#128); `framework/docs/modules.md` documents it.
+- **A `url(` inside a CSS string is not a reference** (#161). The build refused daisyUI's
+  stylesheet because its `data:` noise texture holds an SVG `url(%23a)`; the check now reads
+  comments and quoted strings whole, and still refuses a relative top-level `url()`.
 - **The stock page reads only the rows it shows** (#159). `/stock` loaded every stock row, and the
   rows gate:23 adds on each run grew the table until the compiled site ran out of heap (3,093 rows
   answered 500). An entity query now takes `orderByDescending()` and `limit()`, the stock
