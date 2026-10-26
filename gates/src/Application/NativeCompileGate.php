@@ -185,7 +185,8 @@ final readonly class NativeCompileGate
 
         foreach ($classes as $class) {
             $files = $this->closureBundler->closure($class, $psr4Map);
-            $keys[$class] = ['files' => $files, 'key' => $this->closureFingerprint->closure($toolchain, $files)];
+            $fingerprinted = [...$files, ...$this->closureBundler->templates($files)];
+            $keys[$class] = ['files' => $files, 'key' => $this->closureFingerprint->closure($toolchain, $fingerprinted)];
         }
 
         return $keys;

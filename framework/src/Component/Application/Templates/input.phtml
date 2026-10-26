@@ -1,0 +1,2 @@
+<?php declare(strict_types=1); /* Escaped from framework/templates/components/input.phtml by composer run build; edit that file, never this one. */ ?>
+<input<?php if ($input->id !== ''): ?> id="<?= $renderPass->text($input->id) ?>"<?php endif; ?><?php if ($input->name !== ''): ?> name="<?= $renderPass->text($input->name) ?>"<?php endif; ?> value="<?= $renderPass->text($input->value) ?>"<?php if ($input->invalid): ?> aria-invalid="true"<?php endif; ?> class="aic-input">

@@ -48,7 +48,7 @@ final readonly class MakeComponents
         return [
             new MadeFile($folder . $class . '.php', $this->componentSource->source($class, $made)),
             new MadeFile(
-                $folder . $this->makeNames->kebab($class) . '.tpl.php',
+                $folder . $this->makeNames->kebab($class) . '.phtml',
                 $this->componentTemplateSource->source($class, lcfirst($class)),
             ),
         ];

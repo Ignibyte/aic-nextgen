@@ -72,17 +72,17 @@ unchanged. A parent-written, changed, stale or duplicate ledger does not replace
 
 `bin/aic command:list` includes `make:component`, `make:page`, `make:layout`, `make:entity` and `make:theme`. Components live
 in the theme that `config/app.php` names (#153): `make:component <Class>` writes
-`themes/<theme>/components/<Class>/<Class>.php` and its lower-kebab `.tpl.php`, and edits no
+`themes/<theme>/components/<Class>/<Class>.php` and its lower-kebab `.phtml`, and edits no
 manifest. A default `make:page` writes its own view there and routes the page in its module's
 manifest; `make:page --component=<Class>` reuses a theme component. The entity generator's list
 page uses this shared writer when that generator is implemented.
 
 `make:layout <name>` (#157) writes a named page layout into the theme's `layouts/`: `<Case>Page.php`,
-page data with the content region only, and `page--<name>.tpl.php`, and edits no manifest. Its document
-falls back to `html.tpl.php`. After `composer run build` the generated `ThemeLayoutName` has the case,
+page data with the content region only, and `page--<name>.phtml`, and edits no manifest. Its document
+falls back to `html.phtml`. After `composer run build` the generated `ThemeLayoutName` has the case,
 and `make:page <module> <Class> <path> --layout=<name>` passes it; the make refuses a layout the theme
-does not ship, and `--layout` with `--post`. It writes no `html--<name>.tpl.php`: until templates stop
-compiling to classes, a copy of the theme's document compiles to a phpcpd clone.
+does not ship, and `--layout` with `--post`. It writes no `html--<name>.phtml`; write one by hand
+when a layout needs a document of its own.
 
 `make:entity <module> <Class> <table> --fields=<name>:<type>,… [--version=<v>]` (#123) writes the
 entity, `<Class>Repository` (`latest(int)`), `Create<Table>Table` and `<Class>ListPage` (GET of the
@@ -96,12 +96,12 @@ four regions, the HTML and page templates and real CSS. It prints the `config/ap
 and PHPCS lines to add. Pages take the framework's `PageDocuments` (#154). Use lowercase words joined by hyphens, at
 most 32 bytes. An existing file refuses before writes; reruns refuse instead of overwriting.
 
-Composer must map `"App\\Theme\\Components\\": "themes/<theme>/components/"` and
-`"App\\Generated\\Templates\\": "generated/templates/"`; run `composer dump-autoload` before
-generation. Makes validate these mappings and do not edit tool configuration. Inspect the dry-run, declare every authored path and the module manifest,
+Composer must map `"App\\Theme\\Components\\": "themes/<theme>/components/"`; run
+`composer dump-autoload` before generation. Templates are `.phtml` and need no mapping: the build
+escapes each into `generated/templates/`, where a lookup requires it (#155). Makes validate these mappings and do not edit tool configuration. Inspect the dry-run, declare every authored path and the module manifest,
 and ground those paths with the code index. The ordinary path-based guard checks them all;
 there is no special exemption for theme or template sources. The engine records `code.made`.
-The build owns `generated/templates/`, public assets and wiki output. No generated class is
+The build owns `generated/templates/`, public assets and wiki output. No generated file is
 written by a make. Run `composer run build` after generation.
 
 ## Read stored gate diagnostics

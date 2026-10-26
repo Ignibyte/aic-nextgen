@@ -8,10 +8,6 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
-use App\Generated\Templates\NoteListTemplate;
-use App\Generated\Templates\ScaffoldAboutViewTemplate;
-use App\Generated\Templates\ScaffoldCardTemplate;
-use App\Generated\Templates\SiteNavTemplate;
 use App\Theme\Components\NoteList\NoteList;
 use App\Theme\Components\ScaffoldAboutView\ScaffoldAboutView;
 use App\Theme\Components\ScaffoldCard\ScaffoldCard;
@@ -44,11 +40,75 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof NoteList => (new NoteListTemplate())->render($component, $renderPass),
-            $component instanceof ScaffoldAboutView => (new ScaffoldAboutViewTemplate())->render($component),
-            $component instanceof ScaffoldCard => (new ScaffoldCardTemplate())->render($component),
-            $component instanceof SiteNav => (new SiteNavTemplate())->render($component, $renderPass),
+            $component instanceof NoteList => $this->renderNoteList($component, $renderPass),
+            $component instanceof ScaffoldAboutView => $this->renderScaffoldAboutView($component, $renderPass),
+            $component instanceof ScaffoldCard => $this->renderScaffoldCard($component, $renderPass),
+            $component instanceof SiteNav => $this->renderSiteNav($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param NoteList   $noteList   The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/NoteList/note-list.phtml.
+     */
+    private function renderNoteList(NoteList $noteList, RenderPass $renderPass): string
+    {
+        $renderPass->open($noteList);
+        require __DIR__ . '/templates/themes/app/components/NoteList/note-list.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param ScaffoldAboutView $scaffoldAboutView The component; its template reads it.
+     * @param RenderPass        $renderPass        The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml.
+     */
+    private function renderScaffoldAboutView(ScaffoldAboutView $scaffoldAboutView, RenderPass $renderPass): string
+    {
+        $renderPass->open($scaffoldAboutView);
+        require __DIR__ . '/templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param ScaffoldCard $scaffoldCard The component; its template reads it.
+     * @param RenderPass   $renderPass   The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/ScaffoldCard/scaffold-card.phtml.
+     */
+    private function renderScaffoldCard(ScaffoldCard $scaffoldCard, RenderPass $renderPass): string
+    {
+        $renderPass->open($scaffoldCard);
+        require __DIR__ . '/templates/themes/app/components/ScaffoldCard/scaffold-card.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param SiteNav    $siteNav    The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/SiteNav/site-nav.phtml.
+     */
+    private function renderSiteNav(SiteNav $siteNav, RenderPass $renderPass): string
+    {
+        $renderPass->open($siteNav);
+        require __DIR__ . '/templates/themes/app/components/SiteNav/site-nav.phtml';
+
+        return $renderPass->close();
     }
 }

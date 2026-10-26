@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Component\Application\AtomTemplates;
 use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
-use App\Generated\Templates\StockLinksTemplate;
-use App\Generated\Templates\StockListingTemplate;
-use App\Generated\Templates\TicksTemplate;
-use App\Generated\Templates\TickTemplate;
 use App\Theme\Components\StockLinks\StockLinks;
 use App\Theme\Components\StockListing\StockListing;
 use App\Theme\Components\Tick\Tick;
@@ -28,7 +25,7 @@ final readonly class ThemeTemplatesPart3 implements ComponentTemplates
      * @param ComponentTemplates $componentTemplates The templates after these.
      */
     public function __construct(
-        private ComponentTemplates $componentTemplates = new ThemeTemplatesPart4(),
+        private ComponentTemplates $componentTemplates = new AtomTemplates(),
     ) {
     }
 
@@ -44,11 +41,75 @@ final readonly class ThemeTemplatesPart3 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof StockLinks => (new StockLinksTemplate())->render($component, $renderPass),
-            $component instanceof StockListing => (new StockListingTemplate())->render($component),
-            $component instanceof Tick => (new TickTemplate())->render($component),
-            $component instanceof Ticks => (new TicksTemplate())->render($component),
+            $component instanceof StockLinks => $this->renderStockLinks($component, $renderPass),
+            $component instanceof StockListing => $this->renderStockListing($component, $renderPass),
+            $component instanceof Tick => $this->renderTick($component, $renderPass),
+            $component instanceof Ticks => $this->renderTicks($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param StockLinks $stockLinks The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/StockLinks/stock-links.phtml.
+     */
+    private function renderStockLinks(StockLinks $stockLinks, RenderPass $renderPass): string
+    {
+        $renderPass->open($stockLinks);
+        require __DIR__ . '/templates/themes/app/components/StockLinks/stock-links.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param StockListing $stockListing The component; its template reads it.
+     * @param RenderPass   $renderPass   The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/StockListing/stock-listing.phtml.
+     */
+    private function renderStockListing(StockListing $stockListing, RenderPass $renderPass): string
+    {
+        $renderPass->open($stockListing);
+        require __DIR__ . '/templates/themes/app/components/StockListing/stock-listing.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Tick       $tick       The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/Tick/tick.phtml.
+     */
+    private function renderTick(Tick $tick, RenderPass $renderPass): string
+    {
+        $renderPass->open($tick);
+        require __DIR__ . '/templates/themes/app/components/Tick/tick.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Ticks      $ticks      The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/Ticks/ticks.phtml.
+     */
+    private function renderTicks(Ticks $ticks, RenderPass $renderPass): string
+    {
+        $renderPass->open($ticks);
+        require __DIR__ . '/templates/themes/app/components/Ticks/ticks.phtml';
+
+        return $renderPass->close();
     }
 }

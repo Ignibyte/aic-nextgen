@@ -9,7 +9,7 @@ use function strtr;
 
 /**
  * A named page layout (`make:layout`, #157): its page data, with the content region only, and the page template that
- * prints it. The document falls back to the theme's `html.tpl.php`.
+ * prints it. The document falls back to the theme's `html.phtml`.
  */
 final readonly class LayoutSource
 {

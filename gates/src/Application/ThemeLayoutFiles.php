@@ -30,14 +30,14 @@ use function substr;
 use function ucwords;
 
 /**
- * A theme's named layouts (#154). Besides `html.tpl.php`, `page.tpl.php` and `Page.php`, `layouts/` may hold
- * `html--<name>.tpl.php`, `page--<name>.tpl.php` and the page data classes those pages read; nothing else. A name is
+ * A theme's named layouts (#154). Besides `html.phtml`, `page.phtml` and `Page.php`, `layouts/` may hold
+ * `html--<name>.phtml`, `page--<name>.phtml` and the page data classes those pages read; nothing else. A name is
  * lowercase words joined by single hyphens, and becomes a case of the generated `ThemeLayoutName` enum.
  */
 final readonly class ThemeLayoutFiles
 {
     /** The files every theme's `layouts/` holds. */
-    public const array DEFAULTS = ['Page.php', 'html.tpl.php', 'page.tpl.php'];
+    public const array DEFAULTS = ['Page.php', 'html.phtml', 'page.phtml'];
 
     /** The namespace of `layouts/`'s classes. */
     private const string NAMESPACE = 'App\\Theme\\Layouts\\';
@@ -100,8 +100,8 @@ final readonly class ThemeLayoutFiles
     private function entry(string $theme, string $entry): array
     {
         foreach (['html', 'page'] as $role) {
-            if (str_starts_with($entry, $role . '--') && str_ends_with($entry, '.tpl.php')) {
-                return [$role, $this->name($theme, substr($entry, strlen($role) + 2, -8))];
+            if (str_starts_with($entry, $role . '--') && str_ends_with($entry, '.phtml')) {
+                return [$role, $this->name($theme, substr($entry, strlen($role) + 2, -strlen('.phtml')))];
             }
         }
 
@@ -109,8 +109,8 @@ final readonly class ThemeLayoutFiles
             return ['class', substr($entry, 0, -4)];
         }
 
-        throw new InvalidArgumentException('themes/' . $theme . '/layouts/' . $entry . ': a layout file is html.tpl.php, page.tpl.php, '
-            . 'html--<name>.tpl.php or page--<name>.tpl.php, or a page data class.');
+        throw new InvalidArgumentException('themes/' . $theme . '/layouts/' . $entry . ': a layout file is html.phtml, page.phtml, '
+            . 'html--<name>.phtml or page--<name>.phtml, or a page data class.');
     }
 
     /**
@@ -134,7 +134,7 @@ final readonly class ThemeLayoutFiles
     /**
      * @param string                 $theme   The theme.
      * @param string                 $name    The layout's name.
-     * @param array{bool, bool}      $ships   Whether it ships `html--<name>.tpl.php`, and `page--<name>.tpl.php`.
+     * @param array{bool, bool}      $ships   Whether it ships `html--<name>.phtml`, and `page--<name>.phtml`.
      * @param non-empty-list<string> $regions The default page's regions.
      *
      * @throws InvalidArgumentException When its page's data class is not the theme's or lacks `content`.
@@ -169,7 +169,7 @@ final readonly class ThemeLayoutFiles
      */
     private function pageData(string $theme, string $name): string
     {
-        $file = 'themes/' . $theme . '/layouts/page--' . $name . '.tpl.php';
+        $file = 'themes/' . $theme . '/layouts/page--' . $name . '.phtml';
         $line = (string) strtok((string) file_get_contents($this->root . '/' . $file), "\n");
         $start = strpos($line, '@var \\');
         $class = $start === false
@@ -198,7 +198,7 @@ final readonly class ThemeLayoutFiles
         $regions = $this->themePageData->regions($pageData);
 
         if (!in_array('content', $regions, true)) {
-            throw new InvalidArgumentException('themes/' . $theme . '/layouts/page--' . $name . '.tpl.php: its page data '
+            throw new InvalidArgumentException('themes/' . $theme . '/layouts/page--' . $name . '.phtml: its page data '
                 . $pageData . ' needs a content region, which a controller fills.');
         }
 
@@ -215,13 +215,12 @@ final readonly class ThemeLayoutFiles
      */
     private function binding(string $theme, string $role, string $name, string $component): TemplateBinding
     {
-        $class = 'Theme' . $this->case($theme) . ucwords($role) . $this->case($name) . 'Template';
+        $file = 'themes/' . $theme . '/layouts/' . $role . '--' . $name . '.phtml';
 
         return new TemplateBinding(
             $component,
-            'themes/' . $theme . '/layouts/' . $role . '--' . $name . '.tpl.php',
-            'generated/templates/' . $class . '.php',
-            'App\\Generated\\Templates\\' . $class,
+            $file,
+            'generated/templates/' . $file,
             $role === 'html'
                 ? TemplateRole::Html
                 : TemplateRole::Page,
@@ -260,7 +259,7 @@ final readonly class ThemeLayoutFiles
 
         if ($unused !== []) {
             throw new InvalidArgumentException('themes/' . $theme . '/layouts: no page reads ' . implode(', ', $unused)
-                . '; a page data class goes with the page--<name>.tpl.php whose first line names it.');
+                . '; a page data class goes with the page--<name>.phtml whose first line names it.');
         }
     }
 

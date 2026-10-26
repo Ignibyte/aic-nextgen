@@ -27,7 +27,7 @@ use function substr;
 
 /**
  * Finds a theme's components (#153): each folder `components/<Name>/` holds the final Component
- * `App\Theme\Components\<Name>\<Name>` in `<Name>.php`, its template `<kebab-name>.tpl.php`, and any value
+ * `App\Theme\Components\<Name>\<Name>` in `<Name>.php`, its template `<kebab-name>.phtml`, and any value
  * classes of the same namespace that are not Components. Nothing else may sit there.
  */
 final readonly class ThemeComponents
@@ -60,11 +60,11 @@ final readonly class ThemeComponents
     /**
      * @param string $name A component's class name.
      *
-     * @return string Its template's name, such as `line-list.tpl.php` for `LineList`.
+     * @return string Its template's name, such as `line-list.phtml` for `LineList`.
      */
     public function template(string $name): string
     {
-        return strtolower((string) preg_replace('/(?<=[a-z0-9])(?=[A-Z])/', '-', $name)) . '.tpl.php';
+        return strtolower((string) preg_replace('/(?<=[a-z0-9])(?=[A-Z])/', '-', $name)) . '.phtml';
     }
 
     /**
@@ -155,8 +155,7 @@ final readonly class ThemeComponents
         return new TemplateBinding(
             $class,
             $folder . '/' . $template,
-            'generated/templates/' . $name . 'Template.php',
-            'App\\Generated\\Templates\\' . $name . 'Template',
+            'generated/templates/' . $folder . '/' . $template,
             TemplateRole::Component,
         );
     }

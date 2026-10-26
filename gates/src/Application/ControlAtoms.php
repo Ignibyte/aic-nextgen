@@ -11,20 +11,20 @@ use AIC\Component\Domain\Input;
 use AIC\Component\Domain\PasswordInput;
 use AIC\Component\Domain\Textarea;
 
-/** Explicit library component, authored source and compiled class declarations. */
+/** Explicit library component and authored source declarations. */
 final readonly class ControlAtoms
 {
     /**
-     * @return list<array{class-string<Component>, string, string}> The fixed source basename and output class for each atom.
+     * @return list<array{class-string<Component>, string}> Each atom with its fixed source basename.
      */
     public function declarations(): array
     {
         return [
-            [Input::class, 'input', 'InputTemplate'],
-            [PasswordInput::class, 'password-input', 'PasswordInputTemplate'],
-            [Textarea::class, 'textarea', 'TextareaTemplate'],
-            [Checkbox::class, 'checkbox', 'CheckboxTemplate'],
-            [FileInput::class, 'file-input', 'FileInputTemplate'],
+            [Input::class, 'input'],
+            [PasswordInput::class, 'password-input'],
+            [Textarea::class, 'textarea'],
+            [Checkbox::class, 'checkbox'],
+            [FileInput::class, 'file-input'],
         ];
     }
 }

@@ -86,7 +86,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 22 | pipeline docs | *AIC only*: its own process documents | not run in an app |
 | 23 | native site | the app compiled with `elephc --web` answers each step as the PHP app does | find the step that differs and the class behind it |
 | 24 | build outputs | `generated/`, `build/surface.json`, the template classes and `public/assets/` match what the build writes | `composer run build` |
-| 25 | templates | the theme's `*.tpl.php` files and the atoms use the grammar; a template anywhere else, or an unsupported source, fails | move the logic into the component's props |
+| 25 | templates | the theme's `*.phtml` files and the atoms use the grammar; a template anywhere else, or an unsupported source, fails | move the logic into the component's props |
 | 26 | module boundaries | kind folders, the 15-file cap, exports and requires, no cycles, no component, template or asset in a module, nothing outside `modules/` but the shell and the theme's classes | move the class (a component to the theme), export it, require the module, or split the module |
 | 27 | raw html | every `RawHtml` use is listed, matches its grant in `config/raw-html.php`, and sits in a theme component | use a component; or grant the theme component's use with its reason |
 | 28 | house rules | *AIC only*: the workflow's shipped rules bite on their probes | not run in an app |
@@ -109,10 +109,10 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 
 ## Templates and the class tools
 
-The class tools (Pint, Rector, PHPStan, PHPMD, PHPCS, Deptrac, Psalm) read the theme's classes and
-skip every `*.tpl.php`; gate:25 checks the templates instead. Compiled classes under `generated/templates/` remain
-fully checked, including native compilation. A fixer handed an authored template by path ignores
-its excludes and rewrites it, so never pass an authored template to Pint or phpcbf.
+The class tools (Pint, Rector, PHPStan, PHPMD, PHPCS, Deptrac) read `*.php` files only, so every
+`*.phtml` template is outside them; gate:25 checks the authored templates instead. Psalm follows
+each lookup's literal `require` into the generated template it names and checks it there; the
+native gate compiles each lookup with its templates. Never pass a template to Pint or phpcbf.
 
 The required architecture set also includes [rendering.md](rendering.md), [templates.md](templates.md),
 [tessera.md](tessera.md), [security.md](security.md), [native.md](native.md) and

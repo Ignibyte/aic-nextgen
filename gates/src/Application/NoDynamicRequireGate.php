@@ -271,9 +271,7 @@ final readonly class NoDynamicRequireGate
      */
     private static function isPhpEntry(SplFileInfo $entry): bool
     {
-        // Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
-        return $entry->isFile() && str_ends_with($entry->getFilename(), '.php')
-            && !str_ends_with($entry->getFilename(), '.tpl.php');
+        return $entry->isFile() && str_ends_with($entry->getFilename(), '.php');
     }
 
     /**

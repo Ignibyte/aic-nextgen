@@ -12,11 +12,14 @@ use InvalidArgumentException;
 use Override;
 
 use function array_keys;
-use function array_map;
+use function array_values;
 use function implode;
 use function strtr;
 
-/** Emit bounded lookup classes for explicit module and library template inventories. */
+/**
+ * Emit bounded lookup classes for the theme's and the library's templates (#98, #155): an exact `instanceof` match per
+ * component, each calling a method that requires the component's escaped template.
+ */
 final readonly class TemplateLookupSource
 {
     /** A lookup part, with an optional next lookup and explicit match arms. */
@@ -39,7 +42,8 @@ final readonly class TemplateLookupSource
                     default => {fallback},
                 };
             }
-        }
+
+        {methods}}
         PHP;
 
     /** A named lookup head. */
@@ -81,9 +85,14 @@ final readonly class TemplateLookupSource
             }
         PHP;
 
-    /** @param PhpClassFile $phpClassFile Emits checked class source. */
-    public function __construct(private PhpClassFile $phpClassFile = new PhpClassFile())
-    {
+    /**
+     * @param PhpClassFile          $phpClassFile          Emits checked class source.
+     * @param TemplateRequireSource $templateRequireSource Writes each template's render method.
+     */
+    public function __construct(
+        private PhpClassFile $phpClassFile = new PhpClassFile(),
+        private TemplateRequireSource $templateRequireSource = new TemplateRequireSource(),
+    ) {
     }
 
     /**
@@ -107,13 +116,15 @@ final readonly class TemplateLookupSource
     }
 
     /**
-     * @param string                $namespace  The declared generated namespace.
-     * @param string                $class      The declared lookup class.
-     * @param array<string, bool>   $components Each component's render-pass requirement.
-     * @param array<string, string> $templates  Each component's exact compiled class.
-     * @param string|null           $next       The next lookup, fully qualified; null terminates with refusal.
-     * @param string                $from       The source identity for provenance.
-     * @param string                $what       The rendered component group.
+     * @param string                $namespace The declared generated namespace.
+     * @param string                $class     The declared lookup class.
+     * @param array<string, string> $templates Each component's escaped template, relative to the lookup's folder, by
+     *                                         its class.
+     * @param string|null           $next      The next lookup, fully qualified; null terminates with refusal.
+     * @param string                $from      The source identity for provenance.
+     * @param string                $what      The rendered component group.
+     * @param array<string, string> $adapters  Each component a generated adapter renders, the adapter's class by the
+     *                                         component's (the theme's document and page, #154).
      *
      * @throws InvalidArgumentException When a class cannot fit the normal source limits.
      *
@@ -122,62 +133,86 @@ final readonly class TemplateLookupSource
     public function part(
         string $namespace,
         string $class,
-        array $components,
         array $templates,
         ?string $next,
         string $from,
         string $what,
+        array $adapters = [],
     ): string {
         $constructor = $next === null
             ? ''
             : strtr(self::CONSTRUCTOR, ['{next}' => $this->phpClassFile->short($next)]) . "\n\n";
         $body = strtr(self::TEMPLATE, [
-            '{arms}' => $this->arms($components, $templates),
+            '{arms}' => $this->arms($templates, $adapters),
             '{class}' => $class,
             '{constructor}' => $constructor,
             '{fallback}' => $next === null
                 ? 'throw new UnknownComponent($component::class)'
                 : '$this->componentTemplates->compose($component, $renderPass)',
+            '{methods}' => $this->methods($templates),
             '{what}' => $what,
         ]);
-        $classes = $this->classes($components, $templates, $next);
+        $classes = [...$this->classes($templates, $next), ...array_keys($adapters), ...array_values($adapters)];
         $docblock = $this->phpClassFile->generated($from, 'the template lookup (#98).');
 
         return $this->phpClassFile->file($namespace, $classes, [], $docblock, $body);
     }
 
     /**
-     * @param array<string, bool>   $components The component identities in a lookup part.
-     * @param array<string, string> $templates  Their compiled identities.
-     * @param string|null           $next       The next lookup class, if any.
+     * @param array<string, string> $templates The components in a lookup part, by class.
+     * @param string|null           $next      The next lookup class, if any.
      *
      * @return list<string> Classes used by the emitted lookup.
      */
-    private function classes(array $components, array $templates, ?string $next): array
+    private function classes(array $templates, ?string $next): array
     {
-        return [ComponentTemplates::class, Component::class, RenderPass::class, UnknownComponent::class, Override::class,
-            ...array_keys($components),
-            ...array_map(static fn (string $component): string => $templates[$component], array_keys($components)),
-            ...($next === null ? [] : [$next])];
+        return [
+            ComponentTemplates::class,
+            Component::class,
+            RenderPass::class,
+            UnknownComponent::class,
+            Override::class,
+            ...array_keys($templates),
+            ...($next === null ? [] : [$next]),
+        ];
     }
 
     /**
-     * @param array<string, bool>   $components The components in a bounded lookup part.
-     * @param array<string, string> $templates  Their explicitly declared output classes.
+     * @param array<string, string> $templates The components in a bounded lookup part, by class.
+     * @param array<string, string> $adapters  The adapters, by the class each renders.
      *
-     * @return string Typed match arms in declaration order.
+     * @return string Typed match arms: the adapters', then each component's calling its render method.
      */
-    private function arms(array $components, array $templates): string
+    private function arms(array $templates, array $adapters): string
     {
         $arms = [];
 
-        foreach ($components as $component => $takesPass) {
-            $short = $this->phpClassFile->short($component);
-            $template = $this->phpClassFile->short($templates[$component]);
-            $arms[] = '            $component instanceof ' . $short . ' => (new ' . $template . '())->render($component'
-                . ($takesPass ? ', $renderPass' : '') . '),';
+        foreach ($adapters as $component => $adapter) {
+            $arms[] = '            $component instanceof ' . $this->phpClassFile->short($component) . ' => (new '
+                . $this->phpClassFile->short($adapter) . '())->render($component, $renderPass),';
+        }
+
+        foreach (array_keys($templates) as $component) {
+            $arms[] = '            $component instanceof ' . $this->phpClassFile->short($component) . ' => $this->'
+                . $this->templateRequireSource->name($component) . '($component, $renderPass),';
         }
 
         return implode("\n", $arms);
+    }
+
+    /**
+     * @param array<string, string> $templates Each component's escaped template, relative to the lookup's folder.
+     *
+     * @return string One render method per component, in declaration order.
+     */
+    private function methods(array $templates): string
+    {
+        $methods = [];
+
+        foreach ($templates as $component => $path) {
+            $methods[] = $this->templateRequireSource->method($component, $path);
+        }
+
+        return implode("\n", $methods);
     }
 }

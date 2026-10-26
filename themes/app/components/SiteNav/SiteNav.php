@@ -8,7 +8,7 @@ use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\KeyedComponent;
 
 /**
- * The site's navigation, from site-nav.tpl.php: a link to each demo, the
+ * The site's navigation, from site-nav.phtml: a link to each demo, the
  * current one marked.
  */
 final readonly class SiteNav implements Component

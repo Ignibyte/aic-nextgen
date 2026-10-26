@@ -18,10 +18,11 @@ grant); a new component whose job an atom (`AIC\Component\Domain`) or a theme co
 does, and a new named layout whose job a theme layout already does. Ask `bin/aic code:search` for each
 new component and `bin/aic code:tree theme:<name>` for the theme. HIGH; MEDIUM for a missed reuse.
 
-## A2 — Declared templates are plain `.tpl.php`
+## A2 — Declared templates are plain `.phtml`
 
-The gates hold: only explicitly declared `*.tpl.php` inputs use the
-template grammar. Compiled classes under `generated/templates/` remain fully checked.
+The gates hold: only explicitly declared `*.phtml` inputs use the
+template grammar. The build escapes each into `generated/templates/`, where its lookup requires
+it; no PHP class holds markup (#155).
 
 Judge: logic a template carries past showing its component's values (sums, lookups, state
 branches that should be separate components); presentation moved into a component's PHP to keep

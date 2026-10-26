@@ -35,12 +35,14 @@
     <!--
         StaticAccess, re-imported with exceptions only for classes whose public
         API is class-static by design: phpat's rule builder and selectors
-        (gates/architecture), Closure, and Composer's InstalledVersions. Static
-        access to AIC's own code stays forbidden.
+        (gates/architecture), Closure, Composer's InstalledVersions, and
+        shipmonk's VirtualUsageData (a private constructor behind withNote(), the
+        one way a usage provider names a usage, #155). Static access to AIC's
+        own code stays forbidden.
     -->
     <rule ref="rulesets/cleancode.xml/StaticAccess">
         <properties>
-            <property name="exceptions" value="\PHPat\Test\PHPat,\PHPat\Selector\Selector,\Closure,\Composer\InstalledVersions"/>
+            <property name="exceptions" value="\PHPat\Test\PHPat,\PHPat\Selector\Selector,\Closure,\Composer\InstalledVersions,\ShipMonk\PHPStan\DeadCode\Provider\VirtualUsageData"/>
         </properties>
     </rule>
 

@@ -7,7 +7,7 @@ namespace App\Theme\Components\LineList;
 use AIC\Component\Contracts\Component;
 
 /**
- * A list of plain lines, from line-list.tpl.php, or a line saying there are
+ * A list of plain lines, from line-list.phtml, or a line saying there are
  * none: the jobs page's schedules, waiting and failed jobs, and the latest
  * notifications.
  */

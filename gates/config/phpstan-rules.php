@@ -9,6 +9,7 @@ use Gates\PhpStan\HtmlMarkupReadRule;
 use Gates\PhpStan\RenderTreeInputRule;
 use Gates\PhpStan\RuleFactory;
 use Gates\PhpStan\TaggedServiceTypeRule;
+use Gates\PhpStan\TemplateUsageProvider;
 
 // Every factory below is consumed by PHPStan's real container, including its dependencies.
 $services = ['aic.ruleFactory' => ['class' => RuleFactory::class]];
@@ -21,6 +22,12 @@ foreach ([HtmlMarkupCallableRule::class, HtmlMarkupReadRule::class, RenderTreeIn
         'tags' => ['phpstan.rules.rule'],
     ];
 }
+
+// Templates run as templates (#155): the dead-code detector learns what they read.
+$services[] = [
+    'class' => TemplateUsageProvider::class,
+    'tags' => ['shipmonk.deadCode.memberUsageProvider'],
+];
 
 return [
     'rules' => [

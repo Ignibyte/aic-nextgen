@@ -23,8 +23,6 @@
     <file>workflow/rules</file>
     <file>workflow/probes/sweep</file>
 
-    <!-- Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96). -->
-    <exclude-pattern>*.tpl.php</exclude-pattern>
     <exclude-pattern>vendor/*</exclude-pattern>
     <exclude-pattern>storage/*</exclude-pattern>
     <exclude-pattern>.rector-cache/*</exclude-pattern>
@@ -43,7 +41,6 @@
                 <element key="modules/site/src" value="App\Site"/>
                 <element key="themes/app/components" value="App\Theme\Components"/>
                 <element key="themes/app/layouts" value="App\Theme\Layouts"/>
-                <element key="generated/templates" value="App\Generated\Templates"/>
                 <element key="generated" value="App\Generated"/>
                 <element key="gates/src" value="Gates"/>
                 <element key="gates/architecture" value="Gates\Architecture"/>

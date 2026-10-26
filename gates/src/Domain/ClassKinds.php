@@ -95,17 +95,12 @@ final readonly class ClassKinds
     private const array ENTRY_KINDS = ['Page', 'Api', 'Stream', 'Command', 'Job'];
 
     /**
-     * @param string $class    A class name.
-     * @param bool   $template Whether the build generated it from a template.
+     * @param string $class A class name.
      *
      * @return array{string, string}|null Its kind and its folder under `src/`; null for a plain class.
      */
-    public function kindOf(string $class, bool $template): ?array
+    public function kindOf(string $class): ?array
     {
-        if ($template) {
-            return ['Template', 'Component'];
-        }
-
         return $this->byInterface($class) ?? $this->bySuffix($class);
     }
 
@@ -142,7 +137,7 @@ final readonly class ClassKinds
      */
     public function entryKind(string $class): string
     {
-        $kind = $this->kindOf($class, false);
+        $kind = $this->kindOf($class);
 
         return $kind !== null && in_array($kind[0], self::ENTRY_KINDS, true)
             ? $kind[0]

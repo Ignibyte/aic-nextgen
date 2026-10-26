@@ -40,11 +40,75 @@ final readonly class AtomTemplatesPart2 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof TrackedAssets => (new TrackedAssetsTemplate())->render($component),
-            $component instanceof Input => (new InputTemplate())->render($component),
-            $component instanceof PasswordInput => (new PasswordInputTemplate())->render($component),
-            $component instanceof Textarea => (new TextareaTemplate())->render($component),
+            $component instanceof TrackedAssets => $this->renderTrackedAssets($component, $renderPass),
+            $component instanceof Input => $this->renderInput($component, $renderPass),
+            $component instanceof PasswordInput => $this->renderPasswordInput($component, $renderPass),
+            $component instanceof Textarea => $this->renderTextarea($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param TrackedAssets $trackedAssets The component; its template reads it.
+     * @param RenderPass    $renderPass    The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from tracked-assets.phtml.
+     */
+    private function renderTrackedAssets(TrackedAssets $trackedAssets, RenderPass $renderPass): string
+    {
+        $renderPass->open($trackedAssets);
+        require __DIR__ . '/tracked-assets.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Input      $input      The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from input.phtml.
+     */
+    private function renderInput(Input $input, RenderPass $renderPass): string
+    {
+        $renderPass->open($input);
+        require __DIR__ . '/input.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param PasswordInput $passwordInput The component; its template reads it.
+     * @param RenderPass    $renderPass    The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from password-input.phtml.
+     */
+    private function renderPasswordInput(PasswordInput $passwordInput, RenderPass $renderPass): string
+    {
+        $renderPass->open($passwordInput);
+        require __DIR__ . '/password-input.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Textarea   $textarea   The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from textarea.phtml.
+     */
+    private function renderTextarea(Textarea $textarea, RenderPass $renderPass): string
+    {
+        $renderPass->open($textarea);
+        require __DIR__ . '/textarea.phtml';
+
+        return $renderPass->close();
     }
 }

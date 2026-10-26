@@ -48,8 +48,6 @@ final readonly class RectorSetup
     private function skips(string $root): array
     {
         return [
-            // Templates belong to gate:25, never the class tools.
-            '*.tpl.php',
             ...array_map(static fn (string $path): string => $root . '/' . $path, [
                 'vendor', 'storage', 'tools', '.psalm-cache', '.rector-cache',
             ]),

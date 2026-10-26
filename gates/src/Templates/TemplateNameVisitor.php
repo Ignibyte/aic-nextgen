@@ -21,8 +21,8 @@ use function array_values;
 
 /**
  * Rewrites one template expression for printing (#97): `empty()` lowered by
- * type before its operand's names change, and each class name fully
- * qualified in the template printed by its short name, recorded for import.
+ * type, and each class name required fully qualified and printed so, recorded
+ * for the loop-variable naming rule (#155).
  */
 final class TemplateNameVisitor extends NodeVisitorAbstract
 {
@@ -60,11 +60,9 @@ final class TemplateNameVisitor extends NodeVisitorAbstract
      * @param Node $node A node of the expression.
      *
      * @throws InvalidArgumentException When a class name is not fully qualified.
-     *
-     * @return Node|null A class constant's class printed short; null to leave the node.
      */
     #[Override]
-    public function leaveNode(Node $node): ?Node
+    public function leaveNode(Node $node): null
     {
         if (!$node instanceof ClassConstFetch || !$node->class instanceof Name) {
             return null;
@@ -76,9 +74,8 @@ final class TemplateNameVisitor extends NodeVisitorAbstract
         }
 
         $this->imports[] = $node->class->toString();
-        $node->class = new Name($node->class->getLast());
 
-        return $node;
+        return null;
     }
 
     /**

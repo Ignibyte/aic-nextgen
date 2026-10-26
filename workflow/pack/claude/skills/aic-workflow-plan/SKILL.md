@@ -51,8 +51,8 @@ Each reason names the lookup to run. Run it, fix what it shows, then `bin/aic wo
   backticks, one path per row. Everything you write later must be here, docs included. Leave
   out the exact generated inventories `build/surface.json` and `build/assets.json`, plus
   `generated/`, `public/assets/` and `docs/wiki/`, which `composer run build` writes. Other
-  build files need their own exact manifest rows. Declared templates compile under
-  `generated/templates/`, so their compiled classes are build-owned too. Use `make:* --dry-run`
+  build files need their own exact manifest rows. Declared templates are escaped into
+  `generated/templates/`, so those copies are build-owned too. Use `make:* --dry-run`
   to list authored component/page/theme files and the edited module manifest before declaring
   them. A first theme includes typed region data, HTML/page templates, CSS and its layout service;
   an existing selection refuses. A new module also needs its line in `composer.json` and its

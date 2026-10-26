@@ -83,7 +83,6 @@ final readonly class SurfaceTheme
             'component' => $templateBinding->component,
             'generated' => $templateBinding->generated,
             'source' => $templateBinding->source,
-            'templateClass' => $templateBinding->templateClass,
         ];
     }
 }

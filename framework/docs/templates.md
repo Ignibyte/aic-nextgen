@@ -1,15 +1,17 @@
 # Templates
 
-Templates are restricted plain PHP compiled at build time. The build reads the theme
-`config/app.php` names and the fixed framework atom catalog. An app's templates compile to
-ordinary final readonly PHP under `generated/templates/` with the `App\Generated\Templates`
-Composer prefix. The theme's layout is in [modules.md](modules.md#the-theme); gate:24 checks the
-compiled output and gate:25 checks the grammar.
+Templates are restricted plain PHP that run as templates. Every template is a `.phtml` file.
+The build reads the theme `config/app.php` names and the fixed framework atom catalog, checks
+each template against the grammar below, and writes an escaped copy of it: the same template
+with every echo routed through the render pass. An app's copies sit under `generated/templates/`,
+mirroring their source paths. Generated PHP holds only the lookups that require them; no PHP
+class holds markup. The theme's layout is in [modules.md](modules.md#the-theme); gate:24 checks
+the generated output and gate:25 checks the grammar.
 
 ## Identity and placement
 
 A component's template sits beside its class in the theme, `themes/<theme>/components/<Name>/`,
-named for the class in lower kebab case (`note-card.tpl.php` for `NoteCard`). The HTML and page
+named for the class in lower kebab case (`note-card.phtml` for `NoteCard`). The HTML and page
 wrappers sit in `themes/<theme>/layouts/`. Each file begins exactly with its fully qualified class
 and lower-camel variable, and a component template types its own folder's class:
 
@@ -20,7 +22,7 @@ and lower-camel variable, and a component template types its own folder's class:
 
 The class, source, wrapper role and generated output come from one validated binding. Missing
 files, a mismatched class, symlinks and nonportable paths are refused before publication. Old
-`.html.php` sources, a `.tpl.php` anywhere outside the theme, and unsupported PHP inside a
+`.html.php` sources, a `.phtml` anywhere outside the theme, and unsupported PHP inside a
 template folder are refused. An API-only app names no theme and has no templates.
 
 ## Grammar
@@ -34,8 +36,8 @@ construct. It does not open a general function-call API.
 
 Property chains, literals, allowed comparisons and typed operators are resolved statically.
 Objects expose public declared typed properties. Array properties carry `list<T>` element types.
-Class-typed loop variables use their class's lower-camel name, so the compiler can give each part
-its actual parameter types. A null test must be possible for that type. Class constants and enum
+Class-typed loop variables use their class's lower-camel name, so the build types each one
+from its declared list. A null test must be possible for that type. Class constants and enum
 cases must exist. A child component is rendered through the shared pass, with a stable key when
 repeated in a loop.
 
@@ -47,10 +49,12 @@ delimiters remain literal: empty branches and zero iterations cannot complete a 
 Quote dynamic attribute values. Render child Components and Regions only in element body context.
 
 The fifteen framework atoms are declared under `framework/templates/components/`. A source-package
-build uses the same reader and compiler to write their classes and lookup under
-`framework/src/Component/Application/`. Their inline role preserves the existing form-field paths
-and marker-free atom output. Apps consume these shipped classes; an app build never writes into
-an installed framework package. The fixed catalog does not relax module ownership declarations.
+build uses the same reader to write their escaped copies and lookup under
+`framework/src/Component/Application/Templates/`. Their inline role preserves the existing
+form-field paths and marker-free atom output. Apps consume these shipped files; an app build never
+writes into an installed framework package. The fixed catalog does not relax module ownership
+declarations. Tessera's framing, the region element, the child markers and the fragment answer,
+is the framework's own runtime templates in `framework/templates/tessera/`.
 
 The grammar denies function, method and static calls, `new`, closures, includes, require, eval,
 exit, echo/print statements, arbitrary PHP blocks, declarations, global/static variables,
@@ -78,13 +82,21 @@ paths and appropriate data types for links. Components become child output, Regi
 output, and transparent wrappers stay inline. See [rendering.md](rendering.md#escaping-and-deliberate-raw-html)
 for RawHtml's explicit grants.
 
-## Compiled output and failures
+## Escaped output and failures
 
-`composer run build` emits typed part methods and loops, static imports, escaping and Tessera
-markers. A template too large for the method or class caps must be split into Components. Never
-edit generated PHP to fix a refusal. Change the authored source or data declaration and rebuild.
-All compiled classes take the normal style, analysis and native checks; only authored templates
-are excluded from class tools.
+`composer run build` writes each template back out with its text as authored: each echo through
+`$renderPass->text()` (escaped by its static type), `child()` (a component under its key),
+`region()` or `inline()`, alternative-syntax conditions and loops, fully qualified class names,
+and Tessera's block markers as inline HTML. Its output prints byte for byte what the authored
+template means. Each lookup method opens the render pass's buffer, requires the template by a
+literal path and closes it; the compiled site inlines every required template at compile time.
+Never edit a generated template to fix a refusal. Change the authored source or data declaration
+and rebuild.
+
+The class tools read `*.php` only, so templates never reach them. Psalm follows each literal
+`require` and checks a template in its lookup's scope; PHPStan does not type templates, and its
+dead-code detector learns what they read from the templates themselves. The native gate compiles
+each lookup with the templates it requires.
 
 Gate:25 reports `path:line: category: detail`. Fix placement with an explicit declaration, a typing
 refusal by naming the declared class, and an expression refusal by giving the input its actual

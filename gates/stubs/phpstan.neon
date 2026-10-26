@@ -17,8 +17,6 @@ parameters:
         - config
         - bin/aic
     excludePaths:
-        # Templates are checked by gate:25, not the class tools.
-        - */*.tpl.php
         - vendor
         - storage (?)
         - tools (?)

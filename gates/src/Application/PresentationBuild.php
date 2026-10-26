@@ -68,8 +68,8 @@ final readonly class PresentationBuild
     /**
      * @param TemplateBinding $templateBinding One template binding.
      *
-     * @return list<string> Independently unique source, output path and PHP class claims, and the input for a
-     *                      component; every html layout reads `ThemeLayout`, and pages may share their data (#154).
+     * @return list<string> Independently unique source and output path claims, and the input for a component; every
+     *                      html layout reads `ThemeLayout`, and pages may share their data (#154).
      */
     private function identities(TemplateBinding $templateBinding): array
     {
@@ -77,7 +77,6 @@ final readonly class PresentationBuild
             'source:' . $templateBinding->source,
             ...($templateBinding->transparent() ? [] : ['input:' . strtolower($templateBinding->component)]),
             'output:' . $templateBinding->generated,
-            'class:' . strtolower($templateBinding->templateClass),
         ];
     }
 

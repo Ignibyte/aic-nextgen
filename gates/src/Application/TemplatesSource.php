@@ -8,9 +8,10 @@ use AIC\Component\Application\AtomTemplates;
 use InvalidArgumentException;
 
 use function array_chunk;
-use function array_keys;
 use function count;
-use function sort;
+use function str_starts_with;
+use function strlen;
+use function substr;
 
 /**
  * The build's template lookup (#98, #153): `ThemeTemplates` starts the chain and
@@ -34,47 +35,78 @@ final readonly class TemplatesSource
     }
 
     /**
-     * @param array<string, bool>   $components Whether each template's `render()` takes the pass, by its component
-     *                                          class, fully qualified.
-     * @param array<string, string> $templates  The generated template class of each component.
+     * @param array<string, string> $templates Each component's escaped template, relative to the project, by its class,
+     *                                         fully qualified; each lives under `generated/`.
+     * @param array<string, string> $adapters  The generated adapters for the theme's document and page, by the class each
+     *                                         renders; they join the first part.
      *
-     * @throws InvalidArgumentException When the maps disagree, or a class would not fit the gates.
+     * @throws InvalidArgumentException When a template is not under `generated/`, or a class would not fit the gates.
      *
      * @return array<string, string> Each generated class file, by its name under `generated/`.
      */
-    public function files(array $components, array $templates): array
+    public function files(array $templates, array $adapters = []): array
     {
-        $this->keys($components, $templates);
-        $chunks = array_chunk($components, self::PART, true);
+        $chunks = $this->chunks($templates, $adapters);
         $files = ['ThemeTemplates.php' => $this->head($chunks === [] ? 'AtomTemplates' : 'ThemeTemplatesPart1')];
 
         foreach ($chunks as $index => $chunk) {
-            $next = $index + 1 < count($chunks)
-                ? 'ThemeTemplatesPart' . ($index + 2)
-                : 'AtomTemplates';
             $class = 'ThemeTemplatesPart' . ($index + 1);
-            $files[$class . '.php'] = $this->part($class, $chunk, $next, $templates);
+            $files[$class . '.php'] = $this->part($class, $chunk, $this->after($index, count($chunks)), $index === 0 ? $adapters : []);
         }
 
         return $files;
     }
 
     /**
-     * @param array<string, bool>   $components The compiled component inventory.
-     * @param array<string, string> $templates  The generated template classes.
+     * @param array<string, string> $templates Each component's escaped template, relative to the project.
+     * @param array<string, string> $adapters  The adapters, which need a first part even with no template.
      *
-     * @throws InvalidArgumentException When the map is incomplete or has an extra identity.
+     * @throws InvalidArgumentException When a template is not under `generated/`.
+     *
+     * @return list<array<string, string>> The templates relative to `generated/`, in parts.
      */
-    private function keys(array $components, array $templates): void
+    private function chunks(array $templates, array $adapters): array
     {
-        $expected = array_keys($components);
-        $actual = array_keys($templates);
-        sort($expected);
-        sort($actual);
+        $chunks = array_chunk($this->relative($templates), self::PART, true);
 
-        if ($actual !== $expected) {
-            throw new InvalidArgumentException('The template class map must exactly match the compiled component inventory.');
+        return $chunks === [] && $adapters !== []
+            ? [[]]
+            : $chunks;
+    }
+
+    /**
+     * @param int $index A part's place, from 0.
+     * @param int $count How many parts there are.
+     *
+     * @return string The class after it: the next part, or the framework's atoms.
+     */
+    private function after(int $index, int $count): string
+    {
+        return $index + 1 < $count
+            ? 'ThemeTemplatesPart' . ($index + 2)
+            : 'AtomTemplates';
+    }
+
+    /**
+     * @param array<string, string> $templates Each component's escaped template, relative to the project.
+     *
+     * @throws InvalidArgumentException When one is not under `generated/`.
+     *
+     * @return array<string, string> Each relative to `generated/`, where the lookup parts live.
+     */
+    private function relative(array $templates): array
+    {
+        $relative = [];
+
+        foreach ($templates as $component => $path) {
+            if (!str_starts_with($path, 'generated/')) {
+                throw new InvalidArgumentException($path . ': a theme template is written under generated/.');
+            }
+
+            $relative[$component] = substr($path, strlen('generated/'));
         }
+
+        return $relative;
     }
 
     /**
@@ -96,25 +128,25 @@ final readonly class TemplatesSource
     }
 
     /**
-     * @param string                $class      The lookup part.
-     * @param array<string, bool>   $components The components' render-pass requirements.
-     * @param string                $next       The next generated part, or `AtomTemplates`.
-     * @param array<string, string> $templates  The generated template classes.
+     * @param string                $class     The lookup part.
+     * @param array<string, string> $templates Its components' templates, relative to `generated/`.
+     * @param string                $next      The next generated part, or `AtomTemplates`.
+     * @param array<string, string> $adapters  The adapters it matches first.
      *
      * @throws InvalidArgumentException When the lookup cannot fit normal source limits.
      *
      * @return string The bounded lookup class.
      */
-    private function part(string $class, array $components, string $next, array $templates): string
+    private function part(string $class, array $templates, string $next, array $adapters): string
     {
         return $this->templateLookupSource->part(
             'App\\Generated',
             $class,
-            $components,
             $templates,
             $this->next($next),
             'themes',
             "the theme's components, then the next.",
+            $adapters,
         );
     }
 

@@ -16,8 +16,8 @@ use Override;
 
 /**
  * `bin/aic make:layout <name> [--dry-run] [--json]` (#157): a named page layout in the theme's `layouts/`, its page
- * data with the content region only and its `page--<name>.tpl.php`. It edits no manifest; the next build adds its
- * `ThemeLayoutName` case, and `make:page … --layout=<name>` names it. Its document is the theme's `html.tpl.php`.
+ * data with the content region only and its `page--<name>.phtml`. It edits no manifest; the next build adds its
+ * `ThemeLayoutName` case, and `make:page … --layout=<name>` names it. Its document is the theme's `html.phtml`.
  */
 final readonly class MakeLayoutCommand implements Command
 {

@@ -5,273 +5,203 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\TemplateBinding;
-use Gates\Domain\TemplateClass;
-use Gates\Domain\TemplateMethods;
 use Gates\Domain\TemplateNode;
 use Gates\Domain\TemplateNodeKind;
 use InvalidArgumentException;
 
-use function addcslashes;
-use function array_map;
-use function array_merge;
-use function array_reverse;
-use function lcfirst;
-use function mb_str_split;
-use function preg_split;
-use function str_contains;
-use function str_ends_with;
-use function strrpos;
-use function substr;
-use function substr_count;
-
-use const PREG_SPLIT_NO_EMPTY;
+use function count;
+use function str_repeat;
+use function str_starts_with;
 
 /**
- * Compiles a component template's nodes (#36) into a final readonly class
- * whose `render()` gives the component's Html. The output passes every gate
- * as it is written: each run of output is a part method of at most twelve
- * lines, chained to the next; a condition is a ternary between two parts; a
- * loop maps its typed items through a part. Each component sits between key
- * markers, and each condition and loop between morph markers (#37), so the
- * browser runtime morphs them as units. A template that needs more part
- * methods or lines than one class may hold is refused.
+ * Writes a component template's typed nodes (#36, #155) back out as a template: the escaped `.phtml` the
+ * template's lookup requires. Text stays as authored; each echo goes through the render pass, escaped by its
+ * static type, written as a child under its key, or inline; conditions and loops are alternative syntax; and each
+ * safe condition and loop sits between Tessera's morph markers (#37). Nothing is reflowed: the output prints what
+ * the authored template printed, byte for byte.
  */
 final readonly class TemplateCompiler
 {
     /**
-     * The lines of pieces one part method concatenates.
+     * Opens a condition's or a loop's morph markers (Tessera's protocol 2.3).
      */
-    private const int LINES = 12;
+    private const string BLOCK_START = '<!--t:b-->';
 
     /**
-     * The part methods one class holds, beside `render()`.
+     * Closes them, written even when the block is empty.
      */
-    private const int PARTS = 14;
+    private const string BLOCK_END = '<!--/t:b-->';
 
     /**
-     * The lines one class holds.
-     */
-    private const int CLASS_LINES = 300;
-
-    /**
-     * The literal that closes a condition's or a loop's block markers, rendered even when empty (protocol 2.3).
-     */
-    private const string BLOCK_END = "'<!--/t:b-->'";
-
-    /**
-     * The characters of text one literal holds.
-     */
-    private const int TEXT = 80;
-
-    /**
-     * @param TemplateImports     $templateImports     Writes the generated file's opening and imports.
-     * @param TemplateLoops       $templateLoops       Writes the parts that run a template's loops.
-     * @param TemplateClassSource $templateClassSource Emits the compiled class.
-     * @param TemplateBlocks      $templateBlocks      Classifies safe morph boundaries before emission.
+     * @param TemplateBlocks $templateBlocks Classifies safe morph boundaries before writing.
      */
     public function __construct(
-        private TemplateImports $templateImports = new TemplateImports(),
-        private TemplateLoops $templateLoops = new TemplateLoops(),
-        private TemplateClassSource $templateClassSource = new TemplateClassSource(),
         private TemplateBlocks $templateBlocks = new TemplateBlocks(),
     ) {
     }
 
     /**
-     * @param list<TemplateNode> $nodes           The template's nodes.
-     * @param TemplateBinding    $templateBinding Its explicit declared output identity.
+     * @param list<TemplateNode> $nodes           The template's typed nodes.
+     * @param TemplateBinding    $templateBinding Its source, role and output.
      *
-     * @throws InvalidArgumentException When the template is too big for one class.
+     * @throws InvalidArgumentException When a block cannot be classified.
      *
-     * @return TemplateClass The declared generated class source, and whether its `render()`
-     *                       takes the render pass.
+     * @return string The escaped template.
      */
-    public function compile(
-        array $nodes,
-        TemplateBinding $templateBinding,
-    ): TemplateClass {
-        $nodes = $this->templateBlocks->classify($nodes, $templateBinding->role);
-        $component = substr($templateBinding->component, (int) strrpos($templateBinding->component, '\\') + 1);
-        $namespace = substr($templateBinding->templateClass, 0, (int) strrpos($templateBinding->templateClass, '\\'));
-        $variable = lcfirst($component);
-        $templateMethods = new TemplateMethods($templateBinding->source, $variable);
-        $scope = [$component . ' $' . $variable, 'RenderPass $renderPass'];
-        $first = $templateMethods->call($this->sequence($nodes, $scope, $templateMethods));
-        $takesPass = str_contains($first, '$renderPass');
-        $parts = $templateMethods->source();
+    public function compile(array $nodes, TemplateBinding $templateBinding): string
+    {
+        $out = '<?php declare(strict_types=1); /* Escaped from ' . $templateBinding->source
+            . ' by composer run build; edit that file, never this one. */ ?>' . "\n";
+        $afterTag = false;
 
-        $nodes[] = new TemplateNode(TemplateNodeKind::Import, $templateBinding->component);
-
-        $class = $this->templateImports->head($nodes, $namespace, $parts . ($takesPass ? 'RenderPass $renderPass' : ''))
-            . $this->templateClassSource->opening($templateBinding, $takesPass, $parts)
-            . '        return ' . $first . ";\n    }\n\n" . $parts . "}\n";
-
-        if ($templateMethods->count() > self::PARTS || substr_count($class, "\n") > self::CLASS_LINES) {
-            throw new InvalidArgumentException('too big for one class (' . $templateMethods->count()
-                . ' part methods, ' . substr_count($class, "\n") . ' lines): move some of it into components');
+        foreach ($this->nodes($this->templateBlocks->classify($nodes, $templateBinding->role), -1) as [$tag, $piece]) {
+            // A close tag swallows one newline after it, so text that starts with one gets another (#155).
+            $out .= !$tag && $afterTag && (str_starts_with($piece, "\n") || str_starts_with($piece, "\r"))
+                ? "\n" . $piece
+                : $piece;
+            $afterTag = $tag;
         }
 
-        return new TemplateClass($class, $takesPass);
+        return $out;
     }
 
     /**
-     * @param list<TemplateNode> $nodes           A run of nodes.
-     * @param list<string>       $scope           The variables in scope, `Type $var`, outermost first.
-     * @param TemplateMethods    $templateMethods The class's part methods.
+     * @param list<TemplateNode> $nodes A run of nodes.
+     * @param int                $open  The morph markers opened inside the innermost loop and still open; -1 outside
+     *                                  every loop.
      *
-     * @return int The number of the part method that renders the run; public for the loop parts' runs.
+     * @return list<array{bool, string}> Its pieces, each a PHP tag (true) or text (false).
      */
-    public function sequence(array $nodes, array $scope, TemplateMethods $templateMethods): int
+    private function nodes(array $nodes, int $open): array
     {
         $pieces = [];
 
         foreach ($nodes as $node) {
-            $pieces = array_merge($pieces, $this->pieces($node, $scope, $templateMethods));
+            $pieces = [...$pieces, ...$this->node($node, $open)];
         }
 
-        return $this->chain($pieces === [] ? ["''"] : $pieces, $scope, $templateMethods);
+        return $pieces;
     }
 
     /**
-     * @param list<string>    $pieces          The expressions of a run, at least one.
-     * @param list<string>    $scope           The variables in scope.
-     * @param TemplateMethods $templateMethods The class's part methods.
+     * @param TemplateNode $templateNode A node.
+     * @param int          $open         The markers open inside the innermost loop; -1 outside every loop.
      *
-     * @return int The number of the first part method of the chain that concatenates them.
+     * @return list<array{bool, string}> Its pieces.
      */
-    private function chain(array $pieces, array $scope, TemplateMethods $templateMethods): int
-    {
-        $next = -1;
-
-        foreach (array_reverse($this->groups($pieces)) as $group) {
-            $next = $templateMethods->add($scope, $next === -1 ? $group : [...$group, $templateMethods->call($next)]);
-        }
-
-        return $next;
-    }
-
-    /**
-     * @param TemplateNode    $templateNode    A node.
-     * @param list<string>    $scope           The variables in scope.
-     * @param TemplateMethods $templateMethods The class's part methods.
-     *
-     * @return list<string> The expressions it concatenates.
-     */
-    private function pieces(TemplateNode $templateNode, array $scope, TemplateMethods $templateMethods): array
+    private function node(TemplateNode $templateNode, int $open): array
     {
         return match ($templateNode->kind) {
-            TemplateNodeKind::Text => $this->texts($templateNode->code),
-            TemplateNodeKind::Escaped => ['self::text(' . $templateNode->code . ')'],
-            TemplateNodeKind::Raw => [$templateNode->code],
-            TemplateNodeKind::Component => $this->component($templateNode),
-            TemplateNodeKind::Condition => $this->marked($templateNode, $this->condition($templateNode, $scope, $templateMethods)),
-            TemplateNodeKind::ElseIf => [$this->condition($templateNode, $scope, $templateMethods)],
-            TemplateNodeKind::Loop, TemplateNodeKind::Counter => $this->marked(
-                $templateNode,
-                $this->templateLoops->loop($templateNode, $scope, $templateMethods, $this),
-            ),
-            TemplateNodeKind::Import, TemplateNodeKind::Break, TemplateNodeKind::Continue => [],
+            TemplateNodeKind::Text => $templateNode->code === '' ? [] : [[false, $templateNode->code]],
+            TemplateNodeKind::Escaped => [[true, '<?= $renderPass->text(' . $templateNode->code . ') ?>']],
+            TemplateNodeKind::Raw => [[true, '<?= ' . $templateNode->code . ' ?>']],
+            TemplateNodeKind::Component => [[true, $this->child($templateNode)]],
+            TemplateNodeKind::Condition, TemplateNodeKind::ElseIf => $this->marked($templateNode, $open, $this->condition(...)),
+            TemplateNodeKind::Loop, TemplateNodeKind::Counter => $this->marked($templateNode, $open, $this->loop(...)),
+            TemplateNodeKind::Break => $this->jump('break', $open),
+            TemplateNodeKind::Continue => $this->jump('continue', $open),
+            TemplateNodeKind::Import => [],
         };
     }
 
     /**
-     * @param TemplateNode $templateNode A classified condition or loop.
-     * @param string       $expression   Its rendered output.
+     * @param TemplateNode                                           $templateNode A condition or a loop.
+     * @param int                                                    $open         The markers open inside the innermost
+     *                                                                             loop; -1 outside every loop.
+     * @param callable(TemplateNode, int): list<array{bool, string}> $write        Writes its statement.
      *
-     * @return list<string> A safe body block's markers and expression, or its expression alone.
+     * @return list<array{bool, string}> Its statement, between morph markers when it is marked.
      */
-    private function marked(TemplateNode $templateNode, string $expression): array
+    private function marked(TemplateNode $templateNode, int $open, callable $write): array
     {
-        return $templateNode->marked
-            ? ["'<!--t:b-->'", $expression, self::BLOCK_END]
-            : [$expression];
+        if (!$templateNode->marked) {
+            return $write($templateNode, $open);
+        }
+
+        return [
+            [false, self::BLOCK_START],
+            ...$write($templateNode, $open === -1 ? -1 : $open + 1),
+            [false, self::BLOCK_END],
+        ];
     }
 
     /**
-     * @param TemplateNode $templateNode A `@component` node.
+     * @param TemplateNode $templateNode A condition, or an `elseif` written as a condition of its own.
+     * @param int          $open         The markers open inside the innermost loop; -1 outside every loop.
      *
-     * @return list<string> Its markup between key markers: its compile-time key, and in a loop its own key escaped.
+     * @return list<array{bool, string}> The `if`, its `elseif`s and `else`, and `endif`.
      */
-    private function component(TemplateNode $templateNode): array
+    private function condition(TemplateNode $templateNode, int $open): array
     {
-        $key = $templateNode->binding === ''
+        $pieces = [[true, '<?php if (' . $templateNode->code . '): ?>'], ...$this->nodes($templateNode->children, $open)];
+        $otherwise = $templateNode->otherwise;
+
+        while (count($otherwise) === 1 && $otherwise[0]->kind === TemplateNodeKind::ElseIf) {
+            $pieces = [
+                ...$pieces,
+                [true, '<?php elseif (' . $otherwise[0]->code . '): ?>'],
+                ...$this->nodes($otherwise[0]->children, $open),
+            ];
+            $otherwise = $otherwise[0]->otherwise;
+        }
+
+        $else = $otherwise === []
+            ? []
+            : [[true, '<?php else: ?>'], ...$this->nodes($otherwise, $open)];
+
+        return [...$pieces, ...$else, [true, '<?php endif; ?>']];
+    }
+
+    /**
+     * @param TemplateNode $templateNode A `foreach` or a counting `for`.
+     *
+     * @return list<array{bool, string}> The loop, its body counting markers from none.
+     */
+    private function loop(TemplateNode $templateNode): array
+    {
+        $foreach = $templateNode->kind === TemplateNodeKind::Loop;
+
+        return [
+            [true, '<?php ' . ($foreach ? 'foreach' : 'for') . ' (' . $templateNode->code . '): ?>'],
+            ...$this->nodes($templateNode->children, 0),
+            [true, $foreach ? '<?php endforeach; ?>' : '<?php endfor; ?>'],
+        ];
+    }
+
+    /**
+     * @param string $statement `break` or `continue`.
+     * @param int    $open      The markers open inside the innermost loop.
+     *
+     * @return list<array{bool, string}> The markers it leaves, closed, then the jump.
+     */
+    private function jump(string $statement, int $open): array
+    {
+        $closers = $open > 0
+            ? [[false, str_repeat(self::BLOCK_END, $open)]]
+            : [];
+
+        return [...$closers, [true, '<?php ' . $statement . '; ?>']];
+    }
+
+    /**
+     * @param TemplateNode $templateNode A child component.
+     *
+     * @return string The tag writing it through the render pass under its key.
+     */
+    private function child(TemplateNode $templateNode): string
+    {
+        return '<?= $renderPass->child(' . $templateNode->code . ', ' . $this->key($templateNode) . ') ?>';
+    }
+
+    /**
+     * @param TemplateNode $templateNode A child component.
+     *
+     * @return string Its key: its compile-time key, and in a loop its own key after it.
+     */
+    private function key(TemplateNode $templateNode): string
+    {
+        return $templateNode->binding === ''
             ? "'" . $templateNode->key . "'"
             : "'" . $templateNode->key . ":' . " . $templateNode->binding;
-
-        return ['$renderPass->child(' . $templateNode->code . ', ' . $key . ')'];
-    }
-
-    /**
-     * @param TemplateNode    $templateNode    A condition, or an `elseif` inside one.
-     * @param list<string>    $scope           The variables in scope.
-     * @param TemplateMethods $templateMethods The class's part methods.
-     *
-     * @return string A ternary between the parts of its two branches.
-     */
-    private function condition(TemplateNode $templateNode, array $scope, TemplateMethods $templateMethods): string
-    {
-        $then = $templateMethods->call($this->sequence($templateNode->children, $scope, $templateMethods));
-        $otherwise = $templateNode->otherwise === []
-            ? "''"
-            : $templateMethods->call($this->sequence($templateNode->otherwise, $scope, $templateMethods));
-
-        return '(' . $templateNode->code . "\n    ? " . $then . "\n    : " . $otherwise . ')';
-    }
-
-    /**
-     * @param list<string> $pieces Expressions, in order.
-     *
-     * @return list<list<string>> Them in runs of at most twelve lines less one, the line a run's call to the next takes.
-     */
-    private function groups(array $pieces): array
-    {
-        $groups = [];
-        $group = [];
-        $lines = 0;
-
-        foreach ($pieces as $piece) {
-            $height = substr_count($piece, "\n") + 1;
-
-            if ($group !== [] && $lines + $height > self::LINES - 1) {
-                $groups[] = $group;
-                $group = [];
-                $lines = 0;
-            }
-
-            $group[] = $piece;
-            $lines += $height;
-        }
-
-        return [...$groups, $group];
-    }
-
-    /**
-     * @param string $text Markup.
-     *
-     * @return list<string> Its literals, one per line and at most eighty characters each.
-     */
-    private function texts(string $text): array
-    {
-        $literals = [];
-
-        $lines = preg_split('/(?<=\\n)/', $text, -1, PREG_SPLIT_NO_EMPTY);
-
-        foreach ($lines === false ? [] : $lines as $line) {
-            $literals = array_merge($literals, array_map($this->literal(...), mb_str_split($line, self::TEXT)));
-        }
-
-        return $literals;
-    }
-
-    /**
-     * @param string $text Text with no newline but perhaps a last one.
-     *
-     * @return string Its PHP literal: single-quoted, or double-quoted for the newline.
-     */
-    private function literal(string $text): string
-    {
-        return str_ends_with($text, "\n")
-            ? '"' . addcslashes(substr($text, 0, -1), '"\\$') . '\\n"'
-            : "'" . addcslashes($text, "'\\") . "'";
     }
 }

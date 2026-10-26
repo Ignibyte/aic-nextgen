@@ -16,8 +16,8 @@ use function ucwords;
 
 /**
  * A theme's named layouts for the makes (#157), by the build's rules (#154): a name is lower case words joined by
- * single hyphens, its `ThemeLayoutName` case is the words in PascalCase, and it ships as `page--<name>.tpl.php`,
- * `html--<name>.tpl.php` or both in the theme's `layouts/`.
+ * single hyphens, its `ThemeLayoutName` case is the words in PascalCase, and it ships as `page--<name>.phtml`,
+ * `html--<name>.phtml` or both in the theme's `layouts/`.
  */
 final readonly class MakeLayouts
 {
@@ -89,7 +89,7 @@ final readonly class MakeLayouts
 
         return [
             new MadeFile($folder . $case . 'Page.php', $this->layoutSource->data($name, $case)),
-            new MadeFile($folder . 'page--' . $name . '.tpl.php', $this->layoutSource->page($name, $case)),
+            new MadeFile($folder . 'page--' . $name . '.phtml', $this->layoutSource->page($name, $case)),
         ];
     }
 
@@ -104,7 +104,7 @@ final readonly class MakeLayouts
     {
         $folder = $this->folder();
 
-        return [$folder . 'page--' . $name . '.tpl.php', $folder . 'html--' . $name . '.tpl.php'];
+        return [$folder . 'page--' . $name . '.phtml', $folder . 'html--' . $name . '.phtml'];
     }
 
     /**

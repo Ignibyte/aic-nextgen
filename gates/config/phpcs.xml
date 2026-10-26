@@ -261,6 +261,7 @@
                 <element value="Psr"/>
                 <element value="PHPat"/>
                 <element value="PHPStan"/>
+                <element value="ShipMonk"/>
                 <element value="PhpParser"/>
                 <element value="Random"/>
                 <element value="Pdo"/>

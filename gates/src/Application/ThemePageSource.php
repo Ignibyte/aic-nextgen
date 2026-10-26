@@ -14,12 +14,15 @@ use InvalidArgumentException;
 
 use function array_map;
 use function implode;
+use function strlen;
 use function strtr;
+use function substr;
+use function ucfirst;
 use function var_export;
 
 /**
  * The theme's page adapter (#154): `ThemePageTemplate` builds the typed page data of the layout a page was given and
- * renders its page template, `page.tpl.php`'s through the `default` arm when the layout ships no page of its own. It
+ * renders its page template, `page.phtml`'s through the `default` arm when the layout ships no page of its own. It
  * holds types and lookups, never markup.
  */
 final readonly class ThemePageSource
@@ -35,7 +38,7 @@ final readonly class ThemePageSource
              * @throws InvalidArgumentException When a region cannot be constructed.
              * @throws UnknownComponent         When a child has no registered template.
              *
-             * @return string The layout's page markup; page.tpl.php's when it ships no page of its own.
+             * @return string The layout's page markup; page.phtml's when it ships no page of its own.
              */
             public function render(ThemePage $themePage, RenderPass $renderPass): string
             {
@@ -60,7 +63,7 @@ final readonly class ThemePageSource
              */
             private function {method}(Regions $regions, RenderPass $renderPass): string
             {
-                return (new {template}())->render(
+                return $this->{render}(
                     new {page}(
                         {arguments},
                     ),
@@ -68,11 +71,17 @@ final readonly class ThemePageSource
                 );
             }
 
+        {renderMethod}
         PHP;
 
-    /** @param PhpClassFile $phpClassFile Emits checked generated source. */
-    public function __construct(private PhpClassFile $phpClassFile = new PhpClassFile())
-    {
+    /**
+     * @param PhpClassFile          $phpClassFile          Emits checked generated source.
+     * @param TemplateRequireSource $templateRequireSource Writes each page template's render method.
+     */
+    public function __construct(
+        private PhpClassFile $phpClassFile = new PhpClassFile(),
+        private TemplateRequireSource $templateRequireSource = new TemplateRequireSource(),
+    ) {
     }
 
     /**
@@ -80,14 +89,14 @@ final readonly class ThemePageSource
      *
      * @throws InvalidArgumentException When generated imports or structure conflict.
      *
-     * @return string `ThemePageTemplate`, rendering each layout's page or `page.tpl.php`.
+     * @return string `ThemePageTemplate`, rendering each layout's page or `page.phtml`.
      */
     public function pageTemplate(ThemeBinding $themeBinding): string
     {
         $arms = '';
         $methods = $this->pageMethod('page', $themeBinding->page, $themeBinding->regions);
-        $classes = [ThemePage::class, RenderPass::class, Regions::class, InvalidArgumentException::class, UnknownComponent::class,
-            $themeBinding->page->component, $themeBinding->page->templateClass];
+        $classes = [ThemePage::class, RenderPass::class, Regions::class, InvalidArgumentException::class,
+            UnknownComponent::class, $themeBinding->page->component];
 
         foreach ($themeBinding->variants as $variant) {
             $page = $variant->page;
@@ -99,7 +108,7 @@ final readonly class ThemePageSource
             $arms .= '            ' . var_export($variant->name, true) . ' => $this->page' . $variant->case
                 . "(\$themePage->regions, \$renderPass),\n";
             $methods .= $this->pageMethod('page' . $variant->case, $page, $variant->regions);
-            $classes = [...$classes, $page->component, $page->templateClass];
+            $classes = [...$classes, $page->component];
         }
 
         $source = strtr(self::PAGE, ['{arms}' => $arms, '{methods}' => $methods]);
@@ -119,12 +128,19 @@ final readonly class ThemePageSource
     {
         $arguments = array_map(static fn (string $name): string => '$regions->region(' . var_export($name, true) . ')', $regions);
 
+        $render = 'render' . ucfirst($method);
+
         return strtr(self::PAGE_METHOD, [
             '{arguments}' => implode(",\n                ", $arguments),
             '{method}' => $method,
             '{page}' => $this->phpClassFile->short($templateBinding->component),
+            '{renderMethod}' => $this->templateRequireSource->method(
+                $templateBinding->component,
+                substr($templateBinding->generated, strlen('generated/')),
+                $render,
+            ),
+            '{render}' => $render,
             '{source}' => $templateBinding->source,
-            '{template}' => $this->phpClassFile->short($templateBinding->templateClass),
         ]);
     }
 }

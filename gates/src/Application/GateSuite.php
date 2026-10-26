@@ -94,8 +94,6 @@ final readonly class GateSuite
                 'text',
                 '{config}/phpmd.xml,{config}/phpmd-custom.xml',
                 '--strict',
-                '--exclude',
-                '*.tpl.php',
             ],
         ],
         11 => [
@@ -170,7 +168,7 @@ final readonly class GateSuite
             ['php', 'aic-build', '--check'],
         ],
         25 => [
-            'Templates: only explicitly declared *.tpl.php inputs use the plain PHP template grammar; deny by default.',
+            'Templates: only the theme and atom *.phtml sources use the plain PHP template grammar; deny by default.',
             'app',
             ['php', 'gate-templates.php'],
         ],

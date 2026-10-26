@@ -95,7 +95,7 @@ checks with native class probes and fresh whole-site comparisons against PHP.
 Runtime, gate-tooling and workflow source repairs are complete (#133–#135). Gate:13 now requires
 both full-project Psalm passes to succeed. A failing ordinary result cannot be hidden by a
 clean taint result, and either process error fails the gate.
-A component's template (`*.tpl.php`, beside its class in the theme) is plain PHP read only; gate:25
+A component's template (`*.phtml`, beside its class in the theme) is plain PHP read only; gate:25
 holds it to that grammar, and the class tools skip templates. `composer run build` compiles it under `generated/templates/`, which
 every gate checks, and writes the lookup the Renderer finds each component's template through: a
 page is components, and only the Renderer turns them into HTML.

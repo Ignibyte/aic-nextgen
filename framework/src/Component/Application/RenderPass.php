@@ -5,13 +5,26 @@ declare(strict_types=1);
 namespace AIC\Component\Application;
 
 use AIC\Component\Contracts\Component;
+use AIC\Component\Contracts\Frame;
 use AIC\Component\Contracts\Keyed;
 use AIC\Component\Contracts\Region;
+use AIC\Component\Domain\ChildFrame;
+use AIC\Component\Domain\FragmentFrame;
 use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\RawHtml;
+use AIC\Component\Domain\RegionFrame;
 use AIC\Component\Exception\UnknownComponent;
 
+use function array_pop;
+use function htmlspecialchars;
+use function ob_end_clean;
+use function ob_get_clean;
+use function ob_start;
 use function str_starts_with;
+
+use const ENT_HTML5;
+use const ENT_QUOTES;
+use const ENT_SUBSTITUTE;
 
 /**
  * One rendering of a component tree (#98), what templates write their
@@ -20,6 +33,11 @@ use function str_starts_with;
  * markers, and an inline child none. A pass aimed at a target path renders only
  * the way to it and keeps the target's markup. It holds the path it is at, so
  * it is the one mutable class of rendering and lives for one call.
+ *
+ * Templates run as templates (#155): a template's lookup opens the pass's
+ * buffer, requires the template, and closes it; the region element and the
+ * markers are framework templates too (`frame()`). `text()` is the one
+ * escaping path.
  */
 final class RenderPass
 {
@@ -37,6 +55,13 @@ final class RenderPass
      * Whether the target was rendered.
      */
     private bool $found = false;
+
+    /**
+     * What each output buffer this pass opened and has not closed is rendering, innermost last.
+     *
+     * @var list<string>
+     */
+    private array $rendering = [];
 
     /**
      * @param ComponentTemplates $componentTemplates Each component's template.
@@ -70,7 +95,7 @@ final class RenderPass
 
         $this->path = $outer;
 
-        return '<div data-region="' . $region->name() . '">' . $markup . '</div>';
+        return $this->frame(new RegionFrame($region->name(), $markup));
     }
 
     /**
@@ -104,6 +129,68 @@ final class RenderPass
         }
 
         return $this->componentTemplates->compose($inner, $this);
+    }
+
+    /**
+     * @param string $text Text.
+     *
+     * @return string It, escaped for an element's content or an attribute value: the one escaping path of templates.
+     */
+    public function text(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8');
+    }
+
+    /**
+     * Opens an output buffer for one template, before its lookup requires it.
+     *
+     * @param Component|Frame $rendered What the template renders; `close()` names it.
+     */
+    public function open(Component|Frame $rendered): void
+    {
+        ob_start();
+        $this->rendering[] = $rendered::class;
+    }
+
+    /**
+     * @return string What the template wrote since its `open()`; the buffer is closed. Each lookup pairs one `open()`
+     *                with one `close()` around one template.
+     */
+    public function close(): string
+    {
+        array_pop($this->rendering);
+
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * Ends every buffer this pass opened and did not close, so a throw inside a template leaves none behind.
+     */
+    public function discard(): void
+    {
+        while (array_pop($this->rendering) !== null) {
+            ob_end_clean();
+        }
+    }
+
+    /**
+     * @param Frame $frame A region's element, a child's markers or a fragment answer.
+     *
+     * @return string It written by its framework template.
+     */
+    public function frame(Frame $frame): string
+    {
+        $this->open($frame);
+
+        if ($frame instanceof RegionFrame) {
+            require __DIR__ . '/../../../templates/tessera/region.phtml';
+        } elseif ($frame instanceof ChildFrame) {
+            require __DIR__ . '/../../../templates/tessera/child.phtml';
+        } elseif ($frame instanceof FragmentFrame) {
+            require __DIR__ . '/../../../templates/tessera/fragments.phtml';
+        }
+
+        return $this->close();
     }
 
     /**
@@ -163,7 +250,7 @@ final class RenderPass
             return '';
         }
 
-        $markup = '<!--t:c ' . $opening . '-->' . $this->inline($component) . '<!--/t:c-->';
+        $markup = $this->frame(new ChildFrame($opening, $this->inline($component)));
 
         if ($this->target !== '' && $this->path === $this->target) {
             $this->captured = $markup;

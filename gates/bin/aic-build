@@ -14,7 +14,7 @@ declare(strict_types=1);
  * app's whole surface in one file. The commands, jobs and schedules come from
  * the console kernel (#93); the database is never opened, because PdoDatabase
  * connects on its first query. The theme config/app.php names (#153) holds
- * every component, layout and asset: each `.tpl.php` there, plain PHP, is
+ * every component, layout and asset: each `.phtml` there, plain PHP, is
  * checked by gate:25's grammar, typed, and compiled to its class under
  * `generated/templates/`; the lookup that finds each component's template is
  * generated/ThemeTemplates and its parts (#98), and a template anywhere else
@@ -59,6 +59,7 @@ use Gates\Application\TemplateBuild;
 use Gates\Application\TemplateCompiler;
 use Gates\Application\TemplatesSource;
 use Gates\Application\TesseraBuild;
+use Gates\Application\ThemeHtmlSource;
 use Gates\Application\ThemeLayoutsSource;
 use Gates\Application\ThemePageSource;
 use Gates\Application\WebPresentationSource;
@@ -91,10 +92,9 @@ try {
     $modules = $moduleBuild->modules();
     $presentation = (new PresentationBuild($root))->plan($appConfig->theme);
     $templateBuild = new TemplateBuild(new PlainTemplateReader(), new TemplateCompiler(), $root, $presentation);
-    $templates = $templateBuild->classes();
-    $templateClasses = [];
-    $components = [];
-    $compiled = $templateBuild->components();
+    $templates = $templateBuild->templates();
+    $lookups = [];
+    $adapters = [];
 
     // Layouts render through the generated adapters, never the lookup (#154).
     foreach ($presentation->templates as $binding) {
@@ -102,8 +102,7 @@ try {
             continue;
         }
 
-        $templateClasses[$binding->component] = $binding->templateClass;
-        $components[$binding->component] = $compiled[$binding->component] ?? false;
+        $lookups[$binding->component] = $binding->generated;
     }
 
     $tessera = (new TesseraBuild($root, $appConfig->tessera, new SystemProcessRunner()))->files();
@@ -116,30 +115,32 @@ try {
         $themeLayoutsSource = new ThemeLayoutsSource();
         $generated[$root . '/generated/ThemeLayouts.php'] = $themeLayoutsSource->layouts($theme, $appConfig->tessera->scriptPath());
         $generated[$root . '/generated/ThemePageTemplate.php'] = (new ThemePageSource())->pageTemplate($theme);
-        $generated[$root . '/generated/ThemeHtmlTemplate.php'] = $themeLayoutsSource->htmlTemplate($theme);
+        $generated[$root . '/generated/ThemeHtmlTemplate.php'] = (new ThemeHtmlSource())->htmlTemplate($theme);
         $layoutNames = $themeLayoutsSource->layoutNames($theme);
 
         if ($layoutNames !== null) {
             $generated[$root . '/generated/ThemeLayoutName.php'] = $layoutNames;
         }
 
-        $components[ThemeLayout::class] = true;
-        $templateClasses[ThemeLayout::class] = 'App\\Generated\\ThemeHtmlTemplate';
-        $components[ThemePage::class] = true;
-        $templateClasses[ThemePage::class] = 'App\\Generated\\ThemePageTemplate';
+        $adapters[ThemeLayout::class] = 'App\\Generated\\ThemeHtmlTemplate';
+        $adapters[ThemePage::class] = 'App\\Generated\\ThemePageTemplate';
     }
 
     foreach ((new AssetCatalogSource())->files($assetCatalog->assets) as $file => $source) {
         $generated[$root . '/generated/' . $file] = $source;
     }
 
-    foreach ((new TemplatesSource())->files($components, $templateClasses) as $file => $source) {
+    foreach ((new TemplatesSource())->files($lookups, $adapters) as $file => $source) {
         $generated[$root . '/generated/' . $file] = $source;
     }
     $buildOutputs = new BuildOutputs($root);
     $orphans = [
         ...$buildOutputs->orphans($root . '/generated', $generated, '*.php', true),
-        ...($atoms === [] ? [] : $buildOutputs->orphans($root . '/framework/src/Component/Application/Templates', $atoms, '*.php', true)),
+        ...$buildOutputs->orphans($root . '/generated', $generated, '*.phtml', true),
+        ...($atoms === [] ? [] : [
+            ...$buildOutputs->orphans($root . '/framework/src/Component/Application/Templates', $atoms, '*.php', true),
+            ...$buildOutputs->orphans($root . '/framework/src/Component/Application/Templates', $atoms, '*.phtml', true),
+        ]),
     ];
     $staleGenerated = [...$buildOutputs->stale($generated), ...$orphans];
 } catch (InvalidArgumentException|JsonException|RuntimeException $exception) {

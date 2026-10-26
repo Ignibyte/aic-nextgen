@@ -1,0 +1,8 @@
+<?php declare(strict_types=1); /* Escaped from themes/app/layouts/html.phtml by composer run build; edit that file, never this one. */ ?>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/assets/themes/app/favicon.svg" type="image/svg+xml">
+<title><?= $renderPass->text($themeLayout->name) ?></title><meta name="tessera-layout" content="<?= $renderPass->text($themeLayout->identity) ?>">
+<meta name="tessera-csrf-token" content="<?= $renderPass->text($themeLayout->token) ?>"><meta name="tessera-csrf-header" content="<?= $renderPass->text(\AIC\Form\Contracts\FormToken::HEADER) ?>">
+<?= $renderPass->inline($themeLayout->trackedAssets) ?></head>
+<body><h1><?= $renderPass->text($themeLayout->name) ?></h1>
+<?= $renderPass->inline($themeLayout->page) ?></body></html>

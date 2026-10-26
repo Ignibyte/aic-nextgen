@@ -31,10 +31,58 @@ final readonly class AtomTemplatesPart4 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
-            $component instanceof Alert => (new AlertTemplate())->render($component),
-            $component instanceof Form => (new FormTemplate())->render($component, $renderPass),
-            $component instanceof FormField => (new FormFieldTemplate())->render($component, $renderPass),
+            $component instanceof Alert => $this->renderAlert($component, $renderPass),
+            $component instanceof Form => $this->renderForm($component, $renderPass),
+            $component instanceof FormField => $this->renderFormField($component, $renderPass),
             default => throw new UnknownComponent($component::class),
         };
+    }
+
+    /**
+     * @param Alert      $alert      The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from alert.phtml.
+     */
+    private function renderAlert(Alert $alert, RenderPass $renderPass): string
+    {
+        $renderPass->open($alert);
+        require __DIR__ . '/alert.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Form       $form       The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from form.phtml.
+     */
+    private function renderForm(Form $form, RenderPass $renderPass): string
+    {
+        $renderPass->open($form);
+        require __DIR__ . '/form.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param FormField  $formField  The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from form-field.phtml.
+     */
+    private function renderFormField(FormField $formField, RenderPass $renderPass): string
+    {
+        $renderPass->open($formField);
+        require __DIR__ . '/form-field.phtml';
+
+        return $renderPass->close();
     }
 }

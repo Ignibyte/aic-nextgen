@@ -7,7 +7,6 @@ namespace Gates\Application;
 use AIC\Component\Contracts\Component;
 use Gates\Domain\GateProfile;
 use Gates\Domain\TemplateBinding;
-use Gates\Domain\TemplateClass;
 use Gates\Domain\TemplateReader;
 use InvalidArgumentException;
 use ReflectionClass;
@@ -15,6 +14,7 @@ use ReflectionClass;
 use function array_chunk;
 use function array_diff;
 use function array_keys;
+use function basename;
 use function count;
 use function file_get_contents;
 use function implode;
@@ -65,7 +65,7 @@ final readonly class AtomBuild
             $this->component($binding);
         }
 
-        $unclaimed = array_diff($declaredPaths->templates('framework/templates'), array_keys($bindings));
+        $unclaimed = array_diff($declaredPaths->templates('framework/templates/components'), array_keys($bindings));
 
         if ($unclaimed !== []) {
             throw new InvalidArgumentException('Undeclared library templates: ' . implode(', ', $unclaimed) . '.');
@@ -82,7 +82,6 @@ final readonly class AtomBuild
     public function files(): array
     {
         $files = [];
-        $components = [];
         $templates = [];
 
         foreach ($this->bindings() as $templateBinding) {
@@ -92,13 +91,11 @@ final readonly class AtomBuild
                 throw new InvalidArgumentException($templateBinding->source . ': cannot read the declared library template.');
             }
 
-            $templateClass = $this->compile($templateBinding, $source);
-            $files[$this->root . '/' . $templateBinding->generated] = $templateClass->source;
-            $components[$templateBinding->component] = $templateClass->takesPass;
-            $templates[$templateBinding->component] = $templateBinding->templateClass;
+            $files[$this->root . '/' . $templateBinding->generated] = $this->compile($templateBinding, $source);
+            $templates[$templateBinding->component] = basename($templateBinding->generated);
         }
 
-        return $files + ($components === [] ? [] : $this->lookup($components, $templates));
+        return $files + ($templates === [] ? [] : $this->lookup($templates));
     }
 
     /**
@@ -107,9 +104,9 @@ final readonly class AtomBuild
      *
      * @throws InvalidArgumentException When reading or compilation refuses the source.
      *
-     * @return TemplateClass Its compiled source and render-pass requirement.
+     * @return string Its escaped template.
      */
-    private function compile(TemplateBinding $templateBinding, string $source): TemplateClass
+    private function compile(TemplateBinding $templateBinding, string $source): string
     {
         try {
             $templateUnit = $this->templateReader->read($templateBinding->source, $source, $templateBinding);
@@ -162,18 +159,17 @@ final readonly class AtomBuild
     }
 
     /**
-     * @param array<string, bool>   $components Each fixed component's render-pass requirement.
-     * @param array<string, string> $templates  Each exact compiled class.
+     * @param array<string, string> $templates Each atom's escaped template beside the lookup parts, by its class.
      *
      * @throws InvalidArgumentException When the lookup source cannot fit normal limits.
      *
      * @return array<string, string> The package head and bounded chain parts.
      */
-    private function lookup(array $components, array $templates): array
+    private function lookup(array $templates): array
     {
         $namespace = 'AIC\\Component\\Application\\Templates';
         $directory = $this->root . '/framework/src/Component/Application/Templates/';
-        $chunks = array_chunk($components, 4, true);
+        $chunks = array_chunk($templates, 4, true);
         $files = $this->head();
 
         foreach ($chunks as $index => $chunk) {
@@ -185,7 +181,6 @@ final readonly class AtomBuild
                 $namespace,
                 $class,
                 $chunk,
-                $templates,
                 $next,
                 'framework/templates/components',
                 'the declared library atoms.',

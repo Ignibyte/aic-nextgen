@@ -8,9 +8,6 @@ use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Regions;
 use AIC\Component\Domain\ThemePage;
 use AIC\Component\Exception\UnknownComponent;
-use App\Generated\Templates\ThemeAppPageFocusTemplate;
-use App\Generated\Templates\ThemeAppPageScaffoldSoloTemplate;
-use App\Generated\Templates\ThemeAppPageTemplate;
 use App\Theme\Layouts\FocusPage;
 use App\Theme\Layouts\Page;
 use App\Theme\Layouts\ScaffoldSoloPage;
@@ -29,7 +26,7 @@ final readonly class ThemePageTemplate
      * @throws InvalidArgumentException When a region cannot be constructed.
      * @throws UnknownComponent         When a child has no registered template.
      *
-     * @return string The layout's page markup; page.tpl.php's when it ships no page of its own.
+     * @return string The layout's page markup; page.phtml's when it ships no page of its own.
      */
     public function render(ThemePage $themePage, RenderPass $renderPass): string
     {
@@ -47,11 +44,11 @@ final readonly class ThemePageTemplate
      * @throws InvalidArgumentException When a region cannot be constructed.
      * @throws UnknownComponent         When a child has no registered template.
      *
-     * @return string themes/app/layouts/page.tpl.php's markup.
+     * @return string themes/app/layouts/page.phtml's markup.
      */
     private function page(Regions $regions, RenderPass $renderPass): string
     {
-        return (new ThemeAppPageTemplate())->render(
+        return $this->renderPage(
             new Page(
                 $regions->region('header'),
                 $regions->region('content'),
@@ -63,23 +60,19 @@ final readonly class ThemePageTemplate
     }
 
     /**
-     * @param Regions    $regions    The page's regions.
-     * @param RenderPass $renderPass The same pass used by targeted fragments.
+     * @param Page       $page       The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
      *
-     * @throws InvalidArgumentException When a region cannot be constructed.
-     * @throws UnknownComponent         When a child has no registered template.
+     * @throws UnknownComponent When a child has no template.
      *
-     * @return string themes/app/layouts/page--focus.tpl.php's markup.
+     * @return string Its markup, from templates/themes/app/layouts/page.phtml.
      */
-    private function pageFocus(Regions $regions, RenderPass $renderPass): string
+    private function renderPage(Page $page, RenderPass $renderPass): string
     {
-        return (new ThemeAppPageFocusTemplate())->render(
-            new FocusPage(
-                $regions->region('content'),
-                $regions->region('nav'),
-            ),
-            $renderPass,
-        );
+        $renderPass->open($page);
+        require __DIR__ . '/templates/themes/app/layouts/page.phtml';
+
+        return $renderPass->close();
     }
 
     /**
@@ -89,15 +82,67 @@ final readonly class ThemePageTemplate
      * @throws InvalidArgumentException When a region cannot be constructed.
      * @throws UnknownComponent         When a child has no registered template.
      *
-     * @return string themes/app/layouts/page--scaffold-solo.tpl.php's markup.
+     * @return string themes/app/layouts/page--focus.phtml's markup.
+     */
+    private function pageFocus(Regions $regions, RenderPass $renderPass): string
+    {
+        return $this->renderPageFocus(
+            new FocusPage(
+                $regions->region('content'),
+                $regions->region('nav'),
+            ),
+            $renderPass,
+        );
+    }
+
+    /**
+     * @param FocusPage  $focusPage  The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/layouts/page--focus.phtml.
+     */
+    private function renderPageFocus(FocusPage $focusPage, RenderPass $renderPass): string
+    {
+        $renderPass->open($focusPage);
+        require __DIR__ . '/templates/themes/app/layouts/page--focus.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Regions    $regions    The page's regions.
+     * @param RenderPass $renderPass The same pass used by targeted fragments.
+     *
+     * @throws InvalidArgumentException When a region cannot be constructed.
+     * @throws UnknownComponent         When a child has no registered template.
+     *
+     * @return string themes/app/layouts/page--scaffold-solo.phtml's markup.
      */
     private function pageScaffoldSolo(Regions $regions, RenderPass $renderPass): string
     {
-        return (new ThemeAppPageScaffoldSoloTemplate())->render(
+        return $this->renderPageScaffoldSolo(
             new ScaffoldSoloPage(
                 $regions->region('content'),
             ),
             $renderPass,
         );
+    }
+
+    /**
+     * @param ScaffoldSoloPage $scaffoldSoloPage The component; its template reads it.
+     * @param RenderPass       $renderPass       The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/layouts/page--scaffold-solo.phtml.
+     */
+    private function renderPageScaffoldSolo(ScaffoldSoloPage $scaffoldSoloPage, RenderPass $renderPass): string
+    {
+        $renderPass->open($scaffoldSoloPage);
+        require __DIR__ . '/templates/themes/app/layouts/page--scaffold-solo.phtml';
+
+        return $renderPass->close();
     }
 }

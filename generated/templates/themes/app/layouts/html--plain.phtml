@@ -1,0 +1,15 @@
+<?php declare(strict_types=1); /* Escaped from themes/app/layouts/html--plain.phtml by composer run build; edit that file, never this one. */ ?>
+<!doctype html>
+<html lang="en" class="plain">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="tessera-layout" content="<?= $renderPass->text($themeLayout->identity) ?>">
+<meta name="tessera-csrf-header" content="<?= $renderPass->text(\AIC\Form\Contracts\FormToken::HEADER) ?>">
+<meta name="tessera-csrf-token" content="<?= $renderPass->text($themeLayout->token) ?>">
+<title><?= $renderPass->text($themeLayout->name) ?></title>
+<link rel="icon" href="/assets/themes/app/favicon.svg" type="image/svg+xml">
+<?= $renderPass->inline($themeLayout->trackedAssets) ?></head>
+<body class="plain">
+<?= $renderPass->inline($themeLayout->page) ?></body>
+</html>

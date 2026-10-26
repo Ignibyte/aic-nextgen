@@ -32,12 +32,12 @@ use const T_OPEN_TAG;
 final readonly class TemplateValidator
 {
     /** Every template sits in the theme (#153), or is one of the framework's atoms. */
-    private const string PLACEMENT = 'place a template in the configured theme: themes/<theme>/components/<Name>/<name>.tpl.php'
+    private const string PLACEMENT = 'place a template in the configured theme: themes/<theme>/components/<Name>/<name>.phtml'
         . ' or themes/<theme>/layouts/, or a fixed framework atom catalog binding';
 
     /** A theme's component and layout templates. */
     private const string DECLARED_PLACE = '#^themes/[a-z][a-z0-9-]*/(?:components/[A-Z][A-Za-z0-9]*|layouts)'
-        . '/[a-z0-9][a-z0-9-]*\\.tpl\\.php\\z#';
+        . '/[a-z0-9][a-z0-9-]*\\.phtml\\z#';
 
     /**
      * The short open tag refusal's detail.

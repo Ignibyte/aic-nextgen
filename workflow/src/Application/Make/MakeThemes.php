@@ -26,8 +26,8 @@ final readonly class MakeThemes
 
         return [
             new MadeFile($theme . 'layouts/Page.php', $this->themeSource->data()),
-            new MadeFile($theme . 'layouts/html.tpl.php', $this->themeSource->html()),
-            new MadeFile($theme . 'layouts/page.tpl.php', $this->themeSource->page()),
+            new MadeFile($theme . 'layouts/html.phtml', $this->themeSource->html()),
+            new MadeFile($theme . 'layouts/page.phtml', $this->themeSource->page()),
             new MadeFile($theme . 'assets/theme.css', $this->themeSource->css()),
         ];
     }

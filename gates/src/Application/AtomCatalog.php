@@ -41,8 +41,8 @@ final readonly class AtomCatalog
         $claimed = [];
         $declarations = [...$this->textAtoms->declarations(), ...$this->controlAtoms->declarations(), ...$this->formAtoms->declarations()];
 
-        foreach ($declarations as [$component, $source, $class]) {
-            $templateBinding = $this->binding($component, $source, $class);
+        foreach ($declarations as [$component, $source]) {
+            $templateBinding = $this->binding($component, $source);
             $identities = $this->identities($templateBinding);
 
             if (array_intersect_key($claimed, $identities) !== []) {
@@ -72,24 +72,23 @@ final readonly class AtomCatalog
 
     /**
      * @param class-string<Component> $component The declared input identity.
-     * @param string                  $source    The declared source basename.
-     * @param string                  $class     The declared compiled class name.
+     * @param string                  $source    The declared source basename, lower kebab case.
      *
-     * @throws InvalidArgumentException When the declared output class is not a portable template identity.
+     * @throws InvalidArgumentException When the source basename is not a portable template name.
      *
-     * @return TemplateBinding Its library-owned source, output, class and inline role.
+     * @return TemplateBinding Its library-owned source, its escaped output beside the atom lookups, and the inline
+     *                         role.
      */
-    private function binding(string $component, string $source, string $class): TemplateBinding
+    private function binding(string $component, string $source): TemplateBinding
     {
-        if (preg_match('/^[A-Z][A-Za-z0-9]*Template\\z/', $class) !== 1) {
-            throw new InvalidArgumentException('Declare a portable library output class ending in Template.');
+        if (preg_match('/^[a-z][a-z0-9]*(-[a-z0-9]+)*\\z/', $source) !== 1) {
+            throw new InvalidArgumentException('Declare a portable atom source name: lower case words joined by hyphens.');
         }
 
         return new TemplateBinding(
             $component,
-            'framework/templates/components/' . $source . '.tpl.php',
-            'framework/src/Component/Application/Templates/' . $class . '.php',
-            'AIC\\Component\\Application\\Templates\\' . $class,
+            'framework/templates/components/' . $source . '.phtml',
+            'framework/src/Component/Application/Templates/' . $source . '.phtml',
             TemplateRole::Atom,
         );
     }
@@ -105,7 +104,6 @@ final readonly class AtomCatalog
             'component:' . strtolower($templateBinding->component),
             'source:' . $templateBinding->source,
             'output:' . $templateBinding->generated,
-            'class:' . strtolower($templateBinding->templateClass),
         ], true);
     }
 }

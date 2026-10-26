@@ -6,7 +6,6 @@ namespace Gates\Application;
 
 use Gates\Domain\PresentationInventory;
 use Gates\Domain\TemplateBinding;
-use Gates\Domain\TemplateClass;
 use Gates\Domain\TemplateNode;
 use Gates\Domain\TemplateNodeKind;
 use Gates\Domain\TemplateReader;
@@ -26,8 +25,8 @@ use function strrpos;
 use function substr;
 
 /**
- * Compiles the theme's templates (#153) into generated/templates. Input identity and
- * placement are validated before output.
+ * Escapes the theme's templates (#153, #155) into generated/templates: each a `.phtml`
+ * its lookup requires. Input identity and placement are validated before output.
  */
 final readonly class TemplateBuild
 {
@@ -46,39 +45,21 @@ final readonly class TemplateBuild
     }
 
     /**
-     * @throws InvalidArgumentException When a template cannot be read, is refused, or is too big for one class.
+     * @throws InvalidArgumentException When a template cannot be read or is refused.
      *
-     * @return array<string, string> Each generated class's source, by its file, sorted.
+     * @return array<string, string> Each escaped template, by its absolute output file, sorted.
      */
-    public function classes(): array
+    public function templates(): array
     {
-        $classes = [];
+        $templates = [];
 
         foreach ($this->units() as $path => $templateUnit) {
-            $generated = $this->root . '/' . $templateUnit->binding->generated;
-            $classes[$generated] = $this->compile($path, $templateUnit)->source;
+            $templates[$this->root . '/' . $templateUnit->binding->generated] = $this->compile($path, $templateUnit);
         }
 
-        ksort($classes);
+        ksort($templates);
 
-        return $classes;
-    }
-
-    /**
-     * @throws InvalidArgumentException When a template cannot be read, is refused, or is too big for one class.
-     *
-     * @return array<string, bool> Whether each template's `render()` takes the render pass, by its component class,
-     *                             fully qualified, in template order (#98's lookup).
-     */
-    public function components(): array
-    {
-        $components = [];
-
-        foreach ($this->units() as $path => $templateUnit) {
-            $components[$templateUnit->binding->component] = $this->compile($path, $templateUnit)->takesPass;
-        }
-
-        return $components;
+        return $templates;
     }
 
     /**
@@ -142,12 +123,11 @@ final readonly class TemplateBuild
      * @param string       $path         The template, relative to the repo root.
      * @param TemplateUnit $templateUnit The template read.
      *
-     * @throws InvalidArgumentException When it is too big for one class, or a loop too big or too complex for one part:
-     *                                  `path: detail`.
+     * @throws InvalidArgumentException When it cannot be written: `path: detail`.
      *
-     * @return TemplateClass The generated class.
+     * @return string The escaped template.
      */
-    private function compile(string $path, TemplateUnit $templateUnit): TemplateClass
+    private function compile(string $path, TemplateUnit $templateUnit): string
     {
         try {
             return $this->templateCompiler->compile(

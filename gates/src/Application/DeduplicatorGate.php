@@ -9,7 +9,6 @@ use Gates\Domain\ProcessRunner;
 use function array_map;
 use function count;
 use function fwrite;
-use function glob;
 use function implode;
 use function is_executable;
 use function sprintf;
@@ -63,7 +62,7 @@ final readonly class DeduplicatorGate
             return 1;
         }
 
-        $command = $this->buildCommand($bin, $existing, $root);
+        $command = $this->buildCommand($bin, $existing);
         $processResult = $this->processRunner->run($command);
         fwrite($stdout, sprintf('gate:14 — %s%s%s', implode(' ', $command), PHP_EOL, $processResult->stdout));
         fwrite($stderr, $processResult->stderr);
@@ -110,25 +109,18 @@ final readonly class DeduplicatorGate
      * Build the array-form command for `proc_open`.
      *
      * @param string       $bin      Resolved phpcpd binary path.
-     * @param list<string> $existing Source directories with PHP files.
-     * @param string       $root     The project folder.
+     * @param list<string> $existing Source directories with PHP files; templates (`*.phtml`) are not PHP files to
+     *                               phpcpd, which reads `*.php` only.
      *
      * @return list<string>
      */
-    private function buildCommand(string $bin, array $existing, string $root): array
+    private function buildCommand(string $bin, array $existing): array
     {
-        $components = glob($root . '/themes/*/components/*/*.tpl.php');
-        $layouts = glob($root . '/themes/*/layouts/*.tpl.php');
-        $templates = [...($components === false ? [] : $components), ...($layouts === false ? [] : $layouts)];
-        $excludes = array_map(static fn (string $path): string => '--exclude=' . $path, $templates);
-
         return [
             $bin,
             '--min-lines=4',
             '--min-tokens=50',
             '--fuzzy',
-            // Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
-            ...$excludes,
             ...$existing,
         ];
     }
