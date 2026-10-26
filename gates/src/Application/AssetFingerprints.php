@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use AIC\Http\Contracts\PublicAsset;
 use Gates\Domain\AssetCatalog;
+use Gates\Domain\BuildPaths;
 use InvalidArgumentException;
 use JsonException;
 
@@ -47,7 +48,7 @@ final readonly class AssetFingerprints
         foreach ($assets as $asset) {
             $contents = $this->contents($asset, $outputs);
             $published = $this->canonical($asset, $digest);
-            $path = $this->root . '/public/assets/' . $published->file;
+            $path = $this->root . '/' . BuildPaths::ASSETS . '/' . $published->file;
             $this->available($path, $published->file, $outputs);
             $outputs[$path] = $contents;
             $canonical[] = $published;
@@ -86,7 +87,7 @@ final readonly class AssetFingerprints
      */
     private function contents(PublicAsset $publicAsset, array $outputs): string
     {
-        $path = $this->root . '/public/assets/' . $publicAsset->file;
+        $path = $this->root . '/' . BuildPaths::ASSETS . '/' . $publicAsset->file;
 
         if ($publicAsset->aliasPath !== $publicAsset->path || !array_key_exists($path, $outputs)) {
             throw new InvalidArgumentException($publicAsset->name . ': fingerprint inputs require one original publication path.');
@@ -139,7 +140,7 @@ final readonly class AssetFingerprints
 
         $selected = $this->root;
 
-        foreach (explode('/', 'public/assets/' . $file) as $segment) {
+        foreach (explode('/', BuildPaths::ASSETS . '/' . $file) as $segment) {
             $selected .= '/' . $segment;
 
             if (is_link($selected)) {

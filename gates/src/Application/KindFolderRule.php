@@ -219,7 +219,8 @@ final readonly class KindFolderRule implements ModuleRule
         }
 
         return new BoundaryViolation($path, sprintf(
-            '%s: %s is a Component; components live in the theme: move it to %s/ with its template.',
+            '%s: %s is a Component; components live in the theme: move it to %s/ and its template to'
+                . ' themes/<theme>/components/<Name>/.',
             $path,
             $class,
             ClassKinds::THEME_COMPONENTS,

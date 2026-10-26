@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use AIC\Component\Contracts\Component;
+use Gates\Domain\BuildPaths;
 use Gates\Domain\TemplateBinding;
 use Gates\Domain\TemplateRole;
 use InvalidArgumentException;
@@ -26,9 +27,10 @@ use function strtolower;
 use function substr;
 
 /**
- * Finds a theme's components (#153): each folder `components/<Name>/` holds the final Component
- * `App\Theme\Components\<Name>\<Name>` in `<Name>.php`, its template `<kebab-name>.phtml`, and any value
- * classes of the same namespace that are not Components. Nothing else may sit there.
+ * Finds a theme's components (#153, #167): each folder `components/<Name>/` holds only the template
+ * `<kebab-name>.phtml`, and its twin `src/Components/<Name>/` holds the final Component
+ * `App\Theme\Components\<Name>\<Name>` in `<Name>.php` and any value classes of the same namespace that are
+ * not Components. A template folder or a class folder alone is refused.
  */
 final readonly class ThemeComponents
 {
@@ -47,11 +49,19 @@ final readonly class ThemeComponents
     public function bindings(string $theme): array
     {
         $folder = 'themes/' . $theme . '/components';
+        $classes = 'themes/' . $theme . '/src/Components';
+        $names = $this->entries($folder);
         $bindings = [];
 
-        foreach ($this->entries($folder) as $name) {
+        foreach ($names as $name) {
             $this->componentFolder($folder, $name);
-            $bindings[] = $this->component($folder . '/' . $name, $name);
+            $bindings[] = $this->component($folder . '/' . $name, $classes . '/' . $name, $name);
+        }
+
+        foreach (array_diff($this->entries($classes), $names) as $orphan) {
+            throw new InvalidArgumentException(
+                $classes . '/' . $orphan . ': a component class folder pairs with its template in ' . $folder . '/' . $orphan . '/.',
+            );
         }
 
         return $bindings;
@@ -130,32 +140,40 @@ final readonly class ThemeComponents
     }
 
     /**
-     * @param string $folder The component's folder, relative to the project.
-     * @param string $name   Its class name.
+     * @param string $folder      The component's template folder, relative to the project.
+     * @param string $classFolder Its class folder under `src/Components/`.
+     * @param string $name        Its class name.
      *
      * @throws InvalidArgumentException When its class or template is missing, or a file is out of place.
      *
      * @return TemplateBinding Its template binding.
      */
-    private function component(string $folder, string $name): TemplateBinding
+    private function component(string $folder, string $classFolder, string $name): TemplateBinding
     {
         $template = $this->template($name);
-        $files = $this->entries($folder);
 
-        if (!in_array($name . '.php', $files, true) || !in_array($template, $files, true)) {
-            throw new InvalidArgumentException($folder . ': a component folder holds ' . $name . '.php and ' . $template . '.');
+        if ($this->entries($folder) !== [$template]) {
+            throw new InvalidArgumentException(
+                $folder . ': a component folder holds only its template, ' . $template . '; its classes go in ' . $classFolder . '/.',
+            );
         }
 
-        foreach (array_diff($files, [$name . '.php', $template]) as $file) {
-            $this->valueClass($folder, $name, $file);
+        $files = $this->entries($classFolder);
+
+        if (!in_array($name . '.php', $files, true)) {
+            throw new InvalidArgumentException($classFolder . ': declare the component class in ' . $name . '.php here.');
         }
 
-        $class = $this->componentClass('App\\Theme\\Components\\' . $name . '\\' . $name, $folder . '/' . $name . '.php');
+        foreach (array_diff($files, [$name . '.php']) as $file) {
+            $this->valueClass($classFolder, $name, $file);
+        }
+
+        $class = $this->componentClass('App\\Theme\\Components\\' . $name . '\\' . $name, $classFolder . '/' . $name . '.php');
 
         return new TemplateBinding(
             $class,
             $folder . '/' . $template,
-            'generated/templates/' . $folder . '/' . $template,
+            BuildPaths::GENERATED . '/templates/' . $folder . '/' . $template,
             TemplateRole::Component,
         );
     }
@@ -186,7 +204,7 @@ final readonly class ThemeComponents
     }
 
     /**
-     * @param string $folder The component's folder.
+     * @param string $folder The component's class folder.
      * @param string $name   The component's class name.
      * @param string $file   Another file in the folder.
      *
@@ -196,7 +214,7 @@ final readonly class ThemeComponents
     {
         if (preg_match('/^[A-Z][A-Za-z0-9]*\\.php\\z/', $file) !== 1) {
             throw new InvalidArgumentException(
-                $folder . '/' . $file . ': a component folder holds its class, its template and value classes only.',
+                $folder . '/' . $file . ': a component class folder holds its class and value classes only.',
             );
         }
 

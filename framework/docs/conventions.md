@@ -30,7 +30,7 @@ Every PHP file in a module follows these rules. Each names the gate that refuses
 - **No static state.** No static properties used as caches, no globals, no singletons: state lives
   in the objects the generated wiring builds. gate:15 refuses them.
 - **No `new` of a service in business logic.** A class asks for what it uses in its constructor;
-  the wiring under `generated/` passes it. Value objects and components are built where they are
+  the wiring under `build/generated/` passes it. Value objects and components are built where they are
   needed. A Page builds the components it returns.
 - **Config through `config/`.** Read the environment only in `config/` files, which return typed
   objects; runtime code never calls `getenv()` or `env()`. gate:15 holds it.

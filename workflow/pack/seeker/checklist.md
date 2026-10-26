@@ -21,7 +21,7 @@ new component and `bin/aic code:tree theme:<name>` for the theme. HIGH; MEDIUM f
 ## A2 — Declared templates are plain `.phtml`
 
 The gates hold: only explicitly declared `*.phtml` inputs use the
-template grammar. The build escapes each into `generated/templates/`, where its lookup requires
+template grammar. The build escapes each into `build/generated/templates/`, where its lookup requires
 it; no PHP class holds markup (#155).
 
 Judge: logic a template carries past showing its component's values (sums, lookups, state
@@ -47,10 +47,10 @@ route or command the change needs and the manifest does not declare. HIGH.
 
 ## A5 — No generated file edited
 
-The gates hold: `build/surface.json`, `generated/`, the compiled templates and `public/assets/`
-match what the build writes.
+The gates hold: everything under `build/` (the generated wiring and templates, `build/assets/`, the
+manifests) matches what the build writes.
 
-Judge: a change under `generated/`, `build/` or `public/assets/` with no source change that makes
+Judge: a change under `build/` with no source change that makes
 it; a build writer special-cased for one module. HIGH.
 
 ## A6 — No suppression, no gate-config change

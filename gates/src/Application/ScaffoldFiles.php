@@ -39,15 +39,16 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
     public const string FOLDER = 'modules/scaffold/';
 
     /**
-     * The scaffold's components in the theme (#153), which the overlay hides too: every folder starting so.
+     * The scaffold's components in the theme (#153, #167), which the overlay hides too: every template folder and
+     * class folder starting so.
      */
-    public const string THEME = 'themes/app/components/Scaffold';
+    public const array THEME = ['themes/app/components/Scaffold', 'themes/app/src/Components/Scaffold'];
 
     /**
      * The scaffold's layout files in the theme (#157), which the overlay hides too: every file starting so.
      */
     public const array LAYOUTS = [
-        'themes/app/layouts/Scaffold',
+        'themes/app/src/Layouts/Scaffold',
         'themes/app/layouts/page--scaffold',
         'themes/app/layouts/html--scaffold',
     ];
@@ -156,7 +157,7 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
     private static function hidden(string $path): bool
     {
         return array_any(
-            [self::FOLDER, self::THEME, ...self::LAYOUTS],
+            [self::FOLDER, ...self::THEME, ...self::LAYOUTS],
             static fn (string $prefix): bool => str_starts_with($path, $prefix),
         );
     }

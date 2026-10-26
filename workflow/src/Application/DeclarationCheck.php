@@ -29,9 +29,17 @@ use function str_starts_with;
 final readonly class DeclarationCheck implements PhaseCheck
 {
     /**
-     * What `composer run build` writes, and the engine's state.
+     * What `composer run build` writes, exactly (#167: its two manifests and its two folders under `build/`, and the
+     * wiki), and the engine's state; any other file under `build/` is declared like a source.
      */
-    private const array EXEMPT = ['build/assets.json', 'build/surface.json', 'generated/', 'public/assets/', 'var/workflow/', 'docs/wiki/'];
+    private const array EXEMPT = [
+        'build/assets.json',
+        'build/surface.json',
+        'build/generated/',
+        'build/assets/',
+        'var/workflow/',
+        'docs/wiki/',
+    ];
 
     /**
      * The undeclared paths a summary names at most (Droost's `SUMMARY_PATHS`).

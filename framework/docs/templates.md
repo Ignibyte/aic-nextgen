@@ -3,15 +3,16 @@
 Templates are restricted plain PHP that run as templates. Every template is a `.phtml` file.
 The build reads the theme `config/app.php` names and the fixed framework atom catalog, checks
 each template against the grammar below, and writes an escaped copy of it: the same template
-with every echo routed through the render pass. An app's copies sit under `generated/templates/`,
+with every echo routed through the render pass. An app's copies sit under `build/generated/templates/`,
 mirroring their source paths. Generated PHP holds only the lookups that require them; no PHP
 class holds markup. The theme's layout is in [modules.md](modules.md#the-theme); gate:24 checks
 the generated output and gate:25 checks the grammar.
 
 ## Identity and placement
 
-A component's template sits beside its class in the theme, `themes/<theme>/components/<Name>/`,
-named for the class in lower kebab case (`note-card.phtml` for `NoteCard`). The HTML and page
+A component's template sits alone in the theme's `themes/<theme>/components/<Name>/`, named for
+the class in lower kebab case (`note-card.phtml` for `NoteCard`); the class sits in
+`themes/<theme>/src/Components/<Name>/` (#167). The HTML and page
 wrappers sit in `themes/<theme>/layouts/`. Each file begins exactly with its fully qualified class
 and lower-camel variable, and a component template types its own folder's class:
 

@@ -7,6 +7,7 @@ namespace Gates\Application;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Domain\ThemeLayout;
 use AIC\Component\Exception\UnknownComponent;
+use Gates\Domain\BuildPaths;
 use Gates\Domain\TemplateBinding;
 use Gates\Domain\ThemeBinding;
 use InvalidArgumentException;
@@ -96,7 +97,7 @@ final readonly class ThemeHtmlSource
      */
     private function renderMethod(TemplateBinding $templateBinding, string $method): string
     {
-        $path = substr($templateBinding->generated, strlen('generated/'));
+        $path = substr($templateBinding->generated, strlen(BuildPaths::GENERATED . '/'));
 
         return $this->templateRequireSource->method(ThemeLayout::class, $path, $method);
     }

@@ -10,7 +10,7 @@ final readonly class AssetInput
     /**
      * @param string    $name      The theme-qualified logical identifier.
      * @param string    $source    The source relative to the project folder.
-     * @param string    $file      The output relative to public/assets/.
+     * @param string    $file      The output relative to build/assets/.
      * @param AssetKind $assetKind Its role, from its extension.
      */
     public function __construct(

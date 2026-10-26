@@ -14,10 +14,10 @@ use function sort;
 use function unlink;
 
 /**
- * The files under `public/assets/` the build would not write (#95): a removed
+ * The files under `build/assets/` the build would not write (#95): a removed
  * module's copy, an old Tessera release. gate:24 calls them stale, and the
  * build deletes them, with the folders they leave empty. The build owns
- * `public/assets/` and nothing else under `public/`.
+ * `build/assets/` and nothing else under `build/`.
  */
 final readonly class PublicAssetOrphans
 {
@@ -30,7 +30,7 @@ final readonly class PublicAssetOrphans
     }
 
     /**
-     * @param string                $directory `public/assets`, absolute.
+     * @param string                $directory `build/assets`, absolute.
      * @param array<string, string> $outputs   Every output, by absolute path.
      *
      * @return list<string> The files under the folder no output names, sorted.
@@ -48,7 +48,7 @@ final readonly class PublicAssetOrphans
 
     /**
      * @param list<string> $orphans   The orphans to delete.
-     * @param string       $directory `public/assets`, absolute; it stays even when empty.
+     * @param string       $directory `build/assets`, absolute; it stays even when empty.
      */
     public function delete(array $orphans, string $directory): void
     {
@@ -60,7 +60,7 @@ final readonly class PublicAssetOrphans
 
     /**
      * @param string $folder    A folder an orphan was in.
-     * @param string $directory `public/assets`, where pruning stops.
+     * @param string $directory `build/assets`, where pruning stops.
      */
     private function prune(string $folder, string $directory): void
     {

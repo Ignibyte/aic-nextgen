@@ -24,11 +24,11 @@ They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs
 |---|---|
 | `framework/` | `aic/framework`, namespace `AIC\` under `framework/src/`, its architecture pages in `framework/docs/`, pulled in through a composer path repository |
 | `modules/` | The fixture app, `aic/app`: four modules, `modules/<name>/<name>.module.php` (its manifest) and `src/` (`App\<Name>\`) |
-| `generated/` | The wiring `composer run build` writes from the manifests (`App\Generated\`); never edited by hand |
+| `build/` | Everything `composer run build` writes, never edited by hand: `generated/` (the wiring and escaped templates, `App\Generated\`), `assets/` (the published files), `surface.json` and `assets.json` |
 | `docs/wiki/` | The code wiki `composer run build` writes from the surface and the code index: an index and a page per module; never edited by hand (notes go in `modules/<m>/README.md`) |
-| `themes/<name>/` | The theme `config/app.php` names (#153): `layouts/` (the HTML and page templates and `Page.php`, the page's regions), `components/<Name>/` (each component's class and template) and `assets/` (CSS, scripts, images). Modules hold no templates or assets |
+| `themes/<name>/` | The theme `config/app.php` names (#153, #167): `layouts/` and `components/<Name>/` (templates only), `src/` (their classes: `Layouts/Page.php` with the page's regions, `Components/<Name>/`), `assets/` (CSS, scripts, images) and, optionally, `frontend/` (a front-end build's sources). Modules hold no templates or assets |
 | `bootstrap/serve.php` | Serves one request: the wiring, the request in, the response out; compiled into the site or run under PHP |
-| `public/index.php` | The interpreted entry (php-fpm in DDEV, `php -S`): the autoloader, then `serve.php` |
+| `public/index.php` | The interpreted entry (php-fpm in DDEV, `php -S`): the autoloader, then `serve.php`; the only file in `public/` |
 | `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
 | `gates/` | `aic/gates`, the gate suite (#116): a dev-only package with every gate's code and entry, the runner, the build (`vendor/bin/aic-build`, behind `composer run build`; `--check` is gate:24) and each tool's base config. `vendor/bin/aic-gate --list` names the gates and `aic-gate N` runs one |
 | `build/surface.json` | The app's surface: every route (method, path, handler, kind) and console command (name, class, kind) |
@@ -76,10 +76,10 @@ queues nothing more. Notifications go out through the queue: DDEV's Mailpit catc
 (`ddev mailpit`), and `AIC_MAIL_HOST`, `AIC_MAIL_PORT` and `AIC_MAIL_FROM` point it elsewhere.
 
 Every stylesheet, script and image lives in the theme's `assets/`. `composer run build` writes one
-`public/assets/aic.css` (the theme's CSS, in path order) and copies the rest to
-`public/assets/themes/<name>/`; the build output is committed. DDEV's nginx serves `public/` as static files. The compiled server
-serves no static files, so in production a reverse proxy (nginx, Caddy) serves `public/` and
-forwards the rest. Without a proxy, the app's `/assets/{file}` route answers the built assets.
+`build/assets/aic.css` (the theme's CSS, in path order) and copies the rest to
+`build/assets/themes/<name>/`; the build output is committed. AIC's asset handler serves
+`build/assets/` at `/assets/` before the app is assembled, under php-fpm and compiled alike; in
+production a reverse proxy (Caddy, nginx) may map `/assets/` to `build/assets/` directly.
 
 ## Quality gates
 
@@ -95,8 +95,8 @@ checks with native class probes and fresh whole-site comparisons against PHP.
 Runtime, gate-tooling and workflow source repairs are complete (#133–#135). Gate:13 now requires
 both full-project Psalm passes to succeed. A failing ordinary result cannot be hidden by a
 clean taint result, and either process error fails the gate.
-A component's template (`*.phtml`, beside its class in the theme) is plain PHP read only; gate:25
-holds it to that grammar, and the class tools skip templates. `composer run build` compiles it under `generated/templates/`, which
+A component's template (`*.phtml`, in the theme's `components/<Name>/`) is plain PHP read only; gate:25
+holds it to that grammar, and the class tools skip templates. `composer run build` escapes it into `build/generated/templates/`, which
 every gate checks, and writes the lookup the Renderer finds each component's template through: a
 page is components, and only the Renderer turns them into HTML.
 The native gate compiles every runtime class with [elephc](https://github.com/illegalstudio/elephc),

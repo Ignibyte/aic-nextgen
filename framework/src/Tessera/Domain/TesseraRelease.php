@@ -10,7 +10,7 @@ use function preg_match;
 
 /**
  * The Tessera release the app ships (#70): its version and the SHA-256 of
- * each file the build copies into `public/assets/tessera-VERSION/`. It is
+ * each file the build copies into `build/assets/tessera-VERSION/`. It is
  * pinned in `config/app.php`, the one place the build and the layout read.
  */
 final readonly class TesseraRelease

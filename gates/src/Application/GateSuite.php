@@ -162,8 +162,8 @@ final readonly class GateSuite
             ['php', 'gate-native-site.php'],
         ],
         24 => [
-            'Build outputs: the generated wiring, build/surface.json, the template classes, public/assets/ and the code '
-                . 'wiki in docs/wiki/ match what composer run build writes; an orphan there is stale.',
+            'Build outputs: everything under build/ (the generated wiring and templates, build/assets/, the manifests) '
+                . 'and the code wiki in docs/wiki/ match what composer run build writes; an orphan there is stale.',
             'app',
             ['php', 'aic-build', '--check'],
         ],

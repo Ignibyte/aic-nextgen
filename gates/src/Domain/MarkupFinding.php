@@ -25,6 +25,7 @@ final readonly class MarkupFinding
     public function message(): string
     {
         return $this->path . ($this->line > 0 ? ':' . $this->line : '') . ': ' . $this->what
-            . '; a module holds no markup: build a component under themes/<name>/components/ and hand it to the Renderer.';
+            . '; a module holds no markup: build a component under themes/<name>/src/Components/, its template under'
+            . ' themes/<name>/components/, and hand it to the Renderer.';
     }
 }

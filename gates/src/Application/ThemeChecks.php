@@ -15,8 +15,8 @@ use function str_replace;
  */
 final readonly class ThemeChecks
 {
-    /** The two namespaces a theme's classes live under, by folder. */
-    private const array NAMESPACES = ['components' => 'App\\Theme\\Components', 'layouts' => 'App\\Theme\\Layouts'];
+    /** The two namespaces a theme's classes live under, by their folder under `src/` (#167). */
+    private const array NAMESPACES = ['src/Components' => 'App\\Theme\\Components', 'src/Layouts' => 'App\\Theme\\Layouts'];
 
     /**
      * @param string $theme    The configured theme's folder name.
@@ -47,7 +47,7 @@ final readonly class ThemeChecks
 
     /**
      * @param string $theme     The theme's folder name.
-     * @param string $folder    `components` or `layouts`.
+     * @param string $folder    `src/Components` or `src/Layouts`.
      * @param string $namespace Its namespace, without a trailing `\`.
      *
      * @return string Its line in composer.json's autoload.psr-4.
@@ -59,7 +59,7 @@ final readonly class ThemeChecks
 
     /**
      * @param string $theme     The theme's folder name.
-     * @param string $folder    `components` or `layouts`.
+     * @param string $folder    `src/Components` or `src/Layouts`.
      * @param string $namespace Its namespace, without a trailing `\`.
      *
      * @return string Its root in phpcs.xml.dist's TypeNameMatchesFileName.

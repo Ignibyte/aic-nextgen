@@ -7,6 +7,7 @@ namespace AIC\Workflow\Infrastructure;
 use AIC\Workflow\Domain\RegexCaptures;
 
 use function array_key_exists;
+use function str_starts_with;
 
 /**
  * Which part of an AIC project a path belongs to (#106): a module, a
@@ -21,20 +22,21 @@ final readonly class CodeAreas
     /**
      * @param string $path A path, relative to the project.
      *
-     * @return string Its area: `module:<m>`, `system:<S>`, `theme:<t>` (#157), `generated`, `workflow`, `gates` or
-     *                `project`.
+     * @return string Its area: `module:<m>`, `system:<S>`, `theme:<t>` (#157), `generated` (`build/generated/`, #167),
+     *                `workflow`, `gates` or `project`.
      */
     public function area(string $path): string
     {
         $module = self::regexMatch('#^modules/([^/]+)/#', $path);
         $system = self::regexMatch('#^(?:vendor/aic/)?framework/src/([^/]+)/#', $path);
         $theme = self::regexMatch('#^themes/([^/]+)/#', $path);
-        $area = self::regexMatch('#^(generated|workflow|gates)/#', $path);
+        $area = self::regexMatch('#^(workflow|gates)/#', $path);
 
         return match (true) {
             array_key_exists(1, $module) => 'module:' . $module[1],
             array_key_exists(1, $system) => 'system:' . $system[1],
             array_key_exists(1, $theme) => 'theme:' . $theme[1],
+            str_starts_with($path, 'build/generated/') => 'generated',
             array_key_exists(1, $area) => $area[1],
             default => 'project',
         };

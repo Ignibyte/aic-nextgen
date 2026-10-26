@@ -35,12 +35,12 @@ final readonly class MakePresentation
     public function check(MakeRecipe $makeRecipe, ProjectFiles $projectFiles): void
     {
         foreach ($makeRecipe->files as $madeFile) {
-            if (preg_match('#^themes/[^/]+/components/#', $madeFile->path) !== 1) {
+            if (preg_match('#^themes/[^/]+/src/Components/#', $madeFile->path) !== 1) {
                 continue;
             }
 
             $psr4 = $this->psr4($projectFiles);
-            $components = substr($madeFile->path, 0, (int) strpos($madeFile->path, '/components/') + 12);
+            $components = substr($madeFile->path, 0, (int) strpos($madeFile->path, '/src/Components/') + 16);
             $this->line($psr4, 'App\\Theme\\Components\\', $components);
 
             return;

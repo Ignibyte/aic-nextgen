@@ -14,7 +14,7 @@ parameters:
         - framework/src
         - modules
         - themes
-        - generated
+        - build/generated
         - public
         - bootstrap
         - config
