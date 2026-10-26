@@ -74,10 +74,12 @@ stable when data changes; a loop's keyed children must have distinct keys. See
 
 [templates.md](templates.md#types-and-output) describes escaping by static type. Prefer Components
 for structure and plain strings for text. `AIC\Component\Domain\RawHtml` is the counted escape
-hatch. Every construction needs an exact class grant and a reason in `config/raw-html.php`;
-trust comes from the caller's validation, not from the wrapper.
+hatch. Every construction needs an exact class grant and a reason in `config/raw-html.php`, and
+only a theme component class may hold one; trust comes from the caller's validation, not from the
+wrapper.
 
 Gate:27 lists and counts those constructions against the grants. gate:8 rejects Html construction
-outside the Renderer, markup reads outside the writer, controller markup and invalid tree inputs;
+outside the Renderer, markup reads outside the writer and invalid tree inputs; gate:32 rejects any
+markup under `modules/`;
 gate:9 holds the rendering dependency boundaries. Fix a refusal by moving presentation into data
 and a declared template. A grant does not make untrusted text safe to render.

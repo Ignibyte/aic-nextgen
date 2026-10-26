@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Gates\PhpStan\ControllerMarkupLiteralRule;
 use Gates\PhpStan\ControllerReturnTypeRule;
 use Gates\PhpStan\HtmlConstructionRule;
 use Gates\PhpStan\HtmlMarkupCallableRule;
@@ -16,9 +15,9 @@ $services = ['aic.ruleFactory' => ['class' => RuleFactory::class]];
 
 foreach ([HtmlMarkupCallableRule::class, HtmlMarkupReadRule::class, RenderTreeInputRule::class, TaggedServiceTypeRule::class] as $class) {
     $services[] = [
+        'arguments' => [$class],
         'class' => $class,
         'factory' => ['@aic.ruleFactory', '__invoke'],
-        'arguments' => [$class],
         'tags' => ['phpstan.rules.rule'],
     ];
 }
@@ -26,7 +25,6 @@ foreach ([HtmlMarkupCallableRule::class, HtmlMarkupReadRule::class, RenderTreeIn
 return [
     'rules' => [
         HtmlConstructionRule::class,
-        ControllerMarkupLiteralRule::class,
         ControllerReturnTypeRule::class,
     ],
     'services' => $services,

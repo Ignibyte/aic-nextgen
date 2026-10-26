@@ -88,11 +88,12 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 24 | build outputs | `generated/`, `build/surface.json`, the template classes and `public/assets/` match what the build writes | `composer run build` |
 | 25 | templates | the theme's `*.tpl.php` files and the atoms use the grammar; a template anywhere else, or an unsupported source, fails | move the logic into the component's props |
 | 26 | module boundaries | kind folders, the 15-file cap, exports and requires, no cycles, no component, template or asset in a module, nothing outside `modules/` but the shell and the theme's classes | move the class (a component to the theme), export it, require the module, or split the module |
-| 27 | raw html | every `RawHtml` use is listed and matches its grant in `config/raw-html.php` | use a component; or grant the use with its reason |
+| 27 | raw html | every `RawHtml` use is listed, matches its grant in `config/raw-html.php`, and sits in a theme component | use a component; or grant the theme component's use with its reason |
 | 28 | house rules | *AIC only*: the workflow's shipped rules bite on their probes | not run in an app |
 | 29 | architecture docs | *AIC only*: these pages state what the code has | not run in an app |
 | 30 | suite files | root configs match the stubs, composer scripts/plugins match the suite, and custom PHPCS/PHPMD XML matches its writers | `vendor/bin/aic-gate init` for root stubs; rebuild or reinstall a stale package |
 | 31 | make scaffold | *AIC only*: `modules/scaffold/` is what the ten `bin/aic make:*` lines make, byte for byte, and `make:module` prints the lines the build asks for | not run in an app |
+| 32 | module markup | no file under `modules/` holds HTML: no template or markup file, no inline output, no tag, markup declaration or character reference in a literal or text file, no HTML function; any `<` in a controller | move the markup into a theme component; write a usage placeholder as `{name}` |
 
 ## The gates that need more than PHP
 

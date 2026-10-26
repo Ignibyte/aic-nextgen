@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **gate:32 holds modules to no markup** (#156, epic #151). A new gate reads every file under
+  `modules/` on disk and refuses templates and markup files by name, symbolic links, unparsable
+  PHP and any HTML in a text file or a PHP literal. Literals fold with their concatenations, so a
+  tag built from pieces still fails, and a bracket left open for a computed tag name fails too;
+  inline output and HTML functions fail, and a controller may hold no `<` at all. The PHPStan rule
+  `aic.controllerMarkupLiteral` retires into it, and gate:27 now grants `RawHtml` only to theme
+  components. The suite has 33 gates.
+
 - **A stream's element patch carries a component** (#115, epic #151). `TesseraEvents::patchElements()`
   takes a `Component` instead of a markup string; the response writer, as the new `EventWriter`,
   renders it through `Renderer::elements()` when the event body pulls the event. The tick stream
