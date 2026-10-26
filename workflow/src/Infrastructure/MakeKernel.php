@@ -8,11 +8,9 @@ use AIC\Controller\Contracts\Command;
 use AIC\Workflow\Application\Make\MakeApiCommand;
 use AIC\Workflow\Application\Make\MakeBlockCommand;
 use AIC\Workflow\Application\Make\MakeCommandCommand;
-use AIC\Workflow\Application\Make\MakeComponentCommand;
 use AIC\Workflow\Application\Make\MakeJobCommand;
 use AIC\Workflow\Application\Make\MakeMigrationCommand;
 use AIC\Workflow\Application\Make\MakeModuleCommand;
-use AIC\Workflow\Application\Make\MakePageCommand;
 use AIC\Workflow\Application\Make\ModuleFolders;
 use AIC\Workflow\Application\ProjectFiles;
 use AIC\Workflow\Application\UtcTime;
@@ -20,7 +18,7 @@ use AIC\Workflow\Application\UtcTime;
 /**
  * The make commands (#122), dev-only like the rest of the workflow:
  * `make:module`, `make:page`, `make:api`, `make:component`, `make:block`,
- * `make:command`, `make:job`, `make:migration` and `make:theme`, each writing files that
+ * `make:command`, `make:job`, `make:migration`, `make:theme` and `make:layout`, each writing files that
  * pass every gate and editing its module's manifest. `CodeKernel` merges them;
  * gate:31 builds them over its in-memory files.
  */
@@ -55,18 +53,19 @@ final readonly class MakeKernel
         $projectFiles = $this->projectFiles ?? new LocalProjectFiles($this->root);
         $makeParts = new MakeParts($this->root, $projectFiles, $moduleFolders, '', self::PACKAGE, $this->watched);
         $makeRun = $makeParts->makeRun();
-        $makeComponents = $makeParts->makeComponents();
+        $themeMakes = new ThemeMakes($this->root);
 
         return [
             'make:api' => new MakeApiCommand($makeRun),
             'make:block' => new MakeBlockCommand($makeRun),
             'make:command' => new MakeCommandCommand($makeRun),
-            'make:component' => new MakeComponentCommand($makeRun, $makeComponents),
+            'make:component' => $themeMakes->component($makeRun),
             'make:job' => new MakeJobCommand($makeRun),
+            'make:layout' => $themeMakes->layout($makeRun),
             'make:migration' => new MakeMigrationCommand($makeRun, new UtcTime(new SystemClock())),
             'make:module' => new MakeModuleCommand($makeRun, $moduleFolders),
-            'make:page' => new MakePageCommand($makeRun, $makeComponents),
-            'make:theme' => $makeParts->theme($makeRun),
+            'make:page' => $themeMakes->page($makeRun),
+            'make:theme' => $themeMakes->theme($makeRun),
         ];
     }
 }

@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **The makes write named layouts** (#157, epic #151). `bin/aic make:layout <name>` writes a page
+  layout into the theme: page data with the content region only and `page--<name>.tpl.php`, whose
+  document falls back to `html.tpl.php`. `make:page … --layout=<name>` passes the layout's
+  `ThemeLayoutName` case and refuses a layout the theme does not ship. The code index gives each
+  theme its own area (`code:tree theme:app`), `module:show` lists the theme components a module
+  uses, and the wiki lists the named layouts. gate:31 runs eleven make lines, the scaffold's about
+  page in its own layout. The generated `ThemeLayouts` no longer grows a method per layout.
+
 - **gate:32 holds modules to no markup** (#156, epic #151). A new gate reads every file under
   `modules/` on disk and refuses templates and markup files by name, symbolic links, unparsable
   PHP and any HTML in a text file or a PHP literal. Literals fold with their concatenations, so a

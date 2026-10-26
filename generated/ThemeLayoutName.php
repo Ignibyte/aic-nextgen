@@ -14,4 +14,5 @@ enum ThemeLayoutName: string implements LayoutName
 {
     case Focus = 'focus';
     case Plain = 'plain';
+    case ScaffoldSolo = 'scaffold-solo';
 }

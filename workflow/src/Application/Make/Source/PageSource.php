@@ -7,7 +7,7 @@ namespace AIC\Workflow\Application\Make\Source;
 use function strtr;
 
 /**
- * A GET page (`make:page`): its component in the site's layout (#122).
+ * A GET page (`make:page`): its component in the theme's layout (#122), or in a named one (#157).
  */
 final readonly class PageSource
 {
@@ -24,13 +24,13 @@ final readonly class PageSource
         use AIC\Controller\Application\PageDocuments;
         use AIC\Controller\Contracts\Page;
         use AIC\Controller\Contracts\PageResponse;
-        use App\Theme\Components\{component}\{component};
+        {layoutUse}use App\Theme\Components\{component}\{component};
         use InvalidArgumentException;
         use Override;
         use Psr\Http\Message\ServerRequestInterface;
 
         /**
-         * GET {path}, made by bin/aic make:page (#122): {component} in the theme's layout.
+         * GET {path}, made by bin/aic make:page (#122): {component} in the theme's {layoutName}layout.
          */
         final readonly class {class} implements Page
         {
@@ -52,7 +52,7 @@ final readonly class PageSource
             #[Override]
             public function page(ServerRequestInterface $serverRequest): PageResponse
             {
-                return $this->pageDocuments->content([new {component}('{title}')], 200);
+                return $this->pageDocuments->content([new {component}('{title}')], 200{layoutArgument});
             }
         }
         PHP;
@@ -63,14 +63,32 @@ final readonly class PageSource
      * @param string $path      Its path.
      * @param string $component The component it shows.
      * @param string $title     The title it gives the component.
+     * @param string $case      The `ThemeLayoutName` case of the layout it picks; empty for the theme's own.
      *
      * @return string The file's bytes.
      */
-    public function source(string $namespace, string $class, string $path, string $component, string $title): string
-    {
+    public function source(
+        string $namespace,
+        string $class,
+        string $path,
+        string $component,
+        string $title,
+        string $case = '',
+    ): string {
+        $named = $case !== '';
+
         return strtr(self::TEMPLATE, [
             '{class}' => $class,
             '{component}' => $component,
+            '{layoutArgument}' => $named
+                ? ', ThemeLayoutName::' . $case
+                : '',
+            '{layoutName}' => $named
+                ? $case . ' '
+                : '',
+            '{layoutUse}' => $named
+                ? "use App\\Generated\\ThemeLayoutName;\n"
+                : '',
             '{namespace}' => $namespace,
             '{path}' => $path,
             '{title}' => $title,

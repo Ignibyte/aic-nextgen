@@ -7,13 +7,14 @@ namespace App\Scaffold\Controller;
 use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
+use App\Generated\ThemeLayoutName;
 use App\Theme\Components\ScaffoldAboutView\ScaffoldAboutView;
 use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * GET /scaffold/about, made by bin/aic make:page (#122): ScaffoldAboutView in the theme's layout.
+ * GET /scaffold/about, made by bin/aic make:page (#122): ScaffoldAboutView in the theme's ScaffoldSolo layout.
  */
 final readonly class ScaffoldAboutPage implements Page
 {
@@ -35,6 +36,6 @@ final readonly class ScaffoldAboutPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        return $this->pageDocuments->content([new ScaffoldAboutView('Scaffold About')], 200);
+        return $this->pageDocuments->content([new ScaffoldAboutView('Scaffold About')], 200, ThemeLayoutName::ScaffoldSolo);
     }
 }

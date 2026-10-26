@@ -8,6 +8,7 @@ use AIC\Workflow\Application\Make\ModuleFolders;
 use AIC\Workflow\Application\ProjectFiles;
 use Override;
 
+use function array_any;
 use function array_filter;
 use function array_key_exists;
 use function array_map;
@@ -41,6 +42,15 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
      * The scaffold's components in the theme (#153), which the overlay hides too: every folder starting so.
      */
     public const string THEME = 'themes/app/components/Scaffold';
+
+    /**
+     * The scaffold's layout files in the theme (#157), which the overlay hides too: every file starting so.
+     */
+    public const array LAYOUTS = [
+        'themes/app/layouts/Scaffold',
+        'themes/app/layouts/page--scaffold',
+        'themes/app/layouts/html--scaffold',
+    ];
 
     /**
      * @var array<string, string> The files written, by path.
@@ -140,10 +150,14 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
     /**
      * @param string $path A path.
      *
-     * @return bool Whether the overlay hides it: under the module's folder or a scaffold component's.
+     * @return bool Whether the overlay hides it: under the module's folder or a scaffold component's, or a scaffold
+     *              layout file.
      */
     private static function hidden(string $path): bool
     {
-        return str_starts_with($path, self::FOLDER) || str_starts_with($path, self::THEME);
+        return array_any(
+            [self::FOLDER, self::THEME, ...self::LAYOUTS],
+            static fn (string $prefix): bool => str_starts_with($path, $prefix),
+        );
     }
 }

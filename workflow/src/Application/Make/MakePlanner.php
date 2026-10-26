@@ -10,8 +10,10 @@ use AIC\Workflow\Domain\Make\MakeRecipe;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Closure;
 
+use function array_any;
 use function array_key_exists;
 use function hash;
+use function implode;
 use function in_array;
 use function str_starts_with;
 use function substr;
@@ -62,9 +64,31 @@ final readonly class MakePlanner
             );
         }
 
+        $this->layout($makeRecipe->layouts);
+
         foreach ($makeRecipe->files as $madeFile) {
             $this->free($madeFile->path);
         }
+    }
+
+    /**
+     * @param list<string> $layouts The files that ship the layout a page names; empty for none.
+     *
+     * @throws WorkflowRefusal When the theme ships none of them.
+     */
+    private function layout(array $layouts): void
+    {
+        if (
+            $layouts === []
+            || array_any($layouts, fn (string $path): bool => $this->projectFiles->read($path) !== null)
+        ) {
+            return;
+        }
+
+        throw new WorkflowRefusal(
+            '--layout names a layout the theme does not ship: no ' . implode(' or ', $layouts)
+                . '; make it with bin/aic make:layout <name>, then run composer run build.',
+        );
     }
 
     /**

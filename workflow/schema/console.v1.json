@@ -310,6 +310,7 @@
             "bindings",
             "blocks",
             "commands",
+            "components",
             "dependents",
             "exports",
             "factories",
@@ -371,6 +372,25 @@
                     "type": "string"
                   },
                   "name": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "components": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "class",
+                  "template"
+                ],
+                "properties": {
+                  "class": {
+                    "type": "string"
+                  },
+                  "template": {
                     "type": "string"
                   }
                 },
@@ -901,9 +921,11 @@
             "make:command",
             "make:component",
             "make:job",
+            "make:layout",
             "make:migration",
             "make:module",
-            "make:page"
+            "make:page",
+            "make:theme"
           ]
         },
         "data": {

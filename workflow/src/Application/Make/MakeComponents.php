@@ -55,6 +55,30 @@ final readonly class MakeComponents
     }
 
     /**
+     * @param string $named What `--component` gave; empty for a view of the page's own.
+     * @param string $stem  The page's name without `Page`.
+     * @param string $page  The page, for its own view's docblock.
+     *
+     * @throws WorkflowRefusal When the component name breaks a rule, or the app names no theme.
+     *
+     * @return array{string, list<MadeFile>, string} The component the page shows, the files of its own view (none when
+     *                                               it names one), and the named component's file, which must be there
+     *                                               (empty for its own view).
+     */
+    public function view(string $named, string $stem, string $page): array
+    {
+        if ($named === '') {
+            $component = $stem . 'View';
+
+            return [$component, $this->files($component, 'make:page (#122) for ' . $page), ''];
+        }
+
+        $component = $this->makeNames->class($named, '');
+
+        return [$component, [], $this->folder($component) . $component . '.php'];
+    }
+
+    /**
      * @param string $class The component.
      *
      * @throws WorkflowRefusal When the app names no theme.

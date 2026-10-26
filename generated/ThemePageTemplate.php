@@ -9,9 +9,11 @@ use AIC\Component\Contracts\Regions;
 use AIC\Component\Domain\ThemePage;
 use AIC\Component\Exception\UnknownComponent;
 use App\Generated\Templates\ThemeAppPageFocusTemplate;
+use App\Generated\Templates\ThemeAppPageScaffoldSoloTemplate;
 use App\Generated\Templates\ThemeAppPageTemplate;
 use App\Theme\Layouts\FocusPage;
 use App\Theme\Layouts\Page;
+use App\Theme\Layouts\ScaffoldSoloPage;
 use InvalidArgumentException;
 
 /**
@@ -33,6 +35,7 @@ final readonly class ThemePageTemplate
     {
         return match ($themePage->layout) {
             'focus' => $this->pageFocus($themePage->regions, $renderPass),
+            'scaffold-solo' => $this->pageScaffoldSolo($themePage->regions, $renderPass),
             default => $this->page($themePage->regions, $renderPass),
         };
     }
@@ -74,6 +77,25 @@ final readonly class ThemePageTemplate
             new FocusPage(
                 $regions->region('content'),
                 $regions->region('nav'),
+            ),
+            $renderPass,
+        );
+    }
+
+    /**
+     * @param Regions    $regions    The page's regions.
+     * @param RenderPass $renderPass The same pass used by targeted fragments.
+     *
+     * @throws InvalidArgumentException When a region cannot be constructed.
+     * @throws UnknownComponent         When a child has no registered template.
+     *
+     * @return string themes/app/layouts/page--scaffold-solo.tpl.php's markup.
+     */
+    private function pageScaffoldSolo(Regions $regions, RenderPass $renderPass): string
+    {
+        return (new ThemeAppPageScaffoldSoloTemplate())->render(
+            new ScaffoldSoloPage(
+                $regions->region('content'),
             ),
             $renderPass,
         );

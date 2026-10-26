@@ -531,6 +531,16 @@
                     "nav",
                     "footer"
                 ]
+            },
+            {
+                "html": "",
+                "identity": "app-scaffold-solo",
+                "name": "scaffold-solo",
+                "page": "themes/app/layouts/page--scaffold-solo.tpl.php",
+                "pageData": "App\\Theme\\Layouts\\ScaffoldSoloPage",
+                "regions": [
+                    "content"
+                ]
             }
         ],
         "name": "app",

@@ -21,17 +21,20 @@ final readonly class CodeAreas
     /**
      * @param string $path A path, relative to the project.
      *
-     * @return string Its area: `module:<m>`, `system:<S>`, `generated`, `workflow`, `gates` or `project`.
+     * @return string Its area: `module:<m>`, `system:<S>`, `theme:<t>` (#157), `generated`, `workflow`, `gates` or
+     *                `project`.
      */
     public function area(string $path): string
     {
         $module = self::regexMatch('#^modules/([^/]+)/#', $path);
         $system = self::regexMatch('#^(?:vendor/aic/)?framework/src/([^/]+)/#', $path);
+        $theme = self::regexMatch('#^themes/([^/]+)/#', $path);
         $area = self::regexMatch('#^(generated|workflow|gates)/#', $path);
 
         return match (true) {
             array_key_exists(1, $module) => 'module:' . $module[1],
             array_key_exists(1, $system) => 'system:' . $system[1],
+            array_key_exists(1, $theme) => 'theme:' . $theme[1],
             array_key_exists(1, $area) => $area[1],
             default => 'project',
         };

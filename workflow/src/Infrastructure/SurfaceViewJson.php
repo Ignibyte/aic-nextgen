@@ -6,11 +6,14 @@ namespace AIC\Workflow\Infrastructure;
 
 use AIC\Workflow\Domain\Console\SurfaceDeclarations;
 use AIC\Workflow\Domain\Console\SurfaceKind;
+use AIC\Workflow\Domain\Console\SurfaceLayout;
 use AIC\Workflow\Domain\Console\SurfaceModule;
 use AIC\Workflow\Domain\Console\SurfaceTheme;
 use AIC\Workflow\Domain\Console\SurfaceView;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Closure;
+
+use function array_map;
 
 /**
  * Reads `build/surface.json` into the inspect commands' view (#109),
@@ -66,6 +69,13 @@ final readonly class SurfaceViewJson
                 'component' => $jsonReader->string('component'),
                 'source' => $jsonReader->string('source'),
             ]),
+            array_map(static fn (JsonReader $jsonReader): SurfaceLayout => new SurfaceLayout(
+                $jsonReader->string('name'),
+                $jsonReader->string('page'),
+                $jsonReader->string('html'),
+                $jsonReader->string('pageData'),
+                $jsonReader->strings('regions'),
+            ), $jsonReader->objects('layouts')),
         );
     }
 

@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
-use AIC\Controller\Contracts\Command;
-use AIC\Workflow\Application\Make\MakeComponents;
 use AIC\Workflow\Application\Make\MakePlanner;
 use AIC\Workflow\Application\Make\MakeReport;
 use AIC\Workflow\Application\Make\MakeRun;
-use AIC\Workflow\Application\Make\MakeTheme;
-use AIC\Workflow\Application\Make\MakeThemeCommand;
 use AIC\Workflow\Application\Make\ModuleFolders;
 use AIC\Workflow\Application\ProjectFiles;
 
@@ -66,23 +62,5 @@ final readonly class MakeParts
             $makeRunParts->recorder(),
             new MakeReport($this->projectFiles),
         );
-    }
-
-    /**
-     * @return MakeComponents Writes components into the theme the build's surface names (#153).
-     */
-    public function makeComponents(): MakeComponents
-    {
-        return new MakeComponents(new MakeTheme(new SurfaceEntries($this->root, new LocalHost($this->root))));
-    }
-
-    /**
-     * @param MakeRun $makeRun The same guarded run as the other makes.
-     *
-     * @return Command The bounded theme command, composed apart from the command table.
-     */
-    public function theme(MakeRun $makeRun): Command
-    {
-        return new MakeThemeCommand($makeRun);
     }
 }

@@ -30,6 +30,14 @@ Every component, layout and asset lives in `themes/app/` (#153). The page `theme
 | `App\Theme\Components\Tick\Tick` | `themes/app/components/Tick/tick.tpl.php` |
 | `App\Theme\Components\Ticks\Ticks` | `themes/app/components/Ticks/ticks.tpl.php` |
 
+Named layouts: a Page passes a `ThemeLayoutName` case; a file a layout leaves out falls back to the theme's own (`bin/aic make:layout <name>`).
+
+| Layout | Page | Document | Page data | Regions |
+| --- | --- | --- | --- | --- |
+| `focus` | `themes/app/layouts/page--focus.tpl.php` | the theme's | `App\Theme\Layouts\FocusPage` | content, nav |
+| `plain` | the theme's | `themes/app/layouts/html--plain.tpl.php` | `App\Theme\Layouts\Page` | header, content, nav, footer |
+| `scaffold-solo` | `themes/app/layouts/page--scaffold-solo.tpl.php` | the theme's | `App\Theme\Layouts\ScaffoldSoloPage` | content |
+
 ## Requires
 
 ```mermaid

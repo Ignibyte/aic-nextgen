@@ -14,9 +14,9 @@ its kind's response, and every `RawHtml` use is a theme component's, within its 
 `config/raw-html.php`.
 
 Judge: markup built anywhere but a component's template and carried in (a Service string, a
-grant); a new component whose job an atom (`AIC\Component\Domain`) or a component another module
-exports already does. Ask `bin/aic code:search` for each new component. HIGH; MEDIUM for a missed
-reuse.
+grant); a new component whose job an atom (`AIC\Component\Domain`) or a theme component already
+does, and a new named layout whose job a theme layout already does. Ask `bin/aic code:search` for each
+new component and `bin/aic code:tree theme:<name>` for the theme. HIGH; MEDIUM for a missed reuse.
 
 ## A2 — Declared templates are plain `.tpl.php`
 

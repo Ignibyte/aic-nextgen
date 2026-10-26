@@ -36,6 +36,10 @@ final readonly class ThemeLayoutsSource
     private const string LAYOUTS = <<<'PHP'
         final readonly class ThemeLayouts implements PageLayouts
         {
+            /** Each layout's Tessera identity and region names, by its name; the empty name is the theme's own layout. */
+            private const array LAYOUTS = [
+        {rows}    ];
+
             /** @param PublicAssets $publicAssets The same compiled catalog used for public delivery. */
             public function __construct(private PublicAssets $publicAssets)
             {
@@ -53,29 +57,27 @@ final readonly class ThemeLayoutsSource
             #[Override]
             public function create(string $title, Regions $regions, ?LayoutName $layoutName = null): ThemeLayout
             {
-                return match ($layoutName) {
-        {arms}            default => $this->layout(
-                        new ThemePage($regions),
-                        $title,
-                        {identity},
-                        [{regions}],
-                    ),
-                };
+                $name = $this->name($layoutName);
+
+                return new ThemeLayout(
+                    new ThemePage($regions, $name),
+                    $title,
+                    $this->trackedAssets(),
+                    self::LAYOUTS[$name]['identity'],
+                    self::LAYOUTS[$name]['regions'],
+                );
             }
 
             /**
-             * @param ThemePage    $themePage The page's regions and its layout's key.
-             * @param string       $title     The document title.
-             * @param string       $identity  The layout's Tessera identity.
-             * @param list<string> $names     The layout's region names.
+             * @param LayoutName|null $layoutName The layout a controller named; null for the default.
              *
-             * @throws InvalidArgumentException When required public resources are absent.
-             *
-             * @return ThemeLayout The document.
+             * @return string Its name; empty for the theme's own layout.
              */
-            private function layout(ThemePage $themePage, string $title, string $identity, array $names): ThemeLayout
+            private function name(?LayoutName $layoutName): string
             {
-                return new ThemeLayout($themePage, $title, $this->trackedAssets(), $identity, $names);
+                return match ($layoutName) {
+        {arms}            default => '',
+                };
             }
 
             /**
@@ -146,21 +148,21 @@ final readonly class ThemeLayoutsSource
      */
     public function layouts(ThemeBinding $themeBinding, string $scriptPath): string
     {
+        $rows = $this->row('', $themeBinding->name, $themeBinding->regions);
+
+        foreach ($themeBinding->variants as $variant) {
+            $rows .= $this->row($variant->name, $variant->identity, $variant->regions);
+        }
+
         $arms = '';
 
         foreach ($themeBinding->variants as $variant) {
-            $arms .= '            ThemeLayoutName::' . $variant->case . " => \$this->layout(\n"
-                . '                new ThemePage($regions, ' . var_export($variant->name, true) . "),\n"
-                . "                \$title,\n"
-                . '                ' . var_export($variant->identity, true) . ",\n"
-                . '                [' . $this->literals($variant->regions) . "],\n"
-                . "            ),\n";
+            $arms .= '            ThemeLayoutName::' . $variant->case . ' => ' . var_export($variant->name, true) . ",\n";
         }
 
         $source = strtr(self::LAYOUTS, [
             '{arms}' => $arms,
-            '{identity}' => var_export($themeBinding->name, true),
-            '{regions}' => $this->literals($themeBinding->regions),
+            '{rows}' => $rows,
             '{scriptPath}' => var_export($scriptPath, true),
         ]);
         $classes = [PageLayouts::class, LayoutName::class, Regions::class, ThemeLayout::class, ThemePage::class,
@@ -224,6 +226,21 @@ final readonly class ThemeLayoutsSource
             $this->generated('the layout names a controller may pick.'),
             "enum ThemeLayoutName: string implements LayoutName\n{\n" . $cases . '}',
         );
+    }
+
+    /**
+     * @param string       $name     A layout's name; empty for the theme's own.
+     * @param string       $identity Its Tessera identity.
+     * @param list<string> $regions  Its region names.
+     *
+     * @return string Its row in the generated `LAYOUTS` constant.
+     */
+    private function row(string $name, string $identity, array $regions): string
+    {
+        return '        ' . var_export($name, true) . " => [\n"
+            . "            'identity' => " . var_export($identity, true) . ",\n"
+            . "            'regions' => [" . $this->literals($regions) . "],\n"
+            . "        ],\n";
     }
 
     /**

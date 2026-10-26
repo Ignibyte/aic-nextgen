@@ -202,7 +202,10 @@ With the workflow development package installed, `bin/aic make:component <Class>
 component and its template into the theme's `components/<Class>/` and edits no manifest.
 `bin/aic make:page <module> <Class> <path>` writes the controller in the module, routes it in the
 module's manifest, and writes its own view into the theme; `--component=<Class>` reuses a theme
-component instead.
+component instead, and `--layout=<name>` makes the page pick one of the theme's named layouts.
+`bin/aic make:layout <name>` writes a named page layout into `layouts/`: page data with the content
+region only and `page--<name>.tpl.php`; the document falls back to `html.tpl.php`, and the next
+`composer run build` adds its case to `ThemeLayoutName`.
 
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
 (`Page.php` with four regions, header, content, nav and footer, and the HTML and page templates)

@@ -46,8 +46,9 @@ final readonly class MakeScaffoldGate
     /**
      * How to make the module again.
      */
-    private const string REGENERATE = 'to make it again: rm -rf modules/scaffold themes/app/components/Scaffold*; composer run build; '
-        . 'run the ten lines of Gates\\Application\\ScaffoldSequence with bin/aic; composer run build.';
+    private const string REGENERATE = 'to make it again: rm -rf modules/scaffold themes/app/components/Scaffold* '
+        . 'themes/app/layouts/Scaffold* themes/app/layouts/page--scaffold* themes/app/layouts/html--scaffold*; composer run build; '
+        . 'run the eleven lines of Gates\\Application\\ScaffoldSequence with bin/aic; composer run build.';
 
     /**
      * @param ScaffoldFiles          $scaffoldFiles The overlay the commands write to.
@@ -91,7 +92,7 @@ final readonly class MakeScaffoldGate
             return 1;
         }
 
-        fwrite($stdout, 'gate:31 — modules/scaffold/ and its theme components are what the ' . count(ScaffoldSequence::LINES)
+        fwrite($stdout, 'gate:31 — modules/scaffold/ and its theme components and layout are what the ' . count(ScaffoldSequence::LINES)
             . ' make lines make: '
             . count($this->scaffoldFiles->made()) . ' file(s), byte for byte.' . PHP_EOL);
 
@@ -183,16 +184,17 @@ final readonly class MakeScaffoldGate
     /**
      * @param string $root The project's root.
      *
-     * @return list<string> Every authored module file, sorted; compiled classes live under generated/.
+     * @return list<string> Every authored module, component and layout file, sorted; compiled classes live under
+     *                      generated/.
      */
     private function committed(string $root): array
     {
+        $files = $this->layouts($root);
         $components = glob($root . '/' . ScaffoldFiles::THEME . '*', GLOB_ONLYDIR);
         $folders = [ScaffoldFiles::FOLDER, ...array_map(
             static fn (string $folder): string => substr($folder, strlen($root) + 1) . '/',
             $components === false ? [] : $components,
         )];
-        $files = [];
 
         foreach ($folders as $folder) {
             foreach ($this->fileLister->files($root . '/' . $folder) as $file) {
@@ -203,5 +205,22 @@ final readonly class MakeScaffoldGate
         sort($files);
 
         return $files;
+    }
+
+    /**
+     * @param string $root The project's root.
+     *
+     * @return list<string> The committed scaffold layout files (#157).
+     */
+    private function layouts(string $root): array
+    {
+        $found = [];
+
+        foreach (ScaffoldFiles::LAYOUTS as $prefix) {
+            $matches = glob($root . '/' . $prefix . '*');
+            $found = [...$found, ...($matches === false ? [] : $matches)];
+        }
+
+        return array_map(static fn (string $file): string => substr($file, strlen($root) + 1), $found);
     }
 }
