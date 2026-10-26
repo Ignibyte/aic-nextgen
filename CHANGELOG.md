@@ -4,6 +4,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Fixed
+
+- **The stock page reads only the rows it shows** (#159). `/stock` loaded every stock row, and the
+  rows gate:23 adds on each run grew the table until the compiled site ran out of heap (3,093 rows
+  answered 500). An entity query now takes `orderByDescending()` and `limit()`, the stock
+  repository reads the newest `StockList::MOST` (50) items, and the page is the same. With 5,367
+  rows planted, DDEV and the compiled site answer `/stock` and gate:23 passes.
+
 ### Changed
 
 - **The makes write named layouts** (#157, epic #151). `bin/aic make:layout <name>` writes a page

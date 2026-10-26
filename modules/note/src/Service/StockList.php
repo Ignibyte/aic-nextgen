@@ -34,6 +34,11 @@ use function min;
 final readonly class StockList
 {
     /**
+     * The most items the list shows, so the most a page reads (#159).
+     */
+    public const int MOST = 50;
+
+    /**
      * The list's path for Tessera.
      */
     private const string TARGET = 'content/stock-list';
@@ -50,7 +55,7 @@ final readonly class StockList
 
     /**
      * @param ServerRequestInterface $serverRequest The request: an optional `limit`, maybe the list's props.
-     * @param list<StockItem>        $items         Every item, oldest first.
+     * @param list<StockItem>        $items         The newest items, `MOST` at most, oldest first.
      *
      * @throws InvalidEnvelope          When the request's props for the list were altered.
      * @throws JsonException            When the props cannot be sealed.
@@ -72,7 +77,7 @@ final readonly class StockList
     }
 
     /**
-     * @param list<StockItem> $items Every item, oldest first.
+     * @param list<StockItem> $items The newest items, oldest first.
      *
      * @return string The latest item's line, or that there is none.
      */
@@ -133,12 +138,12 @@ final readonly class StockList
     /**
      * @param string $limit A limit as sent.
      *
-     * @return int It, 1 to 50; 10 when it is not a number.
+     * @return int It, 1 to `MOST`; 10 when it is not a number.
      */
     private static function limit(string $limit): int
     {
         return ctype_digit($limit)
-            ? max(1, min(50, (int) $limit))
+            ? max(1, min(self::MOST, (int) $limit))
             : 10;
     }
 }

@@ -15,6 +15,7 @@ use App\Note\Form\StockEntry;
 use InvalidArgumentException;
 
 use function array_map;
+use function array_reverse;
 
 /**
  * The stock items: the `stock_items` entity type over the entity store, with
@@ -45,14 +46,18 @@ final readonly class StockRepository
     }
 
     /**
-     * @throws QueryException           When the query fails.
-     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     * @param int $count How many of the newest items to read.
      *
-     * @return list<StockItem> Every item, oldest first.
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When the count is below 1, or a constructed value is invalid.
+     *
+     * @return list<StockItem> The newest items, at most that many, oldest first.
      */
-    public function all(): array
+    public function latest(int $count): array
     {
-        return array_map(self::item(...), $this->entityStore->query($this->entityType)->orderBy('id')->rows());
+        $rows = $this->entityStore->query($this->entityType)->orderByDescending('id')->limit($count)->rows();
+
+        return array_map(self::item(...), array_reverse($rows));
     }
 
     /**

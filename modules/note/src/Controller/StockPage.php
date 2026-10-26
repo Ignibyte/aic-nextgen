@@ -56,7 +56,7 @@ final readonly class StockPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $items = $this->stockRepository->all();
+        $items = $this->stockRepository->latest(StockList::MOST);
 
         try {
             $list = $this->stockList->component($serverRequest, $items);
