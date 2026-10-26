@@ -8,7 +8,8 @@ declare(strict_types=1);
  * declare, GET /health2, is added and built. Code fails composition twice,
  * a new undeclared route each time (an unchanged repeat is held by the
  * stall rule, #117, before the budget is spent), and the third call is held
- * on the spent retry budget: the gate does not run again.
+ * on the spent retry budget: the gate does not run again. gate:23 fails
+ * beside it each time, since no step reaches the added routes (#171).
  */
 
 use AIC\Workflow\Domain\Probe\CommandStep;
@@ -39,5 +40,7 @@ return new ProbeScenario([
     new RunStep('blocked', [new Expect('composition', 'failed', 'built and not declared: GET /health')]),
     $route('/health3', '/health4'),
     $build,
-    new RunStep('held', [new Expect('gate', 'held', 'max_gate_retries (2) is spent at code: composition (2 times) failed')]),
+    new RunStep('held', [
+        new Expect('gate', 'held', 'max_gate_retries (2) is spent at code: composition (2 times), gate:23 (2 times) failed'),
+    ]),
 ], database: true);

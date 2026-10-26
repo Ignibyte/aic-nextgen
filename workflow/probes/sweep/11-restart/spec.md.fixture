@@ -1,0 +1,31 @@
+---
+ticket: 1
+browser_testable: No
+---
+
+## Acceptance Criteria
+
+| # | Target | Met |
+|---|---|---|
+| 1 | The home page's account link names its sign-in, a note class exists and the powered-by block is gone | [ ] |
+
+## Design
+
+The ticket's earlier run made these changes before the operator reset it; the new run plans the same contract.
+
+### File Manifest
+
+| File | Change | Purpose |
+|---|---|---|
+| `modules/site/src/Controller/HomePage.php` | modify | The account link's label |
+| `modules/site/src/Block/PoweredByBlock.php` | delete | The block goes |
+| `modules/site/src/Service/RestartNote.php` | create | The note class |
+
+### Locked-In Decisions
+
+1. The spec is the one the earlier run planned, unchanged.
+
+## Entry Points
+
+| Kind | Method | Path or name | Class | Module | Status | Example |
+|---|---|---|---|---|---|---|

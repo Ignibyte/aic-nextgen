@@ -25,9 +25,13 @@ use function substr;
 
 /**
  * Grounding's rule 2, real (#118): every File Manifest row is one plain file
- * path with a change AIC knows, a modify or delete row names a file git
- * lists, a create row names a path that is not there yet, no path is named
- * twice, and every Entry Points class exists or a create row makes it.
+ * path with a change AIC knows, a modify or delete row names a file the run
+ * starts from, a create row names a path it does not, no path is named twice,
+ * and every Entry Points class exists or a create row makes it. The run starts
+ * from its base commit (#172), as the code phase's declaration check judges
+ * the change, so a run begun on a tree that already holds its work, as after
+ * workflow:reset, plans on its spec unchanged; outside git it starts from the
+ * tree.
  */
 final readonly class GroundingRules
 {
@@ -49,27 +53,30 @@ final readonly class GroundingRules
     /**
      * @param CodeLookup $codeLookup The index, rebuilt in full this attempt.
      * @param CodePaths  $codePaths  A path's class and what is on disk.
+     * @param RunHost    $runHost    What the run's base commit holds (#172).
      */
     public function __construct(
         private CodeLookup $codeLookup,
         private CodePaths $codePaths,
+        private RunHost $runHost,
     ) {
     }
 
     /**
      * @param list<ManifestRow>   $manifestRows The File Manifest.
      * @param list<DeclaredEntry> $entries      The Entry Points.
+     * @param string|null         $baseCommit   The run's base commit; null outside git.
      *
      * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return list<string> Each reason a row or an entry is not real; none when all are.
      */
-    public function real(array $manifestRows, array $entries): array
+    public function real(array $manifestRows, array $entries, ?string $baseCommit): array
     {
         $reasons = [];
 
         foreach ($manifestRows as $manifestRow) {
-            $reasons = [...$reasons, ...$this->row($manifestRow)];
+            $reasons = [...$reasons, ...$this->row($manifestRow, $baseCommit)];
         }
 
         $paths = array_map(static fn (ManifestRow $manifestRow): string => $manifestRow->path, $manifestRows);
@@ -182,12 +189,13 @@ final readonly class GroundingRules
 
     /**
      * @param ManifestRow $manifestRow A row.
+     * @param string|null $baseCommit  The run's base commit; null outside git.
      *
      * @throws WorkflowRefusal When a called workflow operation refuses its input or environment.
      *
      * @return list<string> Why it is not real; none when it is.
      */
-    private function row(ManifestRow $manifestRow): array
+    private function row(ManifestRow $manifestRow, ?string $baseCommit): array
     {
         $path = $manifestRow->path;
         $plain = self::plain($path);
@@ -202,12 +210,12 @@ final readonly class GroundingRules
 
         return match ($manifestRow->fileChange) {
             null => [sprintf('row %s: Change "%s" is not create, modify or delete.', $path, $manifestRow->cell)],
-            FileChange::Create => $this->listed($path) || $this->codePaths->exists($path)
-                ? [sprintf('row %s (create) exists: write modify.', $path)]
+            FileChange::Create => $this->startsWith($path, $baseCommit, true)
+                ? [sprintf('row %s (create) is a file the run starts from: write modify.', $path)]
                 : [],
-            FileChange::Modify, FileChange::Delete => $this->listed($path)
+            FileChange::Modify, FileChange::Delete => $this->startsWith($path, $baseCommit, false)
                 ? []
-                : [sprintf('row %s (%s) is not a file git lists: check the path, or write create.', $path, $manifestRow->cell)],
+                : [sprintf('row %s (%s) is not a file the run starts from: check the path, or write create.', $path, $manifestRow->cell)],
         };
     }
 
@@ -238,6 +246,24 @@ final readonly class GroundingRules
         return $deleted
             ? [sprintf('Entry Points class %s: its file is deleted by row %s.', $class, $codeSymbol->file)]
             : [];
+    }
+
+    /**
+     * @param string      $path       A row's path.
+     * @param string|null $baseCommit The run's base commit; null outside git.
+     * @param bool        $onDisk     Without a base, whether a file on disk that git does not list counts.
+     *
+     * @throws WorkflowRefusal When a called boundary reports its documented failure.
+     *
+     * @return bool Whether the run starts from that file: the base commit holds it, or, outside git, the tree does.
+     */
+    private function startsWith(string $path, ?string $baseCommit, bool $onDisk): bool
+    {
+        if ($baseCommit !== null) {
+            return $this->runHost->fileAt($baseCommit, $path) !== null;
+        }
+
+        return $this->listed($path) || ($onDisk && $this->codePaths->exists($path));
     }
 
     /**

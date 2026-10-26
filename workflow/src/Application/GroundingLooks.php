@@ -33,7 +33,8 @@ use function substr;
 /**
  * Grounding's rules 1, 3 and 4 (#118), over this run's lookups at plan:
  * the agent outlined the code at least once, looked up every file it
- * modifies or deletes and every existing class it names, outlined the area
+ * modifies or deletes (its area, when the file is already gone from the
+ * tree, #172) and every existing class it names, outlined the area
  * of every file it creates, and searched for an existing class before
  * creating one. A failed lookup counts for nothing but its mention.
  */
@@ -119,13 +120,17 @@ final readonly class GroundingLooks
      * @param list<string> $files       The files the answered lookups printed.
      * @param list<string> $scopes      The areas they outlined.
      *
-     * @return bool Whether a lookup showed it: the file itself for a modify or delete, its area for a create.
+     * @return bool Whether a lookup showed it: the file itself for a modify or delete, its area for a create. A
+     *              modify or delete row whose file is already gone from the tree, as after workflow:reset kept an
+     *              earlier run's work (#172), cannot be shown; its area or folder stands for it.
      */
     private function shown(ManifestRow $manifestRow, FileChange $fileChange, array $files, array $scopes): bool
     {
-        return $fileChange->needsFile()
-            ? in_array($manifestRow->path, $files, true)
-            : $this->covered($manifestRow->path, $scopes);
+        $path = $manifestRow->path;
+
+        return $fileChange->needsFile() && $this->codePaths->exists($path)
+            ? in_array($path, $files, true)
+            : $this->covered($path, $scopes);
     }
 
     /**

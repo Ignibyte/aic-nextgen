@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Site\Service;
+
+/**
+ * A note an earlier run of the same ticket created before the operator reset it (#172).
+ */
+final readonly class RestartNote
+{
+    /**
+     * @param string $text The note.
+     */
+    public function __construct(
+        public string $text,
+    ) {
+    }
+}
