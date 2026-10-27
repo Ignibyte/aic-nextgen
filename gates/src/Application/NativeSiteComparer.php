@@ -10,6 +10,9 @@ use Gates\Domain\NativeSiteAnswer;
 use Gates\Domain\NativeSiteSession;
 use Gates\Domain\NativeSiteStep;
 
+use function array_keys;
+use function array_map;
+use function array_unique;
 use function is_string;
 use function mb_strtolower;
 use function mb_trim;
@@ -131,7 +134,7 @@ final readonly class NativeSiteComparer
             $found[] = 'the bodies differ';
         }
 
-        return $found;
+        return [...$found, ...self::headers($php, $native)];
     }
 
     /**
@@ -158,6 +161,8 @@ final readonly class NativeSiteComparer
             mb_strtolower(mb_trim($httpExchange->contentType)),
             self::volatile(self::path($httpExchange->location)),
             self::volatile($httpExchange->body),
+            '',
+            array_map(self::volatile(...), $httpExchange->headers),
         );
     }
 
@@ -187,5 +192,29 @@ final readonly class NativeSiteComparer
         return is_string($path)
             ? $path
             : '';
+    }
+
+    /**
+     * @param HttpExchange $php    The interpreted answer.
+     * @param HttpExchange $native The compiled answer.
+     *
+     * @return list<string> Each compared header (#173) whose value differs, or that only one site sent.
+     */
+    private static function headers(HttpExchange $php, HttpExchange $native): array
+    {
+        $found = [];
+
+        foreach (array_unique([...array_keys($php->headers), ...array_keys($native->headers)]) as $name) {
+            $nativeValue = $native->headers[$name] ?? '';
+            $phpValue = $php->headers[$name] ?? '';
+
+            if ($nativeValue === $phpValue) {
+                continue;
+            }
+
+            $found[] = sprintf('header %s "%s" natively, "%s" in PHP', $name, $nativeValue, $phpValue);
+        }
+
+        return $found;
     }
 }

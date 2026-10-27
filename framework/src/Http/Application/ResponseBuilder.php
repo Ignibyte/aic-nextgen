@@ -12,15 +12,26 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
+use function str_starts_with;
+
 /**
  * Makes a response with a content type and a body, and sets headers on one.
  *
  * PSR-7's message withers declare `MessageInterface`; a response's copy is still
  * a response, and this says so once, for elephc, which types a result by its
- * declared return.
+ * declared return. Every HTML response it makes carries a strict
+ * Content-Security-Policy (#173): scripts, styles, fonts and connections from
+ * the site itself only, so no inline script or style runs. Tessera's csp build
+ * and the HTML lint (#170) keep pages within it.
  */
 final readonly class ResponseBuilder
 {
+    /**
+     * The policy on every HTML response.
+     */
+    public const string POLICY = "default-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self';"
+        . " form-action 'self'; frame-ancestors 'none'";
+
     /**
      * @param ResponseFactoryInterface $responseFactory Makes the response.
      * @param StreamFactoryInterface   $streamFactory   Makes its body.
@@ -119,8 +130,11 @@ final readonly class ResponseBuilder
     private function head(int $status, string $contentType): ResponseInterface
     {
         $response = $this->withHeader($this->responseFactory->createResponse($status), 'Content-Type', $contentType);
+        $response = $this->withHeader($response, 'Cache-Control', 'private, no-store');
 
-        return $this->withHeader($response, 'Cache-Control', 'private, no-store');
+        return str_starts_with($contentType, 'text/html')
+            ? $this->withHeader($response, 'Content-Security-Policy', self::POLICY)
+            : $response;
     }
 
     /**
