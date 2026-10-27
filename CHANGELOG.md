@@ -37,6 +37,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Sign-in no longer tells which logins exist by its timing** (#177). `Authenticator::login()`
+  answered an unknown login without running bcrypt (about 0.01 s on DDEV) and a known one with a
+  wrong password after it (about 0.17 s). An unknown login is now checked against a decoy hash at the
+  same cost. Found by Lotline run 3's seeker.
 - **A Page declared 3xx passes the rendered check** (#176). The check held every Page to
   `text/html`, but the framework writes every redirect as plain text, so a route declared 303
   (a signed-out `/app`) could never pass. A declared redirect is now held to its status and a

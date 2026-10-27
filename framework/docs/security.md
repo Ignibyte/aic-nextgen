@@ -92,7 +92,9 @@ its supplied name as an unchecked filesystem path.
 ## Authentication and app secret
 
 `AIC\Auth\Application\Authenticator` uses the app's UserProvider, regenerates the session ID on
-sign-in and ends authentication on logout. Password hashing uses Postgres pgcrypto bcrypt through
+sign-in and ends authentication on logout. A login with no user is checked against a decoy hash, so
+it costs the bcrypt comparison a wrong password costs and its timing does not reveal which logins
+exist (#177). Password hashing uses Postgres pgcrypto bcrypt through
 `AIC\Auth\Application\PgcryptoPasswordHasher`. Declare protected route prefixes in the module
 manifest; anonymous visitors are redirected to sign-in with a validated same-origin next path.
 Authentication is separate from per-record permissions, which the app must enforce.
