@@ -7,8 +7,9 @@ declare(strict_types=1);
  * vendor/bin/aic-gate (#116): the gate suite of aic/gates. With no argument it
  * runs every gate and ends with one gate-summary line; `aic-gate <N>` runs one
  * gate; `--numbers` and `--list` name them; `init` writes an app's suite files
- * (#130); `tools` installs gitleaks, semgrep
- * and shellcheck; `serve [port]` serves the compiled site. Run it in the
+ * (#130); `tools` installs gitleaks, semgrep, shellcheck and the app's
+ * Playwright; `serve [port]` serves the compiled site; `browser [--base-url=<url>]
+ * [<spec>…]` runs browser tests against a site (#174). Run it in the
  * project's root, as composer's scripts do.
  */
 

@@ -154,28 +154,6 @@ final readonly class EvidenceStore implements EvidenceLog
 
     /**
      * @param string $runId The run.
-     * @param Phase  $phase A phase.
-     *
-     * @throws WorkflowRefusal When the store cannot be read.
-     *
-     * @return int The browser tool calls in the ledger at it.
-     */
-    #[Override]
-    public function browserCalls(string $runId, Phase $phase): int
-    {
-        $row = $this->first(
-            "SELECT COUNT(*) AS calls FROM tool_call WHERE run_id = ? AND phase = ? AND verdict <> 'refuse'"
-                . " AND (tool LIKE '%browser_%' OR tool LIKE '%playwright%')",
-            [$runId, $phase->value],
-        );
-
-        return $row instanceof JsonReader
-            ? $row->int('calls')
-            : 0;
-    }
-
-    /**
-     * @param string $runId The run.
      *
      * @throws WorkflowRefusal When the store cannot be read.
      *

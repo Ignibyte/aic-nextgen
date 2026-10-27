@@ -33,12 +33,14 @@ final readonly class ContractCheck implements PhaseCheck
      * @param EvidenceLog  $evidenceLog  Keeps the freeze.
      * @param GateExecutor $gateExecutor The gate names.
      * @param UtcTime      $utcTime      The clock.
+     * @param BrowserLooks $browserLooks A front-end change's looks (#174).
      */
     public function __construct(
         private SpecFile $specFile,
         private EvidenceLog $evidenceLog,
         private GateExecutor $gateExecutor,
         private UtcTime $utcTime,
+        private BrowserLooks $browserLooks = new BrowserLooks(),
     ) {
     }
 
@@ -109,9 +111,12 @@ final readonly class ContractCheck implements PhaseCheck
      */
     private function problems(string $text, array $gates): array
     {
-        $problems = $text === ''
-            ? ['the spec is not written yet.']
-            : $this->specFile->contract($text)->problems();
+        $specContract = $text === ''
+            ? null
+            : $this->specFile->contract($text);
+        $problems = $specContract instanceof SpecContract
+            ? [...$specContract->problems(), ...$this->browserLooks->planProblems($specContract)]
+            : ['the spec is not written yet.'];
 
         return $gates === []
             ? [...$problems, 'vendor/bin/aic-gate --numbers names no gate: require aic/gates for development (#116).']

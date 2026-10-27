@@ -66,16 +66,6 @@ interface EvidenceLog
 
     /**
      * @param string $runId The run.
-     * @param Phase  $phase A phase.
-     *
-     * @throws WorkflowRefusal When the store cannot be read.
-     *
-     * @return int The browser tool calls the guard let through at it (#102).
-     */
-    public function browserCalls(string $runId, Phase $phase): int;
-
-    /**
-     * @param string $runId The run.
      *
      * @throws WorkflowRefusal When the store cannot be read.
      *

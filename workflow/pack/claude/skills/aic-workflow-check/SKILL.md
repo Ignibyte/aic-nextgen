@@ -13,12 +13,15 @@ last green verdict), then two of its own:
   its kind's content type. When the setting is empty, the row is `held` and the run waits on
   the operator: the site and its setting are theirs. Tell them, and stop; your turn may end.
   A route that answers 500 is a bug to fix in code; the row quotes the status.
-- **Browser.** Only when the spec says `browser_testable: Yes`. Open each Browser Check item's
-  URL in a browser tool, do what it says, look, and tick the item with what you saw:
-  `- [x] <URL> — <action> → <expected> — saw: <what showed>`. The check holds until every item
-  is ticked and the hook has seen a browser tool call during check. A session with no browser
-  tool cannot pass it: ask the operator with `bin/aic workflow:ask "<question>"` and end your
-  turn.
+- **Browser.** When the spec names looks. Explore the page with the Playwright CLI
+  (`npx playwright cli`), then write each look as a Playwright test at the path its item names:
+  `import { expect, test } from '@playwright/test'`, `page.goto('/path')` relative to the site, the
+  behaviour the item describes as `expect` assertions. A signed-in test reads `AIC_GATE_LOGIN` and
+  `AIC_GATE_PASSWORD`. Run it with `vendor/bin/aic-gate browser --base-url=<site> <test>`, then tick
+  the item with what you saw: `- [x] tests/browser/<name>.spec.ts — <what it shows> — saw: <what
+  showed>`. The engine runs every look itself; the row holds while an item is unticked, a test is
+  missing or a look fails. When Playwright is missing, ask the operator to run
+  `vendor/bin/aic-gate tools`.
 
 You may still change code at check; the manifest still bounds what you write. Then
 `bin/aic workflow:run`. When check passes, go to the

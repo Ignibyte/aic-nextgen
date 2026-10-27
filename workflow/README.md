@@ -154,6 +154,19 @@ The parent session and actual child id/type bind native review calls to the curr
 The seeker's supported edit, shell-write and MCP-write routes refuse. This is workflow policy;
 the role inherits the parent's client permissions and does not acquire a separate OS sandbox.
 
+## Browser looks
+
+Front-end work is looked at with Playwright (#174). Plan refuses a File Manifest that touches a
+theme (all but the data and text files in its `assets/`), `framework/templates/`, `tests/browser/`, `config/app.php`, a module's `Block/` or `Form/`,
+or a `Controller/` class not named `*Api`, unless the spec says `browser_testable: Yes` and each
+`## Browser Check` item names a look, a Playwright test in `tests/browser/`. At check the engine
+runs every named look itself, with `vendor/bin/aic-gate browser --base-url=<site>` against
+`config/workflow.php`'s site; the row holds while an item is unticked, a test is missing or a look
+fails, and waits on the operator when no site is set. At complete each item ends, after `saw:`,
+with `— keep` (the test stays, declared, and gate:23 runs it against the compiled site on every
+gate run) or `— drop` (the test is deleted). The app's root `package.json` and `package-lock.json`
+pin Playwright 1.62.1; `vendor/bin/aic-gate tools` runs `npm ci` and installs Chromium.
+
 ## Browser checks in Codex
 
 Configure a trusted Playwright MCP server in the app's Codex configuration. Use an isolated
@@ -173,9 +186,9 @@ are refused. Snapshot and diagnostic results can return directly without a filen
 Arbitrary JavaScript evaluation, unsafe Playwright code and file-transfer routes are held.
 The independent seeker cannot use browser actions.
 
-Use the real browser to perform each spec item and record what you observed. Tick an item
-only after that action. The engine requires actual allowed browser calls at Check as well
-as the checked items. A copied screenshot or HTTP request alone does not satisfy it.
+Use the browser to explore a page while writing its look. The browser row's evidence is the
+look itself: the engine runs each named Playwright test at Check, so no tool call, copied
+screenshot or HTTP request stands in for it.
 
 ## Client limits
 

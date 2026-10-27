@@ -28,3 +28,9 @@ browser_testable: No
 | Kind | Method | Path or name | Class | Module | Status | Example |
 |---|---|---|---|---|---|---|
 | Page | GET | /<path> | App\<Module>\Controller\<Class> | <module> | 200 | |
+
+## Browser Check
+
+<Only when browser_testable is Yes: one look per item, each a Playwright test; delete this section otherwise.>
+
+- [ ] tests/browser/<name>.spec.ts — <what the look shows>

@@ -41,7 +41,7 @@ return new ProbeScenario([
         2,
         "is not in the spec's ### File Manifest",
     ),
-    new GuardStep('a declared write at code', 'edit', $write('modules/site/src/Controller/HomePage.php'), 0),
+    new GuardStep('a declared write at code', 'edit', $write('modules/site/src/Service/StatusBody.php'), 0),
     new GuardStep("a write to the run's state", 'edit', $write('var/workflow/run.json'), 2, "var/workflow/ is the run's state"),
     new GuardStep(
         "the operator's reset in the agent's shell",

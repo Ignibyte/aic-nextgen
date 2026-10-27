@@ -26,9 +26,9 @@ return new ProbeScenario([
     new ReplaceStep(
         'CHANGELOG.md',
         "## Unreleased\n",
-        "## Unreleased\n\n- The home page's uploads link says each file is checked by its content.\n",
+        "## Unreleased\n\n- The status API's body says when the database version reads unavailable.\n",
     ),
     new RunStep('advanced', [new Expect('gate', 'deferred', 'gate:23')], $away),
-    new ReplaceStep('var/workflow/spec-1.md', 'content | [ ] |', 'content | [x] gate:6 |'),
+    new ReplaceStep('var/workflow/spec-1.md', '`unavailable` | [ ] |', '`unavailable` | [x] gate:6 |'),
     new RunStep('held', [new Expect('gate', 'held', 'gate:23 deferred, and complete needs the native gates')], $away),
 ], database: true);

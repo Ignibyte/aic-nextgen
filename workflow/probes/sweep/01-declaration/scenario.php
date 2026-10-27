@@ -143,7 +143,7 @@ return new ProbeScenario([
     new ReplaceStep(
         'CHANGELOG.md',
         "## Unreleased\n",
-        "## Unreleased\n\n- The home page's uploads link says each file is checked by its content.\n",
+        "## Unreleased\n\n- The status API's body says when the database version reads unavailable.\n",
     ),
     $limit,
     new RunStep('blocked', [
@@ -160,8 +160,8 @@ return new ProbeScenario([
     new ReplaceStep($criterion->path, $criterion->into, $criterion->from),
     new ReplaceStep(
         'var/workflow/spec-1.md',
-        "content | [ ] |\n| 2 | The changelog names the fix | [ ] |",
-        "content | [x] gate:6 |\n| 2 | The changelog names the fix | [x] gate:6 |",
+        "`unavailable` | [ ] |\n| 2 | The changelog names the fix | [ ] |",
+        "`unavailable` | [x] gate:6 |\n| 2 | The changelog names the fix | [x] gate:6 |",
     ),
     new RunStep('completed', [new Expect('freeze', 'passed'), new Expect('criteria', 'passed')]),
 ], database: true);

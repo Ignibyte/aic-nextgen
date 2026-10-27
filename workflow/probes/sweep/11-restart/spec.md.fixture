@@ -7,7 +7,7 @@ browser_testable: No
 
 | # | Target | Met |
 |---|---|---|
-| 1 | The home page's account link names its sign-in, a note class exists and the powered-by block is gone | [ ] |
+| 1 | The status body's database description is corrected, a note class exists and the sample upload is gone | [ ] |
 
 ## Design
 
@@ -17,8 +17,8 @@ The ticket's earlier run made these changes before the operator reset it; the ne
 
 | File | Change | Purpose |
 |---|---|---|
-| `modules/site/src/Controller/HomePage.php` | modify | The account link's label |
-| `modules/site/src/Block/PoweredByBlock.php` | delete | The block goes |
+| `modules/site/src/Service/StatusBody.php` | modify | The database field's description |
+| `modules/site/resources/upload.png` | delete | The sample upload goes |
 | `modules/site/src/Service/RestartNote.php` | create | The note class |
 
 ### Locked-In Decisions

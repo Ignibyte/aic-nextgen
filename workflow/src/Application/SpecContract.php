@@ -189,20 +189,11 @@ final readonly class SpecContract
     }
 
     /**
-     * @return array{int, int} How many browser check items are ticked, and how many there are.
+     * @return list<string> The `## Browser Check` items as written, tick included (#174).
      */
-    public function browserTicks(): array
+    public function browserItems(): array
     {
-        $items = $this->markdownSections->items(self::BROWSER);
-        $ticked = 0;
-
-        foreach ($items as $item) {
-            $ticked += preg_match('/^\\[[xX]\\]/', $item) === 1
-                ? 1
-                : 0;
-        }
-
-        return [$ticked, count($items)];
+        return $this->markdownSections->items(self::BROWSER);
     }
 
     /**

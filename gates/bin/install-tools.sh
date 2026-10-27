@@ -92,9 +92,26 @@ install_shellcheck() {
     return 1
 }
 
+install_playwright() {
+    # The app's browser tests (#174): Playwright pinned by package-lock.json, written by
+    # vendor/bin/aic-gate init, and the Chromium it drives.
+    if [ ! -f "$ROOT/package-lock.json" ]; then
+        echo "No package-lock.json: no browser tests to install for (vendor/bin/aic-gate init writes it)."
+        return
+    fi
+    if ! command -v npm >/dev/null 2>&1; then
+        echo "ERROR: npm not found; install Node.js 20 or later for the browser tests." >&2
+        return 1
+    fi
+    echo "Installing Playwright (npm ci) ..."
+    (cd "$ROOT" && npm ci --no-audit --no-fund)
+    "$ROOT/node_modules/.bin/playwright" install chromium
+}
+
 install_gitleaks
 install_semgrep
 install_shellcheck
+install_playwright
 
 echo
 echo "Done. Tools are at:"

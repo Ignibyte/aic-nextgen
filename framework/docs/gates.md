@@ -22,6 +22,14 @@ the package's, so `init` again after `composer update` brings them back in step.
 the app's own requests from `config/native-site.json`: one step a line, each the method, path,
 form, extra header and status both sites must answer alike. A new route adds its step.
 
+Browser tests (#174) are Playwright specs in `tests/browser/`. `init` writes the root
+`package.json` and `package-lock.json` that pin Playwright 1.62.1 and ignores `/node_modules/`;
+`vendor/bin/aic-gate tools` runs `npm ci` and installs Chromium. gate:23 runs every kept test
+against the compiled site it serves, with the gate user's login in `AIC_GATE_LOGIN` and
+`AIC_GATE_PASSWORD`, and fails on any failing test or on Playwright missing or at another version.
+`vendor/bin/aic-gate browser [--base-url=<url>] [<spec>…]` runs tests against any site with the
+same config, `gates/browser/playwright.config.mjs`; a workflow run takes its looks with it.
+
 The base NEON files include PHP configs that register the actual PHPStan rules and tagged
 architecture services. PHPat's attributed callables return every named architecture rule. PHPCS
 and PHPMD read custom XML generated from their custom classes. AIC's source build writes those
@@ -84,7 +92,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 20 | captainhook | the git hooks are installed | `composer install` |
 | 21 | native | every runtime class compiles, links, runs and matches PHP under elephc | reshape the class into a form elephc compiles; report a compiler defect |
 | 22 | pipeline docs | *AIC only*: its own process documents | not run in an app |
-| 23 | native site | the app compiled with `elephc --web` answers each step as the PHP app does, a step reaches every GET route in `build/surface.json`, and every HTML answer passes the HTML lint: no inline style or script, each `id` once, an `alt` on every `<img>`, no HTML5 parser error on a full document | find the step that differs and the class behind it; add a step for an unreached route; fix the markup in the template that writes it |
+| 23 | native site | the app compiled with `elephc --web` answers each step as the PHP app does, a step reaches every GET route in `build/surface.json`, every kept browser test in `tests/browser/` passes on the compiled site, and every HTML answer passes the HTML lint: no inline style or script, each `id` once, an `alt` on every `<img>`, no HTML5 parser error on a full document | find the step that differs and the class behind it; add a step for an unreached route; fix the markup in the template that writes it |
 | 24 | build outputs | everything under `build/` (the generated wiring and templates, `build/assets/`, the manifests) and the wiki match what the build writes | `composer run build` |
 | 25 | templates | the theme's `*.phtml` files and the atoms use the grammar and the HTML lint (see [templates.md](templates.md#markup-and-whitespace)); a template anywhere else, or an unsupported source, fails | move the logic into the component's props; style through a class in the theme's stylesheet, script from a script file |
 | 26 | module boundaries | kind folders, the 15-file cap, exports and requires, no cycles, no component, template or asset in a module, nothing outside `modules/` but the shell and the theme's classes | move the class (a component to the theme), export it, require the module, or split the module |

@@ -8,6 +8,7 @@ use Gates\Domain\SuiteGate;
 
 use function ctype_digit;
 use function fwrite;
+use function in_array;
 use function is_dir;
 use function is_resource;
 use function mkdir;
@@ -27,14 +28,16 @@ use const STDOUT;
  * `--numbers` the `gate:N` names the runner reads, one a line; `--list` each
  * with its scope and description; `init` an app's suite files (#130); `tools`
  * the external tools' installer; `serve [port]` the compiled site on
- * 127.0.0.1. Everything runs in the project's root.
+ * 127.0.0.1; `browser [--base-url=<url>] [<spec>…]` the browser tests against a
+ * site (#174). Everything runs in the project's root.
  */
 final readonly class GateCommand
 {
     /**
      * How to call it.
      */
-    private const string USAGE = 'usage: aic-gate [<N> | --numbers | --list | init | tools | serve [port]]';
+    private const string USAGE = 'usage: aic-gate [<N> | --numbers | --list | init | tools | serve [port]'
+        . ' | browser [--base-url=<url>] [<spec>…]]';
 
     /**
      * @param GateSuite $gateSuite The suite.
@@ -65,7 +68,7 @@ final readonly class GateCommand
             $arguments === ['--list'] => $this->print(true),
             $arguments === ['init'] => $this->suiteInit->run($this->root),
             $arguments === ['tools'] => $this->stream(['bash', $this->package . '/bin/install-tools.sh']),
-            $first === 'serve' => $this->stream([PHP_BINARY, $this->package . '/bin/gate-native-site.php', ...$arguments]),
+            in_array($first, ['serve', 'browser'], true) => $this->stream([PHP_BINARY, $this->nativeSite(), ...$arguments]),
             ctype_digit($first) && $arguments === [$first] => $this->gate((int) $first),
             default => $this->refuse(self::USAGE),
         };
@@ -99,6 +102,14 @@ final readonly class GateCommand
 
             mkdir($this->root . '/' . $cache, 0o755, true);
         }
+    }
+
+    /**
+     * @return string gate:23's entry, which also serves the compiled site and runs browser tests (#174).
+     */
+    private function nativeSite(): string
+    {
+        return $this->package . '/bin/gate-native-site.php';
     }
 
     /**

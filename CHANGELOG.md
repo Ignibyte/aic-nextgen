@@ -6,6 +6,16 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Browser tests** (#174). Front-end work is looked at with Playwright 1.62.1, and the tests the
+  bot or a person keeps guard against regressions. gate:23 runs every kept `tests/browser/` test
+  on the compiled site, signed in as the gate's user; `vendor/bin/aic-gate browser
+  [--base-url=<url>] [<spec>…]` runs tests against any site with aic/gates' one config. `init`
+  writes `package.json` and `package-lock.json` (Playwright pinned) and ignores `/node_modules/`;
+  `tools` runs `npm ci` and installs Chromium; gate:30 holds both stubs. The workflow's plan
+  refuses a front-end File Manifest without `browser_testable: Yes` and a look per Browser Check
+  item; check runs the looks itself instead of counting browser tool calls; complete needs each
+  look kept or dropped. AIC keeps `tests/browser/home.spec.ts`. Installed apps rerun
+  `vendor/bin/aic-gate init` and `bin/aic workflow:init --force`.
 - **gate:23 reaches every GET route** (#171). A GET route in `build/surface.json` that no step of
   `config/native-site.json` reaches fails the gate with an `UNREACHED` line naming the pattern and
   its handler. A step reaches a route when it is a GET expecting a status below 400 and the path it
