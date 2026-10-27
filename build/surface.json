@@ -269,6 +269,12 @@
             "name": "schedule:run"
         },
         {
+            "class": "App\\Note\\Command\\StockSample",
+            "kind": "Command",
+            "module": "note",
+            "name": "stock:sample"
+        },
+        {
             "class": "App\\Account\\Command\\UserAdd",
             "kind": "Command",
             "module": "account",
@@ -382,7 +388,8 @@
                 "App\\Note\\Migration\\IndexNotesByCreation",
                 "App\\Note\\Migration\\CreateStockItemsTable",
                 "App\\Note\\Migration\\AddStockCost",
-                "App\\Note\\Migration\\ConvertStockCost"
+                "App\\Note\\Migration\\ConvertStockCost",
+                "App\\Note\\Migration\\AddStockQuantity"
             ],
             "name": "note",
             "namespace": "App\\Note\\",

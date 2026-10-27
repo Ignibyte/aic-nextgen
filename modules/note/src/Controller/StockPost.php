@@ -9,15 +9,14 @@ use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Domain\PageRedirect;
-use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\PostedFields;
 use App\Generated\ThemeLayoutName;
 use App\Note\Form\StockEntry;
 use App\Note\Form\StockForm;
 use App\Note\Repository\StockRepository;
-use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
+use Throwable;
 
 /**
  * POST /stock (#65): adds the posted item and shows the list again (303), or
@@ -42,8 +41,7 @@ final readonly class StockPost implements Page
     /**
      * @param ServerRequestInterface $serverRequest The posted form, with its session.
      *
-     * @throws QueryException When the item cannot be stored.
-     * @throws LogicException When the required application state is unavailable.
+     * @throws Throwable When the item cannot be stored, or the required application state is unavailable.
      *
      * @return PageResponse 303 to /stock, or the form again as 422.
      */
@@ -55,6 +53,8 @@ final readonly class StockPost implements Page
             $this->postedFields->value($serverRequest, 'price'),
             $this->postedFields->value($serverRequest, 'added_on'),
             $this->postedFields->value($serverRequest, 'certified') === '1',
+            $this->postedFields->value($serverRequest, 'sku'),
+            $this->postedFields->value($serverRequest, 'quantity'),
         );
         $problem = $stockEntry->problem();
 
@@ -64,7 +64,7 @@ final readonly class StockPost implements Page
             return $this->pageDocuments->content([new Heading('Stock'), $form], 422, ThemeLayoutName::Focus);
         }
 
-        $this->stockRepository->add($stockEntry);
+        $this->stockRepository->save($stockEntry);
 
         return new PageRedirect('/stock');
     }

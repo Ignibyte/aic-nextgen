@@ -44,8 +44,8 @@ final readonly class StockPage implements Page
     }
 
     /**
-     * @param ServerRequestInterface $serverRequest The request, with its session, an optional `limit` and maybe
-     *                                              the list's props.
+     * @param ServerRequestInterface $serverRequest The request, with its session, an optional `limit`, `q`,
+     *                                              `min_price` and `page`, and maybe the list's props.
      *
      * @throws QueryException When the items cannot be read.
      * @throws JsonException  When the list's props cannot be sealed.
@@ -56,7 +56,8 @@ final readonly class StockPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $items = $this->stockRepository->latest(StockList::MOST);
+        $stockQuery = $this->stockList->query($serverRequest);
+        $items = $this->stockRepository->latest(StockList::MOST, $stockQuery);
 
         try {
             $list = $this->stockList->component($serverRequest, $items);
@@ -68,12 +69,17 @@ final readonly class StockPage implements Page
             );
         }
 
-        return $this->pageDocuments->content([
-            new Heading('Stock'),
-            new Paragraph($this->stockList->summary($items), 'stock-latest'),
-            $list,
-            $this->stockList->links(),
-            $this->stockForm->form($serverRequest, new StockEntry('', '', '', false), ''),
-        ], 200, ThemeLayoutName::Focus, 'Stock');
+        $components = [new Heading('Stock'), new Paragraph($this->stockList->summary($items), 'stock-latest')];
+        $totals = $this->stockList->totals($stockQuery);
+
+        if ($totals instanceof Paragraph) {
+            $components[] = $totals;
+        }
+
+        $components[] = $list;
+        $components[] = $this->stockList->links();
+        $components[] = $this->stockForm->form($serverRequest, new StockEntry('', '', '', false), '');
+
+        return $this->pageDocuments->content($components, 200, ThemeLayoutName::Focus, 'Stock');
     }
 }

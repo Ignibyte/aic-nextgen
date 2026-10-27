@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The entity API covers an app's record and list queries** (#184). `EntityQuery` takes
+  comparisons, in-lists, null tests, any-of groups and an escaped case-insensitive search, pages
+  with `offset()`, locks with `forUpdate()`, and answers `first()`, `totals()` (count, sum, max,
+  distinct values) and `changes()` (update or delete by query). `EntityStore` adds
+  `insertIfAbsent()`, `upsert()` on a unique field and `transaction()`. Fields may be Integer,
+  UpdatedAt and nullable; `Row` reads nullable values. The fixture's stock page searches, filters
+  by price and SKU, pages and saves over a SKU, and `bin/aic stock:sample` adds samples if absent.
+
 - **A page names its own title** (#182). `PageDocuments::page()` and `content()` take an optional
   title; the document and its Tessera fragments are titled `<title> · <app name>`, the app's name
   alone without one. The fixture's stock page is `Stock · AIC nextgen`.

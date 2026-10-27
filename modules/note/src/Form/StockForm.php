@@ -49,6 +49,8 @@ final readonly class StockForm
             new FormField('Price, in dollars', 'price', new Input('price', 'price', $stockEntry->price)),
             new FormField('In stock since (YYYY-MM-DD)', 'added_on', new Input('added_on', 'added_on', $stockEntry->addedOn)),
             new FormField('Certified', 'certified', new Checkbox('certified', 'certified', $stockEntry->certified)),
+            new FormField('SKU, to save over the item that has it', 'sku', new Input('sku', 'sku', $stockEntry->sku)),
+            new FormField('Quantity', 'quantity', new Input('quantity', 'quantity', $stockEntry->quantity)),
             new Button('Add', 'submit', 'add-stock'),
         ];
 

@@ -47,7 +47,8 @@ final readonly class ConsoleModules implements CommandWiring, ConsoleWiring, Plu
     /**
      * @param ConsoleContext $consoleContext The console's roots.
      *
-     * @throws ContainerException When a called constructor or service fails.
+     * @throws ContainerException       When a called constructor or service fails.
+     * @throws InvalidArgumentException When a called constructor or service fails.
      *
      * @return array<string, Command> The modules' commands by name.
      */

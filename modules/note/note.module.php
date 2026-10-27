@@ -11,6 +11,7 @@ declare(strict_types=1);
 use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\RouteMethod;
 use App\Note\Block\NoteTipsBlock;
+use App\Note\Command\StockSample;
 use App\Note\Controller\NoteCreatePost;
 use App\Note\Controller\NoteDeletePost;
 use App\Note\Controller\NoteListPage;
@@ -19,6 +20,7 @@ use App\Note\Controller\NoteUpdatePost;
 use App\Note\Controller\StockPage;
 use App\Note\Controller\StockPost;
 use App\Note\Migration\AddStockCost;
+use App\Note\Migration\AddStockQuantity;
 use App\Note\Migration\ConvertStockCost;
 use App\Note\Migration\CreateNotesTable;
 use App\Note\Migration\CreateNoteTagsTable;
@@ -35,9 +37,11 @@ return (new ModuleManifest('note'))
     ->route(RouteMethod::Get, '/stock', StockPage::class)
     ->route(RouteMethod::Post, '/stock', StockPost::class)
     ->block(NoteTipsBlock::class)
+    ->command('stock:sample', StockSample::class)
     ->migration(CreateNotesTable::class)
     ->migration(CreateNoteTagsTable::class)
     ->migration(IndexNotesByCreation::class)
     ->migration(CreateStockItemsTable::class)
     ->migration(AddStockCost::class)
-    ->migration(ConvertStockCost::class);
+    ->migration(ConvertStockCost::class)
+    ->migration(AddStockQuantity::class);

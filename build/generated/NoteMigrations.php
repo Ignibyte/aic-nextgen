@@ -6,6 +6,7 @@ namespace App\Generated;
 
 use AIC\Schema\Contracts\Migration;
 use App\Note\Migration\AddStockCost;
+use App\Note\Migration\AddStockQuantity;
 use App\Note\Migration\ConvertStockCost;
 use App\Note\Migration\CreateNotesTable;
 use App\Note\Migration\CreateNoteTagsTable;
@@ -30,6 +31,7 @@ final readonly class NoteMigrations
             new CreateStockItemsTable(),
             new AddStockCost(),
             new ConvertStockCost(),
+            new AddStockQuantity(),
         ];
     }
 }

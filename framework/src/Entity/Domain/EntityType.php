@@ -79,11 +79,29 @@ final readonly class EntityType
     }
 
     /**
-     * @return list<string> The Boolean fields, the only ones that take a bool.
+     * @return list<string> The UpdatedAt fields, which the insert and every update set to `now()` (#184).
      */
-    public function booleans(): array
+    public function updatedAt(): array
     {
-        return $this->named(FieldType::Boolean);
+        return $this->named(FieldType::UpdatedAt);
+    }
+
+    /**
+     * @param string $name A field's column.
+     *
+     * @throws InvalidArgumentException When the entity type has no such field.
+     *
+     * @return Field The field.
+     */
+    public function field(string $name): Field
+    {
+        foreach ($this->fields as $field) {
+            if ($field instanceof Field && $field->name === $name) {
+                return $field;
+            }
+        }
+
+        throw new InvalidArgumentException('The ' . $this->table . ' entity has no field "' . $name . '".');
     }
 
     /**

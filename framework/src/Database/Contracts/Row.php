@@ -83,4 +83,40 @@ final readonly class Row
 
         return $value;
     }
+
+    /**
+     * @param string $column The column name.
+     *
+     * @throws QueryException When the column is missing, or neither a string nor null.
+     *
+     * @return string|null Its value; null when the database holds none (#184).
+     */
+    public function stringOrNull(string $column): ?string
+    {
+        if (!array_key_exists($column, $this->values)) {
+            throw new QueryException('The row has no column ' . $column . '.');
+        }
+
+        return $this->values[$column] === null
+            ? null
+            : $this->string($column);
+    }
+
+    /**
+     * @param string $column The column name.
+     *
+     * @throws QueryException When the column is missing, or neither an integer nor null.
+     *
+     * @return int|null Its value; null when the database holds none (#184).
+     */
+    public function intOrNull(string $column): ?int
+    {
+        if (!array_key_exists($column, $this->values)) {
+            throw new QueryException('The row has no column ' . $column . '.');
+        }
+
+        return $this->values[$column] === null
+            ? null
+            : $this->int($column);
+    }
 }

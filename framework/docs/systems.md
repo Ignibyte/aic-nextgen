@@ -59,10 +59,23 @@ The development engine and its guard are described in [workflow.md](workflow.md)
 - `AIC\Schema`: migrations. A migration describes its tables through
   `AIC\Schema\Contracts\Schema`; `AIC\Schema\Application\Migrator` applies each version once, in a
   transaction, and keeps a ledger with a checksum of each, so a changed migration shows as changed.
-- `AIC\Entity`: tables as entity types with typed fields; `AIC\Entity\Application\EntityStore`
-  queries, inserts, updates and deletes rows by key. A query takes equality conditions, ascending
-  and descending order and a row limit, so a page reads only the rows it shows. A module's
-  repository builds on it.
+- `AIC\Entity`: tables as entity types with typed fields (Text, Date, Numeric, Boolean, Integer,
+  and the CreatedAt and UpdatedAt stamps the database sets), each nullable or not. A module's
+  repository builds on it (#184):
+  - `AIC\Entity\Application\EntityStore` inserts (`insert`, `insertIfAbsent` on a unique field,
+    `upsert` over it), updates and deletes rows by key, and runs `transaction(Closure)`, rolling
+    back when the closure throws. Each written value must fit its field: a string, an int, a
+    bool, or null where the field is nullable.
+  - `AIC\Entity\Application\EntityQuery` takes conditions (`where` with an
+    `AIC\Entity\Domain\Comparison`, null for `IS NULL`; `whereIn`; `whereAny` over
+    `AIC\Entity\Domain\Condition`s; `search`, a case-insensitive contains match across text
+    fields with `%` and `_` taken literally), `orderBy`, `orderByDescending`, `limit`, `offset`
+    and `forUpdate`, and answers `rows`, `one` or `first`.
+  - `totals()` answers `count`, `sum`, `max` and the distinct `values` of a field over the
+    matching rows, as text where money is involved; `changes()` updates or deletes the matching
+    rows and answers how many, refusing to run without a condition.
+  - Every value is bound, and only the entity type's own field names reach the SQL. Joins
+    (#190) and reports (#191) are not here yet.
 
 ## 4. Components
 

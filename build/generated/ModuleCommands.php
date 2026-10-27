@@ -7,6 +7,7 @@ namespace App\Generated;
 use AIC\Container\Exception\ContainerException;
 use AIC\Controller\Contracts\Command;
 use AIC\Module\Application\ConsoleContext;
+use InvalidArgumentException;
 
 use function array_merge;
 
@@ -25,7 +26,8 @@ final readonly class ModuleCommands
     }
 
     /**
-     * @throws ContainerException When a called constructor or service fails.
+     * @throws ContainerException       When a called constructor or service fails.
+     * @throws InvalidArgumentException When a called constructor or service fails.
      *
      * @return array<string, Command> The modules' commands by name.
      */
@@ -34,6 +36,7 @@ final readonly class ModuleCommands
         return array_merge(
             (new SiteCommands($this->consoleContext))->byName(),
             (new AccountCommands($this->consoleContext))->byName(),
+            (new NoteCommands($this->consoleContext))->byName(),
             (new ScaffoldCommands())->byName(),
         );
     }
