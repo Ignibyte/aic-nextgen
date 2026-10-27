@@ -116,7 +116,7 @@ final readonly class StreamHttpClient implements HttpClient
 
         $location = $fields['location'] ?? $fields['tessera-location'] ?? '';
 
-        return new HttpExchange($status, $fields['content-type'] ?? '', $location, $body, $cookie);
+        return new HttpExchange($status, $fields['content-type'] ?? '', $location, $body, $cookie, self::compared($fields));
     }
 
     /**
@@ -183,5 +183,25 @@ final readonly class StreamHttpClient implements HttpClient
         return str_starts_with($form, self::MULTIPART)
             ? ['multipart/form-data; boundary=' . self::BOUNDARY, self::multipart(substr($form, strlen(self::MULTIPART)))]
             : ['application/x-www-form-urlencoded', $form];
+    }
+
+    /**
+     * @param array<string, string> $fields Every header field, by lower-case name.
+     *
+     * @return array<string, string> The ones gate:23 compares (#173): the protocol's and caching's.
+     */
+    private static function compared(array $fields): array
+    {
+        $compared = [];
+
+        foreach ($fields as $name => $value) {
+            if (!str_starts_with($name, 'tessera-') && $name !== 'vary' && $name !== 'cache-control') {
+                continue;
+            }
+
+            $compared[$name] = $value;
+        }
+
+        return $compared;
     }
 }

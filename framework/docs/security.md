@@ -6,6 +6,13 @@ read or change. Use the normal request stack and typed Page/Api responses rather
 middleware. [systems.md](systems.md) maps the security namespaces; [tessera.md](tessera.md)
 describes enhanced requests.
 
+## Content-Security-Policy
+
+Every HTML response `AIC\Http\Application\ResponseBuilder` makes carries `ResponseBuilder::POLICY`
+(#173): `default-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self';
+form-action 'self'; frame-ancestors 'none'`. No inline script, inline style or other origin runs.
+Load scripts and styles from the theme's assets; Tessera's csp build needs nothing more.
+
 ## Sessions
 
 `AIC\Session\Application\SessionMiddleware` loads a Postgres-backed session and attaches it to

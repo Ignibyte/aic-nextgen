@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Tessera's full system in the gates** (#173). gate:23 compares the `Tessera-*`, `Vary` and
+  `Cache-Control` headers natively as well as the body. Every HTML response carries a strict
+  `Content-Security-Policy` (`ResponseBuilder::POLICY`). AIC keeps `tests/browser/tessera.spec.ts`:
+  region swaps with back and forward, a refused form answered in place, a submit's redirect, the
+  streamed ticks and the plain form with JavaScript off, failing on any console error.
 - **Browser tests** (#174). Front-end work is looked at with Playwright 1.62.1, and the tests the
   bot or a person keeps guard against regressions. gate:23 runs every kept `tests/browser/` test
   on the compiled site, signed in as the gate's user; `vendor/bin/aic-gate browser

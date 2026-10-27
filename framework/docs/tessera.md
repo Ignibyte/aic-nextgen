@@ -90,6 +90,14 @@ values. Tokens are signed, readable and subject to the component token size/char
 They carry no authorization by themselves. Recheck access to the object on every request.
 
 Gate:23 compares configured whole-site and fragment behavior against PHP, including status, media
-type, redirects and normalized bodies. Gate:24 checks the pinned assets; gate:8 and gate:27 keep
+type, redirects, normalized bodies and the `Tessera-*`, `Vary` and `Cache-Control` headers (#173).
+It also runs the kept browser tests on the compiled site (#174); AIC's `tests/browser/tessera.spec.ts`
+holds region swaps with back and forward, a refused form answered in place with its error summary
+focused, a submit's redirect, the streamed ticks and the plain form with JavaScript off, each in
+the same document where Tessera promises it and with no console error.
+
+Every HTML response carries `ResponseBuilder::POLICY` as its `Content-Security-Policy`: scripts,
+styles, fonts and connections from the site itself only, images also as `data:`. The pinned csp
+build runs under it, and the HTML lint (#170) keeps inline script and style out of pages. Gate:24 checks the pinned assets; gate:8 and gate:27 keep
 the render tree and deliberate raw output within their contracts. A missing target should lead to
 a full response, rather than an independent fragment template.

@@ -111,7 +111,8 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
   returns, small value objects, no runtime reflection on dynamic names); legal PHP elephc still
   gets wrong is a compiler defect to report to AIC.
 - **gate:23** builds the whole app natively, serves it beside the PHP app, and replays a script of
-  requests against both: status, content type, location and body must match. It also lints every
+  requests against both: status, content type, location, body and the `Tessera-*`, `Vary` and
+  `Cache-Control` headers must match (#173). It also lints every
   HTML body the PHP app answers with, as sent (#170), and fails on any GET route of
   `build/surface.json` that no step reaches (#171): a GET step expecting a status below 400 whose path,
   as sent and without its query, the router would match. Every route opens a Postgres session, so when
