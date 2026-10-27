@@ -37,6 +37,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **A Page declared 3xx passes the rendered check** (#176). The check held every Page to
+  `text/html`, but the framework writes every redirect as plain text, so a route declared 303
+  (a signed-out `/app`) could never pass. A declared redirect is now held to its status and a
+  `Location`. Found by Lotline run 3's agent, who asked rather than working around it.
 - **`init` writes the Playwright stubs** (#175). #174 put `package.json` and `package-lock.json` in
   aic/gates' stubs but not in `SuiteStubs::NAMES`, so `vendor/bin/aic-gate init` skipped them in an
   app and gate:30 did not hold them there.

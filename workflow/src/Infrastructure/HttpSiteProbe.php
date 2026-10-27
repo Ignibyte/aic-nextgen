@@ -63,31 +63,34 @@ final readonly class HttpSiteProbe implements SiteProbe
     {
         $status = 0;
         $contentType = '';
+        $location = '';
 
         foreach ($headers as $header) {
             $matches = self::regexMatch('#^HTTP/\\S+\\s+(\\d{3})#', $header);
             $status = array_key_exists(1, $matches)
                 ? (int) $matches[1]
                 : $status;
-            $contentType = $this->contentType($header) ?? $contentType;
+            $contentType = $this->field('content-type', $header) ?? $contentType;
+            $location = $this->field('location', $header) ?? $location;
         }
 
         return $status === 0
             ? null
-            : new RenderedAnswer($status, $contentType);
+            : new RenderedAnswer($status, strtolower($contentType), $location);
     }
 
     /**
-     * @param string $header A header line.
+     * @param non-empty-string $name   A header's name, lower case.
+     * @param string           $header A header line.
      *
-     * @return string|null Its value, lowercased, when it is the content type; null otherwise.
+     * @return string|null Its value, trimmed, when the line is that header; null otherwise.
      */
-    private function contentType(string $header): ?string
+    private function field(string $name, string $header): ?string
     {
-        $matches = self::regexMatch('/^content-type:(.*)$/i', $header);
+        $matches = self::regexMatch('/^' . $name . ':(.*)$/i', $header);
 
         return array_key_exists(1, $matches)
-            ? strtolower(trim($matches[1]))
+            ? trim($matches[1])
             : null;
     }
 }
