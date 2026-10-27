@@ -85,6 +85,37 @@ test('the ticks page counts the five streamed ticks', async ({ page }) => {
     await expect(page.locator('ol[data-region="ticks"] li')).toHaveCount(5);
 });
 
+// The slice of markup between a component's opening marker and its own closing
+// one, nested markers counted: what a fragment for that target must hold (#179).
+function componentSlice(html: string, from: number, key: string): string {
+    const open = `<!--t:c ${key}`;
+    const start = html.indexOf(open, from);
+    let depth = 0;
+    const marker = /<!--(\/?)t:c[^>]*-->/g;
+    marker.lastIndex = start;
+
+    for (let found = marker.exec(html); found !== null; found = marker.exec(html)) {
+        depth += found[1] === '/' ? -1 : 1;
+
+        if (depth === 0) {
+            return html.slice(start, found.index + found[0].length);
+        }
+    }
+
+    return '';
+}
+
+test('a fragment holds the same markup for its target as the whole document', async ({ page }) => {
+    const whole = await (await page.request.get('/notes')).text();
+    const fragment = await (await page.request.get('/notes', {
+        headers: { 'Tessera-Request': 'visit', 'Tessera-Protocol': '0', 'Tessera-Layout': 'app', 'Tessera-Targets': 'content/c0' },
+    })).text();
+    const target = fragment.match(/<template data-target="content\/c0">([\s\S]*?)<\/template>/);
+
+    expect(target?.[1]).toBe(componentSlice(whole, whole.indexOf('data-region="content"'), 'c0'));
+    expect(target?.[1]).toContain('id="note-count"');
+});
+
 test.describe('with JavaScript off', () => {
     test.use({ javaScriptEnabled: false });
 

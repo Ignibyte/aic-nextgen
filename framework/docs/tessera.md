@@ -23,7 +23,8 @@ whole document, and a fragment never crosses layouts.
 
 A fragment response carries title, CSRF metadata and tracked resources, then
 `<template data-target="content">...</template>` for each target. It renders the same bytes for
-that target as the whole document. Assets use their compiled canonical URLs. A release change is
+that target as the whole document, its descendants included however deep the target sits (#179);
+`tests/browser/tessera.spec.ts` holds that for a nested target. Assets use their compiled canonical URLs. A release change is
 visible through tracked resources and may require a full visit.
 
 ## Protocol constants
