@@ -13,6 +13,7 @@ use AIC\Component\Domain\FragmentFrame;
 use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\RawHtml;
 use AIC\Component\Domain\RegionFrame;
+use AIC\Component\Domain\SourcedComponent;
 use AIC\Component\Exception\DuplicateAnchor;
 use AIC\Component\Exception\UnknownComponent;
 use AIC\Component\Exception\UnmarkedComponent;
@@ -35,7 +36,9 @@ use const ENT_SUBSTITUTE;
  * #189), printed where the build put `marks()`; a template child carries its
  * own key, and an inline child none. A pass aimed at a target path renders only
  * the way to it and keeps the target's markup. It holds the path it is at, so
- * it is the one mutable class of rendering and lives for one call.
+ * it is the one mutable class of rendering and lives for one call. A part
+ * built from a source is built only when the pass renders it (#192), so an
+ * aimed pass never builds the parts off its way.
  *
  * Templates run as templates (#155): a template's lookup opens the pass's
  * buffer, requires the template, and closes it; the region element and the
@@ -142,13 +145,18 @@ final class RenderPass
      *
      * @throws UnknownComponent When no template renders it.
      *
-     * @return string Its markup; a RawHtml's trusted markup as it is (#99), the one string not made by a template.
+     * @return string Its markup; a RawHtml's trusted markup as it is (#99), the one string not made by a template; a
+     *                SourcedComponent's part, built from its source now (#192).
      */
     public function inline(Component $component): string
     {
         $inner = $component instanceof KeyedComponent
             ? $component->component
             : $component;
+
+        if ($inner instanceof SourcedComponent) {
+            $inner = $inner->componentSource->build();
+        }
 
         if ($inner instanceof RawHtml) {
             return $inner->trustedMarkup;

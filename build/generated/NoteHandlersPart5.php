@@ -7,11 +7,10 @@ namespace App\Generated;
 use AIC\Container\Exception\ContainerException;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
-use AIC\Tessera\Application\TesseraProps;
 use App\Note\Controller\StockDaysPage;
 use App\Note\Repository\StockReportRepository;
 use App\Note\Repository\StockRepository;
-use App\Note\Service\StockList;
+use App\Note\Service\StockReportDay;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -38,20 +37,14 @@ final readonly class NoteHandlersPart5
     public function byId(): array
     {
         $entityStore = new EntityStore($this->handlerContext->database());
-        $stockRepository = new StockRepository($entityStore);
-        $stockList = new StockList(
-            $this->handlerContext->envelopeCodec(),
-            new TesseraProps($this->handlerContext->envelopeCodec()),
-            $stockRepository,
-        );
 
         return [
             StockDaysPage::class => $this->handlerContext->page(
                 new StockDaysPage(
                     $this->handlerContext->documents(),
-                    $stockRepository,
+                    new StockRepository($entityStore),
                     new StockReportRepository($entityStore),
-                    $stockList,
+                    new StockReportDay(),
                 ),
             ),
         ];

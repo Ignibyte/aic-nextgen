@@ -6,23 +6,18 @@ namespace App\Note\Service;
 
 use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\Link;
-use AIC\Component\Domain\Paragraph;
-use AIC\Database\Contracts\QueryException;
+use AIC\Component\Domain\SourcedComponent;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Form\Exception\InvalidEnvelope;
 use AIC\Tessera\Application\TesseraProps;
-use App\Note\Entity\StockItem;
 use App\Note\Form\StockQuery;
 use App\Note\Repository\StockRepository;
 use App\Theme\Components\StockLinks\StockLinks;
-use App\Theme\Components\StockListing\StockListing;
 use InvalidArgumentException;
 use JsonException;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function array_key_exists;
-use function array_slice;
-use function count;
 use function ctype_digit;
 use function explode;
 use function is_string;
@@ -33,7 +28,7 @@ use function strlen;
 
 /**
  * Builds the stock page's list (#74): the keyed component `content/stock-list`,
- * showing the last N items. It makes the component rather than being one, so
+ * showing the last N items, read from its source when it is rendered (#192). It makes the component rather than being one, so
  * it is a service (#94). N comes from the `limit` query field; a request without
  * one (a refresh of the list alone) takes it from the props the marker
  * carried, so a refresh keeps it while a visit to `?limit=3` changes it (#83).
@@ -58,7 +53,7 @@ final readonly class StockList
     /**
      * @param EnvelopeCodec   $envelopeCodec   Seals the list's props.
      * @param TesseraProps    $tesseraProps    Reads them back, verified.
-     * @param StockRepository $stockRepository Adds up what a filtered list matches.
+     * @param StockRepository $stockRepository What the list's and the totals' sources read.
      */
     public function __construct(
         private EnvelopeCodec $envelopeCodec,
@@ -69,15 +64,15 @@ final readonly class StockList
 
     /**
      * @param ServerRequestInterface $serverRequest The request: an optional `limit`, maybe the list's props.
-     * @param list<StockItem>        $items         The newest items, `MOST` at most, oldest first.
+     * @param StockQuery             $stockQuery    What the list asks for.
      *
      * @throws InvalidEnvelope          When the request's props for the list were altered.
      * @throws JsonException            When the props cannot be sealed.
      * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
-     * @return KeyedComponent The list, its limit sealed in its props.
+     * @return KeyedComponent The list, its limit sealed in its props, its items read only when it is rendered (#192).
      */
-    public function component(ServerRequestInterface $serverRequest, array $items): KeyedComponent
+    public function component(ServerRequestInterface $serverRequest, StockQuery $stockQuery): KeyedComponent
     {
         $props = $this->tesseraProps->forTarget($serverRequest, self::TARGET);
         $query = self::queryLimit($serverRequest);
@@ -85,7 +80,7 @@ final readonly class StockList
 
         return new KeyedComponent(
             'stock-list',
-            self::listing(array_slice($items, -$limit), $limit),
+            new SourcedComponent(new StockListSource($this->stockRepository, $stockQuery, $limit)),
             $this->envelopeCodec->seal(['limit' => (string) $limit]),
             self::ANCHOR,
         );
@@ -114,46 +109,14 @@ final readonly class StockList
     /**
      * @param StockQuery $stockQuery What the list asks for.
      *
-     * @throws QueryException           When the totals cannot be read.
-     * @throws InvalidArgumentException When a constructed value is invalid.
-     *
-     * @return Paragraph|null The totals of what a filtered list matches; null for the newest items, whose count grows.
+     * @return SourcedComponent|null The totals of what a filtered list matches, added up only when they are rendered
+     *                               (#192); null for the newest items, whose count grows.
      */
-    public function totals(StockQuery $stockQuery): ?Paragraph
+    public function totals(StockQuery $stockQuery): ?SourcedComponent
     {
         return $stockQuery->isFiltered()
-            ? new Paragraph($this->stockRepository->totals($stockQuery)->line(), 'stock-totals')
+            ? new SourcedComponent(new StockTotalsSource($this->stockRepository, $stockQuery))
             : null;
-    }
-
-    /**
-     * @param ServerRequestInterface $serverRequest The request: an optional `day`.
-     *
-     * @return string The day the report asks for, `YYYY-MM-DD`; empty when none is, or it is malformed (#191).
-     */
-    public function day(ServerRequestInterface $serverRequest): string
-    {
-        $day = self::field($serverRequest, 'day');
-
-        return preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $day) === 1
-            ? $day
-            : '';
-    }
-
-    /**
-     * @param list<StockItem> $items The newest items, oldest first.
-     *
-     * @return string The latest item's line, or that there is none.
-     */
-    public function summary(array $items): string
-    {
-        $latest = $items === []
-            ? null
-            : $items[count($items) - 1];
-
-        return $latest instanceof StockItem
-            ? 'Latest: ' . $latest->line() . '.'
-            : 'Nothing in stock yet.';
     }
 
     /**
@@ -166,23 +129,6 @@ final readonly class StockList
             new Link('Show the last 10', '/stock?limit=10', false, '@' . self::ANCHOR),
             new Link('Refresh the list', '/stock', false, '@' . self::ANCHOR),
         );
-    }
-
-    /**
-     * @param list<StockItem> $items The items to show, oldest first.
-     * @param int             $limit How many the list shows at most.
-     *
-     * @return StockListing The list.
-     */
-    private static function listing(array $items, int $limit): StockListing
-    {
-        $lines = [];
-
-        foreach ($items as $item) {
-            $lines[] = $item->line();
-        }
-
-        return new StockListing($limit, $lines);
     }
 
     /**

@@ -121,6 +121,19 @@ test('a link that targets an anchor swaps that component alone', async ({ page }
     expect(await page.evaluate(() => (window as Window & { aicSameDocument?: boolean }).aicSameDocument)).toBe(true);
 });
 
+test('a list built from its source carries its latest line, and its refresh leaves the totals alone', async ({ page }) => {
+    await page.goto('/stock?q=a');
+    await mark(page);
+    const totals = await page.locator('#stock-totals').textContent();
+
+    await page.getByRole('link', { name: 'Show the last 3' }).click();
+
+    await expect(page.locator('[data-t-anchor="stock-list"] #stock-limit')).toHaveText('The last 3.');
+    await expect(page.locator('[data-t-anchor="stock-list"] #stock-latest')).toHaveText(/^(Latest: .+\.|Nothing in stock yet\.)$/);
+    await expect(page.locator('#stock-totals')).toHaveText(totals ?? '');
+    expect(await sameDocument(page)).toBe(true);
+});
+
 test('a fragment holds the same markup for its target as the whole document', async ({ page }) => {
     const whole = await (await page.request.get('/notes')).text();
     const fragment = await (await page.request.get('/notes', {
