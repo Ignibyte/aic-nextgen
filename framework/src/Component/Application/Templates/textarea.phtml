@@ -1,2 +1,2 @@
 <?php declare(strict_types=1); /* Escaped from framework/templates/components/textarea.phtml by composer run build; edit that file, never this one. */ ?>
-<textarea<?php if ($textarea->id !== ''): ?> id="<?= $renderPass->text($textarea->id) ?>"<?php endif; ?><?php if ($textarea->name !== ''): ?> name="<?= $renderPass->text($textarea->name) ?>"<?php endif; ?> class="aic-textarea"><?= $renderPass->text($textarea->value) ?></textarea>
+<textarea<?= $renderPass->marks() ?><?php if ($textarea->id !== ''): ?> id="<?= $renderPass->text($textarea->id) ?>"<?php endif; ?><?php if ($textarea->name !== ''): ?> name="<?= $renderPass->text($textarea->name) ?>"<?php endif; ?> class="aic-textarea"><?= $renderPass->text($textarea->value) ?></textarea>

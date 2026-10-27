@@ -7,17 +7,18 @@ namespace AIC\Component\Domain;
 use AIC\Component\Contracts\Frame;
 
 /**
- * A child's Tessera markers around its markup (#70, #155), written by `templates/tessera/child.phtml`.
+ * A child's Tessera marks on its root element (#70, #155, #189): its key and props token, written by
+ * `templates/tessera/marker.phtml`.
  */
 final readonly class ChildFrame implements Frame
 {
     /**
-     * @param string $opening What the opening marker holds: the child's key, then its props token when it has one.
-     * @param string $markup  The child's rendered markup.
+     * @param string $key   The child's key, its `data-t-c`.
+     * @param string $props Its props token, its `data-t-props`; empty for none.
      */
     public function __construct(
-        public string $opening,
-        public string $markup,
+        public string $key,
+        public string $props,
     ) {
     }
 }

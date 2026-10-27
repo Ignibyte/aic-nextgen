@@ -42,8 +42,11 @@ from its declared list. A null test must be possible for that type. Class consta
 cases must exist. A child component is rendered through the shared pass, with a stable key when
 repeated in a loop.
 
-Conditions can omit a literal attribute inside a tag or select part of a quoted value. Body
-conditions and loops keep their Tessera block markers; tag and quoted-value blocks emit none.
+Conditions can omit a literal attribute inside a tag or select part of a quoted value. A
+component or atom template renders exactly one element at its top level, outside every condition
+and loop, with no text beside it (gate:25's `root` refusal): wrap siblings in a `<div>`, rows
+in a `<tbody>`. The build writes Tessera's marks into that root's start tag; the framework's
+tracked assets, head links rendered only inline, are the one exception.
 The compiler also tracks comments and script, style, textarea and title content. Branches must
 join at the same context; loops and their exits preserve the entry context. Tag names and opening
 delimiters remain literal: empty branches and zero iterations cannot complete a divided name.
@@ -52,9 +55,9 @@ Quote dynamic attribute values. Render child Components and Regions only in elem
 The fifteen framework atoms are declared under `framework/templates/components/`. A source-package
 build uses the same reader to write their escaped copies and lookup under
 `framework/src/Component/Application/Templates/`. Their inline role preserves the existing
-form-field paths and marker-free atom output. Apps consume these shipped files; an app build never
+form-field paths, and an atom rendered inside another prints no marks. Apps consume these shipped files; an app build never
 writes into an installed framework package. The fixed catalog does not relax module ownership
-declarations. Tessera's framing, the region element, the child markers and the fragment answer,
+declarations. Tessera's framing, the region element, a child's marks and the fragment answer,
 is the framework's own runtime templates in `framework/templates/tessera/`.
 
 The grammar denies function, method and static calls, `new`, closures, includes, require, eval,
@@ -111,7 +114,7 @@ for RawHtml's explicit grants.
 `composer run build` writes each template back out with its text as authored: each echo through
 `$renderPass->text()` (escaped by its static type), `child()` (a component under its key),
 `region()` or `inline()`, alternative-syntax conditions and loops, fully qualified class names,
-and Tessera's block markers as inline HTML. Its output prints byte for byte what the authored
+and `marks()` in a component's root start tag. Its output prints byte for byte what the authored
 template means. Each lookup method opens the render pass's buffer, requires the template by a
 literal path and closes it; the compiled site inlines every required template at compile time.
 Never edit a generated template to fix a refusal. Change the authored source or data declaration

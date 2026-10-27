@@ -546,7 +546,7 @@
             "method": "GET",
             "path": "/stock",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app-focus\r\nTessera-Targets: content/stock-list",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app-focus\r\nTessera-Targets: content/stock-list",
             "status": 200,
             "captures": false
         },
@@ -555,7 +555,7 @@
             "method": "GET",
             "path": "/notes",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content, nav",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app\r\nTessera-Targets: content, nav",
             "status": 200,
             "captures": false
         },
@@ -564,7 +564,7 @@
             "method": "GET",
             "path": "/notes",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app\r\nTessera-Targets: content",
             "status": 200,
             "captures": false
         },
@@ -573,7 +573,7 @@
             "method": "GET",
             "path": "/notes",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content/c0/NoteList.1",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app\r\nTessera-Targets: content/c0/NoteList.1",
             "status": 200,
             "captures": false
         },
@@ -582,7 +582,7 @@
             "method": "GET",
             "path": "/stock",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: other\r\nTessera-Targets: content",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: other\r\nTessera-Targets: content",
             "status": 200,
             "captures": false
         },
@@ -591,7 +591,7 @@
             "method": "GET",
             "path": "/stock",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app-focus\r\nTessera-Targets: content/nope",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app-focus\r\nTessera-Targets: content/nope",
             "status": 200,
             "captures": false
         },
@@ -600,7 +600,7 @@
             "method": "GET",
             "path": "/stock",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app-focus\r\nTessera-Targets: content/stock-list e30.forged",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app-focus\r\nTessera-Targets: content/stock-list e30.forged",
             "status": 400,
             "captures": false
         },
@@ -618,7 +618,7 @@
             "method": "GET",
             "path": "/stock",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content, nav",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app\r\nTessera-Targets: content, nav",
             "status": 200,
             "captures": false
         },
@@ -627,7 +627,7 @@
             "method": "GET",
             "path": "/stock",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app-focus\r\nTessera-Targets: header",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app-focus\r\nTessera-Targets: header",
             "status": 200,
             "captures": false
         },
@@ -636,7 +636,7 @@
             "method": "GET",
             "path": "/hello/Ada",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app\r\nTessera-Targets: content",
             "status": 200,
             "captures": false
         },
@@ -645,7 +645,7 @@
             "method": "GET",
             "path": "/hello/Ada",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Layout: app-plain\r\nTessera-Targets: content",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app-plain\r\nTessera-Targets: content",
             "status": 200,
             "captures": false
         },
@@ -654,7 +654,7 @@
             "method": "POST",
             "path": "/hello",
             "form": "name=Ada&aic_csrf={csrf}",
-            "header": "Tessera-Request: submit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content",
+            "header": "Tessera-Request: submit\r\nTessera-Protocol: 1\r\nTessera-Layout: app\r\nTessera-Targets: content",
             "status": 200,
             "captures": false
         },
@@ -663,7 +663,7 @@
             "method": "POST",
             "path": "/hello",
             "form": "name=&aic_csrf={csrf}",
-            "header": "Tessera-Request: submit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content",
+            "header": "Tessera-Request: submit\r\nTessera-Protocol: 1\r\nTessera-Layout: app\r\nTessera-Targets: content",
             "status": 422,
             "captures": false
         },
@@ -672,7 +672,7 @@
             "method": "POST",
             "path": "/hello",
             "form": "name=Ada&aic_csrf=stale",
-            "header": "Tessera-Request: submit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content",
+            "header": "Tessera-Request: submit\r\nTessera-Protocol: 1\r\nTessera-Layout: app\r\nTessera-Targets: content",
             "status": 419,
             "captures": false
         },
@@ -681,7 +681,7 @@
             "method": "POST",
             "path": "/hello",
             "form": "name=Ada&aic_csrf={csrf}",
-            "header": "Tessera-Request: submit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content\r\nTessera-Write-Id: gate-1",
+            "header": "Tessera-Request: submit\r\nTessera-Protocol: 1\r\nTessera-Layout: app\r\nTessera-Targets: content\r\nTessera-Write-Id: gate-1",
             "status": 200,
             "captures": false
         },
@@ -690,7 +690,7 @@
             "method": "POST",
             "path": "/hello",
             "form": "name=Ada&aic_csrf={csrf}",
-            "header": "Tessera-Request: submit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content\r\nTessera-Write-Id: gate-1",
+            "header": "Tessera-Request: submit\r\nTessera-Protocol: 1\r\nTessera-Layout: app\r\nTessera-Targets: content\r\nTessera-Write-Id: gate-1",
             "status": 200,
             "captures": false
         },
@@ -699,7 +699,7 @@
             "method": "POST",
             "path": "/hello",
             "form": "name=Ada&aic_csrf={csrf}",
-            "header": "Tessera-Request: submit\r\nTessera-Protocol: 0\r\nTessera-Layout: app\r\nTessera-Targets: content\r\nTessera-Write-Id: no good",
+            "header": "Tessera-Request: submit\r\nTessera-Protocol: 1\r\nTessera-Layout: app\r\nTessera-Targets: content\r\nTessera-Write-Id: no good",
             "status": 400,
             "captures": false
         },
@@ -825,7 +825,7 @@
             "method": "GET",
             "path": "/hello/Declared149",
             "form": "",
-            "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Targets: content/c0\r\nTessera-Layout: app-plain",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Targets: content/c0\r\nTessera-Layout: app-plain",
             "status": 200,
             "captures": false
         },

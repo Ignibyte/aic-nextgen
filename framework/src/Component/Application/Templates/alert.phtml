@@ -1,4 +1,4 @@
 <?php declare(strict_types=1); /* Escaped from framework/templates/components/alert.phtml by composer run build; edit that file, never this one. */ ?>
-<p<?php if ($alert->id !== ''): ?> id="<?= $renderPass->text($alert->id) ?>"<?php endif; ?> class="aic-alert" role="alert" data-error-summary tabindex="-1" data-severity="<?= $renderPass->text(match ($alert->alertSeverity) {
+<p<?= $renderPass->marks() ?><?php if ($alert->id !== ''): ?> id="<?= $renderPass->text($alert->id) ?>"<?php endif; ?> class="aic-alert" role="alert" data-error-summary tabindex="-1" data-severity="<?= $renderPass->text(match ($alert->alertSeverity) {
     \AIC\Component\Domain\AlertSeverity::Error => $alert->alertSeverity->value,
 }) ?>"><?= $renderPass->text($alert->message) ?></p>

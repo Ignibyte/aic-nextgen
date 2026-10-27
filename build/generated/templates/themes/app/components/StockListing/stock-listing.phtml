@@ -1,2 +1,2 @@
 <?php declare(strict_types=1); /* Escaped from themes/app/components/StockListing/stock-listing.phtml by composer run build; edit that file, never this one. */ ?>
-<p id="stock-limit">The last <?= $renderPass->text((string) ($stockListing->limit)) ?>.</p><ul id="stock"><!--t:b--><?php foreach ($stockListing->lines as $line): ?><li><?= $renderPass->text($line) ?></li><?php endforeach; ?><!--/t:b--></ul>
+<div<?= $renderPass->marks() ?>><p id="stock-limit">The last <?= $renderPass->text((string) ($stockListing->limit)) ?>.</p><ul id="stock"><?php foreach ($stockListing->lines as $line): ?><li><?= $renderPass->text($line) ?></li><?php endforeach; ?></ul></div>

@@ -50,4 +50,5 @@ enum TemplateRefusal: string
     case NotCompilable = 'not compilable';
     case Html = 'html';
     case Whitespace = 'whitespace';
+    case Root = 'root';
 }

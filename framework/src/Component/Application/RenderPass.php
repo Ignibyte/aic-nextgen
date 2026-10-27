@@ -14,6 +14,7 @@ use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\RawHtml;
 use AIC\Component\Domain\RegionFrame;
 use AIC\Component\Exception\UnknownComponent;
+use AIC\Component\Exception\UnmarkedComponent;
 
 use function array_pop;
 use function htmlspecialchars;
@@ -28,15 +29,16 @@ use const ENT_SUBSTITUTE;
 
 /**
  * One rendering of a component tree (#98), what templates write their
- * children through. A region writes its element and each child between
- * Tessera's `<!--t:c KEY-->` markers (#70), a template child its own key's
- * markers, and an inline child none. A pass aimed at a target path renders only
+ * children through. A region writes its element, and each child, keyed or
+ * `cN`, carries Tessera's `data-t-c="KEY"` on its root element (protocol 1,
+ * #189), printed where the build put `marks()`; a template child carries its
+ * own key, and an inline child none. A pass aimed at a target path renders only
  * the way to it and keeps the target's markup. It holds the path it is at, so
  * it is the one mutable class of rendering and lives for one call.
  *
  * Templates run as templates (#155): a template's lookup opens the pass's
  * buffer, requires the template, and closes it; the region element and the
- * markers are framework templates too (`frame()`). `text()` is the one
+ * marks are framework templates too (`frame()`). `text()` is the one
  * escaping path.
  */
 final class RenderPass
@@ -47,7 +49,7 @@ final class RenderPass
     private string $path = '';
 
     /**
-     * The target's markup, markers included, once rendered.
+     * The target's markup, its root marked, once rendered.
      */
     private string $captured = '';
 
@@ -55,6 +57,11 @@ final class RenderPass
      * Whether the target was rendered.
      */
     private bool $found = false;
+
+    /**
+     * The marks the next component root prints (#189).
+     */
+    private readonly PendingMarks $pendingMarks;
 
     /**
      * What each output buffer this pass opened and has not closed is rendering, innermost last.
@@ -71,6 +78,7 @@ final class RenderPass
         private readonly ComponentTemplates $componentTemplates,
         private readonly string $target,
     ) {
+        $this->pendingMarks = new PendingMarks();
     }
 
     /**
@@ -78,7 +86,7 @@ final class RenderPass
      *
      * @throws UnknownComponent When no template renders one of its components.
      *
-     * @return string Its element, each component between markers under its own key or `cN`; when aimed, only the
+     * @return string Its element, each component's root marked with its own key or `cN`; when aimed, only the
      *                way to the target.
      */
     public function region(Region $region): string
@@ -102,17 +110,33 @@ final class RenderPass
      * @param Component $component A template's child component.
      * @param string    $key       Its key among its siblings: `Name.N`, or `Name.N:id` in a loop.
      *
-     * @throws UnknownComponent When no template renders it.
+     * @throws UnknownComponent  When no template renders it.
+     * @throws UnmarkedComponent When its template has no root element for its marks.
      *
-     * @return string Its markup between markers under that key; when aimed elsewhere, nothing.
+     * @return string Its markup, its root marked with that key; when aimed elsewhere, nothing.
      */
     public function child(Component $component, string $key): string
     {
-        return $this->marked($component, $key, $key);
+        return $this->marked($component, $key, '');
     }
 
     /**
-     * @param Component $component A component written without markers: a layout's own, or an atom's.
+     * Printed by the build in each component template's root start tag (#189).
+     *
+     * @return string The root's Tessera attributes when the pass is marking this component: `data-t-c` with its
+     *                key, and `data-t-props` with its props token when it has one; empty when it renders inline.
+     */
+    public function marks(): string
+    {
+        $childFrame = $this->pendingMarks->take();
+
+        return $childFrame instanceof ChildFrame
+            ? $this->frame($childFrame)
+            : '';
+    }
+
+    /**
+     * @param Component $component A component written without marks: a layout's own, or an atom's.
      *
      * @throws UnknownComponent When no template renders it.
      *
@@ -174,7 +198,7 @@ final class RenderPass
     }
 
     /**
-     * @param Frame $frame A region's element, a child's markers or a fragment answer.
+     * @param Frame $frame A region's element, a child's marks or a fragment answer.
      *
      * @return string It written by its framework template.
      */
@@ -185,7 +209,7 @@ final class RenderPass
         if ($frame instanceof RegionFrame) {
             require __DIR__ . '/../../../templates/tessera/region.phtml';
         } elseif ($frame instanceof ChildFrame) {
-            require __DIR__ . '/../../../templates/tessera/child.phtml';
+            require __DIR__ . '/../../../templates/tessera/marker.phtml';
         } elseif ($frame instanceof FragmentFrame) {
             require __DIR__ . '/../../../templates/tessera/fragments.phtml';
         }
@@ -202,7 +226,7 @@ final class RenderPass
     }
 
     /**
-     * @return string The target's markup, markers included; empty until it is rendered.
+     * @return string The target's markup, its root marked; empty until it is rendered.
      */
     public function captured(): string
     {
@@ -213,31 +237,33 @@ final class RenderPass
      * @param Component $component A region's component.
      * @param int       $position  Its place in the region, from 0.
      *
-     * @throws UnknownComponent When no template renders it.
+     * @throws UnknownComponent  When no template renders it.
+     * @throws UnmarkedComponent When its template has no root element for its marks.
      *
-     * @return string Its markup between markers under its own key and props token, else `cN`.
+     * @return string Its markup, its root marked with its own key and props token, else `cN`.
      */
     private function regionChild(Component $component, int $position): string
     {
         if (!$component instanceof Keyed) {
-            return $this->marked($component, 'c' . $position, 'c' . $position);
+            return $this->marked($component, 'c' . $position, '');
         }
 
         $key = $component->key();
 
-        return $this->marked($component, $key, $component->props() === '' ? $key : $key . ' ' . $component->props());
+        return $this->marked($component, $key, $component->props());
     }
 
     /**
      * @param Component $component A component under the current path.
      * @param string    $key       Its key, the next segment of the path.
-     * @param string    $opening   What its opening marker holds: the key, then its props token when it has one.
+     * @param string    $props     Its props token; empty for none.
      *
-     * @throws UnknownComponent When no template renders it.
+     * @throws UnknownComponent  When no template renders it.
+     * @throws UnmarkedComponent When its markup printed no marks: its template has no root element for them.
      *
-     * @return string Its markup between markers; nothing when it is off the way to the target.
+     * @return string Its markup, its root marked with its key; nothing when it is off the way to the target.
      */
-    private function marked(Component $component, string $key, string $opening): string
+    private function marked(Component $component, string $key, string $props): string
     {
         $outer = $this->path;
         $this->path = $outer === ''
@@ -250,7 +276,12 @@ final class RenderPass
             return '';
         }
 
-        $markup = $this->frame(new ChildFrame($opening, $this->inline($component)));
+        $this->pendingMarks->set(new ChildFrame($key, $props));
+        $markup = $this->inline($component);
+
+        if ($this->pendingMarks->take() instanceof ChildFrame) {
+            throw new UnmarkedComponent($this->path);
+        }
 
         if ($this->target !== '' && $this->path === $this->target) {
             $this->captured = $markup;

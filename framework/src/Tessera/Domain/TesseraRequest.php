@@ -24,7 +24,7 @@ use function trim;
 final readonly class TesseraRequest
 {
     /** The protocol AIC speaks. */
-    public const string VERSION = '0';
+    public const string VERSION = '1';
 
     /** The kind of request: visit, submit, action, refresh or stream. */
     public const string REQUEST = 'Tessera-Request';

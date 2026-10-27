@@ -39,6 +39,7 @@ final readonly class TemplateGrammarGate
      * @param TemplateValidator  $templateValidator  Checks each one.
      * @param QuietFileReader    $quietFileReader    Reads each one.
      * @param TemplateHtml       $templateHtml       Its markup rules (#170).
+     * @param TemplateRoot       $templateRoot       One root element per component (#189).
      * @param TemplateWhitespace $templateWhitespace Its line rules (#170).
      */
     public function __construct(
@@ -47,6 +48,7 @@ final readonly class TemplateGrammarGate
         private TemplateValidator $templateValidator = new TemplateValidator(),
         private QuietFileReader $quietFileReader = new QuietFileReader(),
         private TemplateHtml $templateHtml = new TemplateHtml(),
+        private TemplateRoot $templateRoot = new TemplateRoot(),
         private TemplateWhitespace $templateWhitespace = new TemplateWhitespace(),
     ) {
     }
@@ -156,6 +158,7 @@ final readonly class TemplateGrammarGate
             default => [
                 ...$this->templateValidator->violations($path, $source, $templateBinding),
                 ...$this->templateHtml->violations($path, $source),
+                ...$this->templateRoot->violations($path, $source, $templateBinding),
                 ...$this->templateWhitespace->violations($path, $source),
             ],
         };

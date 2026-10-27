@@ -1,0 +1,2 @@
+<?php declare(strict_types=1); /* Tessera's marks on a component's root element (#189): RenderPass::marks() requires it with $frame a ChildFrame. */ ?>
+ data-t-c="<?= htmlspecialchars($frame->key) ?>"<?php if ($frame->props !== ''): ?> data-t-props="<?= htmlspecialchars($frame->props) ?>"<?php endif; ?>

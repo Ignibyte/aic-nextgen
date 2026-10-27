@@ -14,7 +14,7 @@ use function strlen;
 
 /**
  * Any component under a key of the app's choosing (#70), so a region marks
- * it `<!--t:c KEY-->` and Tessera can refresh it as `REGION/KEY`.
+ * it `data-t-c="KEY"` on its root element and Tessera can refresh it as `REGION/KEY`.
  */
 final readonly class KeyedComponent implements Keyed
 {

@@ -15,7 +15,6 @@ use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
 
-use function array_keys;
 use function array_map;
 use function implode;
 use function strrpos;
@@ -77,7 +76,7 @@ final readonly class TemplateLoopLowering
         ));
         $children = $this->templateLowering->statements($foreach->stmts, [...$scope, ...$bound], $loops + 1);
 
-        return new TemplateNode(TemplateNodeKind::Loop, $header, $children, scope: $parameters);
+        return new TemplateNode(TemplateNodeKind::Loop, $header, $children);
     }
 
     /**
@@ -103,11 +102,9 @@ final readonly class TemplateLoopLowering
             implode(', ', array_map(fn (Expr $expr): string => $this->templateLowering->code($expr, $inner), $for->cond)),
             implode(', ', array_map(fn (Expr $expr): string => $this->templateLowering->code($expr, $inner), $for->loop)),
         ]);
-        $parameters = array_map(static fn (string $name): string => 'int $' . $name, array_keys($bound));
-
         $children = $this->templateLowering->statements($for->stmts, $inner, $loops + 1);
 
-        return new TemplateNode(TemplateNodeKind::Counter, $header, $children, scope: $parameters);
+        return new TemplateNode(TemplateNodeKind::Counter, $header, $children);
     }
 
     /**

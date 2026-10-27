@@ -1,2 +1,2 @@
 <?php declare(strict_types=1); /* Escaped from framework/templates/components/form-field.phtml by composer run build; edit that file, never this one. */ ?>
-<p class="aic-field"><label<?php if ($formField->controlId !== ''): ?> for="<?= $renderPass->text($formField->controlId) ?>"<?php endif; ?>><?= $renderPass->text($formField->label) ?></label> <?= $renderPass->inline($formField->component) ?></p>
+<p<?= $renderPass->marks() ?> class="aic-field"><label<?php if ($formField->controlId !== ''): ?> for="<?= $renderPass->text($formField->controlId) ?>"<?php endif; ?>><?= $renderPass->text($formField->label) ?></label> <?= $renderPass->inline($formField->component) ?></p>
