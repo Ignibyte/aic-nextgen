@@ -20,7 +20,10 @@ the root configs, adds the ignore lines, and prints the lines composer.json carr
 scripts and the allowed plugins), which the app pastes in itself. gate:30 holds those files to
 the package's, so `init` again after `composer update` brings them back in step. gate:23 replays
 the app's own requests from `config/native-site.json`: one step a line, each the method, path,
-form, extra header and status both sites must answer alike. A new route adds its step.
+form, extra header and status both sites must answer alike. A new route adds its step. Both sites
+run against one database, so a record each creates gets its own id: a step with `captures: true`
+takes its answer's `Location` as `{note}` for the next steps, and that path reads as `<captured>`
+in each site's answers before they are compared (#178).
 
 Browser tests (#174) are Playwright specs in `tests/browser/`. `init` writes the root
 `package.json` and `package-lock.json` that pin Playwright 1.62.1 and ignores `/node_modules/`;
