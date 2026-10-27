@@ -34,6 +34,8 @@ final readonly class SuiteStubs
     public const array NAMES = [
         'captainhook.json',
         'deptrac.yaml',
+        'package-lock.json',
+        'package.json',
         'phpcs.xml.dist',
         'phpstan-architecture.neon',
         'phpstan.neon',
