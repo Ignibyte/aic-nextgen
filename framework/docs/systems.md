@@ -55,7 +55,10 @@ The development engine and its guard are described in [workflow.md](workflow.md)
 ## 3. Data
 
 - `AIC\Database`: `AIC\Database\Contracts\Database`, parameterised queries with `?` placeholders
-  over PDO pgsql, typed rows and transactions. Postgres is the only database.
+  over PDO pgsql, typed rows and transactions. Postgres is the only database. It is the framework's
+  seam: an app's modules and theme never depend on it (gate:9). They read and write tables through
+  `AIC\Entity`, and ask the database about itself (whether it answers, its version, a setting)
+  through `AIC\Database\Application\DatabaseStatus`.
 - `AIC\Schema`: migrations. A migration describes its tables through
   `AIC\Schema\Contracts\Schema`; `AIC\Schema\Application\Migrator` applies each version once, in a
   transaction, and keeps a ledger with a checksum of each, so a changed migration shows as changed.

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Gates\Architecture\CoreArchitectureTest;
+use Gates\Architecture\DataArchitectureTest;
 use Gates\Architecture\KindsArchitectureTest;
 use Gates\Architecture\RenderingArchitectureTest;
 
@@ -10,6 +11,7 @@ use Gates\Architecture\RenderingArchitectureTest;
 return [
     'services' => [
         ['class' => CoreArchitectureTest::class, 'tags' => ['phpat.test']],
+        ['class' => DataArchitectureTest::class, 'tags' => ['phpat.test']],
         ['class' => KindsArchitectureTest::class, 'tags' => ['phpat.test']],
         ['class' => RenderingArchitectureTest::class, 'tags' => ['phpat.test']],
     ],

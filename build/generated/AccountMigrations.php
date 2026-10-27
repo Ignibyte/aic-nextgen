@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Schema\Contracts\Migration;
+use App\Account\Migration\AddUserIds;
 use App\Account\Migration\CreateUsersTable;
 
 /**
@@ -20,6 +21,7 @@ final readonly class AccountMigrations
     {
         return [
             new CreateUsersTable(),
+            new AddUserIds(),
         ];
     }
 }

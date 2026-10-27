@@ -8,7 +8,7 @@ use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
-use AIC\Database\Contracts\Database;
+use AIC\Database\Application\DatabaseStatus;
 use AIC\Database\Contracts\QueryException;
 use InvalidArgumentException;
 use Override;
@@ -21,10 +21,10 @@ use Override;
 final readonly class DatabasePing implements Command
 {
     /**
-     * @param Database $database The database.
+     * @param DatabaseStatus $databaseStatus The database's own state.
      */
     public function __construct(
-        private Database $database,
+        private DatabaseStatus $databaseStatus,
     ) {
     }
 
@@ -41,7 +41,7 @@ final readonly class DatabasePing implements Command
         $setting = $commandInput->argument(0, 'server_version');
 
         try {
-            $value = $this->database->fetchOne('SELECT current_setting(?) AS value', [$setting])->string('value');
+            $value = $this->databaseStatus->setting($setting);
         } catch (QueryException $queryException) {
             return new CommandResult(['db:ping: ' . $queryException->getMessage()], 1);
         }

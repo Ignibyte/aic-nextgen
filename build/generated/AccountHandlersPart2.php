@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
+use AIC\Form\Application\FormTokens;
 use AIC\Module\Application\HandlerContext;
 use AIC\Session\Application\RequestSession;
 use App\Account\Controller\UploadsPage;
 use App\Account\Controller\UploadsPost;
+use App\Account\Controller\VisitsForget;
+use App\Account\Controller\VisitsPage;
 use App\Account\Form\UploadForm;
 use App\Account\Service\UploadRules;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -43,6 +46,10 @@ final readonly class AccountHandlersPart2
             ),
             UploadsPost::class => $this->handlerContext->page(
                 new UploadsPost($this->handlerContext->documents(), $requestSession, $uploadForm, (new UploadRules())->uploadCheck()),
+            ),
+            VisitsForget::class => $this->handlerContext->page(new VisitsForget($requestSession)),
+            VisitsPage::class => $this->handlerContext->page(
+                new VisitsPage($this->handlerContext->documents(), $requestSession, new FormTokens()),
             ),
         ];
     }

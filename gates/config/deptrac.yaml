@@ -101,6 +101,11 @@ deptrac:
       collectors:
         - type: classLike
           value: '^Gates\\Markup\\'
+    # gate:26's table ownership (#185), which reads modules with php-parser.
+    - name: TableOwnership
+      collectors:
+        - type: classLike
+          value: '^Gates\\Tables\\'
     # gate:27, the RawHtml count (#99).
     - name: RawHtmlGate
       collectors:
@@ -203,6 +208,11 @@ deptrac:
       - PsrVendor
       - PhpParserVendor
     ModuleMarkupGate:
+      - Domain
+      - Application
+      - PhpParserVendor
+    TableOwnership:
+      - Contracts
       - Domain
       - Application
       - PhpParserVendor

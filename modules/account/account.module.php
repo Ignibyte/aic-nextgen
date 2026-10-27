@@ -26,6 +26,7 @@ use App\Account\Controller\UploadsPage;
 use App\Account\Controller\UploadsPost;
 use App\Account\Controller\VisitsForget;
 use App\Account\Controller\VisitsPage;
+use App\Account\Migration\AddUserIds;
 use App\Account\Migration\CreateUsersTable;
 use App\Account\Repository\UserRepository;
 use App\Account\Service\AccessRules;
@@ -48,4 +49,5 @@ return (new ModuleManifest('account'))
     ->factory(AccessRules::class)
     ->factory(UploadRules::class)
     ->command('user:add', UserAdd::class)
-    ->migration(CreateUsersTable::class);
+    ->migration(CreateUsersTable::class)
+    ->migration(AddUserIds::class);

@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
-use AIC\Form\Application\FormTokens;
+use AIC\Database\Application\DatabaseStatus;
 use AIC\Module\Application\HandlerContext;
 use App\Site\Controller\HealthApi;
-use App\Site\Controller\HomePage;
 use App\Site\Controller\ResourceDownload;
 use App\Site\Controller\StatusApi;
 use App\Site\Controller\TickEvents;
 use App\Site\Controller\TicksPage;
-use App\Site\Form\GreetingForm;
 use App\Site\Service\RequestedFile;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -38,21 +36,15 @@ final readonly class SiteHandlers
      */
     public function byId(): array
     {
+        $databaseStatus = new DatabaseStatus($this->handlerContext->database());
+
         return [
-            HealthApi::class => $this->handlerContext->api(new HealthApi($this->handlerContext->database())),
-            HomePage::class => $this->handlerContext->page(
-                new HomePage(
-                    $this->handlerContext->documents(),
-                    new GreetingForm(new FormTokens()),
-                    $this->handlerContext->appConfig(),
-                    $this->handlerContext->bootedAt(),
-                ),
-            ),
+            HealthApi::class => $this->handlerContext->api(new HealthApi($databaseStatus)),
             ResourceDownload::class => $this->handlerContext->stream(
                 new ResourceDownload(new RequestedFile($this->handlerContext->root())),
             ),
             StatusApi::class => $this->handlerContext->api(
-                new StatusApi($this->handlerContext->appConfig(), $this->handlerContext->bootedAt(), $this->handlerContext->database()),
+                new StatusApi($this->handlerContext->appConfig(), $this->handlerContext->bootedAt(), $databaseStatus),
             ),
             TickEvents::class => $this->handlerContext->stream(new TickEvents()),
             TicksPage::class => $this->handlerContext->page(new TicksPage($this->handlerContext->documents())),

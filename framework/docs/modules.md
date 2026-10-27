@@ -124,6 +124,12 @@ requires that module. gate:26 holds three rules:
 - requires name modules that exist and form no cycle;
 - nothing outside `modules/` but the shell.
 
+A module's tables are its own. A table belongs to the module whose migration creates it (`create`,
+or `view` for a report); an entity type (`new EntityType('notes', ...)`) and an alteration name only
+their module's tables, written as literals, and one table has one owner. Another module reads or
+writes the table through the owner's exported repository. gate:26 holds this, and gate:9 keeps
+modules off the raw `Database`, so no query reaches a table an entity type does not name.
+
 ## The theme
 
 `config/app.php` names the theme (`theme: 'app'`); the build reads `themes/<theme>/` and no other
