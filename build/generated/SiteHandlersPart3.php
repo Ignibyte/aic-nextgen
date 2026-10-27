@@ -9,8 +9,12 @@ use AIC\Module\Application\HandlerContext;
 use AIC\Notification\Application\DatabaseChannel;
 use AIC\Notification\Application\Notifier;
 use AIC\Queue\Application\PostgresQueue;
+use AIC\Schedule\Application\Scheduler;
+use App\Site\Controller\JobsPage;
+use App\Site\Controller\JobsPost;
 use App\Site\Controller\NotificationsPage;
 use App\Site\Controller\NotificationsPost;
+use App\Site\Service\ScheduleLines;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -34,13 +38,23 @@ final readonly class SiteHandlersPart3
      */
     public function byId(): array
     {
-        $notifier = new Notifier(new PostgresQueue($this->handlerContext->database()));
+        $postgresQueue = new PostgresQueue($this->handlerContext->database());
+        $scheduler = new Scheduler($this->handlerContext->database(), $postgresQueue, $this->handlerContext->schedules());
 
         return [
+            JobsPage::class => $this->handlerContext->page(
+                new JobsPage(
+                    $this->handlerContext->documents(),
+                    $postgresQueue,
+                    new ScheduleLines($scheduler),
+                    $this->handlerContext->schedules(),
+                ),
+            ),
+            JobsPost::class => $this->handlerContext->page(new JobsPost($postgresQueue)),
             NotificationsPage::class => $this->handlerContext->page(
                 new NotificationsPage($this->handlerContext->documents(), new DatabaseChannel($this->handlerContext->database())),
             ),
-            NotificationsPost::class => $this->handlerContext->page(new NotificationsPost($notifier)),
+            NotificationsPost::class => $this->handlerContext->page(new NotificationsPost(new Notifier($postgresQueue))),
         ];
     }
 }

@@ -7,7 +7,7 @@ namespace App\Site\Controller;
 use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\ApiResponse;
 use AIC\Controller\Domain\JsonResponse;
-use AIC\Database\Contracts\Database;
+use AIC\Database\Application\DatabaseStatus;
 use AIC\Database\Contracts\QueryException;
 use App\Site\Service\HealthBody;
 use Override;
@@ -20,10 +20,10 @@ use Psr\Http\Message\ServerRequestInterface;
 final readonly class HealthApi implements Api
 {
     /**
-     * @param Database $database The database.
+     * @param DatabaseStatus $databaseStatus The database's own state.
      */
     public function __construct(
-        private Database $database,
+        private DatabaseStatus $databaseStatus,
     ) {
     }
 
@@ -38,7 +38,7 @@ final readonly class HealthApi implements Api
         $http = $serverRequest->getProtocolVersion();
 
         try {
-            $this->database->fetchOne('SELECT 1 AS up', []);
+            $this->databaseStatus->ping();
         } catch (QueryException) {
             return new JsonResponse(new HealthBody(false, $http), 503);
         }

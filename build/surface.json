@@ -383,7 +383,8 @@
                 }
             ],
             "migrations": [
-                "App\\Account\\Migration\\CreateUsersTable"
+                "App\\Account\\Migration\\CreateUsersTable",
+                "App\\Account\\Migration\\AddUserIds"
             ],
             "name": "account",
             "namespace": "App\\Account\\",

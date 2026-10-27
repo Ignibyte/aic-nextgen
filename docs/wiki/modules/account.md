@@ -42,6 +42,7 @@ none
 ## Migrations
 
 - `App\Account\Migration\CreateUsersTable`
+- `App\Account\Migration\AddUserIds`
 
 ## Plugins
 
@@ -102,6 +103,7 @@ none
 
 | Class | File |
 | --- | --- |
+| `App\Account\Migration\AddUserIds` | [modules/account/src/Migration/AddUserIds.php](../../../modules/account/src/Migration/AddUserIds.php) |
 | `App\Account\Migration\CreateUsersTable` | [modules/account/src/Migration/CreateUsersTable.php](../../../modules/account/src/Migration/CreateUsersTable.php) |
 
 ### `src/Repository/`
@@ -125,6 +127,7 @@ none
 - [AIC\Component](../../../framework/docs/systems.md#4-components)
 - [AIC\Controller](../../../framework/docs/systems.md#1-http-routing-and-the-kinds)
 - [AIC\Database](../../../framework/docs/systems.md#3-data)
+- [AIC\Entity](../../../framework/docs/systems.md#3-data)
 - [AIC\Form](../../../framework/docs/systems.md#8-form-security)
 - [AIC\Module](../../../framework/docs/systems.md#2-wiring-and-modules)
 - [AIC\Schema](../../../framework/docs/systems.md#3-data)

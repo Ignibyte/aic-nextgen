@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Every table owned by one module** (#185, #186). A table belongs to the module whose migration
+  creates it; gate:26 refuses an entity type, alteration or view over another module's table, an
+  uncreated one or a computed name, and gate:9 keeps module code off `AIC\Database`'s raw
+  `Database`. `DatabaseStatus` answers the health and status reads; the account module's users
+  run on the entity API.
+
 - **Entity reports** (#191). A migration creates a view with `Schema::view()`; a read-only entity type
   reads it like a table and refuses writes. `totals()` gains `countBy()` and `sumBy()`. The fixture's
   `/stock/days` reads the `stock_days` view, and the tags page counts each tag.

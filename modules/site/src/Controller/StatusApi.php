@@ -8,7 +8,7 @@ use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\ApiResponse;
 use AIC\Controller\Domain\JsonResponse;
-use AIC\Database\Contracts\Database;
+use AIC\Database\Application\DatabaseStatus;
 use AIC\Database\Contracts\QueryException;
 use App\Site\Service\StatusBody;
 use Override;
@@ -22,14 +22,14 @@ use Psr\Http\Message\ServerRequestInterface;
 final readonly class StatusApi implements Api
 {
     /**
-     * @param AppConfig $appConfig The app's settings.
-     * @param string    $bootedAt  When the app booted to serve this request, ISO 8601 in UTC.
-     * @param Database  $database  The database.
+     * @param AppConfig      $appConfig      The app's settings.
+     * @param string         $bootedAt       When the app booted to serve this request, ISO 8601 in UTC.
+     * @param DatabaseStatus $databaseStatus The database's own state.
      */
     public function __construct(
         private AppConfig $appConfig,
         private string $bootedAt,
-        private Database $database,
+        private DatabaseStatus $databaseStatus,
     ) {
     }
 
@@ -42,7 +42,7 @@ final readonly class StatusApi implements Api
     public function api(ServerRequestInterface $serverRequest): ApiResponse
     {
         try {
-            $databaseVersion = $this->database->fetchOne('SELECT version() AS version', [])->string('version');
+            $databaseVersion = $this->databaseStatus->version();
         } catch (QueryException) {
             $databaseVersion = 'unavailable';
         }

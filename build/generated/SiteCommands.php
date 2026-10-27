@@ -6,6 +6,7 @@ namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
 use AIC\Controller\Contracts\Command;
+use AIC\Database\Application\DatabaseStatus;
 use AIC\Module\Application\ConsoleContext;
 use App\Site\Command\DatabasePing;
 use App\Site\Command\Greet;
@@ -33,7 +34,7 @@ final readonly class SiteCommands
     public function byName(): array
     {
         return [
-            'db:ping' => new DatabasePing($this->consoleContext->database()),
+            'db:ping' => new DatabasePing(new DatabaseStatus($this->consoleContext->database())),
             'greet' => new Greet($this->consoleContext->tagged(Greeter::class)),
         ];
     }
