@@ -57,9 +57,16 @@ final readonly class NoteTagsPage implements Page
             : '';
         $lines = array_map(static fn (NoteTag $noteTag): string => $noteTag->line(), $this->noteTagRepository->tags($search));
 
+        $counts = [];
+
+        foreach ($this->noteTagRepository->counts() as $tag => $count) {
+            $counts[] = $tag . ': ' . $count;
+        }
+
         return $this->noteViews->page([
             new Heading('Tags'),
             new LineList('tags', $lines, 'No tags yet.'),
+            new LineList('tag-counts', $counts, 'No tags yet.'),
             $this->noteTagForms->form($serverRequest, '', '', ''),
         ], 200);
     }

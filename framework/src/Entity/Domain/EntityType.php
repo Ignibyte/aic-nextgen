@@ -15,9 +15,10 @@ use function preg_match;
 final readonly class EntityType
 {
     /**
-     * @param string       $table  The table.
-     * @param string       $key    The key column.
-     * @param list<object> $fields Its Fields: objects, the list form elephc keeps (plan.md).
+     * @param string       $table    The table, or a view.
+     * @param string       $key      The key column.
+     * @param list<object> $fields   Its Fields: objects, the list form elephc keeps (plan.md).
+     * @param bool         $readOnly Whether it maps a view (#191): queried like a table, never written.
      *
      * @throws InvalidArgumentException When the table or the key is not an identifier.
      */
@@ -25,6 +26,7 @@ final readonly class EntityType
         public string $table,
         public string $key,
         private array $fields,
+        public bool $readOnly = false,
     ) {
         if (
             preg_match('/^[a-z_][a-z0-9_]{0,62}$/', $table) !== 1

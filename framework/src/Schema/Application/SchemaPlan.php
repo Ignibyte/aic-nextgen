@@ -9,6 +9,7 @@ use AIC\Schema\Contracts\Schema;
 use AIC\Schema\Contracts\TableAlteration;
 use AIC\Schema\Contracts\TableBuilder;
 use AIC\Schema\Domain\Identifier;
+use AIC\Schema\Domain\View;
 use InvalidArgumentException;
 use Override;
 
@@ -22,7 +23,7 @@ use function array_merge;
 final class SchemaPlan implements Schema
 {
     /**
-     * The TableParts and AlterationDrafts, in order.
+     * The TableParts, AlterationDrafts and Views, in order.
      *
      * @var list<object>
      */
@@ -102,31 +103,60 @@ final class SchemaPlan implements Schema
     }
 
     /**
+     * @param string $name   The view's name, an identifier.
+     * @param string $select The SELECT it shows.
+     *
+     * @throws InvalidArgumentException When the name is not an identifier, or the SELECT is empty.
+     */
+    #[Override]
+    public function view(string $name, string $select): void
+    {
+        $this->drafts[] = new View(new Identifier($name), $select);
+    }
+
+    /**
      * @param PostgresDdl $postgresDdl The dialect.
      *
      * @throws InvalidArgumentException When a table names a column it lacks, an alteration adds nothing, or an index name is too long.
      *
-     * @return list<string> The statements, in order: the extensions first, then each table with its indexes and each alteration.
+     * @return list<string> The statements, in order: the extensions first, then each table with its indexes, each
+     *                      alteration and each view.
      */
     public function statements(PostgresDdl $postgresDdl): array
     {
         $statements = array_map($postgresDdl->createExtension(...), $this->extensions);
 
         foreach ($this->drafts as $draft) {
-            if ($draft instanceof AlterationDraft) {
-                $statements = array_merge($statements, $postgresDdl->alterTable($draft->alteration()));
-
-                continue;
-            }
-
-            if (!($draft instanceof TableParts)) {
-                continue;
-            }
-
-            $table = $draft->table();
-            $statements = array_merge($statements, [$postgresDdl->createTable($table)], $postgresDdl->createIndexes($table));
+            $statements = array_merge($statements, self::drafted($draft, $postgresDdl));
         }
 
         return $statements;
+    }
+
+    /**
+     * @param object      $draft       A TableParts, an AlterationDraft or a View.
+     * @param PostgresDdl $postgresDdl The dialect.
+     *
+     * @throws InvalidArgumentException When a table names a column it lacks, an alteration adds nothing, or an index name is too long.
+     *
+     * @return list<string> Its statements.
+     */
+    private static function drafted(object $draft, PostgresDdl $postgresDdl): array
+    {
+        if ($draft instanceof AlterationDraft) {
+            return $postgresDdl->alterTable($draft->alteration());
+        }
+
+        if ($draft instanceof View) {
+            return [$postgresDdl->createView($draft)];
+        }
+
+        if (!$draft instanceof TableParts) {
+            return [];
+        }
+
+        $table = $draft->table();
+
+        return array_merge([$postgresDdl->createTable($table)], $postgresDdl->createIndexes($table));
     }
 }

@@ -127,6 +127,20 @@ final readonly class StockList
     }
 
     /**
+     * @param ServerRequestInterface $serverRequest The request: an optional `day`.
+     *
+     * @return string The day the report asks for, `YYYY-MM-DD`; empty when none is, or it is malformed (#191).
+     */
+    public function day(ServerRequestInterface $serverRequest): string
+    {
+        $day = self::field($serverRequest, 'day');
+
+        return preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $day) === 1
+            ? $day
+            : '';
+    }
+
+    /**
      * @param list<StockItem> $items The newest items, oldest first.
      *
      * @return string The latest item's line, or that there is none.

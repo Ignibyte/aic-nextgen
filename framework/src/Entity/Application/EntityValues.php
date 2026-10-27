@@ -34,12 +34,17 @@ final readonly class EntityValues
      * @param EntityType                          $entityType The entity type written.
      * @param array<string, string|int|bool|null> $values     Values by field name.
      *
-     * @throws InvalidArgumentException When a name is not a writable field, or its value does not fit it.
+     * @throws InvalidArgumentException When the entity type is read-only, a name is not a writable field, or its value
+     *                                  does not fit it.
      */
     public function __construct(
         EntityType $entityType,
         private array $values,
     ) {
+        if ($entityType->readOnly) {
+            throw new InvalidArgumentException('The ' . $entityType->table . ' entity is a view: it is read, never written.');
+        }
+
         $columns = array_keys($values);
         $writable = $entityType->writable();
 

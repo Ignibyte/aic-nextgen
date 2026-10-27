@@ -43,6 +43,7 @@ final readonly class ModuleHandlers
             (new NoteHandlersPart2($this->handlerContext))->byId(),
             (new NoteHandlersPart3($this->handlerContext))->byId(),
             (new NoteHandlersPart4($this->handlerContext))->byId(),
+            (new NoteHandlersPart5($this->handlerContext))->byId(),
             (new ScaffoldHandlers($this->handlerContext))->byId(),
         );
     }

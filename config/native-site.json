@@ -954,6 +954,15 @@
             "header": "",
             "status": 422,
             "captures": false
+        },
+        {
+            "name": "stock report, one day from the view",
+            "method": "GET",
+            "path": "/stock/days?day=2026-10-20",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
         }
     ]
 }

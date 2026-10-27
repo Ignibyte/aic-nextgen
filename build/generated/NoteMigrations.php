@@ -10,6 +10,7 @@ use App\Note\Migration\AddStockQuantity;
 use App\Note\Migration\ConvertStockCost;
 use App\Note\Migration\CreateNotesTable;
 use App\Note\Migration\CreateNoteTagsTable;
+use App\Note\Migration\CreateStockDaysView;
 use App\Note\Migration\CreateStockItemsTable;
 use App\Note\Migration\IndexNotesByCreation;
 
@@ -32,6 +33,7 @@ final readonly class NoteMigrations
             new AddStockCost(),
             new ConvertStockCost(),
             new AddStockQuantity(),
+            new CreateStockDaysView(),
         ];
     }
 }

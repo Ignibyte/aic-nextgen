@@ -204,6 +204,13 @@
             "path": "/notes/tags"
         },
         {
+            "handler": "App\\Note\\Controller\\StockDaysPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "note",
+            "path": "/stock/days"
+        },
+        {
             "handler": "App\\Scaffold\\Controller\\ScaffoldPage",
             "kind": "Page",
             "method": "GET",
@@ -403,7 +410,8 @@
                 "App\\Note\\Migration\\CreateStockItemsTable",
                 "App\\Note\\Migration\\AddStockCost",
                 "App\\Note\\Migration\\ConvertStockCost",
-                "App\\Note\\Migration\\AddStockQuantity"
+                "App\\Note\\Migration\\AddStockQuantity",
+                "App\\Note\\Migration\\CreateStockDaysView"
             ],
             "name": "note",
             "namespace": "App\\Note\\",

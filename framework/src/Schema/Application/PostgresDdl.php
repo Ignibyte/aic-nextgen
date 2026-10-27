@@ -15,6 +15,7 @@ use AIC\Schema\Domain\ForeignKey;
 use AIC\Schema\Domain\Identifier;
 use AIC\Schema\Domain\Retype;
 use AIC\Schema\Domain\Table;
+use AIC\Schema\Domain\View;
 use InvalidArgumentException;
 
 use function array_merge;
@@ -33,6 +34,16 @@ final readonly class PostgresDdl
     public function createExtension(Identifier $identifier): string
     {
         return 'CREATE EXTENSION IF NOT EXISTS ' . $identifier->value;
+    }
+
+    /**
+     * @param View $view A view.
+     *
+     * @return string Its `CREATE OR REPLACE VIEW`.
+     */
+    public function createView(View $view): string
+    {
+        return 'CREATE OR REPLACE VIEW ' . $view->identifier->value . ' AS ' . $view->select;
     }
 
     /**

@@ -78,8 +78,12 @@ The development engine and its guard are described in [workflow.md](workflow.md)
     optional)` joins through it (inner, or left when optional); the joined fields are
     `prefix.field` in conditions, search, order and totals, and its columns come back as
     `prefix_column`. Every column is qualified by its table; changes by query refuse a join.
-  - Every value is bound, and only the entity types' own field names reach the SQL. Reports
-    (#191) are not here yet.
+  - `totals()` also groups: `countBy(field)` and `sumBy(field, group)`, keyed by the group's text,
+    largest first.
+  - A report is a view a module's migration creates through `Schema::view(name, select)`, the one
+    place a module writes SQL; an `EntityType` marked read-only maps it and is queried like a
+    table, and every write to it is refused.
+  - Every value is bound, and only the entity types' own field names reach the SQL.
 
 ## 4. Components
 

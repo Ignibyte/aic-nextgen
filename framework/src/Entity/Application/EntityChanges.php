@@ -37,8 +37,8 @@ final readonly class EntityChanges
     /**
      * @param array<string, string|int|bool|null> $values The writable fields to change.
      *
-     * @throws InvalidArgumentException When there is nothing to change, the query has no condition or joins a
-     *                                  table, or a value does not fit its field.
+     * @throws InvalidArgumentException When there is nothing to change, the query has no condition, joins a
+     *                                  table or is on a view, or a value does not fit its field.
      * @throws QueryException           When the update fails.
      *
      * @return int How many rows it changed.
@@ -66,7 +66,7 @@ final readonly class EntityChanges
     }
 
     /**
-     * @throws InvalidArgumentException When the query has no condition, or joins a table.
+     * @throws InvalidArgumentException When the query has no condition, joins a table, or is on a view.
      * @throws QueryException           When the delete fails.
      *
      * @return int How many rows it deleted.
@@ -77,14 +77,14 @@ final readonly class EntityChanges
     }
 
     /**
-     * @throws InvalidArgumentException When the query has no condition, or joins a table.
+     * @throws InvalidArgumentException When the query has no condition, joins a table, or is on a view.
      *
      * @return string The query's WHERE.
      */
     private function where(): string
     {
-        if (!$this->entityConditions->hasAny() || $this->entityJoins->hasAny()) {
-            throw new InvalidArgumentException('A change by query names at least one condition and joins no table.');
+        if (!$this->entityConditions->hasAny() || $this->entityJoins->hasAny() || $this->entityType->readOnly) {
+            throw new InvalidArgumentException('A change by query names a condition, joins no table and is on a table, not a view.');
         }
 
         return $this->entityConditions->sql();
