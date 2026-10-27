@@ -37,6 +37,9 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Tessera 0.1.1** (#180). `config/app.php` pins it with its sums: a patched component no longer
+  resets the fields beside it (Tessera #32; Lotline's inventory filters lost their values).
+
 - **A nested Tessera target renders whole** (#179). An aimed render pass (a target path of more
   than one segment) rendered the target but none of its descendants, so a fragment for a nested
   component came back empty and Tessera patched the content away. gate:23 could not see it: PHP and
