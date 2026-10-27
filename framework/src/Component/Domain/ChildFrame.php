@@ -13,12 +13,14 @@ use AIC\Component\Contracts\Frame;
 final readonly class ChildFrame implements Frame
 {
     /**
-     * @param string $key   The child's key, its `data-t-c`.
-     * @param string $props Its props token, its `data-t-props`; empty for none.
+     * @param string $key    The child's key, its `data-t-c`.
+     * @param string $props  Its props token, its `data-t-props`; empty for none.
+     * @param string $anchor Its anchor, its `data-t-anchor` (#188); empty for none.
      */
     public function __construct(
         public string $key,
         public string $props,
+        public string $anchor = '',
     ) {
     }
 }

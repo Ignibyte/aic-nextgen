@@ -46,10 +46,12 @@ final readonly class NativeSiteComparer
     ];
 
     /**
-     * @param HttpClient $httpClient Sends the requests.
+     * @param HttpClient        $httpClient        Sends the requests.
+     * @param NativeSiteAnchors $nativeSiteAnchors Resolves a step's `@NAME` targets from the site's page (#188).
      */
     public function __construct(
         private HttpClient $httpClient,
+        private NativeSiteAnchors $nativeSiteAnchors,
     ) {
     }
 
@@ -73,7 +75,7 @@ final readonly class NativeSiteComparer
                 $step->method,
                 $path,
                 $nativeSiteSession->form($step),
-                $nativeSiteSession->header($step),
+                $this->nativeSiteAnchors->resolved($origin, $path, $nativeSiteSession->header($step)),
             );
             $nativeSiteSession->absorb($step, $exchange, self::path($exchange->location));
             $captured = $step->captures

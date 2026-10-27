@@ -15,6 +15,12 @@ whose template printed no marks fails the render. Keys form paths such as `conte
 `KeyedComponent` may add a signed props token, written as `data-t-props`. Protocol 1 has no block
 markers. HTML/page wrappers are transparent, so changing a wrapper does not add target segments.
 
+A `KeyedComponent` may also carry an anchor, a name in the key grammar written as `data-t-anchor`.
+A link, form or poll targets it as `@NAME`; Tessera finds the anchored element and sends its path,
+so module code never spells a path that a layout change could strand. One page holds each anchor
+once: a second on one render fails it (`DuplicateAnchor`). A gate:23 step may send
+`Tessera-Targets: @NAME`, which each site resolves from its own page of the step's path.
+
 `AIC\Tessera\Domain\TesseraRequest` validates request kind, protocol, layout identity and target
 syntax. A valid visit naming a region also refreshes the layout's other regions so navigation state
 follows the page. A visit naming only components gets exactly those components. Refresh, submit

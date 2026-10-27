@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Tessera targets by anchor** (#188). A `KeyedComponent` may carry an anchor, printed as
+  `data-t-anchor`; a link, form or poll targets it as `@NAME` and Tessera sends the component's
+  path, so module code never spells one. A page holds each anchor once. gate:23 steps may target
+  `@NAME`. The fixture's stock list is anchored `stock-list`.
+
 - **The entity API covers an app's record and list queries** (#184). `EntityQuery` takes
   comparisons, in-lists, null tests, any-of groups and an escaped case-insensitive search, pages
   with `offset()`, locks with `forUpdate()`, and answers `first()`, `totals()` (count, sum, max,

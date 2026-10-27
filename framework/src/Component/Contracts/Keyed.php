@@ -19,4 +19,10 @@ interface Keyed extends Component
      * @return string Its signed props token, rendered after the key (protocol 2.5, #74); empty for none.
      */
     public function props(): string;
+
+    /**
+     * @return string Its anchor, which a link or form targets as `@NAME` and Tessera resolves to its path
+     *                (protocol 1); empty for none.
+     */
+    public function anchor(): string;
 }

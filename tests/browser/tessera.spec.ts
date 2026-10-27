@@ -107,6 +107,20 @@ function componentSlice(html: string, from: number, key: string): string {
     return '';
 }
 
+test('a link that targets an anchor swaps that component alone', async ({ page }) => {
+    await page.goto('/stock');
+    await page.evaluate(() => {
+        (window as Window & { aicSameDocument?: boolean }).aicSameDocument = true;
+    });
+    const asked = page.waitForRequest((request) => request.headers()['tessera-targets'] !== undefined);
+
+    await page.getByRole('link', { name: 'Show the last 3' }).click();
+
+    expect((await asked).headers()['tessera-targets']).toBe('content/stock-list ' + (await page.locator('[data-t-anchor="stock-list"]').getAttribute('data-t-props')));
+    await expect(page.locator('#stock-limit')).toHaveText('The last 3.');
+    expect(await page.evaluate(() => (window as Window & { aicSameDocument?: boolean }).aicSameDocument)).toBe(true);
+});
+
 test('a fragment holds the same markup for its target as the whole document', async ({ page }) => {
     const whole = await (await page.request.get('/notes')).text();
     const fragment = await (await page.request.get('/notes', {
