@@ -50,6 +50,17 @@ final readonly class NoteTagRepository
     }
 
     /**
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When a field is declared wrongly.
+     *
+     * @return array<string, int> How many notes carry each tag, most first (#191).
+     */
+    public function counts(): array
+    {
+        return $this->entityStore->query($this->noteTypes->noteTags())->totals()->countBy('tag');
+    }
+
+    /**
      * @param int    $noteId A note's key.
      * @param string $tag    A tag.
      *

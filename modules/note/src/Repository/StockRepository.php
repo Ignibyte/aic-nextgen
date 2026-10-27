@@ -153,6 +153,25 @@ final readonly class StockRepository
     }
 
     /**
+     * @param string $day One day, `YYYY-MM-DD`; empty for every item.
+     *
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When a constructed value is invalid.
+     *
+     * @return array<string, string> What the items are worth, by whether they are certified (`true`, `false`).
+     */
+    public function worthByCertification(string $day): array
+    {
+        $entityQuery = $this->entityStore->query($this->entityType);
+
+        if ($day !== '') {
+            $entityQuery->where('added_on', $day);
+        }
+
+        return $entityQuery->totals()->sumBy('price', 'certified');
+    }
+
+    /**
      * @param array<string, string|int|bool|null> $values     The item's values, its SKU among them.
      * @param StockEntry                          $stockEntry The posted item.
      *

@@ -6,6 +6,7 @@ namespace AIC\Entity\Application;
 
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
+use AIC\Database\Contracts\Row;
 use InvalidArgumentException;
 
 /**
@@ -89,6 +90,66 @@ final readonly class EntityTotals
         }
 
         return $values;
+    }
+
+    /**
+     * @param string $field A field to group the matching rows by.
+     *
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When the query has no such field.
+     *
+     * @return array<string, int> How many rows each value of the field has, as text, largest first; null left out.
+     */
+    public function countBy(string $field): array
+    {
+        $counts = [];
+
+        foreach ($this->grouped('count(*)::integer', $field) as $row) {
+            $counts[$row->string('value')] = $row->int('total');
+        }
+
+        return $counts;
+    }
+
+    /**
+     * @param string $field An Integer or Numeric field to add up.
+     * @param string $group A field to group the matching rows by.
+     *
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When the query has no such field.
+     *
+     * @return array<string, string> Each group's sum, as text, by the group's value as text, largest first; null
+     *                               groups left out.
+     */
+    public function sumBy(string $field, string $group): array
+    {
+        $sums = [];
+        $sum = 'coalesce(sum(' . $this->entityConditions->column($field) . '), 0)';
+
+        foreach ($this->grouped($sum, $group) as $row) {
+            $sums[$row->string('value')] = $row->string('total');
+        }
+
+        return $sums;
+    }
+
+    /**
+     * @param string $aggregate An aggregate over the matching rows.
+     * @param string $group     The field to group them by.
+     *
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When the query has no such field.
+     *
+     * @return list<Row> One row per group: its value as `value`, the aggregate as `total`, largest first.
+     */
+    private function grouped(string $aggregate, string $group): array
+    {
+        $column = $this->entityConditions->column($group);
+        $sql = 'SELECT ' . $column . '::text AS value, ' . $aggregate . ' AS total FROM ' . $this->entityJoins->from()
+            . $this->entityConditions->sql() . ($this->entityConditions->hasAny() ? ' AND ' : ' WHERE ') . $column
+            . ' IS NOT NULL GROUP BY ' . $column . ' ORDER BY 2 DESC, 1';
+
+        return $this->database->fetchAll($sql, $this->entityConditions->params());
     }
 
     /**

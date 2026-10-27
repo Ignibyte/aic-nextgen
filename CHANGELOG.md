@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Entity reports** (#191). A migration creates a view with `Schema::view()`; a read-only entity type
+  reads it like a table and refuses writes. `totals()` gains `countBy()` and `sumBy()`. The fixture's
+  `/stock/days` reads the `stock_days` view, and the tags page counts each tag.
+
 - **Entity joins** (#190). A `Reference` field names the entity type whose key it holds, and
   `EntityQuery::with()` joins through it, inner or left, its columns read back as `prefix_column`
   and its fields named `prefix.field` in conditions, search, order and totals. The fixture's note

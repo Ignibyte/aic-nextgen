@@ -19,6 +19,7 @@ use App\Note\Controller\NoteShowPage;
 use App\Note\Controller\NoteTagPost;
 use App\Note\Controller\NoteTagsPage;
 use App\Note\Controller\NoteUpdatePost;
+use App\Note\Controller\StockDaysPage;
 use App\Note\Controller\StockPage;
 use App\Note\Controller\StockPost;
 use App\Note\Migration\AddStockCost;
@@ -26,6 +27,7 @@ use App\Note\Migration\AddStockQuantity;
 use App\Note\Migration\ConvertStockCost;
 use App\Note\Migration\CreateNotesTable;
 use App\Note\Migration\CreateNoteTagsTable;
+use App\Note\Migration\CreateStockDaysView;
 use App\Note\Migration\CreateStockItemsTable;
 use App\Note\Migration\IndexNotesByCreation;
 
@@ -40,6 +42,7 @@ return (new ModuleManifest('note'))
     ->route(RouteMethod::Post, '/stock', StockPost::class)
     ->route(RouteMethod::Get, '/notes/tags', NoteTagsPage::class)
     ->route(RouteMethod::Post, '/notes/tags', NoteTagPost::class)
+    ->route(RouteMethod::Get, '/stock/days', StockDaysPage::class)
     ->block(NoteTipsBlock::class)
     ->command('stock:sample', StockSample::class)
     ->migration(CreateNotesTable::class)
@@ -48,4 +51,5 @@ return (new ModuleManifest('note'))
     ->migration(CreateStockItemsTable::class)
     ->migration(AddStockCost::class)
     ->migration(ConvertStockCost::class)
-    ->migration(AddStockQuantity::class);
+    ->migration(AddStockQuantity::class)
+    ->migration(CreateStockDaysView::class);
