@@ -17,8 +17,10 @@ use function is_string;
 use function mb_strtolower;
 use function mb_trim;
 use function parse_url;
+use function preg_quote;
 use function preg_replace;
 use function sprintf;
+use function strlen;
 
 use const PHP_URL_PATH;
 
@@ -74,7 +76,10 @@ final readonly class NativeSiteComparer
                 $nativeSiteSession->header($step),
             );
             $nativeSiteSession->absorb($step, $exchange, self::path($exchange->location));
-            $answers[] = new NativeSiteAnswer($path, $exchange);
+            $captured = $step->captures
+                ? self::path($exchange->location)
+                : '';
+            $answers[] = new NativeSiteAnswer($path, $exchange, $captured);
         }
 
         return $answers;
@@ -90,10 +95,12 @@ final readonly class NativeSiteComparer
     public function differences(array $steps, array $expected, array $actual): array
     {
         $differences = [];
+        $phpCaptured = self::captures($expected);
+        $nativeCaptured = self::captures($actual);
 
         foreach ($steps as $index => $step) {
-            $php = self::normalised(self::exchange($expected[$index] ?? null));
-            $native = self::normalised(self::exchange($actual[$index] ?? null));
+            $php = self::normalised(self::exchange($expected[$index] ?? null), $phpCaptured);
+            $native = self::normalised(self::exchange($actual[$index] ?? null), $nativeCaptured);
 
             foreach (self::compared($step, $php, $native) as $difference) {
                 $differences[] = sprintf('%s (%s %s): %s', $step->name, $step->method, $step->path, $difference);
@@ -150,20 +157,59 @@ final readonly class NativeSiteComparer
     }
 
     /**
+     * @param list<NativeSiteAnswer> $answers One site's answers.
+     *
+     * @return list<string> The paths its capturing steps captured: the records that run created (#178).
+     */
+    private static function captures(array $answers): array
+    {
+        $captured = [];
+
+        foreach ($answers as $answer) {
+            if (strlen($answer->captured) < 2) {
+                continue;
+            }
+
+            $captured[] = $answer->captured;
+        }
+
+        return $captured;
+    }
+
+    /**
      * @param HttpExchange $httpExchange An answer.
+     * @param list<string> $captured     The paths its site captured, each read as `<captured>` (#178).
      *
      * @return HttpExchange The answer with its volatile values normalised.
      */
-    private static function normalised(HttpExchange $httpExchange): HttpExchange
+    private static function normalised(HttpExchange $httpExchange, array $captured): HttpExchange
     {
+        $normal = static fn (string $text): string => self::volatile(self::uncaptured($text, $captured));
+
         return new HttpExchange(
             $httpExchange->status,
             mb_strtolower(mb_trim($httpExchange->contentType)),
-            self::volatile(self::path($httpExchange->location)),
-            self::volatile($httpExchange->body),
+            $normal(self::path($httpExchange->location)),
+            $normal($httpExchange->body),
             '',
-            array_map(self::volatile(...), $httpExchange->headers),
+            array_map($normal, $httpExchange->headers),
         );
+    }
+
+    /**
+     * @param string       $text     Text from an answer.
+     * @param list<string> $captured The paths the site captured.
+     *
+     * @return string The text with each captured path, as a whole path segment, read as `<captured>`: each site
+     *                creates its own record, with its own id, against the one database.
+     */
+    private static function uncaptured(string $text, array $captured): string
+    {
+        foreach ($captured as $path) {
+            $text = preg_replace('#' . preg_quote($path, '#') . '(?![\\w-])#', '<captured>', $text) ?? $text;
+        }
+
+        return $text;
     }
 
     /**

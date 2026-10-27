@@ -37,6 +37,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **gate:23 compares an app's created records** (#178). The PHP and compiled sites create their
+  own record against one database, with different ids, and gate:23 normalised ids only under
+  AIC's `/notes/`. A path a step captures now reads as `<captured>` in its site's answers, so an
+  app's created-record URLs and links compare equal; Lotline had addressed vehicles by VIN to get
+  around it.
 - **Sign-in no longer tells which logins exist by its timing** (#177). `Authenticator::login()`
   answered an unknown login without running bcrypt (about 0.01 s on DDEV) and a known one with a
   wrong password after it (about 0.17 s). An unknown login is now checked against a decoy hash at the
