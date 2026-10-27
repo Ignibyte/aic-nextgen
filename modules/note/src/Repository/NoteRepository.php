@@ -8,10 +8,8 @@ use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
 use AIC\Entity\Application\EntityNotFoundException;
 use AIC\Entity\Application\EntityStore;
-use AIC\Entity\Domain\EntityType;
-use AIC\Entity\Domain\Field;
-use AIC\Entity\Domain\FieldType;
 use App\Note\Entity\Note;
+use App\Note\Entity\NoteTypes;
 use InvalidArgumentException;
 
 use function array_map;
@@ -23,23 +21,13 @@ use function array_map;
 final readonly class NoteRepository
 {
     /**
-     * The `notes` table: a title, a body and when it was written.
-     */
-    private EntityType $entityType;
-
-    /**
      * @param EntityStore $entityStore The entity store.
-     *
-     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     * @param NoteTypes   $noteTypes   The module's entity types, `notes` among them.
      */
     public function __construct(
         private EntityStore $entityStore,
+        private NoteTypes $noteTypes,
     ) {
-        $this->entityType = new EntityType('notes', 'id', [
-            new Field('title', FieldType::Text),
-            new Field('body', FieldType::Text),
-            new Field('created_at', FieldType::CreatedAt),
-        ]);
     }
 
     /**
@@ -50,7 +38,7 @@ final readonly class NoteRepository
      */
     public function all(): array
     {
-        return array_map(self::note(...), $this->entityStore->query($this->entityType)->orderBy('id')->rows());
+        return array_map(self::note(...), $this->entityStore->query($this->noteTypes->notes())->orderBy('id')->rows());
     }
 
     /**
@@ -64,7 +52,7 @@ final readonly class NoteRepository
      */
     public function find(int $id): Note
     {
-        return self::note($this->entityStore->query($this->entityType)->where('id', $id)->one());
+        return self::note($this->entityStore->query($this->noteTypes->notes())->where('id', $id)->one());
     }
 
     /**
@@ -78,7 +66,7 @@ final readonly class NoteRepository
      */
     public function create(string $title, string $body): int
     {
-        return $this->entityStore->insert($this->entityType, ['title' => $title, 'body' => $body]);
+        return $this->entityStore->insert($this->noteTypes->notes(), ['title' => $title, 'body' => $body]);
     }
 
     /**
@@ -92,7 +80,7 @@ final readonly class NoteRepository
      */
     public function update(int $id, string $title, string $body): void
     {
-        $this->entityStore->update($this->entityType, $id, ['title' => $title, 'body' => $body]);
+        $this->entityStore->update($this->noteTypes->notes(), $id, ['title' => $title, 'body' => $body]);
     }
 
     /**
@@ -103,7 +91,7 @@ final readonly class NoteRepository
      */
     public function delete(int $id): void
     {
-        $this->entityStore->delete($this->entityType, $id);
+        $this->entityStore->delete($this->noteTypes->notes(), $id);
     }
 
     /**

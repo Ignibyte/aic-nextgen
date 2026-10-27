@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Entity joins** (#190). A `Reference` field names the entity type whose key it holds, and
+  `EntityQuery::with()` joins through it, inner or left, its columns read back as `prefix_column`
+  and its fields named `prefix.field` in conditions, search, order and totals. The fixture's note
+  tags page lists each tag with its note's title through a join.
+
 - **Tessera targets by anchor** (#188). A `KeyedComponent` may carry an anchor, printed as
   `data-t-anchor`; a link, form or poll targets it as `@NAME` and Tessera sends the component's
   path, so module code never spells one. A page holds each anchor once. gate:23 steps may target

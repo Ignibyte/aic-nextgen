@@ -13,6 +13,7 @@ use function implode;
 use function in_array;
 use function is_bool;
 use function mb_trim;
+use function str_contains;
 use function strtr;
 
 /**
@@ -37,10 +38,12 @@ final class EntityConditions
     private array $params = [];
 
     /**
-     * @param EntityType $entityType The entity type queried.
+     * @param EntityType  $entityType  The entity type queried.
+     * @param EntityJoins $entityJoins The query's joins, whose fields a condition may name as `prefix.field`.
      */
     public function __construct(
         private readonly EntityType $entityType,
+        private readonly EntityJoins $entityJoins,
     ) {
     }
 
@@ -129,19 +132,23 @@ final class EntityConditions
     }
 
     /**
-     * @param string $field A field of the entity type, or its key.
+     * @param string $field A field of the entity type, its key, or a joined field `prefix.field`.
      *
-     * @throws InvalidArgumentException When the entity type has no such column.
+     * @throws InvalidArgumentException When the entity type, or the join, has no such column.
      *
-     * @return string The column, safe to write into SQL.
+     * @return string The column, qualified by its table or prefix, safe to write into SQL.
      */
     public function column(string $field): string
     {
+        if (str_contains($field, '.')) {
+            return $this->entityJoins->column($field);
+        }
+
         if (!in_array($field, $this->entityType->columns(), true)) {
             throw new InvalidArgumentException('The ' . $this->entityType->table . ' entity has no field "' . $field . '".');
         }
 
-        return $field;
+        return $this->entityType->table . '.' . $field;
     }
 
     /**

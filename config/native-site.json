@@ -918,6 +918,42 @@
             "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app-focus\r\nTessera-Targets: @stock-list",
             "status": 200,
             "captures": false
+        },
+        {
+            "name": "note tags, with their notes' titles",
+            "method": "GET",
+            "path": "/notes/tags",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "note tags, searched in the notes' titles",
+            "method": "GET",
+            "path": "/notes/tags?q=gate",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "note tag, a malformed tag",
+            "method": "POST",
+            "path": "/notes/tags",
+            "form": "note_id=1&tag=Not+a+tag&aic_csrf={csrf}",
+            "header": "",
+            "status": 422,
+            "captures": false
+        },
+        {
+            "name": "note tag, a note that does not exist",
+            "method": "POST",
+            "path": "/notes/tags",
+            "form": "note_id=999999999&tag=gate&aic_csrf={csrf}",
+            "header": "",
+            "status": 422,
+            "captures": false
         }
     ]
 }

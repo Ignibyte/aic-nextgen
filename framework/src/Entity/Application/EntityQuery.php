@@ -24,6 +24,11 @@ use function implode;
 final class EntityQuery
 {
     /**
+     * The tables joined through reference fields (#190).
+     */
+    private readonly EntityJoins $entityJoins;
+
+    /**
      * The conditions, joined by AND.
      */
     private readonly EntityConditions $entityConditions;
@@ -58,7 +63,26 @@ final class EntityQuery
         private readonly Database $database,
         private readonly EntityType $entityType,
     ) {
-        $this->entityConditions = new EntityConditions($entityType);
+        $this->entityJoins = new EntityJoins($entityType);
+        $this->entityConditions = new EntityConditions($entityType, $this->entityJoins);
+    }
+
+    /**
+     * @param string $field    A Reference field of the entity type.
+     * @param string $prefix   What the joined table is called in the query: its fields are `prefix.field` in
+     *                         conditions and order, and its columns come back as `prefix_column`.
+     * @param bool   $optional Whether a row whose reference matches nothing stays, its joined columns null (a left
+     *                         join); an inner join by default.
+     *
+     * @throws InvalidArgumentException When the field is not a reference, or the prefix is malformed or taken.
+     *
+     * @return self The query.
+     */
+    public function with(string $field, string $prefix, bool $optional = false): self
+    {
+        $this->entityJoins->add($field, $prefix, $optional);
+
+        return $this;
     }
 
     /**
@@ -203,12 +227,12 @@ final class EntityQuery
      */
     public function rows(): array
     {
-        $sql = 'SELECT ' . implode(', ', $this->entityType->columns()) . ' FROM ' . $this->entityType->table
+        $sql = 'SELECT ' . $this->entityJoins->selected() . ' FROM ' . $this->entityJoins->from()
             . $this->entityConditions->sql()
             . ($this->order === [] ? '' : ' ORDER BY ' . implode(', ', $this->order))
             . ($this->limit > 0 ? ' LIMIT ' . $this->limit : '')
             . ($this->offset > 0 ? ' OFFSET ' . $this->offset : '')
-            . ($this->locked ? ' FOR UPDATE' : '');
+            . ($this->locked ? ' FOR UPDATE OF ' . $this->entityType->table : '');
 
         return $this->database->fetchAll($sql, $this->entityConditions->params());
     }
@@ -245,7 +269,7 @@ final class EntityQuery
      */
     public function totals(): EntityTotals
     {
-        return new EntityTotals($this->database, $this->entityType, $this->entityConditions);
+        return new EntityTotals($this->database, $this->entityJoins, $this->entityConditions);
     }
 
     /**
@@ -253,6 +277,6 @@ final class EntityQuery
      */
     public function changes(): EntityChanges
     {
-        return new EntityChanges($this->database, $this->entityType, $this->entityConditions);
+        return new EntityChanges($this->database, $this->entityType, $this->entityJoins, $this->entityConditions);
     }
 }

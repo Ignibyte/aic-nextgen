@@ -6,7 +6,6 @@ namespace AIC\Entity\Application;
 
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
-use AIC\Entity\Domain\EntityType;
 use InvalidArgumentException;
 
 /**
@@ -18,12 +17,12 @@ final readonly class EntityTotals
 {
     /**
      * @param Database         $database         The database.
-     * @param EntityType       $entityType       The entity type queried.
+     * @param EntityJoins      $entityJoins      The query's table and joins.
      * @param EntityConditions $entityConditions The query's conditions.
      */
     public function __construct(
         private Database $database,
-        private EntityType $entityType,
+        private EntityJoins $entityJoins,
         private EntityConditions $entityConditions,
     ) {
     }
@@ -80,7 +79,7 @@ final readonly class EntityTotals
     public function values(string $field): array
     {
         $column = $this->entityConditions->column($field);
-        $sql = 'SELECT DISTINCT ' . $column . ', ' . $column . '::text AS value FROM ' . $this->entityType->table
+        $sql = 'SELECT DISTINCT ' . $column . ', ' . $column . '::text AS value FROM ' . $this->entityJoins->from()
             . $this->entityConditions->sql() . ($this->entityConditions->hasAny() ? ' AND ' : ' WHERE ')
             . $column . ' IS NOT NULL ORDER BY ' . $column;
         $values = [];
@@ -99,6 +98,6 @@ final readonly class EntityTotals
      */
     private function select(string $expression): string
     {
-        return 'SELECT ' . $expression . ' AS total FROM ' . $this->entityType->table . $this->entityConditions->sql();
+        return 'SELECT ' . $expression . ' AS total FROM ' . $this->entityJoins->from() . $this->entityConditions->sql();
     }
 }

@@ -17,7 +17,7 @@ use function is_string;
 
 /**
  * Values written to an entity type's fields (#184), checked against each
- * field: a string for Text, Date, Numeric and Timestamp, an int for Integer, a
+ * field: a string for Text, Date and Numeric, an int for Integer and Reference, a
  * bool for Boolean, and null only where the field is nullable. A bool is bound
  * as `true` or `false`, as Postgres reads it.
  */
@@ -107,7 +107,7 @@ final readonly class EntityValues
             return is_bool($value);
         }
 
-        return $fieldType === FieldType::Integer
+        return $fieldType === FieldType::Integer || $fieldType === FieldType::Reference
             ? is_int($value)
             : is_string($value);
     }

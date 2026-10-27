@@ -16,6 +16,8 @@ use App\Note\Controller\NoteCreatePost;
 use App\Note\Controller\NoteDeletePost;
 use App\Note\Controller\NoteListPage;
 use App\Note\Controller\NoteShowPage;
+use App\Note\Controller\NoteTagPost;
+use App\Note\Controller\NoteTagsPage;
 use App\Note\Controller\NoteUpdatePost;
 use App\Note\Controller\StockPage;
 use App\Note\Controller\StockPost;
@@ -36,6 +38,8 @@ return (new ModuleManifest('note'))
     ->route(RouteMethod::Post, '/notes/{id:int}/delete', NoteDeletePost::class)
     ->route(RouteMethod::Get, '/stock', StockPage::class)
     ->route(RouteMethod::Post, '/stock', StockPost::class)
+    ->route(RouteMethod::Get, '/notes/tags', NoteTagsPage::class)
+    ->route(RouteMethod::Post, '/notes/tags', NoteTagPost::class)
     ->block(NoteTipsBlock::class)
     ->command('stock:sample', StockSample::class)
     ->migration(CreateNotesTable::class)
