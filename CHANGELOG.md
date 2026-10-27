@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **A page names its own title** (#182). `PageDocuments::page()` and `content()` take an optional
+  title; the document and its Tessera fragments are titled `<title> · <app name>`, the app's name
+  alone without one. The fixture's stock page is `Stock · AIC nextgen`.
+
 - **Tessera's full system in the gates** (#173). gate:23 compares the `Tessera-*`, `Vary` and
   `Cache-Control` headers natively as well as the body. Every HTML response carries a strict
   `Content-Security-Policy` (`ResponseBuilder::POLICY`). AIC keeps `tests/browser/tessera.spec.ts`:
