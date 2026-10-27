@@ -22,7 +22,9 @@ use function str_starts_with;
 /**
  * The rendered check (#101): the engine requests each GET route the spec
  * declares from the site in `config/workflow.php` and holds it to the
- * declared status (200 unless declared) and its kind's content type. A route
+ * declared status (200 unless declared) and its kind's content type, or, when
+ * the declared status is a redirect, to a Location (#176): the framework writes
+ * every redirect as plain text, whatever the kind. A route
  * that does not answer, or cannot be requested, holds the phase too. Each
  * route is recorded as `rendered GET /path`; native parity stays with gate:23.
  */
@@ -156,9 +158,22 @@ final readonly class RenderedCheck implements PhaseCheck
             !$renderedAnswer instanceof RenderedAnswer => 'nothing answered at ' . $this->site . '.',
             $renderedAnswer->status !== $declaredEntry->status => 'answered ' . $renderedAnswer->status
                 . ', declared ' . $declaredEntry->status . '.',
+            self::redirect($declaredEntry->status) => $renderedAnswer->location === ''
+                ? 'answered ' . $renderedAnswer->status . ' without a Location.'
+                : '',
             $type !== '' && !str_starts_with($renderedAnswer->contentType, $type) => 'answered ' . $renderedAnswer->contentType
                 . ', not ' . $type . '.',
             default => '',
         };
+    }
+
+    /**
+     * @param int $status A declared status.
+     *
+     * @return bool Whether it is a redirect, held to its Location rather than a content type.
+     */
+    private static function redirect(int $status): bool
+    {
+        return $status >= 300 && $status < 400;
     }
 }
