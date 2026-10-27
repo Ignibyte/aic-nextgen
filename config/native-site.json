@@ -909,6 +909,15 @@
             "header": "",
             "status": 200,
             "captures": false
+        },
+        {
+            "name": "tessera, a component by its anchor",
+            "method": "GET",
+            "path": "/stock?limit=3",
+            "form": "",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 1\r\nTessera-Layout: app-focus\r\nTessera-Targets: @stock-list",
+            "status": 200,
+            "captures": false
         }
     ]
 }

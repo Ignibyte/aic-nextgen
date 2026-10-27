@@ -46,9 +46,14 @@ final readonly class StockList
     public const int MOST = 50;
 
     /**
-     * The list's path for Tessera.
+     * The list's path, which Tessera sends its props under.
      */
     private const string TARGET = 'content/stock-list';
+
+    /**
+     * The list's anchor (#188): its links target `@stock-list`, and Tessera finds its path on the page.
+     */
+    private const string ANCHOR = 'stock-list';
 
     /**
      * @param EnvelopeCodec   $envelopeCodec   Seals the list's props.
@@ -82,6 +87,7 @@ final readonly class StockList
             'stock-list',
             self::listing(array_slice($items, -$limit), $limit),
             $this->envelopeCodec->seal(['limit' => (string) $limit]),
+            self::ANCHOR,
         );
     }
 
@@ -142,9 +148,9 @@ final readonly class StockList
     public function links(): StockLinks
     {
         return new StockLinks(
-            new Link('Show the last 3', '/stock?limit=3', false, self::TARGET),
-            new Link('Show the last 10', '/stock?limit=10', false, self::TARGET),
-            new Link('Refresh the list', '/stock', false, self::TARGET),
+            new Link('Show the last 3', '/stock?limit=3', false, '@' . self::ANCHOR),
+            new Link('Show the last 10', '/stock?limit=10', false, '@' . self::ANCHOR),
+            new Link('Refresh the list', '/stock', false, '@' . self::ANCHOR),
         );
     }
 

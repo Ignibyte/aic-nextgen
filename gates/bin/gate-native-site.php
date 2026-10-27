@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Gates\Application\BrowserLook;
 use Gates\Application\BrowserTests;
 use Gates\Application\GateUser;
+use Gates\Application\NativeSiteAnchors;
 use Gates\Application\NativeSiteBrowser;
 use Gates\Application\NativeSiteBuilder;
 use Gates\Application\NativeSiteComparer;
@@ -63,7 +64,7 @@ if (($arguments[1] ?? '') !== 'serve') {
         $toolchain,
         $builder,
         new ProcServerLauncher(),
-        new NativeSiteComparer(new StreamHttpClient()),
+        new NativeSiteComparer(new StreamHttpClient(), new NativeSiteAnchors(new StreamHttpClient())),
         $gateUser,
         new NativeSiteBrowser($browserTests),
     );

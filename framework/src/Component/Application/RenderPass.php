@@ -13,6 +13,7 @@ use AIC\Component\Domain\FragmentFrame;
 use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\RawHtml;
 use AIC\Component\Domain\RegionFrame;
+use AIC\Component\Exception\DuplicateAnchor;
 use AIC\Component\Exception\UnknownComponent;
 use AIC\Component\Exception\UnmarkedComponent;
 
@@ -112,12 +113,13 @@ final class RenderPass
      *
      * @throws UnknownComponent  When no template renders it.
      * @throws UnmarkedComponent When its template has no root element for its marks.
+     * @throws DuplicateAnchor   When its anchor was marked before on this page.
      *
      * @return string Its markup, its root marked with that key; when aimed elsewhere, nothing.
      */
     public function child(Component $component, string $key): string
     {
-        return $this->marked($component, $key, '');
+        return $this->marked($component, $key, new ChildFrame($key, '', $component instanceof Keyed ? $component->anchor() : ''));
     }
 
     /**
@@ -239,31 +241,33 @@ final class RenderPass
      *
      * @throws UnknownComponent  When no template renders it.
      * @throws UnmarkedComponent When its template has no root element for its marks.
+     * @throws DuplicateAnchor   When its anchor was marked before on this page.
      *
      * @return string Its markup, its root marked with its own key and props token, else `cN`.
      */
     private function regionChild(Component $component, int $position): string
     {
         if (!$component instanceof Keyed) {
-            return $this->marked($component, 'c' . $position, '');
+            return $this->marked($component, 'c' . $position, new ChildFrame('c' . $position, ''));
         }
 
         $key = $component->key();
 
-        return $this->marked($component, $key, $component->props());
+        return $this->marked($component, $key, new ChildFrame($key, $component->props(), $component->anchor()));
     }
 
     /**
-     * @param Component $component A component under the current path.
-     * @param string    $key       Its key, the next segment of the path.
-     * @param string    $props     Its props token; empty for none.
+     * @param Component  $component  A component under the current path.
+     * @param string     $key        Its key, the next segment of the path.
+     * @param ChildFrame $childFrame The marks its root prints: its key, props token and anchor.
      *
      * @throws UnknownComponent  When no template renders it.
      * @throws UnmarkedComponent When its markup printed no marks: its template has no root element for them.
+     * @throws DuplicateAnchor   When its anchor was marked before on this page.
      *
      * @return string Its markup, its root marked with its key; nothing when it is off the way to the target.
      */
-    private function marked(Component $component, string $key, string $props): string
+    private function marked(Component $component, string $key, ChildFrame $childFrame): string
     {
         $outer = $this->path;
         $this->path = $outer === ''
@@ -276,7 +280,7 @@ final class RenderPass
             return '';
         }
 
-        $this->pendingMarks->set(new ChildFrame($key, $props));
+        $this->pendingMarks->set($childFrame);
         $markup = $this->inline($component);
 
         if ($this->pendingMarks->take() instanceof ChildFrame) {
