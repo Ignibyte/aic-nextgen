@@ -2,15 +2,18 @@
 
 Tessera enhances the server-rendered page with navigation, targeted refreshes, form submissions and
 stream updates. Pages remain [Component trees](rendering.md), so a full page and a targeted answer
-render the same data. The server speaks protocol version 0; the browser release is pinned separately
+render the same data. The server speaks protocol version 1 (Tessera 0.2.0); the browser release is pinned separately
 in app config and published by the build with its exact bytes and checksum.
 
 ## Markers and fragments
 
-Regions render with `data-region="content"`. Component boundaries use `<!--t:c KEY-->` and
-`<!--/t:c-->`; conditional and loop boundaries use `<!--t:b-->` and `<!--/t:b-->`. Keys form paths
-such as `content/stock-list`. A `KeyedComponent` may add a signed props token to its opening marker.
-HTML/page wrappers are transparent, so changing a wrapper does not add target segments.
+Regions render with `data-region="content"`. A component is its one root element, which carries
+`data-t-c="KEY"`: `composer run build` writes `$renderPass->marks()` into each component and atom
+template's root start tag, and the render pass prints the attribute there when it renders the
+template as a region's or a template's child. Inline rendering prints none, and a marked component
+whose template printed no marks fails the render. Keys form paths such as `content/stock-list`. A
+`KeyedComponent` may add a signed props token, written as `data-t-props`. Protocol 1 has no block
+markers. HTML/page wrappers are transparent, so changing a wrapper does not add target segments.
 
 `AIC\Tessera\Domain\TesseraRequest` validates request kind, protocol, layout identity and target
 syntax. A valid visit naming a region also refreshes the layout's other regions so navigation state
@@ -33,7 +36,7 @@ These values are checked against the public constants:
 
 | Constant | Meaning |
 |---|---|
-| `TesseraRequest::VERSION = 0` | server protocol, separate from the script's release version |
+| `TesseraRequest::VERSION = 1` | server protocol, separate from the script's release version |
 | `TesseraRequest::REQUEST = Tessera-Request` | request kind: visit, submit, action, refresh or stream |
 | `TesseraRequest::PROTOCOL = Tessera-Protocol` | protocol version |
 | `TesseraRequest::TARGETS = Tessera-Targets` | region/component targets and optional props tokens |
@@ -70,7 +73,7 @@ An EventSource yields `AIC\Controller\Contracts\ServerEvent` values through an E
 `AIC\Tessera\Domain\TesseraEvents` supplies the event helpers below. An element patch carries a
 component, never markup: the response writer, as `AIC\Controller\Contracts\EventWriter`, renders it
 through `Renderer::elements()` when the stream pulls the event, with the same templates and escaping
-as a page and no marker around the patched component. Signals and keep-alive events carry no
+as a page and no marks on the patched component. Signals and keep-alive events carry no
 component.
 
 | Operation | Contract |

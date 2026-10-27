@@ -1,7 +1,8 @@
 <?php declare(strict_types=1); /* Escaped from themes/app/components/NoteList/note-list.phtml by composer run build; edit that file, never this one. */ ?>
+<div<?= $renderPass->marks() ?>>
 <h2>Notes <?= $renderPass->child($noteList->count, 'NoteList.1') ?></h2>
-<!--t:b--><?php if ($noteList->links === []): ?><p id="no-notes">No notes yet.</p>
+<?php if ($noteList->links === []): ?><p id="no-notes">No notes yet.</p>
 <?php else: ?><ul id="notes">
-<!--t:b--><?php foreach ($noteList->links as $keyedComponent): ?><li><?= $renderPass->child($keyedComponent, 'NoteList.2:' . $keyedComponent->key()) ?></li>
-<?php endforeach; ?><!--/t:b--></ul>
-<?php endif; ?><!--/t:b-->
+<?php foreach ($noteList->links as $keyedComponent): ?><li><?= $renderPass->child($keyedComponent, 'NoteList.2:' . $keyedComponent->key()) ?></li>
+<?php endforeach; ?></ul>
+<?php endif; ?></div>

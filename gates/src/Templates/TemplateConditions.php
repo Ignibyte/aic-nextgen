@@ -90,8 +90,7 @@ final readonly class TemplateConditions
                 ? TemplateNodeKind::Condition
                 : TemplateNodeKind::ElseIf;
             $children = $this->templateLowering->statements($stmts, $scope, $loops);
-            $node = (new TemplateNode($kind, implode(' || ', $tests), $children, $otherwise))
-                ->located(($values[0] ?? $switch->cond)->getStartLine());
+            $node = new TemplateNode($kind, implode(' || ', $tests), $children, $otherwise);
             $otherwise = [$node];
         }
 
@@ -125,7 +124,6 @@ final readonly class TemplateConditions
             $this->templateLowering->code($expr, $scope),
             $this->templateLowering->statements($stmts, $scope, $loops),
             $otherwise,
-            line: $expr->getStartLine(),
         );
     }
 

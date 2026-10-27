@@ -1,2 +1,2 @@
 <?php declare(strict_types=1); /* Escaped from themes/app/components/SiteNav/site-nav.phtml by composer run build; edit that file, never this one. */ ?>
-<nav id="site-nav" aria-label="Demos"><!--t:b--><?php foreach ($siteNav->links as $keyedComponent): ?><?= $renderPass->child($keyedComponent, 'SiteNav.1:' . $keyedComponent->key()) ?><?php endforeach; ?><!--/t:b--></nav>
+<nav<?= $renderPass->marks() ?> id="site-nav" aria-label="Demos"><?php foreach ($siteNav->links as $keyedComponent): ?><?= $renderPass->child($keyedComponent, 'SiteNav.1:' . $keyedComponent->key()) ?><?php endforeach; ?></nav>

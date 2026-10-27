@@ -93,6 +93,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **Tessera protocol 1** (#189). A component is marked by `data-t-c` (and `data-t-props`) on its one
+  root element instead of comment markers, and block markers are gone. gate:25 refuses a component
+  or atom template without exactly one root element; the build writes the marks into it. AIC speaks
+  `Tessera-Protocol: 1` and pins Tessera 0.2.0. The fixture theme's five multi-root templates are
+  wrapped.
+
 - **A page must name its title** (#187). `PageDocuments::content()` and `page()` take the title
   third, required and never empty, before the optional layout:
   `content([...], 200, 'Stock', ThemeLayoutName::Focus)`. Every fixture page names one, and

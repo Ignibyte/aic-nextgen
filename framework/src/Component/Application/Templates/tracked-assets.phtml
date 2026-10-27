@@ -1,2 +1,2 @@
 <?php declare(strict_types=1); /* Escaped from framework/templates/components/tracked-assets.phtml by composer run build; edit that file, never this one. */ ?>
-<link rel="stylesheet" href="<?= $renderPass->text($trackedAssets->stylesheet) ?>" data-track><script defer src="<?= $renderPass->text($trackedAssets->script) ?>" data-track></script>
+<link<?= $renderPass->marks() ?> rel="stylesheet" href="<?= $renderPass->text($trackedAssets->stylesheet) ?>" data-track><script defer src="<?= $renderPass->text($trackedAssets->script) ?>" data-track></script>
