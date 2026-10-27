@@ -36,6 +36,11 @@ final readonly class ScaffoldAboutPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        return $this->pageDocuments->content([new ScaffoldAboutView('Scaffold About')], 200, ThemeLayoutName::ScaffoldSolo);
+        return $this->pageDocuments->content(
+            [new ScaffoldAboutView('Scaffold About')],
+            200,
+            'Scaffold About',
+            ThemeLayoutName::ScaffoldSolo,
+        );
     }
 }

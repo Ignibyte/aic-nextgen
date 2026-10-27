@@ -61,7 +61,7 @@ final readonly class StockPost implements Page
         if ($problem !== '') {
             $form = $this->stockForm->form($serverRequest, $stockEntry, $problem);
 
-            return $this->pageDocuments->content([new Heading('Stock'), $form], 422, ThemeLayoutName::Focus);
+            return $this->pageDocuments->content([new Heading('Stock'), $form], 422, 'Stock', ThemeLayoutName::Focus);
         }
 
         $this->stockRepository->save($stockEntry);

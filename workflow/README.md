@@ -93,7 +93,7 @@ names its entity, so two made entities share no phpcpd run unless about five fie
 
 `bin/aic make:theme <name> --dry-run --json` previews the first theme: `src/Layouts/Page.php` with
 four regions, the HTML and page templates in `layouts/` and real CSS. It prints the `config/app.php`, Composer
-and PHPCS lines to add. Pages take the framework's `PageDocuments` (#154). Use lowercase words joined by hyphens, at
+and PHPCS lines to add. Pages take the framework's `PageDocuments` (#154) and name their title (#187). Use lowercase words joined by hyphens, at
 most 32 bytes. An existing file refuses before writes; reruns refuse instead of overwriting.
 
 Composer must map `"App\\Theme\\Components\\": "themes/<theme>/src/Components/"`; run

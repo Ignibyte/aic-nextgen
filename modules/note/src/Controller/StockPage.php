@@ -16,6 +16,7 @@ use App\Note\Form\StockEntry;
 use App\Note\Form\StockForm;
 use App\Note\Repository\StockRepository;
 use App\Note\Service\StockList;
+use InvalidArgumentException;
 use JsonException;
 use LogicException;
 use Override;
@@ -62,11 +63,7 @@ final readonly class StockPage implements Page
         try {
             $list = $this->stockList->component($serverRequest, $items);
         } catch (InvalidEnvelope) {
-            return $this->pageDocuments->content(
-                [new Paragraph('The list could not be refreshed. Reload the page.', '')],
-                400,
-                ThemeLayoutName::Focus,
-            );
+            return $this->refused();
         }
 
         $components = [new Heading('Stock'), new Paragraph($this->stockList->summary($items), 'stock-latest')];
@@ -80,6 +77,21 @@ final readonly class StockPage implements Page
         $components[] = $this->stockList->links();
         $components[] = $this->stockForm->form($serverRequest, new StockEntry('', '', '', false), '');
 
-        return $this->pageDocuments->content($components, 200, ThemeLayoutName::Focus, 'Stock');
+        return $this->pageDocuments->content($components, 200, 'Stock', ThemeLayoutName::Focus);
+    }
+
+    /**
+     * @throws InvalidArgumentException When a constructed value is invalid.
+     *
+     * @return PageResponse The 400 page for a list whose props were altered.
+     */
+    private function refused(): PageResponse
+    {
+        return $this->pageDocuments->content(
+            [new Paragraph('The list could not be refreshed. Reload the page.', '')],
+            400,
+            'Stock',
+            ThemeLayoutName::Focus,
+        );
     }
 }

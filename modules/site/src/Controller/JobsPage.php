@@ -71,6 +71,7 @@ final readonly class JobsPage implements Page
                 $fail,
             ],
             200,
+            'Jobs',
         );
     }
 }

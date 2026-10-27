@@ -90,6 +90,10 @@ final readonly class HomePage implements Page
         $query = $serverRequest->getUri()->getQuery();
         $pairs = array_map(urldecode(...), $query === '' ? [] : explode('&', $query));
 
-        return $this->pageDocuments->content([new Home($demos, $facts, $pairs, $this->greetingForm->form($serverRequest, '', ''))], 200);
+        return $this->pageDocuments->content(
+            [new Home($demos, $facts, $pairs, $this->greetingForm->form($serverRequest, '', ''))],
+            200,
+            'Home',
+        );
     }
 }

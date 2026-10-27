@@ -76,7 +76,7 @@ final readonly class ListPageSource
                     $this->{variable}Repository->latest(self::SHOWN),
                 );
 
-                return $this->pageDocuments->content([new Heading('{title}'), ...${variable}Lines], 200);
+                return $this->pageDocuments->content([new Heading('{title}'), ...${variable}Lines], 200, '{title}');
             }
         }
         PHP;

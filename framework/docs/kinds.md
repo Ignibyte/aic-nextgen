@@ -26,8 +26,8 @@ What holds the kinds:
 - gate:8 refuses a controller method that returns anything but its kind's response, and any string
   holding `<` in a module's `src/Controller/`. Helpers go to `src/Service/`.
 - gate:26 refuses a kind outside its folder.
-- A Page answers a document from `AIC\Controller\Application\PageDocuments`, optionally naming a
-  theme layout (`ThemeLayoutName::Focus`); see [rendering.md](rendering.md).
+- A Page answers a document from `AIC\Controller\Application\PageDocuments`, naming its title and
+  optionally a theme layout (`ThemeLayoutName::Focus`); see [rendering.md](rendering.md).
 - `composer run build` lists every route and command with its kind in `build/surface.json`, and
   gate:24 fails when that file is stale.
 

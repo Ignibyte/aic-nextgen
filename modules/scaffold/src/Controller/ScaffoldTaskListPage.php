@@ -55,6 +55,6 @@ final readonly class ScaffoldTaskListPage implements Page
             $this->scaffoldTaskRepository->latest(self::SHOWN),
         );
 
-        return $this->pageDocuments->content([new Heading('Scaffold tasks'), ...$scaffoldTaskLines], 200);
+        return $this->pageDocuments->content([new Heading('Scaffold tasks'), ...$scaffoldTaskLines], 200, 'Scaffold tasks');
     }
 }

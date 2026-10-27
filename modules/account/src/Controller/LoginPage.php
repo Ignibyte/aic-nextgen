@@ -49,6 +49,7 @@ final readonly class LoginPage implements Page
         return $this->pageDocuments->content(
             [new Heading('Sign in'), $this->loginForm->form($serverRequest, '', $next, '')],
             200,
+            'Sign in',
         );
     }
 }

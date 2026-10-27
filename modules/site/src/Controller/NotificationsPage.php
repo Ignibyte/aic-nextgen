@@ -68,6 +68,7 @@ final readonly class NotificationsPage implements Page
                 new Form('', '/notifications', $fields, $this->formTokens->issue($serverRequest)->value()),
             ],
             200,
+            'Notifications',
         );
     }
 }

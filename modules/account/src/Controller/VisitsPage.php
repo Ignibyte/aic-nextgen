@@ -52,6 +52,6 @@ final readonly class VisitsPage implements Page
         $form = new Form('forget', '/visits/forget', $fields, $this->formTokens->issue($serverRequest)->value());
         $seen = 'This session has seen this page ' . $visits . ($visits === 1 ? ' time.' : ' times.');
 
-        return $this->pageDocuments->content([new Paragraph($seen, 'visits'), $form], 200);
+        return $this->pageDocuments->content([new Paragraph($seen, 'visits'), $form], 200, 'Visits');
     }
 }

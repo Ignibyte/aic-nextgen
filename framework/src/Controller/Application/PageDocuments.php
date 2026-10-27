@@ -14,8 +14,8 @@ use AIC\Controller\Domain\PageDocument;
 use InvalidArgumentException;
 
 /**
- * A Page controller's documents (#154): its regions in the theme's layout, titled with the page's own title and the
- * app's name (`Stock · AIC nextgen`), or the app's name alone (#182). A controller may name a layout
+ * A Page controller's documents (#154): its regions in the theme's layout, titled with the page's own title, which it
+ * must name, and the app's name (`Stock · AIC nextgen`; #182, #187). A controller may name a layout
  * (`ThemeLayoutName::Focus`); each of its two files falls back on its own to `html.phtml` and `page.phtml` when the
  * theme ships no variant.
  */
@@ -32,52 +32,32 @@ final readonly class PageDocuments
     }
 
     /**
-     * @param Regions         $regions    The regions the page fills.
-     * @param int             $status     200, 404 or 422.
-     * @param LayoutName|null $layoutName The theme layout; null for the default.
-     * @param string          $title      The page's own title; empty for the app's name alone.
+     * @param Regions          $regions    The regions the page fills.
+     * @param int              $status     200, 404 or 422.
+     * @param non-empty-string $title      The page's own title, written before the app's name.
+     * @param LayoutName|null  $layoutName The theme layout; null for the default.
      *
      * @throws InvalidArgumentException When the status is none of these, or a region is not the layout's.
      *
      * @return PageDocument The page.
      */
-    public function page(
-        Regions $regions,
-        int $status,
-        ?LayoutName $layoutName = null,
-        string $title = '',
-    ): PageDocument {
-        return new PageDocument($this->pageLayouts->create($this->title($title), $regions, $layoutName), $status);
+    public function page(Regions $regions, int $status, string $title, ?LayoutName $layoutName = null): PageDocument
+    {
+        return new PageDocument($this->pageLayouts->create($title . ' · ' . $this->appConfig->name, $regions, $layoutName), $status);
     }
 
     /**
-     * @param list<Component> $components The `content` region's components, in order.
-     * @param int             $status     200, 404 or 422.
-     * @param LayoutName|null $layoutName The theme layout; null for the default.
-     * @param string          $title      The page's own title; empty for the app's name alone.
+     * @param list<Component>  $components The `content` region's components, in order.
+     * @param int              $status     200, 404 or 422.
+     * @param non-empty-string $title      The page's own title, written before the app's name.
+     * @param LayoutName|null  $layoutName The theme layout; null for the default.
      *
      * @throws InvalidArgumentException When the status is none of these.
      *
      * @return PageDocument The page, with only its content region filled.
      */
-    public function content(
-        array $components,
-        int $status,
-        ?LayoutName $layoutName = null,
-        string $title = '',
-    ): PageDocument {
-        return $this->page(new Regions([new Region('content', $components)]), $status, $layoutName, $title);
-    }
-
-    /**
-     * @param string $title The page's own title; empty for none.
-     *
-     * @return string The document's title: the page's then the app's name, or the app's name alone.
-     */
-    private function title(string $title): string
+    public function content(array $components, int $status, string $title, ?LayoutName $layoutName = null): PageDocument
     {
-        return $title === ''
-            ? $this->appConfig->name
-            : $title . ' · ' . $this->appConfig->name;
+        return $this->page(new Regions([new Region('content', $components)]), $status, $title, $layoutName);
     }
 }

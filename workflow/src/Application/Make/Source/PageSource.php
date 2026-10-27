@@ -52,7 +52,11 @@ final readonly class PageSource
             #[Override]
             public function page(ServerRequestInterface $serverRequest): PageResponse
             {
-                return $this->pageDocuments->content([new {component}('{title}')], 200{layoutArgument});
+                return $this->pageDocuments->content(
+                    [new {component}('{title}')],
+                    200,
+                    '{title}',{layoutArgument}
+                );
             }
         }
         PHP;
@@ -81,7 +85,7 @@ final readonly class PageSource
             '{class}' => $class,
             '{component}' => $component,
             '{layoutArgument}' => $named
-                ? ', ThemeLayoutName::' . $case
+                ? "\n            ThemeLayoutName::" . $case . ','
                 : '',
             '{layoutName}' => $named
                 ? $case . ' '

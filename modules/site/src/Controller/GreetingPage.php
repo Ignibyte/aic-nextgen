@@ -59,6 +59,6 @@ final readonly class GreetingPage implements Page
             $greetings[] = $greeter->greet($name);
         }
 
-        return $this->pageDocuments->content([new Greetings($greetings)], 200, ThemeLayoutName::Plain);
+        return $this->pageDocuments->content([new Greetings($greetings)], 200, 'Greetings', ThemeLayoutName::Plain);
     }
 }

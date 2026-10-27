@@ -35,6 +35,10 @@ final readonly class ScaffoldPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        return $this->pageDocuments->content([new ScaffoldCard('Scaffold')], 200);
+        return $this->pageDocuments->content(
+            [new ScaffoldCard('Scaffold')],
+            200,
+            'Scaffold',
+        );
     }
 }

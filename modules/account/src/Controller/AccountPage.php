@@ -51,6 +51,7 @@ final readonly class AccountPage implements Page
         return $this->pageDocuments->content(
             [new Heading('Account'), new Paragraph('Signed in as ' . $user . '.', 'signed-in'), $form],
             200,
+            'Account',
         );
     }
 }

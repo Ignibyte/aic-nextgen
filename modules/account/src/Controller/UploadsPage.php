@@ -52,6 +52,10 @@ final readonly class UploadsPage implements Page
             ? 'Nothing uploaded yet.'
             : 'Accepted ' . $last . '.';
 
-        return $this->pageDocuments->content([new Paragraph($summary, 'upload-last'), $this->uploadForm->form($serverRequest, '')], 200);
+        return $this->pageDocuments->content(
+            [new Paragraph($summary, 'upload-last'), $this->uploadForm->form($serverRequest, '')],
+            200,
+            'Uploads',
+        );
     }
 }
