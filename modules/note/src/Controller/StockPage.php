@@ -74,6 +74,6 @@ final readonly class StockPage implements Page
             $list,
             $this->stockList->links(),
             $this->stockForm->form($serverRequest, new StockEntry('', '', '', false), ''),
-        ], 200, ThemeLayoutName::Focus);
+        ], 200, ThemeLayoutName::Focus, 'Stock');
     }
 }
