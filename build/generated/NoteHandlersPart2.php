@@ -42,7 +42,11 @@ final readonly class NoteHandlersPart2
         $entityStore = new EntityStore($this->handlerContext->database());
         $stockRepository = new StockRepository($entityStore);
         $stockForm = new StockForm();
-        $stockList = new StockList($this->handlerContext->envelopeCodec(), new TesseraProps($this->handlerContext->envelopeCodec()));
+        $stockList = new StockList(
+            $this->handlerContext->envelopeCodec(),
+            new TesseraProps($this->handlerContext->envelopeCodec()),
+            $stockRepository,
+        );
 
         return [
             StockPage::class => $this->handlerContext->page(

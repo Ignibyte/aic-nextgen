@@ -32,6 +32,12 @@ every PHP expression:
 - Read a collection element into a concretely typed local or pass it through a typed helper before
   making a compound expression. Existing framework adapters use typed closures and explicit values
   where the compiler cannot infer a PHPDoc-only element type.
+- Build a value in a local before appending it to a property: natively
+  `$this->list[] = $this->name($x) . implode(', ', $parts)` left the property null (#184), while
+  `$value = …; $this->list[] = $value;` holds.
+- A closure takes what it uses through `use`, the object's own services too: natively a closure
+  does not bind `$this`, so `$this->store` inside one is null (#184). Copy the property into a
+  local first and capture the local, as `EntityStore::transaction()` callers do.
 - Read PSR-7 bodies as streams using rewind/getContents where appropriate. Use the response builder
   for headers so methods retain the response type across PSR-7 withers.
 - Keep resource ownership and cleanup explicit. The runtime adapters use typed resource slots and

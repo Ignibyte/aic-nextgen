@@ -6,23 +6,26 @@ namespace AIC\Entity\Application;
 
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
+use AIC\Database\Contracts\Row;
 use AIC\Entity\Domain\EntityType;
+use Closure;
 use InvalidArgumentException;
+use Throwable;
 
 use function array_fill;
-use function array_keys;
 use function array_merge;
 use function count;
 use function implode;
 use function in_array;
-use function is_bool;
 
 /**
- * Rows of entity types in the database: queries, inserts, updates and deletes
- * by key. Values are by field name and only writable fields take them: a
- * string for Text, Date (`YYYY-MM-DD`) and Numeric (a decimal string), a bool
- * for Boolean. A bool is bound as `'true'` or `'false'`, since PHP's PDO
- * binds `false` as an empty string, which Postgres refuses.
+ * Rows of entity types in the database: queries, inserts (also if absent, or
+ * as an upsert on a unique field), updates and deletes by key, and a
+ * transaction around a closure. Values are by field name and only writable
+ * fields take them, each checked against its field (`EntityValues`, #184). A
+ * bool is bound as `'true'` or `'false'`, since PHP's PDO binds `false` as an
+ * empty string, which Postgres refuses. CreatedAt fields are `now()` at insert,
+ * UpdatedAt fields at insert and at every update.
  */
 final readonly class EntityStore
 {
@@ -45,58 +48,83 @@ final readonly class EntityStore
     }
 
     /**
-     * @param EntityType                 $entityType The entity type.
-     * @param array<string, string|bool> $values     The writable fields' values; each CreatedAt field gets `now()`.
+     * @param EntityType                          $entityType The entity type.
+     * @param array<string, string|int|bool|null> $values     The writable fields' values.
      *
-     * @throws InvalidArgumentException When a value names a field that is not writable, or is of the wrong kind for it.
+     * @throws InvalidArgumentException When a value names a field that is not writable, or does not fit it.
      * @throws QueryException           When the insert fails.
      *
      * @return int The new row's key.
      */
     public function insert(EntityType $entityType, array $values): int
     {
-        $columns = $this->writable($entityType, $values);
-        $params = [];
+        $entityValues = new EntityValues($entityType, $values);
 
-        foreach ($columns as $column) {
-            $params[] = self::bound($values[$column]);
-        }
-
-        $createdAt = $entityType->createdAt();
-        $marks = array_merge(self::marks(count($columns), '?'), self::marks(count($createdAt), 'now()'));
-        $sql = 'INSERT INTO ' . $entityType->table . ' (' . implode(', ', array_merge($columns, $createdAt)) . ')'
-            . ' VALUES (' . implode(', ', $marks) . ') RETURNING ' . $entityType->key;
-
-        return $this->database->fetchOne($sql, $params)->int($entityType->key);
+        return $this->database->fetchOne($this->insertSql($entityType, $entityValues, ''), $entityValues->params())->int($entityType->key);
     }
 
     /**
-     * @param EntityType                 $entityType The entity type.
-     * @param int                        $key        The row's key.
-     * @param array<string, string|bool> $values     The writable fields to change.
+     * @param EntityType                          $entityType The entity type.
+     * @param array<string, string|int|bool|null> $values     The writable fields' values.
+     * @param string                              $unique     A written field the table holds unique.
      *
-     * @throws InvalidArgumentException When there is nothing to change, or a value names a field that is not writable
-     *                                  or is of the wrong kind.
+     * @throws InvalidArgumentException When a value does not fit its field, or the unique field is not written.
+     * @throws QueryException           When the insert fails.
+     *
+     * @return int|null The new row's key; null when a row already holds the unique value.
+     */
+    public function insertIfAbsent(EntityType $entityType, array $values, string $unique): ?int
+    {
+        $entityValues = new EntityValues($entityType, $values);
+        $sql = $this->insertSql($entityType, $entityValues, ' ON CONFLICT (' . self::unique($entityValues, $unique) . ') DO NOTHING');
+        $row = $this->database->fetchAll($sql, $entityValues->params())[0] ?? null;
+
+        return $row instanceof Row
+            ? $row->int($entityType->key)
+            : null;
+    }
+
+    /**
+     * @param EntityType                          $entityType The entity type.
+     * @param array<string, string|int|bool|null> $values     The writable fields' values.
+     * @param string                              $unique     A written field the table holds unique.
+     *
+     * @throws InvalidArgumentException When a value does not fit its field, or the unique field is not written.
+     * @throws QueryException           When the upsert fails.
+     */
+    public function upsert(EntityType $entityType, array $values, string $unique): void
+    {
+        $entityValues = new EntityValues($entityType, $values);
+        $column = self::unique($entityValues, $unique);
+        $assignments = [];
+
+        foreach ($entityValues->columns() as $written) {
+            $assignments[] = $written . ' = EXCLUDED.' . $written;
+        }
+
+        foreach ($entityType->updatedAt() as $updatedAt) {
+            $assignments[] = $updatedAt . ' = now()';
+        }
+
+        $sql = $this->insertSql($entityType, $entityValues, ' ON CONFLICT (' . $column . ') DO UPDATE SET ' . implode(', ', $assignments));
+
+        $this->database->execute($sql, $entityValues->params());
+    }
+
+    /**
+     * @param EntityType                          $entityType The entity type.
+     * @param int                                 $key        The row's key.
+     * @param array<string, string|int|bool|null> $values     The writable fields to change.
+     *
+     * @throws InvalidArgumentException When there is nothing to change, or a value does not fit its field.
      * @throws EntityNotFoundException  When no row has the key.
      * @throws QueryException           When the update fails.
      */
     public function update(EntityType $entityType, int $key, array $values): void
     {
-        $assignments = [];
-        $params = [];
-
-        foreach ($this->writable($entityType, $values) as $column) {
-            $assignments[] = $column . ' = ?';
-            $params[] = self::bound($values[$column]);
+        if ($this->query($entityType)->where($entityType->key, $key)->changes()->update($values) === 0) {
+            throw new EntityNotFoundException('No ' . $entityType->table . ' row has that key.');
         }
-
-        if ($assignments === []) {
-            throw new InvalidArgumentException('An update changes at least one field.');
-        }
-
-        $params[] = $key;
-        $sql = 'UPDATE ' . $entityType->table . ' SET ' . implode(', ', $assignments) . ' WHERE ' . $entityType->key . ' = ?';
-        $this->affectOne($entityType, $sql, $params);
     }
 
     /**
@@ -108,80 +136,65 @@ final readonly class EntityStore
      */
     public function delete(EntityType $entityType, int $key): void
     {
-        $this->affectOne($entityType, 'DELETE FROM ' . $entityType->table . ' WHERE ' . $entityType->key . ' = ?', [$key]);
-    }
+        $sql = 'DELETE FROM ' . $entityType->table . ' WHERE ' . $entityType->key . ' = ?';
 
-    /**
-     * @param EntityType       $entityType The entity type.
-     * @param string           $sql        A statement on one row by key.
-     * @param list<string|int> $params     Its values.
-     *
-     * @throws EntityNotFoundException When it affected no row.
-     * @throws QueryException          When it fails.
-     */
-    private function affectOne(EntityType $entityType, string $sql, array $params): void
-    {
-        if ($this->database->execute($sql, $params) === 0) {
+        if ($this->database->execute($sql, [$key]) === 0) {
             throw new EntityNotFoundException('No ' . $entityType->table . ' row has that key.');
         }
     }
 
     /**
-     * @param EntityType                 $entityType The entity type.
-     * @param array<string, string|bool> $values     Values by field name.
+     * @param Closure(): void $work The reads and writes to make together.
      *
-     * @throws InvalidArgumentException When a name is not a writable field, or its value is of the wrong kind.
-     *
-     * @return list<string> The names, in order.
+     * @throws Throwable Whatever the work throws, after the transaction is rolled back.
      */
-    private function writable(EntityType $entityType, array $values): array
+    public function transaction(Closure $work): void
     {
-        $writable = $entityType->writable();
-        $booleans = $entityType->booleans();
-        $columns = array_keys($values);
+        $this->database->beginTransaction();
 
-        foreach ($columns as $column) {
-            if (!in_array($column, $writable, true)) {
-                throw new InvalidArgumentException('The ' . $entityType->table . ' entity has no writable field "' . $column . '".');
-            }
+        try {
+            $work();
+        } catch (Throwable $throwable) {
+            $this->database->rollBack();
 
-            self::checkKind($entityType, $column, is_bool($values[$column]), in_array($column, $booleans, true));
+            throw $throwable;
         }
 
-        return $columns;
+        $this->database->commit();
     }
 
     /**
-     * @param EntityType $entityType The entity type.
-     * @param string     $column     A writable field.
-     * @param bool       $given      Whether its value is a bool.
-     * @param bool       $wanted     Whether it is a Boolean field.
+     * @param EntityType   $entityType   The entity type.
+     * @param EntityValues $entityValues The checked values.
+     * @param string       $conflict     An `ON CONFLICT` clause, or empty.
      *
-     * @throws InvalidArgumentException When a bool goes to a field that is not Boolean, or a string to one that is.
+     * @return string The INSERT, its CreatedAt and UpdatedAt fields `now()`, returning the key.
      */
-    private static function checkKind(EntityType $entityType, string $column, bool $given, bool $wanted): void
+    private function insertSql(EntityType $entityType, EntityValues $entityValues, string $conflict): string
     {
-        if ($given !== $wanted) {
-            throw new InvalidArgumentException(
-                'The ' . $entityType->table . ' entity\'s field "' . $column . '" takes ' . ($wanted ? 'a bool.' : 'a string.'),
-            );
-        }
+        $stamped = array_merge($entityType->createdAt(), $entityType->updatedAt());
+        $columns = array_merge($entityValues->columns(), $stamped);
+        $marks = array_merge(self::marks(count($entityValues->columns()), '?'), self::marks(count($stamped), 'now()'));
+
+        return 'INSERT INTO ' . $entityType->table . ' (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $marks) . ')'
+            . $conflict . ' RETURNING ' . $entityType->key;
     }
 
     /**
-     * @param string|bool $value A field's value.
+     * @param EntityValues $entityValues The checked values.
+     * @param string       $unique       The field named unique.
      *
-     * @return string It as Postgres reads it: a bool as `true` or `false`.
+     * @throws InvalidArgumentException When the values do not write it.
+     *
+     * @return string The field, safe to write into SQL.
      */
-    private static function bound(string|bool $value): string
+    private static function unique(EntityValues $entityValues, string $unique): string
     {
-        if (is_bool($value)) {
-            return $value
-                ? 'true'
-                : 'false';
+        if (!in_array($unique, $entityValues->columns(), true)) {
+            throw new InvalidArgumentException('The unique field "' . $unique . '" is not among the values written.');
         }
 
-        return $value;
+        return $unique;
     }
 
     /**

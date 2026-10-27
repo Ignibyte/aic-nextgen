@@ -828,6 +828,87 @@
             "header": "Tessera-Request: visit\r\nTessera-Protocol: 0\r\nTessera-Targets: content/c0\r\nTessera-Layout: app-plain",
             "status": 200,
             "captures": false
+        },
+        {
+            "name": "stock save by SKU, new",
+            "method": "POST",
+            "path": "/stock",
+            "form": "name=Gate+shelf+184&price=42.50&added_on=2026-10-20&sku=GATE-184&quantity=5&aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "stock save by SKU, over the same SKU",
+            "method": "POST",
+            "path": "/stock",
+            "form": "name=Gate+shelf+184&price=43.00&added_on=2026-10-27&sku=GATE-184&quantity=6&aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "stock save by SKU, not counted",
+            "method": "POST",
+            "path": "/stock",
+            "form": "name=Gate+crate+184&price=12&added_on=2026-10-20&sku=GATE-184-U&aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "stock save, a malformed SKU",
+            "method": "POST",
+            "path": "/stock",
+            "form": "name=Gate+crate&price=12&added_on=2026-10-20&sku=lower&aic_csrf={csrf}",
+            "header": "",
+            "status": 422,
+            "captures": false
+        },
+        {
+            "name": "stock, by SKUs",
+            "method": "GET",
+            "path": "/stock?sku=GATE-184,GATE-184-U",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "stock, a name search",
+            "method": "GET",
+            "path": "/stock?q=shelf+184",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "stock, a price range",
+            "method": "GET",
+            "path": "/stock?min_price=42&max_price=44&sku=GATE-184",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "stock, not counted",
+            "method": "GET",
+            "path": "/stock?uncounted=1&sku=GATE-184-U",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "stock, a second page",
+            "method": "GET",
+            "path": "/stock?q=shelf+184&page=2",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
         }
     ]
 }
