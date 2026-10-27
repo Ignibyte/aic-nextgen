@@ -263,10 +263,15 @@ final class RenderPass
     }
 
     /**
-     * @return bool Whether the current path is the target or on the way to it; always when not aimed.
+     * @return bool Whether the current path is the target, on the way to it or inside it; always when not aimed.
+     *              The target renders whole, its descendants included, so a fragment holds the same markup as
+     *              the whole document (#179).
      */
     private function onTheWay(): bool
     {
-        return $this->target === '' || $this->path === $this->target || str_starts_with($this->target, $this->path . '/');
+        return $this->target === ''
+            || $this->path === $this->target
+            || str_starts_with($this->target, $this->path . '/')
+            || str_starts_with($this->path, $this->target . '/');
     }
 }

@@ -37,6 +37,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **A nested Tessera target renders whole** (#179). An aimed render pass (a target path of more
+  than one segment) rendered the target but none of its descendants, so a fragment for a nested
+  component came back empty and Tessera patched the content away. gate:23 could not see it: PHP and
+  the compiled site dropped the children alike. AIC's kept `tessera.spec.ts` now holds a fragment
+  to the whole document's markup for its target. Found by Lotline run 9's agent.
 - **gate:23 compares an app's created records** (#178). The PHP and compiled sites create their
   own record against one database, with different ids, and gate:23 normalised ids only under
   AIC's `/notes/`. A path a step captures now reads as `<captured>` in its site's answers, so an
