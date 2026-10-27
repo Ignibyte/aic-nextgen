@@ -6,14 +6,13 @@ namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
 use AIC\Entity\Application\EntityStore;
-use AIC\Form\Application\PostedFields;
 use AIC\Module\Application\HandlerContext;
-use AIC\Tessera\Application\TesseraProps;
-use App\Note\Controller\StockPage;
-use App\Note\Controller\StockPost;
-use App\Note\Form\StockForm;
-use App\Note\Repository\StockRepository;
-use App\Note\Service\StockList;
+use App\Note\Controller\NoteDeletePost;
+use App\Note\Entity\NoteTypes;
+use App\Note\Form\NoteEnvelope;
+use App\Note\Repository\NoteRepository;
+use App\Note\Service\NoteRequest;
+use App\Note\Service\NoteViews;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -32,28 +31,23 @@ final readonly class NoteHandlersPart2
     }
 
     /**
-     * @throws ContainerException       When a called constructor or service fails.
      * @throws InvalidArgumentException When a called constructor or service fails.
+     * @throws ContainerException       When a called constructor or service fails.
      *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array
     {
-        $entityStore = new EntityStore($this->handlerContext->database());
-        $stockRepository = new StockRepository($entityStore);
-        $stockForm = new StockForm();
-        $stockList = new StockList(
-            $this->handlerContext->envelopeCodec(),
-            new TesseraProps($this->handlerContext->envelopeCodec()),
-            $stockRepository,
-        );
+        $noteRepository = new NoteRepository(new EntityStore($this->handlerContext->database()), new NoteTypes());
 
         return [
-            StockPage::class => $this->handlerContext->page(
-                new StockPage($this->handlerContext->documents(), $stockRepository, $stockForm, $stockList),
-            ),
-            StockPost::class => $this->handlerContext->page(
-                new StockPost($this->handlerContext->documents(), $stockRepository, $stockForm, new PostedFields()),
+            NoteDeletePost::class => $this->handlerContext->page(
+                new NoteDeletePost(
+                    $noteRepository,
+                    new NoteRequest(),
+                    new NoteViews($this->handlerContext->documents()),
+                    new NoteEnvelope($this->handlerContext->envelopeCodec()),
+                ),
             ),
         ];
     }

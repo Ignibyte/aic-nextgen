@@ -23,11 +23,13 @@ final readonly class EntityChanges
     /**
      * @param Database         $database         The database.
      * @param EntityType       $entityType       The entity type queried.
+     * @param EntityJoins      $entityJoins      The query's joins: a change is on one table, so it takes none.
      * @param EntityConditions $entityConditions The query's conditions.
      */
     public function __construct(
         private Database $database,
         private EntityType $entityType,
+        private EntityJoins $entityJoins,
         private EntityConditions $entityConditions,
     ) {
     }
@@ -35,8 +37,8 @@ final readonly class EntityChanges
     /**
      * @param array<string, string|int|bool|null> $values The writable fields to change.
      *
-     * @throws InvalidArgumentException When there is nothing to change, the query has no condition, or a value does
-     *                                  not fit its field.
+     * @throws InvalidArgumentException When there is nothing to change, the query has no condition or joins a
+     *                                  table, or a value does not fit its field.
      * @throws QueryException           When the update fails.
      *
      * @return int How many rows it changed.
@@ -64,7 +66,7 @@ final readonly class EntityChanges
     }
 
     /**
-     * @throws InvalidArgumentException When the query has no condition.
+     * @throws InvalidArgumentException When the query has no condition, or joins a table.
      * @throws QueryException           When the delete fails.
      *
      * @return int How many rows it deleted.
@@ -75,14 +77,14 @@ final readonly class EntityChanges
     }
 
     /**
-     * @throws InvalidArgumentException When the query has no condition.
+     * @throws InvalidArgumentException When the query has no condition, or joins a table.
      *
      * @return string The query's WHERE.
      */
     private function where(): string
     {
-        if (!$this->entityConditions->hasAny()) {
-            throw new InvalidArgumentException('A change by query names at least one condition.');
+        if (!$this->entityConditions->hasAny() || $this->entityJoins->hasAny()) {
+            throw new InvalidArgumentException('A change by query names at least one condition and joins no table.');
         }
 
         return $this->entityConditions->sql();

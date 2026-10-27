@@ -31,6 +31,9 @@ enum FieldType
     /** When the row last changed: `now()` at insert and at every update, never written by hand (#184). */
     case UpdatedAt;
 
+    /** Another entity type's key, written and read as an int; a query can join through it (#190). */
+    case Reference;
+
     /**
      * @return bool Whether a caller writes it: every type but CreatedAt and UpdatedAt.
      */

@@ -8,10 +8,10 @@ use AIC\Container\Exception\ContainerException;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
 use App\Note\Controller\NoteCreatePost;
-use App\Note\Controller\NoteDeletePost;
 use App\Note\Controller\NoteListPage;
 use App\Note\Controller\NoteShowPage;
 use App\Note\Controller\NoteUpdatePost;
+use App\Note\Entity\NoteTypes;
 use App\Note\Form\NoteEnvelope;
 use App\Note\Form\NoteForms;
 use App\Note\Repository\NoteRepository;
@@ -43,7 +43,8 @@ final readonly class NoteHandlers
     public function byId(): array
     {
         $entityStore = new EntityStore($this->handlerContext->database());
-        $noteRepository = new NoteRepository($entityStore);
+        $noteTypes = new NoteTypes();
+        $noteRepository = new NoteRepository($entityStore, $noteTypes);
         $noteViews = new NoteViews($this->handlerContext->documents());
         $noteEnvelope = new NoteEnvelope($this->handlerContext->envelopeCodec());
         $noteForms = new NoteForms($noteEnvelope);
@@ -51,9 +52,6 @@ final readonly class NoteHandlers
 
         return [
             NoteCreatePost::class => $this->handlerContext->page(new NoteCreatePost($noteRepository, $noteRequest, $noteViews, $noteForms)),
-            NoteDeletePost::class => $this->handlerContext->page(
-                new NoteDeletePost($noteRepository, $noteRequest, $noteViews, $noteEnvelope),
-            ),
             NoteListPage::class => $this->handlerContext->page(new NoteListPage($noteRepository, $noteViews, $noteForms)),
             NoteShowPage::class => $this->handlerContext->page(new NoteShowPage($noteRepository, $noteRequest, $noteViews, $noteForms)),
             NoteUpdatePost::class => $this->handlerContext->page(

@@ -10,6 +10,8 @@ use App\Note\Controller\NoteCreatePost;
 use App\Note\Controller\NoteDeletePost;
 use App\Note\Controller\NoteListPage;
 use App\Note\Controller\NoteShowPage;
+use App\Note\Controller\NoteTagPost;
+use App\Note\Controller\NoteTagsPage;
 use App\Note\Controller\NoteUpdatePost;
 use App\Note\Controller\StockPage;
 use App\Note\Controller\StockPost;
@@ -36,6 +38,8 @@ final readonly class NoteRoutes
             ->post('/notes/{id:int}', NoteUpdatePost::class)
             ->post('/notes/{id:int}/delete', NoteDeletePost::class)
             ->get('/stock', StockPage::class)
-            ->post('/stock', StockPost::class);
+            ->post('/stock', StockPost::class)
+            ->get('/notes/tags', NoteTagsPage::class)
+            ->post('/notes/tags', NoteTagPost::class);
     }
 }

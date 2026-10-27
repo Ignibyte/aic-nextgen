@@ -60,7 +60,7 @@ The development engine and its guard are described in [workflow.md](workflow.md)
   `AIC\Schema\Contracts\Schema`; `AIC\Schema\Application\Migrator` applies each version once, in a
   transaction, and keeps a ledger with a checksum of each, so a changed migration shows as changed.
 - `AIC\Entity`: tables as entity types with typed fields (Text, Date, Numeric, Boolean, Integer,
-  and the CreatedAt and UpdatedAt stamps the database sets), each nullable or not. A module's
+  Reference, and the CreatedAt and UpdatedAt stamps the database sets), each nullable or not. A module's
   repository builds on it (#184):
   - `AIC\Entity\Application\EntityStore` inserts (`insert`, `insertIfAbsent` on a unique field,
     `upsert` over it), updates and deletes rows by key, and runs `transaction(Closure)`, rolling
@@ -74,8 +74,12 @@ The development engine and its guard are described in [workflow.md](workflow.md)
   - `totals()` answers `count`, `sum`, `max` and the distinct `values` of a field over the
     matching rows, as text where money is involved; `changes()` updates or deletes the matching
     rows and answers how many, refusing to run without a condition.
-  - Every value is bound, and only the entity type's own field names reach the SQL. Joins
-    (#190) and reports (#191) are not here yet.
+  - A `Reference` field names another entity type and holds its key. `with(field, prefix,
+    optional)` joins through it (inner, or left when optional); the joined fields are
+    `prefix.field` in conditions, search, order and totals, and its columns come back as
+    `prefix_column`. Every column is qualified by its table; changes by query refuse a join.
+  - Every value is bound, and only the entity types' own field names reach the SQL. Reports
+    (#191) are not here yet.
 
 ## 4. Components
 

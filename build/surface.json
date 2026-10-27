@@ -190,6 +190,20 @@
             "path": "/stock"
         },
         {
+            "handler": "App\\Note\\Controller\\NoteTagsPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "note",
+            "path": "/notes/tags"
+        },
+        {
+            "handler": "App\\Note\\Controller\\NoteTagPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "note",
+            "path": "/notes/tags"
+        },
+        {
             "handler": "App\\Scaffold\\Controller\\ScaffoldPage",
             "kind": "Page",
             "method": "GET",
