@@ -38,6 +38,7 @@ final readonly class NativeSiteComparer
     private const array VOLATILE = [
         '#/notes/\\d+#' => '/notes/<id>',
         '#<(ul|p) id="(waiting|failed|notifications|content-pages|stock)">.*?</\\1>#s' => '<$2-list>',
+        '#data-t-props="[\\w.~+/=-]+"#' => 'data-t-props="<props>"',
         '/name="aic_csrf" value="[0-9a-f]{64}"/' => 'name="aic_csrf" value="<token>"',
         '/name="aic_envelope" value="[\\w.-]+"/' => 'name="aic_envelope" value="<envelope>"',
         '/name="tessera-csrf-token" content="[0-9a-f]{64}"/' => 'name="tessera-csrf-token" content="<token>"',

@@ -43,6 +43,11 @@ interface ResponseWriter
     public function fullVisit(string $location): ResponseInterface;
 
     /**
+     * @return ResponseInterface A `204` with no body: nothing changed (#193).
+     */
+    public function unchanged(): ResponseInterface;
+
+    /**
      * @param int    $status   A redirect status.
      * @param string $location Where to go.
      *

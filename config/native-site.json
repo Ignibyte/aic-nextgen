@@ -963,6 +963,15 @@
             "header": "",
             "status": 200,
             "captures": false
+        },
+        {
+            "name": "tessera, a poll with no version gets the list",
+            "method": "GET",
+            "path": "/stock?limit=3",
+            "form": "",
+            "header": "Tessera-Request: refresh\r\nTessera-Protocol: 1\r\nTessera-Layout: app-focus\r\nTessera-Targets: content/stock-list",
+            "status": 200,
+            "captures": false
         }
     ]
 }

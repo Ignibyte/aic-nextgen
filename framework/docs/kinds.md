@@ -42,6 +42,8 @@ An HTML answer to a GET or a POST. Form handlers are Pages too. A Page returns o
 - `AIC\Controller\Domain\PageRedirect`: a location and a status (303 by default).
 - `AIC\Controller\Domain\PageFullVisit`: tells the browser runtime to load a location as a full
   page.
+- `AIC\Controller\Domain\PageUnchanged`: a `204`, for a poll of one component whose data has not
+  changed; see [tessera.md](tessera.md#markers-and-fragments).
 
 A Page never returns markup. It builds components, puts them in a layout and returns the layout;
 the Renderer writes the HTML.

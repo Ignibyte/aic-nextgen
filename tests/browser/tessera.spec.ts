@@ -134,6 +134,19 @@ test('a list built from its source carries its latest line, and its refresh leav
     expect(await sameDocument(page)).toBe(true);
 });
 
+test('a poll of the list answers 204 while nothing changed, and the list stays', async ({ page }) => {
+    await page.goto('/stock?limit=3');
+    await mark(page);
+    const list = await page.locator('[data-t-anchor="stock-list"]').innerHTML();
+
+    const polled = await page.waitForResponse((response) => response.request().headers()['tessera-request'] === 'refresh');
+
+    expect(polled.request().headers()['tessera-targets']).toBe('content/stock-list ' + (await page.locator('[data-t-anchor="stock-list"]').getAttribute('data-t-props')));
+    expect(polled.status()).toBe(204);
+    expect(await page.locator('[data-t-anchor="stock-list"]').innerHTML()).toBe(list);
+    expect(await sameDocument(page)).toBe(true);
+});
+
 test('a fragment holds the same markup for its target as the whole document', async ({ page }) => {
     const whole = await (await page.request.get('/notes')).text();
     const fragment = await (await page.request.get('/notes', {

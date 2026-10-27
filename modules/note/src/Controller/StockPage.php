@@ -6,10 +6,11 @@ namespace App\Note\Controller;
 
 use AIC\Component\Domain\Heading;
 use AIC\Component\Domain\Paragraph;
-use AIC\Component\Domain\SourcedComponent;
 use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
+use AIC\Controller\Domain\PageUnchanged;
+use AIC\Database\Contracts\QueryException;
 use AIC\Form\Exception\InvalidEnvelope;
 use App\Generated\ThemeLayoutName;
 use App\Note\Form\StockEntry;
@@ -47,32 +48,34 @@ final readonly class StockPage implements Page
      * @param ServerRequestInterface $serverRequest The request, with its session, an optional `limit`, `q`,
      *                                              `min_price` and `page`, and maybe the list's props.
      *
+     * @throws QueryException When the list's items cannot be counted.
      * @throws JsonException  When the list's props cannot be sealed.
      * @throws LogicException When the required application state is unavailable.
      *
-     * @return PageResponse The page; 400 when the list's props were altered.
+     * @return PageResponse The page; 204 for a poll of the list when nothing changed (#193); 400 when the list's
+     *                      props were altered.
      */
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
         $stockQuery = $this->stockList->query($serverRequest);
+        $version = $this->stockList->version($stockQuery);
 
         try {
-            $list = $this->stockList->component($serverRequest, $stockQuery);
+            if ($this->stockList->unchanged($serverRequest, $version)) {
+                return new PageUnchanged();
+            }
+
+            $parts = $this->stockList->parts($serverRequest, $stockQuery, $version);
         } catch (InvalidEnvelope) {
             return $this->refused();
         }
 
-        $components = [new Heading('Stock')];
-        $totals = $this->stockList->totals($stockQuery);
-
-        if ($totals instanceof SourcedComponent) {
-            $components[] = $totals;
-        }
-
-        $components[] = $list;
-        $components[] = $this->stockList->links();
-        $components[] = $this->stockForm->form($serverRequest, new StockEntry('', '', '', false), '');
+        $components = [
+            new Heading('Stock'),
+            ...$parts,
+            $this->stockForm->form($serverRequest, new StockEntry('', '', '', false), ''),
+        ];
 
         return $this->pageDocuments->content($components, 200, 'Stock', ThemeLayoutName::Focus);
     }

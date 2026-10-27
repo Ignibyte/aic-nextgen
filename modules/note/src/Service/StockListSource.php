@@ -27,11 +27,13 @@ final readonly class StockListSource implements ComponentSource
      * @param StockRepository $stockRepository Holds the items.
      * @param StockQuery      $stockQuery      What the list asks for.
      * @param int             $limit           How many it shows, 1 to `StockList::MOST`.
+     * @param string          $poll            The URL it polls (#193).
      */
     public function __construct(
         private StockRepository $stockRepository,
         private StockQuery $stockQuery,
         private int $limit,
+        private string $poll,
     ) {
     }
 
@@ -39,7 +41,7 @@ final readonly class StockListSource implements ComponentSource
      * @throws QueryException           When the items cannot be read.
      * @throws InvalidArgumentException When a constructed value is invalid.
      *
-     * @return StockListing The last items, oldest first, and the latest item's line.
+     * @return StockListing The last items, oldest first, the latest item's line and the URL the list polls.
      */
     #[Override]
     public function build(): StockListing
@@ -51,7 +53,7 @@ final readonly class StockListSource implements ComponentSource
             $lines[] = $stockItem->line();
         }
 
-        return new StockListing($this->limit, $lines, self::latest($items));
+        return new StockListing($this->limit, $lines, self::latest($items), $this->poll);
     }
 
     /**
