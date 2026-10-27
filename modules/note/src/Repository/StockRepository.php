@@ -93,6 +93,22 @@ final readonly class StockRepository
     }
 
     /**
+     * @param StockQuery $stockQuery What the list asks for; its page does not apply.
+     *
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When a constructed value is invalid.
+     *
+     * @return string What the matching items are now: how many, when the newest came in and when one last changed;
+     *                any add, change or removal changes it (#193).
+     */
+    public function version(StockQuery $stockQuery): string
+    {
+        $entityTotals = $this->matching($stockQuery)->totals();
+
+        return $entityTotals->count() . '|' . ($entityTotals->max('created_at') ?? '') . '|' . ($entityTotals->max('updated_at') ?? '');
+    }
+
+    /**
      * @param StockEntry $stockEntry A posted item with nothing wrong with it. With a SKU it saves over the item that
      *                               has it, which keeps the date it first came in.
      *

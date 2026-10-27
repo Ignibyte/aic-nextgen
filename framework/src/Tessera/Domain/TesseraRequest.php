@@ -99,6 +99,19 @@ final readonly class TesseraRequest
     }
 
     /**
+     * @param string $target A component's path.
+     *
+     * @return bool Whether it is a refresh, in AIC's protocol, of that one target alone: the one request a `204`
+     *              may answer when the target has not changed (#193).
+     */
+    public function refreshesOnly(string $target): bool
+    {
+        return $this->kind === 'refresh'
+            && $this->speaksVersion()
+            && $this->targetList() === [$target];
+    }
+
+    /**
      * The targets a fragment answer renders for a visit, a refresh, a
      * submission or an action (protocol 5.1, 5.3). A visit also brings every
      * other region of the layout, so what lies outside its targets (the nav's

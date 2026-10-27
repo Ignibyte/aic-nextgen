@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Note\Service;
 
+use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\KeyedComponent;
 use AIC\Component\Domain\Link;
 use AIC\Component\Domain\SourcedComponent;
+use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Form\Exception\InvalidEnvelope;
 use AIC\Tessera\Application\TesseraProps;
@@ -65,25 +67,47 @@ final readonly class StockList
     /**
      * @param ServerRequestInterface $serverRequest The request: an optional `limit`, maybe the list's props.
      * @param StockQuery             $stockQuery    What the list asks for.
+     * @param string                 $version       What its items are now (`version()`), sealed in its props (#193).
      *
      * @throws InvalidEnvelope          When the request's props for the list were altered.
      * @throws JsonException            When the props cannot be sealed.
      * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
-     * @return KeyedComponent The list, its limit sealed in its props, its items read only when it is rendered (#192).
+     * @return list<Component> The page's stock parts: the totals of a filtered list, the list, and its links.
      */
-    public function component(ServerRequestInterface $serverRequest, StockQuery $stockQuery): KeyedComponent
+    public function parts(ServerRequestInterface $serverRequest, StockQuery $stockQuery, string $version): array
     {
-        $props = $this->tesseraProps->forTarget($serverRequest, self::TARGET);
-        $query = self::queryLimit($serverRequest);
-        $limit = self::limit($query === '' ? $props['limit'] ?? '' : $query);
+        $keyedComponent = $this->component($serverRequest, $stockQuery, $version);
 
-        return new KeyedComponent(
-            'stock-list',
-            new SourcedComponent(new StockListSource($this->stockRepository, $stockQuery, $limit)),
-            $this->envelopeCodec->seal(['limit' => (string) $limit]),
-            self::ANCHOR,
-        );
+        return $stockQuery->isFiltered()
+            ? [new SourcedComponent(new StockTotalsSource($this->stockRepository, $stockQuery)), $keyedComponent, $this->links()]
+            : [$keyedComponent, $this->links()];
+    }
+
+    /**
+     * @param StockQuery $stockQuery What the list asks for.
+     *
+     * @throws QueryException           When the items cannot be counted.
+     * @throws InvalidArgumentException When a constructed value is invalid.
+     *
+     * @return string What the items the list matches are now (#193).
+     */
+    public function version(StockQuery $stockQuery): string
+    {
+        return $this->stockRepository->version($stockQuery);
+    }
+
+    /**
+     * @param ServerRequestInterface $serverRequest The request, maybe a poll of the list.
+     * @param string                 $version       What the list's items are now.
+     *
+     * @throws InvalidEnvelope When the request's props for the list were altered.
+     *
+     * @return bool Whether it is a poll of the list alone, sent with that version: nothing to send (#193).
+     */
+    public function unchanged(ServerRequestInterface $serverRequest, string $version): bool
+    {
+        return $this->tesseraProps->unchanged($serverRequest, self::TARGET, $version);
     }
 
     /**
@@ -107,22 +131,38 @@ final readonly class StockList
     }
 
     /**
-     * @param StockQuery $stockQuery What the list asks for.
+     * @param ServerRequestInterface $serverRequest The request: an optional `limit`, maybe the list's props.
+     * @param StockQuery             $stockQuery    What the list asks for.
+     * @param string                 $version       What its items are now (`version()`), sealed in its props (#193).
      *
-     * @return SourcedComponent|null The totals of what a filtered list matches, added up only when they are rendered
-     *                               (#192); null for the newest items, whose count grows.
+     * @throws InvalidEnvelope          When the request's props for the list were altered.
+     * @throws JsonException            When the props cannot be sealed.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
+     * @return KeyedComponent The list, its limit and version sealed in its props, its items read only when it is
+     *                        rendered (#192); it polls its own URL.
      */
-    public function totals(StockQuery $stockQuery): ?SourcedComponent
-    {
-        return $stockQuery->isFiltered()
-            ? new SourcedComponent(new StockTotalsSource($this->stockRepository, $stockQuery))
-            : null;
+    private function component(
+        ServerRequestInterface $serverRequest,
+        StockQuery $stockQuery,
+        string $version,
+    ): KeyedComponent {
+        $props = $this->tesseraProps->forTarget($serverRequest, self::TARGET);
+        $query = self::queryLimit($serverRequest);
+        $limit = self::limit($query === '' ? $props['limit'] ?? '' : $query);
+
+        return new KeyedComponent(
+            'stock-list',
+            new SourcedComponent(new StockListSource($this->stockRepository, $stockQuery, $limit, self::poll($serverRequest))),
+            $this->envelopeCodec->seal(['limit' => (string) $limit, 'version' => $version]),
+            self::ANCHOR,
+        );
     }
 
     /**
      * @return StockLinks The links that show three or ten, and the one that refreshes the list alone.
      */
-    public function links(): StockLinks
+    private function links(): StockLinks
     {
         return new StockLinks(
             new Link('Show the last 3', '/stock?limit=3', false, '@' . self::ANCHOR),
@@ -139,6 +179,21 @@ final readonly class StockList
     private static function queryLimit(ServerRequestInterface $serverRequest): string
     {
         return self::field($serverRequest, 'limit');
+    }
+
+    /**
+     * @param ServerRequestInterface $serverRequest The request.
+     *
+     * @return string Its path and query: what the list polls, so a poll asks for the list the page shows.
+     */
+    private static function poll(ServerRequestInterface $serverRequest): string
+    {
+        $uri = $serverRequest->getUri();
+        $query = $uri->getQuery();
+
+        return $query === ''
+            ? $uri->getPath()
+            : $uri->getPath() . '?' . $query;
     }
 
     /**

@@ -35,7 +35,15 @@ A fragment response carries title, CSRF metadata and tracked resources, then
 that target as the whole document, its descendants included however deep the target sits (#179);
 `tests/browser/tessera.spec.ts` holds that for a nested target. A Page controller runs whole for a fragment
 too; a part built from a source ([rendering.md](rendering.md#blocks-and-keys)) reads its data only
-when the answer renders it, so a target's refresh leaves the other parts' reads undone. Assets use their compiled canonical URLs. A release change is
+when the answer renders it, so a target's refresh leaves the other parts' reads undone.
+
+A poll that finds nothing changed answers `204`, and Tessera leaves the page as it is. Seal a
+`version` in the component's props (what its data is now: a count and the latest timestamps are
+enough), and before building anything ask `AIC\Tessera\Application\TesseraProps::unchanged(request,
+target, version)`. It is true only for a refresh, in protocol 1, of that one target whose verified
+props carry the same version; then return `AIC\Controller\Domain\PageUnchanged`. A visit, a
+submission or a refresh of several targets always renders. The props come back on every refresh
+and are re-sealed on every render, so the version needs no header of its own. Assets use their compiled canonical URLs. A release change is
 visible through tracked resources and may require a full visit.
 
 ## Protocol constants
@@ -90,6 +98,7 @@ component.
 | `TesseraEvents::patchSignals()` | scope, JSON object, only-if-missing, id and last; emits tessera-patch-signals |
 | `TesseraEvents::keepAlive()` | keep-alive comment, with the last flag |
 | `TesseraProps::forTarget()` | verifies the requested target's props envelope and returns string values; empty when absent |
+| `TesseraProps::unchanged()` | true only for a protocol 1 refresh of that one target whose verified props carry the given `version` |
 
 Element modes are morph, inner, append, prepend and remove. Event data uses one `KEY VALUE` line
 per value line. IDs support resuming through `Last-Event-ID`; the source decides what follows that

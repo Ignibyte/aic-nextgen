@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **An unchanged poll answers 204** (#193). A component seals a version in its props;
+  `TesseraProps::unchanged()` tells a refresh of that component alone with the same version, and
+  `PageUnchanged` answers `204`, which Tessera leaves alone. The fixture's stock list polls and
+  seals its version.
+
 - **Parts built from their sources** (#192). A module service implementing `ComponentSource`
   builds a part when the render pass renders it, carried by `SourcedComponent`; a Tessera refresh of
   one part reads only that part's data. The fixture's stock list and totals are sources, and the
