@@ -93,6 +93,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **A page must name its title** (#187). `PageDocuments::content()` and `page()` take the title
+  third, required and never empty, before the optional layout:
+  `content([...], 200, 'Stock', ThemeLayoutName::Focus)`. Every fixture page names one, and
+  make:page and make:entity write it.
+
 - **Themes show templates; the build writes only into `build/`** (#167, Chad 2026-10-26). A theme's
   `components/<Name>/` and `layouts/` hold only `.phtml` templates; its PHP moves to `src/`
   (`src/Components/<Name>/` for each component and its value classes, `src/Layouts/` for `Page.php`

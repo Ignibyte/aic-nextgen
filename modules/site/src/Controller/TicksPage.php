@@ -37,6 +37,6 @@ final readonly class TicksPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        return $this->pageDocuments->content([new Ticks('/events?count=5')], 200);
+        return $this->pageDocuments->content([new Ticks('/events?count=5')], 200, 'Ticks');
     }
 }

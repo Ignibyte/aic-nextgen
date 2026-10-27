@@ -56,7 +56,7 @@ final readonly class LoginPost implements Page
         if (!$this->authenticator->login($serverRequest, $login, $this->postedFields->value($serverRequest, 'password'))) {
             $form = $this->loginForm->form($serverRequest, $login, $next, 'Wrong login or password.');
 
-            return $this->pageDocuments->content([new Heading('Sign in'), $form], 422);
+            return $this->pageDocuments->content([new Heading('Sign in'), $form], 422, 'Sign in');
         }
 
         return new PageRedirect((new SameOriginPath('/account'))->resolve($next));

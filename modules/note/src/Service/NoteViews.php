@@ -40,13 +40,14 @@ final readonly class NoteViews
      *
      * @throws InvalidArgumentException When the status is none of these.
      *
-     * @return PageDocument The page: its content, and the All notes link in `nav`.
+     * @return PageDocument The page, titled Notes: its content, and the All notes link in `nav`.
      */
     public function page(array $content, int $status): PageDocument
     {
         return $this->pageDocuments->page(
             new Regions([new Region('content', $content), new Region('nav', [new Link('All notes', '/notes')])]),
             $status,
+            'Notes',
         );
     }
 
