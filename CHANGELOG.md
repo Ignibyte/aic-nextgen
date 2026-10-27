@@ -32,6 +32,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **`init` writes the Playwright stubs** (#175). #174 put `package.json` and `package-lock.json` in
+  aic/gates' stubs but not in `SuiteStubs::NAMES`, so `vendor/bin/aic-gate init` skipped them in an
+  app and gate:30 did not hold them there.
+
 - **A restarted run plans on its spec** (#172). Plan's grounding judges the File Manifest against
   the run's base commit, as the code phase judges the change, instead of the working tree. After
   `workflow:reset` with the earlier run's work kept, a create row whose file is already on disk and a
