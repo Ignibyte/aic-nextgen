@@ -14,7 +14,9 @@ use SensitiveParameter;
 
 /**
  * Signs users in and out (#9): the signed-in user's id lives in the session
- * under `aic.user`. Login gives the session a fresh id; logout ends it.
+ * under `aic.user`. Login gives the session a fresh id; logout ends it. A
+ * login with no user still pays one bcrypt comparison, against a decoy hash,
+ * so its timing does not tell which logins exist (#177).
  */
 final readonly class Authenticator
 {
@@ -22,6 +24,12 @@ final readonly class Authenticator
      * The session key that keeps the signed-in user's id.
      */
     private const string USER = 'aic.user';
+
+    /**
+     * A bcrypt hash at the hasher's cost (12) of a random password no one holds: an unknown login is checked
+     * against it, so it costs what a wrong password costs.
+     */
+    private const string DECOY = '$2a$12$kwbcFx/.3yFX/abNQvcKEONLEoU7b7MRsLyTXuIOIRBZAG9Ukq3Gm';
 
     /**
      * @param UserProvider   $userProvider   The app's users.
@@ -53,6 +61,8 @@ final readonly class Authenticator
         $credentials = $this->userProvider->credentials($login);
 
         if (!$credentials instanceof UserCredentials) {
+            $this->passwordHasher->verify($password, self::DECOY);
+
             return false;
         }
 
