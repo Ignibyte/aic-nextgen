@@ -6,15 +6,14 @@ namespace App\Note\Controller;
 
 use AIC\Component\Domain\Heading;
 use AIC\Component\Domain\Paragraph;
+use AIC\Component\Domain\SourcedComponent;
 use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
-use AIC\Database\Contracts\QueryException;
 use AIC\Form\Exception\InvalidEnvelope;
 use App\Generated\ThemeLayoutName;
 use App\Note\Form\StockEntry;
 use App\Note\Form\StockForm;
-use App\Note\Repository\StockRepository;
 use App\Note\Service\StockList;
 use InvalidArgumentException;
 use JsonException;
@@ -26,19 +25,19 @@ use Psr\Http\Message\ServerRequestInterface;
  * GET /stock (#65): every stock item, the latest in full, and the form that
  * adds one. Its date, price and certified flag come back through the entity
  * layer as a date, a numeric and a boolean column. The list is the component
- * `content/stock-list`, which a Tessera link refreshes alone (#70).
+ * `content/stock-list`, which a Tessera link refreshes alone (#70). It reads
+ * nothing itself: the list and the totals read their items when they are
+ * rendered, so a refresh of the list alone does not add up the totals (#192).
  */
 final readonly class StockPage implements Page
 {
     /**
-     * @param PageDocuments   $pageDocuments   Makes the page.
-     * @param StockRepository $stockRepository Holds the items.
-     * @param StockForm       $stockForm       The form.
-     * @param StockList       $stockList       The list, the component Tessera refreshes alone.
+     * @param PageDocuments $pageDocuments Makes the page.
+     * @param StockForm     $stockForm     The form.
+     * @param StockList     $stockList     The list, the component Tessera refreshes alone.
      */
     public function __construct(
         private PageDocuments $pageDocuments,
-        private StockRepository $stockRepository,
         private StockForm $stockForm,
         private StockList $stockList,
     ) {
@@ -48,7 +47,6 @@ final readonly class StockPage implements Page
      * @param ServerRequestInterface $serverRequest The request, with its session, an optional `limit`, `q`,
      *                                              `min_price` and `page`, and maybe the list's props.
      *
-     * @throws QueryException When the items cannot be read.
      * @throws JsonException  When the list's props cannot be sealed.
      * @throws LogicException When the required application state is unavailable.
      *
@@ -58,18 +56,17 @@ final readonly class StockPage implements Page
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
         $stockQuery = $this->stockList->query($serverRequest);
-        $items = $this->stockRepository->latest(StockList::MOST, $stockQuery);
 
         try {
-            $list = $this->stockList->component($serverRequest, $items);
+            $list = $this->stockList->component($serverRequest, $stockQuery);
         } catch (InvalidEnvelope) {
             return $this->refused();
         }
 
-        $components = [new Heading('Stock'), new Paragraph($this->stockList->summary($items), 'stock-latest')];
+        $components = [new Heading('Stock')];
         $totals = $this->stockList->totals($stockQuery);
 
-        if ($totals instanceof Paragraph) {
+        if ($totals instanceof SourcedComponent) {
             $components[] = $totals;
         }
 

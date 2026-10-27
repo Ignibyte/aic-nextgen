@@ -39,9 +39,9 @@ final readonly class NoteHandlersPart3
      */
     public function byId(): array
     {
+        $stockForm = new StockForm();
         $entityStore = new EntityStore($this->handlerContext->database());
         $stockRepository = new StockRepository($entityStore);
-        $stockForm = new StockForm();
         $stockList = new StockList(
             $this->handlerContext->envelopeCodec(),
             new TesseraProps($this->handlerContext->envelopeCodec()),
@@ -49,9 +49,7 @@ final readonly class NoteHandlersPart3
         );
 
         return [
-            StockPage::class => $this->handlerContext->page(
-                new StockPage($this->handlerContext->documents(), $stockRepository, $stockForm, $stockList),
-            ),
+            StockPage::class => $this->handlerContext->page(new StockPage($this->handlerContext->documents(), $stockForm, $stockList)),
             StockPost::class => $this->handlerContext->page(
                 new StockPost($this->handlerContext->documents(), $stockRepository, $stockForm, new PostedFields()),
             ),

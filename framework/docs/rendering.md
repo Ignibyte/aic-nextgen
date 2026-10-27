@@ -75,6 +75,16 @@ props token. Its key becomes part of the target path, for example `content/stock
 stable when data changes; a loop's keyed children must have distinct keys. See
 [tessera.md](tessera.md#markers-and-fragments) for the wire format.
 
+A part whose data costs a read is built from a source (#192). A module service implements
+`AIC\Component\Contracts\ComponentSource`: a constructor that holds what it needs (a repository,
+the parsed query) and does no reading, and `build()`, which reads and returns the component to
+render, neither keyed nor sourced. The controller places it as
+`AIC\Component\Domain\SourcedComponent`, usually inside a `KeyedComponent` that keeps the key,
+props and anchor. The render pass calls `build()` only when it renders that part: a whole document
+builds every source, and a Tessera answer for one target builds only the sources on its way, so a
+refresh of one part never reads another's data. Verify props in the controller, before the render,
+where a refusal can still answer 400.
+
 ## Escaping and deliberate raw HTML
 
 [templates.md](templates.md#types-and-output) describes escaping by static type. Prefer Components

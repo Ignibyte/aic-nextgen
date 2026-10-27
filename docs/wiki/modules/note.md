@@ -154,6 +154,9 @@ none
 | `App\Note\Service\NoteTagForms` | [modules/note/src/Service/NoteTagForms.php](../../../modules/note/src/Service/NoteTagForms.php) |
 | `App\Note\Service\NoteViews` | [modules/note/src/Service/NoteViews.php](../../../modules/note/src/Service/NoteViews.php) |
 | `App\Note\Service\StockList` | [modules/note/src/Service/StockList.php](../../../modules/note/src/Service/StockList.php) |
+| `App\Note\Service\StockListSource` | [modules/note/src/Service/StockListSource.php](../../../modules/note/src/Service/StockListSource.php) |
+| `App\Note\Service\StockReportDay` | [modules/note/src/Service/StockReportDay.php](../../../modules/note/src/Service/StockReportDay.php) |
+| `App\Note\Service\StockTotalsSource` | [modules/note/src/Service/StockTotalsSource.php](../../../modules/note/src/Service/StockTotalsSource.php) |
 
 ## Uses
 

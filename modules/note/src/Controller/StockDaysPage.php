@@ -14,7 +14,7 @@ use App\Generated\ThemeLayoutName;
 use App\Note\Entity\StockDay;
 use App\Note\Repository\StockReportRepository;
 use App\Note\Repository\StockRepository;
-use App\Note\Service\StockList;
+use App\Note\Service\StockReportDay;
 use App\Theme\Components\LineList\LineList;
 use LogicException;
 use Override;
@@ -33,13 +33,13 @@ final readonly class StockDaysPage implements Page
      * @param PageDocuments         $pageDocuments         Makes the page.
      * @param StockRepository       $stockRepository       The stock, for its worth by certification.
      * @param StockReportRepository $stockReportRepository The report's days.
-     * @param StockList             $stockList             Reads the day asked for.
+     * @param StockReportDay        $stockReportDay        Reads the day asked for.
      */
     public function __construct(
         private PageDocuments $pageDocuments,
         private StockRepository $stockRepository,
         private StockReportRepository $stockReportRepository,
-        private StockList $stockList,
+        private StockReportDay $stockReportDay,
     ) {
     }
 
@@ -54,7 +54,7 @@ final readonly class StockDaysPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $day = $this->stockList->day($serverRequest);
+        $day = $this->stockReportDay->day($serverRequest);
         $worth = $this->stockRepository->worthByCertification($day);
         $days = array_map(static fn (StockDay $stockDay): string => $stockDay->line(), $this->stockReportRepository->days(10, $day));
 

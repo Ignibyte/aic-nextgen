@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Parts built from their sources** (#192). A module service implementing `ComponentSource`
+  builds a part when the render pass renders it, carried by `SourcedComponent`; a Tessera refresh of
+  one part reads only that part's data. The fixture's stock list and totals are sources, and the
+  list carries its latest line.
+
 - **Every table owned by one module** (#185, #186). A table belongs to the module whose migration
   creates it; gate:26 refuses an entity type, alteration or view over another module's table, an
   uncreated one or a computed name, and gate:9 keeps module code off `AIC\Database`'s raw
