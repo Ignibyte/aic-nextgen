@@ -50,6 +50,8 @@ final readonly class ProjectProfile
         '.codex/aic-workflow.lock',
         // The tickets a run works, in an app with the workflow installed (#105).
         'tickets/*',
+        // The browser tests the app keeps, Playwright specs (#174).
+        'tests/browser/*',
         // DDEV, the interpreted reference and Postgres.
         '.ddev/*',
         // The root's own files, by exact name, so a stray file at the root fails: the docs, the manifests, and
@@ -63,6 +65,8 @@ final readonly class ProjectProfile
         '.composer-require-checker.json',
         'deptrac.yaml',
         '.gitignore',
+        'package.json',
+        'package-lock.json',
         'phpcs.xml.dist',
         'phpstan-architecture.neon',
         'phpstan.neon',

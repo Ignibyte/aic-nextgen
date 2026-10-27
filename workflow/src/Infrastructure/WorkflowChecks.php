@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
-use AIC\Workflow\Application\BrowserCheck;
 use AIC\Workflow\Application\CompositionCheck;
 use AIC\Workflow\Application\CriteriaCheck;
 use AIC\Workflow\Application\DeclarationCheck;
@@ -62,7 +61,8 @@ final readonly class WorkflowChecks
             $checks = [...$checks, ...$this->exit($phase)];
         }
 
-        $checks[] = new BrowserCheck($specFile, $parts->evidenceLog(), $parts->evidenceRecorder(), $parts->runSubject());
+        $checks = [...$checks, ...(new BrowserParts($this->root, $parts, $this->site))->checks()];
+
         $checks[] = new CriteriaCheck($specFile, $parts->evidenceLog(), $parts->evidenceRecorder(), $parts->runSubject());
 
         return [...$checks, ...$this->confirmChecks];

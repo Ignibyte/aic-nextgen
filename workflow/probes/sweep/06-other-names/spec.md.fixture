@@ -1,13 +1,13 @@
 ---
 ticket: 1
-browser_testable: No
+browser_testable: Yes
 ---
 
 ## Acceptance Criteria
 
 | # | Target | Met |
 |---|---|---|
-| 1 | The home page's uploads link says each file is checked by its content | [ ] |
+| 1 | The status API's body says when the database version reads `unavailable` | [ ] |
 
 ## Design
 
@@ -30,3 +30,7 @@ One label in the home page's list of pages changes; the page reads it as before.
 
 | Kind | Method | Path or name | Class | Module | Status | Example |
 |---|---|---|---|---|---|---|
+
+## Browser Check
+
+- [ ] tests/browser/probe-note.spec.ts — a note card shows its title

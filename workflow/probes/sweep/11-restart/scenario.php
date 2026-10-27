@@ -20,11 +20,11 @@ use AIC\Workflow\Domain\Probe\WriteStep;
 
 return new ProbeScenario([
     new ReplaceStep(
-        'modules/site/src/Controller/HomePage.php',
-        "'Account (sign-in, protected route)'",
-        "'Account (sign-in first, a protected route)'",
+        'modules/site/src/Service/StatusBody.php',
+        "The database server's version, or `unavailable`.",
+        "The database server's version; `unavailable` when it does not answer.",
     ),
-    new DeleteStep('modules/site/src/Block/PoweredByBlock.php'),
+    new DeleteStep('modules/site/resources/upload.png'),
     new WriteStep('modules/site/src/Service/RestartNote.php', 'restart-note.php.fixture'),
     new RunStep('blocked', ticket: 1),
     new WriteStep('var/workflow/spec-1.md', 'spec.md.fixture'),

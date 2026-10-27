@@ -5,7 +5,8 @@
 #
 #   scratch-app.sh make <app> <package-copy>
 #       This repository's working tree as an app in <app> (files the tree
-#       deleted stay deleted), with aic/workflow required by path from a copy
+#       deleted stay deleted, node_modules copied for the browser tests), with
+#       aic/workflow required by path from a copy
 #       of workflow/ in <package-copy>, the tool configs stripped of the
 #       package's own source (scratch-app.php strip), gate:21's cache.txt
 #       copied so its first run starts warm, the git hooks installed and
@@ -38,6 +39,10 @@ make_app() {
         git rm -rq --cached workflow .claude CLAUDE.md CONSTITUTION.md
         rm -rf workflow .claude CLAUDE.md CONSTITUTION.md
         cp -a "${repo}/vendor" "${repo}/tools" .
+        # The browser tests' Playwright (#174): gate:23 runs the kept tests in tests/browser/.
+        if [ -d "${repo}/node_modules" ]; then
+            cp -a "${repo}/node_modules" .
+        fi
         ln -sfn "${package}/workflow" vendor/aic/workflow
         if [ -f "${repo}/.native-gate/cache.txt" ]; then
             mkdir -p .native-gate

@@ -1,0 +1,8 @@
+{
+    "name": "aic-app-browser-tests",
+    "private": true,
+    "description": "The app's browser tests (aic/gates, #174): Playwright, pinned. Written by vendor/bin/aic-gate init; npm ci installs it.",
+    "devDependencies": {
+        "@playwright/test": "1.62.1"
+    }
+}

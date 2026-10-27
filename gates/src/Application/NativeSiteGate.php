@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\NativeSiteAnswer;
 use Gates\Domain\NativeSiteSetup;
 use Gates\Domain\NativeSiteStep;
 use Gates\Domain\ProcessResult;
@@ -45,6 +46,7 @@ final readonly class NativeSiteGate
      * @param ServerLauncher     $serverLauncher     Runs the two sites.
      * @param NativeSiteComparer $nativeSiteComparer Sends the steps and compares the answers.
      * @param GateUser           $gateUser           Gives the signed-in steps their user.
+     * @param NativeSiteBrowser  $nativeSiteBrowser  Runs the kept browser tests against the compiled site (#174).
      * @param NativeSiteScript   $nativeSiteScript   The steps.
      * @param NativeSiteHtml     $nativeSiteHtml     Lints the PHP site's HTML answers (#170).
      * @param NativeSiteCoverage $nativeSiteCoverage Finds the GET routes no step reaches (#171).
@@ -55,6 +57,7 @@ final readonly class NativeSiteGate
         private ServerLauncher $serverLauncher,
         private NativeSiteComparer $nativeSiteComparer,
         private GateUser $gateUser,
+        private NativeSiteBrowser $nativeSiteBrowser,
         private NativeSiteScript $nativeSiteScript = new NativeSiteScript(),
         private NativeSiteHtml $nativeSiteHtml = new NativeSiteHtml(),
         private NativeSiteCoverage $nativeSiteCoverage = new NativeSiteCoverage(),
@@ -177,15 +180,37 @@ final readonly class NativeSiteGate
         $password = $this->gateUser->create($root, $nativeSiteSetup->env);
         $php = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->phpPort, $steps, $password);
         $native = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->nativePort, $steps, $password);
+        $nativeOrigin = 'http://127.0.0.1:' . $nativeSiteSetup->nativePort;
+        $browser = $this->nativeSiteBrowser->findings($root, $nativeOrigin, $nativeSiteSetup->env, $password);
         $this->serverLauncher->stopAll();
 
+        return $this->judged($root, $steps, [$php, $native], $browser, [$stdout, $stderr]);
+    }
+
+    /**
+     * @param string                                                $root    Repo-root absolute path.
+     * @param list<NativeSiteStep>                                  $steps   The script.
+     * @param array{list<NativeSiteAnswer>, list<NativeSiteAnswer>} $answers The PHP site's answers, then the compiled site's.
+     * @param array{int, list<string>}                              $browser How many kept browser tests ran, and their failures.
+     * @param array{resource, resource}                             $streams Where the summary goes, then the failures.
+     *
+     * @return int The exit code.
+     */
+    private function judged(string $root, array $steps, array $answers, array $browser, array $streams): int
+    {
+        [$php, $native] = $answers;
         $differences = $this->nativeSiteComparer->differences($steps, $php, $native);
         $findings = [
             ...self::prefixed('HTML ', $this->nativeSiteHtml->findings($steps, $php)),
             ...$this->nativeSiteCoverage->unreached($root, $steps, $php),
+            ...$browser[1],
         ];
 
-        return $this->report($differences, $findings, count($steps), $stdout, $stderr);
+        if ($browser[0] > 0 && $browser[1] === []) {
+            fwrite($streams[0], sprintf('gate:23 — browser: %d kept test file(s) pass on the compiled site.%s', $browser[0], PHP_EOL));
+        }
+
+        return $this->report($differences, $findings, count($steps), $streams[0], $streams[1]);
     }
 
     /**
@@ -209,8 +234,8 @@ final readonly class NativeSiteGate
 
     /**
      * @param list<string> $differences What the sites disagreed on.
-     * @param list<string> $findings    What the PHP site's HTML answers break (#170), and each GET route no step
-     *                                  reaches (#171).
+     * @param list<string> $findings    What the PHP site's HTML answers break (#170), each GET route no step
+     *                                  reaches (#171), and each kept browser test that fails (#174).
      * @param int          $run         How many steps ran.
      * @param resource     $stdout      Stream the summary is written to.
      * @param resource     $stderr      Stream failures are written to.

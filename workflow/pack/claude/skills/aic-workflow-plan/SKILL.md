@@ -40,11 +40,15 @@ Each reason names the lookup to run. Run it, fix what it shows, then `bin/aic wo
 
 ## The sections
 
-- **Frontmatter:** `ticket` is the ticket's number. `browser_testable: Yes` when the work changes
-  a page a person sees; then add a `## Browser Check` section with one
-  `- [ ] <URL> — <what to do> → <what should show>` item per check. Check will need a browser
-  tool in your session and the site in `config/workflow.php`; when either is missing, tell the
-  operator now.
+- **Frontmatter:** `ticket` is the ticket's number. `browser_testable: Yes` when the work is front
+  end facing. Plan refuses a manifest that touches a theme (its templates and classes, `frontend/`, and the styles, scripts, images and fonts in
+  its `assets/`), `framework/templates/`,
+  `tests/browser/`, `config/app.php`, a module's `Block/` or `Form/`, or a `Controller/` class not
+  named `*Api` without it. Then add a `## Browser Check` section with one item per look, each
+  naming the Playwright test the look will be:
+  `- [ ] tests/browser/<name>.spec.ts — <what it shows>`. Declare a test you expect to keep in the
+  File Manifest as a create row; one you drop later is simply deleted. Check runs the looks
+  against the site in `config/workflow.php`; when it is empty, tell the operator now.
 - **Acceptance Criteria:** one row per thing that is true when the ticket is done, numbered from
   1, each with an empty `Met` cell. Write targets a gate, the build or a request can show.
 - **File Manifest:** one row per file the run will create, modify or delete, the path in

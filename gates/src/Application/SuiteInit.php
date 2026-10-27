@@ -41,6 +41,7 @@ final readonly class SuiteInit
         '/.phpstan-cache/',
         '/.psalm-cache/',
         '/.rector-cache/',
+        '/node_modules/',
         '/tools/gitleaks',
     ];
 

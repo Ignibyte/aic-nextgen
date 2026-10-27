@@ -1,0 +1,34 @@
+---
+ticket: 1
+browser_testable: Yes
+---
+
+## Acceptance Criteria
+
+| # | Target | Met |
+|---|---|---|
+| 1 | The home page names the uploads demo by how each file is checked | [ ] |
+
+## Design
+
+One label in the home page's list of pages changes; a person sees it, so it is looked at.
+
+### File Manifest
+
+| File | Change | Purpose |
+|---|---|---|
+| `modules/site/src/Controller/HomePage.php` | modify | The label |
+| `tests/browser/probe-home.spec.ts` | create | The look, kept as a browser test |
+
+### Locked-In Decisions
+
+1. Only the label's text changes.
+
+## Entry Points
+
+| Kind | Method | Path or name | Class | Module | Status | Example |
+|---|---|---|---|---|---|---|
+
+## Browser Check
+
+- [ ] tests/browser/probe-home.spec.ts — the home page names the uploads demo by its new label

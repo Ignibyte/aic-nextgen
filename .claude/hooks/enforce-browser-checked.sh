@@ -5,15 +5,17 @@
 #
 # When the active spec says `browser_testable: Yes`, Code ends with the agent
 # having looked at the change in a real browser on this box and exercised it
-# (CONSTITUTION.md §17). There are no regression suites: the check is live,
-# once, during Code.
+# (CONSTITUTION.md §17). The look is best a Playwright test in tests/browser/,
+# which the pipeline may keep as a regression gate:23 runs (#174).
 #
 # Blocks Stop during /pipeline:implement unless both hold:
-#   1. This session drove a browser: a navigation AND a look at the page,
-#      through either Marley's Browser tab (mcp__plugin_marley_marley__:
-#      browser_navigate, then browser_snapshot or browser_look) or the local
-#      Playwright MCP server (mcp__playwright__: browser_navigate, then
-#      browser_snapshot or browser_take_screenshot).
+#   1. This session looked at the page: a Bash call that ran Playwright
+#      (`playwright test`, `playwright cli` or `vendor/bin/aic-gate browser`,
+#      the browser gate, #174), or a navigation AND a look through Marley's
+#      Browser tab (mcp__plugin_marley_marley__: browser_navigate, then
+#      browser_snapshot or browser_look) or the local Playwright MCP server
+#      (mcp__playwright__: browser_navigate, then browser_snapshot or
+#      browser_take_screenshot).
 #   2. Every item in the spec's `## Browser Check` list is ticked (`- [x]`).
 #
 # Input: JSON on stdin with session_id, stop_hook_active, transcript_path
@@ -69,10 +71,22 @@ BROWSER_TOOLS=$(jq -sr '
      sub("^mcp__plugin_marley_marley__"; "marley ")] | unique | .[]
 ' "$TRANSCRIPT_PATH" 2>/dev/null || true)
 
+# Playwright runs this session, from the shell (#174).
+PLAYWRIGHT_RUNS=$(jq -sr '
+    [.[] | (.message // .) | select(.role == "assistant") |
+     (.content // [])[] | select(.type == "tool_use" and .name == "Bash") |
+     .input.command // empty |
+     select(test("playwright (test|cli)|aic-gate browser"))] | length
+' "$TRANSCRIPT_PATH" 2>/dev/null || echo 0)
+
 VIOLATIONS=()
 
+if [ "${PLAYWRIGHT_RUNS:-0}" -gt 0 ]; then
+    BROWSER_TOOLS=$'playwright browser_navigate\nplaywright browser_snapshot'
+fi
+
 if ! grep -qE '^(playwright|marley) browser_navigate$' <<< "$BROWSER_TOOLS"; then
-    VIOLATIONS+=("No browser navigation this session. Open the page with browser_navigate in Marley's Browser tab or the local Playwright MCP.")
+    VIOLATIONS+=("No look at the page this session. Write the look as a Playwright test in tests/browser/ and run it with vendor/bin/aic-gate browser --base-url=<site> (or open the page with browser_navigate in Marley's Browser tab or the local Playwright MCP).")
 fi
 
 if ! grep -qE '^(playwright (browser_snapshot|browser_take_screenshot)|marley (browser_snapshot|browser_look))$' <<< "$BROWSER_TOOLS"; then

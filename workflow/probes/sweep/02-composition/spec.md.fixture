@@ -7,7 +7,7 @@ browser_testable: No
 
 | # | Target | Met |
 |---|---|---|
-| 1 | The home page's uploads link says each file is checked by its content | [ ] |
+| 1 | The status API's body says when the database version reads `unavailable` | [ ] |
 
 ## Design
 

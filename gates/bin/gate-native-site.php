@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use Gates\Application\BrowserLook;
+use Gates\Application\BrowserTests;
 use Gates\Application\GateUser;
+use Gates\Application\NativeSiteBrowser;
 use Gates\Application\NativeSiteBuilder;
 use Gates\Application\NativeSiteComparer;
 use Gates\Application\NativeSiteGate;
@@ -18,7 +21,8 @@ use Gates\Infrastructure\SystemProcessRunner;
 require __DIR__ . '/project.php';
 
 /*
- * gate:23 — the native site; with `serve [port]`, `composer run native:serve`.
+ * gate:23 — the native site; with `serve [port]`, `composer run native:serve`;
+ * with `browser [--base-url=<url>] [<spec>…]`, `vendor/bin/aic-gate browser` (#174).
  *
  * The environment is read here, at the boundary: ELEPHC_BIN overrides the
  * fork's in-place binary, the compiler gets gate:21's caches, and the database
@@ -43,9 +47,16 @@ $toolchain = new NativeToolchain(
 );
 $setup = (new LocalNativeSiteSetup($processRunner))->read($env, $root);
 
-$builder = new NativeSiteBuilder($toolchain, (new GatesPackage())->path());
+$package = (new GatesPackage())->path();
+$builder = new NativeSiteBuilder($toolchain, $package);
+$browserTests = new BrowserTests($processRunner, $package);
+$gateUser = new GateUser($processRunner, $toolchain->phpPath());
 
 $arguments = $argv ?? [];
+
+if (($arguments[1] ?? '') === 'browser') {
+    exit((new BrowserLook($browserTests, $gateUser))->run($root, $setup, array_slice($arguments, 2)));
+}
 
 if (($arguments[1] ?? '') !== 'serve') {
     $gate = new NativeSiteGate(
@@ -53,7 +64,8 @@ if (($arguments[1] ?? '') !== 'serve') {
         $builder,
         new ProcServerLauncher(),
         new NativeSiteComparer(new StreamHttpClient()),
-        new GateUser($processRunner, $toolchain->phpPath()),
+        $gateUser,
+        new NativeSiteBrowser($browserTests),
     );
 
     exit($gate->run($root, $setup));

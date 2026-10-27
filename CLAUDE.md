@@ -340,11 +340,13 @@ Ticket changes are committed and pushed in `docs/planning`, not here. Old AIC's 
 work with `/work <ticket>`; a trivial change takes `/work-lite`.
 
 Four phases: **Plan** (spec, design, file list, browser checks for UI work; Chad confirms),
-**Code** (no tests; browser-testable work is checked live in a browser on this box, see On this box), **Quality
+**Code** (no tests but browser tests; front-end work is looked at with Playwright, see On this box), **Quality
 checks** (`composer run gate` until green, the only gate run), **Documentation** (docs, plan
 updates, changelog, then delivery). AIC writes **no unit, mutation, coverage or regression
-tests** for now (Chad may bring them back once the framework is done); an invariant that must hold ships as a static guard (PHPStan, phpat or semgrep rule)
-proven to bite by planting a violation.
+tests** for now (Chad may bring them back once the framework is done), except browser tests
+(#174): a Playwright look the pipeline keeps in `tests/browser/`, which gate:23 runs on the
+compiled site. An invariant that must hold ships as a static guard (PHPStan, phpat or semgrep
+rule) proven to bite by planting a violation.
 
 **Native from the first class.** A ticket that adds runtime code is done only when every runtime
 class compiles, links, runs and matches PHP under elephc: gate:21, `composer run gate:21`. Restructure AIC
@@ -401,7 +403,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | 9 | phpat, `gates/architecture/` | 20 | captainhook hooks installed |
 | 10 | PHPMD, every ruleset | 21 | native: elephc compile, link, run, match PHP |
 | | | 22 | pipeline docs: frontmatter, line caps, links |
-| | | 23 | native site: the compiled app answers as PHP does; steps reach every GET route; HTML answers pass the lint |
+| | | 23 | native site: the compiled app answers as PHP does; steps reach every GET route; HTML answers pass the lint; kept browser tests pass |
 | | | 24 | build manifests: `build/surface.json` is fresh |
 | | | 25 | templates: the plain PHP grammar, deny by default; the HTML lint |
 | | | 26 | module boundaries: kind folders, the 15-file cap, exports and requires, the shell |
@@ -530,10 +532,11 @@ Every file:
 
 ## On this box
 
-- Browser checks run on this box, never through the Mac mini's Playwright. Use Marley's Browser
-  tab (the `marley` `browser_*` tools) when Chad needs to watch, and a local Playwright MCP
-  (headless, the Chromium in `~/.cache/ms-playwright`) when he doesn't. DDEV's default
-  `aic-nextgen.ddev.site` resolves locally, so no extra hostname is needed.
+- Browser looks run on this box with Playwright 1.62.1 (`npm ci` from the root `package.json`;
+  Chromium in `~/.cache/ms-playwright`): explore with `npx playwright cli`, write the look in
+  `tests/browser/`, run it with `vendor/bin/aic-gate browser --base-url=https://aic-nextgen.ddev.site:8843`
+  (#174). Marley's Browser tab (the `marley` `browser_*` tools) when Chad needs to watch. Never the
+  Mac mini's Playwright. `aic-nextgen.ddev.site` resolves locally.
 - `.mcp.json` is owner-managed (the Playwright MCP server). Never write or overwrite it; it is
   gitignored here.
 - Never `git stash -u`: it takes the untracked `.mcp.json` with it.

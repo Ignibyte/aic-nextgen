@@ -1,0 +1,29 @@
+---
+ticket: 1
+browser_testable: No
+---
+
+## Acceptance Criteria
+
+| # | Target | Met |
+|---|---|---|
+| 1 | The home page names the uploads demo by how each file is checked | [ ] |
+
+## Design
+
+One label in the home page's list of pages changes; a person sees it, so it is looked at.
+
+### File Manifest
+
+| File | Change | Purpose |
+|---|---|---|
+| `modules/site/src/Controller/HomePage.php` | modify | The label |
+
+### Locked-In Decisions
+
+1. Only the label's text changes.
+
+## Entry Points
+
+| Kind | Method | Path or name | Class | Module | Status | Example |
+|---|---|---|---|---|---|---|

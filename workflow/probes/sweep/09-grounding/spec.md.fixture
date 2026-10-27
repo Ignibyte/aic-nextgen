@@ -7,7 +7,7 @@ browser_testable: No
 
 | # | Target | Met |
 |---|---|---|
-| 1 | The home page's uploads link says each file is checked by its content | [ ] |
+| 1 | The status API's body says when the database version reads `unavailable` | [ ] |
 
 ## Design
 
@@ -17,7 +17,7 @@ One label in the home page's list of pages changes; the page reads it as before.
 
 | File | Change | Purpose |
 |---|---|---|
-| `modules/site/src/Controller/HomePage.php` | modify | The label |
+| `modules/site/src/Service/StatusBody.php` | modify | The database field's description |
 | `modules/site/src/Controller/NoSuchPage.php` | modify | A row for a file git does not list |
 
 ### Locked-In Decisions

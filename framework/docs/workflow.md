@@ -23,7 +23,7 @@ open run, phase, hold and next action. The engine's phase values are:
 | Phase | Work |
 |---|---|
 | `Phase::Plan = plan` | goal, bounded file/entry-point contract, grounded in current code |
-| `Phase::Code = code` | implementation, applicable live browser checks, gate evidence and advisory inspection |
+| `Phase::Code = code` | implementation, the browser looks' tests, gate evidence and advisory inspection |
 | `Phase::Check = check` | required independent inspection and current evidence |
 | `Phase::Complete = complete` | documentation and completion conditions, then archive |
 
@@ -31,6 +31,18 @@ The engine alone writes `var/workflow/`: run.json, append-only events.jsonl, his
 evidence in evidence.sqlite. Do not edit those files to skip a hold. A run keeps its identity and
 judged source hash through recovery. The engine runs gates itself; an unrelated terminal run is
 not the run's evidence.
+
+## Browser looks
+
+A front-end change is looked at with Playwright (#174). When the File Manifest touches a theme (all but the data and text files in its `assets/`),
+`tests/browser/`, `config/app.php`, a module's `Block/` or `Form/` or a non-`*Api` controller, the
+spec says `browser_testable: Yes` and names each look as a `## Browser Check` item:
+`- [ ] tests/browser/<name>.spec.ts — <what it shows>`. Explore with `npx playwright cli`, write the
+look as a `@playwright/test` test, run it with `vendor/bin/aic-gate browser --base-url=<site>
+<test>`, and tick the item with what you saw. A signed-in test reads `AIC_GATE_LOGIN` and
+`AIC_GATE_PASSWORD`. The engine runs every look at check. At complete, end each item after
+`saw:` with `— keep` or `— drop`: a kept test is declared and stays, and gate:23 runs it against
+the compiled site from then on; a dropped one is deleted.
 
 ## Guard, questions and review
 

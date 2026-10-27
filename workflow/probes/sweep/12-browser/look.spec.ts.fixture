@@ -1,0 +1,9 @@
+// The probe's look (#174): the home page names the uploads demo by its new label.
+
+import { expect, test } from '@playwright/test';
+
+test('the uploads demo says how each file is checked', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.locator('#demos a[href="/uploads"]')).toHaveText('Uploads (each file checked by its content)');
+});
