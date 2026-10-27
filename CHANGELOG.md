@@ -37,6 +37,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **gate:23 says why a browser test failed** (#181). Under each `BROWSER` line it keeps the first 20
+  lines Playwright printed for that test (the error, expected and received values, the call log and
+  the source line), so `workflow:logs gate:23` answers without a rerun.
+
 - **Tessera 0.1.1** (#180). `config/app.php` pins it with its sums: a patched component no longer
   resets the fields beside it (Tessera #32; Lotline's inventory filters lost their values).
 
