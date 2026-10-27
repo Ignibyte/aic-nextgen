@@ -50,19 +50,38 @@ final readonly class PageHandler implements RequestHandlerInterface
         $pageResponse = $this->page->page($request);
 
         if ($pageResponse instanceof PageDocument) {
-            $tesseraRequest = new TesseraRequest(
-                $request->getHeaderLine(TesseraRequest::REQUEST),
-                $request->getHeaderLine(TesseraRequest::PROTOCOL),
-                $request->getHeaderLine(TesseraRequest::TARGETS),
-                $request->getHeaderLine(TesseraRequest::LAYOUT),
-            );
-
-            return $pageResponse->withBlocks($this->blocks, $request)
-                ->withCsrfToken($this->formTokens->issue($request)->value())
-                ->answer($tesseraRequest)
-                ->writeTo($this->responseWriter);
+            return $this->document($pageResponse, $request);
         }
 
         return $pageResponse->writeTo($this->responseWriter);
+    }
+
+    /**
+     * The document's own type is a parameter here, not an `instanceof` on the
+     * page's answer: natively a PageDocument method called on the
+     * interface-typed answer returns a boxed value that is never released, so
+     * the page, its components and what their sources hold (a database
+     * connection) outlived every request (#61).
+     *
+     * @param PageDocument           $pageDocument  The page's document.
+     * @param ServerRequestInterface $serverRequest The request.
+     *
+     * @throws LogicException When the required application state is unavailable.
+     *
+     * @return ResponseInterface The document with its blocks and token, or the fragments Tessera asked for.
+     */
+    private function document(PageDocument $pageDocument, ServerRequestInterface $serverRequest): ResponseInterface
+    {
+        $tesseraRequest = new TesseraRequest(
+            $serverRequest->getHeaderLine(TesseraRequest::REQUEST),
+            $serverRequest->getHeaderLine(TesseraRequest::PROTOCOL),
+            $serverRequest->getHeaderLine(TesseraRequest::TARGETS),
+            $serverRequest->getHeaderLine(TesseraRequest::LAYOUT),
+        );
+
+        return $pageDocument->withBlocks($this->blocks, $serverRequest)
+            ->withCsrfToken($this->formTokens->issue($serverRequest)->value())
+            ->answer($tesseraRequest)
+            ->writeTo($this->responseWriter);
     }
 }
