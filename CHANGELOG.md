@@ -83,12 +83,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
-- **The compiled site keeps no database connection per request** (#61). Natively, `PageDocument`
-  methods called on the page's interface-typed answer returned a value that was never released,
-  so the page and everything it held, a source's repository and its connection included, outlived
-  each request. `PageHandler` passes the document to a method typed `PageDocument`; native.md
-  states the rule. With elephc's shutdown fix (fork c8eda1c0b), a pooled handler holds no
-  connection between requests.
+- **The compiled site keeps no database connection per request** (#61). Two elephc carries: objects
+  only a reference cycle keeps alive are destructed at shutdown (fork c8eda1c0b), and a method
+  result boxed for a narrowed receiver owns its object (fork dbbf60c08). Before them, the page and
+  everything it held, a source's repository and its connection included, outlived each request
+  until a pooled handler ran out of descriptors. `PageHandler`'s interim typed helper and its
+  native.md rule are gone.
 
 - **gate:23 says why a browser test failed** (#181). Under each `BROWSER` line it keeps the first 20
   lines Playwright printed for that test (the error, expected and received values, the call log and
