@@ -36,7 +36,8 @@ What holds the kinds:
 An HTML answer to a GET or a POST. Form handlers are Pages too. A Page returns one of:
 
 - `AIC\Controller\Domain\PageDocument`: a whole document, a `Layout` holding components, with a
-  status (200 by default).
+  status: 200 (the default), 400 for an altered form, 403 for a signed-in user who may not do what
+  was asked, 404, 409 for a conflicting write, or 422 for a form shown again with its errors.
 - `AIC\Controller\Domain\PageFragments`: some regions of that layout, by target, for a request the
   browser runtime sent; a 422 that redraws a form in place is one.
 - `AIC\Controller\Domain\PageRedirect`: a location and a status (303 by default).
