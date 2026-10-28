@@ -11,6 +11,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
   `PageUnchanged` answers `204`, which Tessera leaves alone. The fixture's stock list polls and
   seals its version.
 
+- **A gate refuses a positional Tessera path** (#195). gate:15 refuses `content/c0`-style paths
+  (a `cN` or `Name.N` segment) in modules, themes and browser tests: anchor the component and target
+  `@NAME`. A root `.semgrepignore` stub lets semgrep's rules reach `tests/browser/`.
+
 - **Parts built from their sources** (#192). A module service implementing `ComponentSource`
   builds a part when the render pass renders it, carried by `SourcedComponent`; a Tessera refresh of
   one part reads only that part's data. The fixture's stock list and totals are sources, and the

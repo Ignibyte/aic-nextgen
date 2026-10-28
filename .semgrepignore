@@ -1,0 +1,9 @@
+# semgrep's own defaults, without its test-directory exclusion, so a rule may cover tests/browser/
+# (#195). The gate runner's --exclude flags still apply.
+:include .gitignore
+.git/
+node_modules/
+vendor/
+build/
+dist/
+*.min.js

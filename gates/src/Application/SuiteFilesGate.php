@@ -23,15 +23,16 @@ use const STDOUT;
  * with one root per module), and composer.json carries the suite's scripts and
  * plugins; `vendor/bin/aic-gate init` restores the files. In AIC's own
  * repository the root configs are AIC's, so only the ones it keeps whole
- * (`pint.json`, `captainhook.json`, and the browser tests' `package.json` and
- * `package-lock.json`, #174) and composer.json's lines are held.
+ * (`pint.json`, `captainhook.json`, the browser tests' `package.json` and
+ * `package-lock.json` (#174), and `.semgrepignore`, which lets gate:15's rules
+ * reach `tests/browser/` (#195)) and composer.json's lines are held.
  */
 final readonly class SuiteFilesGate
 {
     /**
      * The stubs AIC's own repository keeps whole at its root.
      */
-    private const array AIC_STUBS = ['captainhook.json', 'package-lock.json', 'package.json', 'pint.json'];
+    private const array AIC_STUBS = ['.semgrepignore', 'captainhook.json', 'package-lock.json', 'package.json', 'pint.json'];
 
     /**
      * @param SuiteStubs            $suiteStubs     The stubs.

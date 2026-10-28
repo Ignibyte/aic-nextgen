@@ -241,6 +241,17 @@ rules:
         - "/framework/docs/**"
     severity: ERROR
 
+  - id: aic-tessera-positional-path
+    pattern-regex: '\b[a-z][a-z0-9]*(?:-[a-z0-9]+)*/(?:c[0-9]+|[A-Z][A-Za-z0-9]*\.[0-9]+)(?![A-Za-z0-9_])'
+    message: "A Tessera path with a positional segment (cN or Name.N) strands its target when a wrapper or an order changes: give the component an anchor and target @NAME (#188, #195)."
+    languages: [generic]
+    paths:
+      include:
+        - "/modules/**"
+        - "/themes/**"
+        - "/tests/browser/**"
+    severity: ERROR
+
   - id: aic-docs-no-ticket-refs
     pattern-regex: '(?<![\w/(])#\d+'
     message: "The architecture docs cite a ticket number, which an app cannot open: state the rule as it stands; the history is in CHANGELOG (#107)."

@@ -19,7 +19,11 @@ A `KeyedComponent` may also carry an anchor, a name in the key grammar written a
 A link, form or poll targets it as `@NAME`; Tessera finds the anchored element and sends its path,
 so module code never spells a path that a layout change could strand. One page holds each anchor
 once: a second on one render fails it (`DuplicateAnchor`). A gate:23 step may send
-`Tessera-Targets: @NAME`, which each site resolves from its own page of the step's path.
+`Tessera-Targets: @NAME`, which each site resolves from its own page of the step's path. Gate:15
+refuses a path with a positional segment (`cN`, `Name.N`) in modules, themes and browser tests: it
+moves when a wrapper or an order changes. A region and a component's own key
+(`content/stock-list`) stays allowed; `TesseraProps::forTarget()` reads props by it. The root
+`.semgrepignore`, an aic/gates stub, lets the rule reach `tests/browser/`.
 
 `AIC\Tessera\Domain\TesseraRequest` validates request kind, protocol, layout identity and target
 syntax. A valid visit naming a region also refreshes the layout's other regions so navigation state
