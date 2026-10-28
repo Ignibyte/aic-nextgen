@@ -33,7 +33,7 @@ final readonly class PageDocuments
 
     /**
      * @param Regions          $regions    The regions the page fills.
-     * @param int              $status     200, 404 or 422.
+     * @param int              $status     200, 400, 403, 404, 409 or 422.
      * @param non-empty-string $title      The page's own title, written before the app's name.
      * @param LayoutName|null  $layoutName The theme layout; null for the default.
      *
@@ -48,7 +48,7 @@ final readonly class PageDocuments
 
     /**
      * @param list<Component>  $components The `content` region's components, in order.
-     * @param int              $status     200, 404 or 422.
+     * @param int              $status     200, 400, 403, 404, 409 or 422.
      * @param non-empty-string $title      The page's own title, written before the app's name.
      * @param LayoutName|null  $layoutName The theme layout; null for the default.
      *

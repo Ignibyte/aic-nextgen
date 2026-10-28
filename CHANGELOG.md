@@ -6,6 +6,9 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **A page answers 403** (#197). `PageDocument` takes 403 for a signed-in user who may not do
+  what was asked, so a role check refuses in the app's look instead of failing with 500.
+
 - **Uploads end to end** (#196). WebP is an upload kind. A `FileDownload` takes the request and
   answers with an ETag and Last-Modified, 304 or 412 for a condition, and the whole file for a stale
   `If-Range`. `AppConfig::$maxBodyBytes` caps a request body: a larger one answers 413 before the
