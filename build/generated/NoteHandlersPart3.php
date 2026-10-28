@@ -14,6 +14,7 @@ use App\Note\Controller\StockPost;
 use App\Note\Form\StockForm;
 use App\Note\Repository\StockRepository;
 use App\Note\Service\StockList;
+use App\Note\Service\StockListLinks;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -46,6 +47,7 @@ final readonly class NoteHandlersPart3
             $this->handlerContext->envelopeCodec(),
             new TesseraProps($this->handlerContext->envelopeCodec()),
             $stockRepository,
+            new StockListLinks(),
         );
 
         return [

@@ -95,15 +95,32 @@ final readonly class NativeSiteAnchors
      * @param string       $line         A `Tessera-Targets` line.
      * @param HTMLDocument $htmlDocument The page.
      *
-     * @return string The line, each anchor the page holds replaced by its component's path.
+     * @return string The line, each anchor the page holds written as Tessera 0.3.0 sends it: its component's path,
+     *                then the anchor (protocol 2, #194).
      */
     private static function replaced(string $line, HTMLDocument $htmlDocument): string
     {
         return self::each(
             self::ANCHOR,
             $line,
-            static fn (string $name, string $whole): string => self::pathOf($htmlDocument, $name) ?? $whole,
+            static fn (string $name, string $whole): string => self::entryOf($htmlDocument, $name, $whole),
         );
+    }
+
+    /**
+     * @param HTMLDocument $htmlDocument The page.
+     * @param string       $name         An anchor's name.
+     * @param string       $whole        The anchor as the step wrote it, `@NAME`.
+     *
+     * @return string `path @NAME` for the component carrying it; the anchor as written when none does.
+     */
+    private static function entryOf(HTMLDocument $htmlDocument, string $name, string $whole): string
+    {
+        $path = self::pathOf($htmlDocument, $name);
+
+        return $path === null
+            ? $whole
+            : $path . ' ' . $whole;
     }
 
     /**

@@ -101,7 +101,10 @@ final class RenderPass
         $position = 0;
 
         foreach ($region->components() as $component) {
-            $markup .= $this->regionChild($component, $position);
+            $key = $component instanceof Keyed
+                ? $component->key()
+                : 'c' . $position;
+            $markup .= $this->child($component, $key);
             $position += 1;
         }
 
@@ -111,18 +114,24 @@ final class RenderPass
     }
 
     /**
-     * @param Component $component A template's child component.
-     * @param string    $key       Its key among its siblings: `Name.N`, or `Name.N:id` in a loop.
+     * @param Component $component A region's or a template's child component.
+     * @param string    $key       Its key among its siblings: its own key or `cN` in a region, `Name.N` or
+     *                             `Name.N:id` in a template.
      *
      * @throws UnknownComponent  When no template renders it.
      * @throws UnmarkedComponent When its template has no root element for its marks.
      * @throws DuplicateAnchor   When its anchor was marked before on this page.
      *
-     * @return string Its markup, its root marked with that key; when aimed elsewhere, nothing.
+     * @return string Its markup, its root marked with that key and, when it is Keyed, its props token and anchor
+     *                wherever it renders (#194); when aimed elsewhere, nothing.
      */
     public function child(Component $component, string $key): string
     {
-        return $this->marked($component, $key, new ChildFrame($key, '', $component instanceof Keyed ? $component->anchor() : ''));
+        $childFrame = $component instanceof Keyed
+            ? new ChildFrame($key, $component->props(), $component->anchor())
+            : new ChildFrame($key, '');
+
+        return $this->marked($component, $key, $childFrame);
     }
 
     /**
@@ -241,27 +250,6 @@ final class RenderPass
     public function captured(): string
     {
         return $this->captured;
-    }
-
-    /**
-     * @param Component $component A region's component.
-     * @param int       $position  Its place in the region, from 0.
-     *
-     * @throws UnknownComponent  When no template renders it.
-     * @throws UnmarkedComponent When its template has no root element for its marks.
-     * @throws DuplicateAnchor   When its anchor was marked before on this page.
-     *
-     * @return string Its markup, its root marked with its own key and props token, else `cN`.
-     */
-    private function regionChild(Component $component, int $position): string
-    {
-        if (!$component instanceof Keyed) {
-            return $this->marked($component, 'c' . $position, new ChildFrame('c' . $position, ''));
-        }
-
-        $key = $component->key();
-
-        return $this->marked($component, $key, new ChildFrame($key, $component->props(), $component->anchor()));
     }
 
     /**

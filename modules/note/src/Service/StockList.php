@@ -6,7 +6,6 @@ namespace App\Note\Service;
 
 use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\KeyedComponent;
-use AIC\Component\Domain\Link;
 use AIC\Component\Domain\SourcedComponent;
 use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\EnvelopeCodec;
@@ -14,7 +13,7 @@ use AIC\Form\Exception\InvalidEnvelope;
 use AIC\Tessera\Application\TesseraProps;
 use App\Note\Form\StockQuery;
 use App\Note\Repository\StockRepository;
-use App\Theme\Components\StockLinks\StockLinks;
+use App\Theme\Components\Panel\Panel;
 use InvalidArgumentException;
 use JsonException;
 use Psr\Http\Message\ServerRequestInterface;
@@ -43,9 +42,10 @@ final readonly class StockList
     public const int MOST = 50;
 
     /**
-     * The list's path, which Tessera sends its props under.
+     * The list, by its anchor: Tessera sends the list's props with it after the list's path, which sits inside
+     * a panel and so is positional (#194).
      */
-    private const string TARGET = 'content/stock-list';
+    private const string TARGET = '@' . self::ANCHOR;
 
     /**
      * The list's anchor (#188): its links target `@stock-list`, and Tessera finds its path on the page.
@@ -56,11 +56,13 @@ final readonly class StockList
      * @param EnvelopeCodec   $envelopeCodec   Seals the list's props.
      * @param TesseraProps    $tesseraProps    Reads them back, verified.
      * @param StockRepository $stockRepository What the list's and the totals' sources read.
+     * @param StockListLinks  $stockListLinks  The links that refresh the list by its anchor.
      */
     public function __construct(
         private EnvelopeCodec $envelopeCodec,
         private TesseraProps $tesseraProps,
         private StockRepository $stockRepository,
+        private StockListLinks $stockListLinks,
     ) {
     }
 
@@ -78,10 +80,11 @@ final readonly class StockList
     public function parts(ServerRequestInterface $serverRequest, StockQuery $stockQuery, string $version): array
     {
         $keyedComponent = $this->component($serverRequest, $stockQuery, $version);
+        $links = $this->stockListLinks->links(self::ANCHOR);
 
         return $stockQuery->isFiltered()
-            ? [new SourcedComponent(new StockTotalsSource($this->stockRepository, $stockQuery)), $keyedComponent, $this->links()]
-            : [$keyedComponent, $this->links()];
+            ? [new SourcedComponent(new StockTotalsSource($this->stockRepository, $stockQuery)), $this->panel($keyedComponent), $links]
+            : [$this->panel($keyedComponent), $links];
     }
 
     /**
@@ -131,6 +134,19 @@ final readonly class StockList
     }
 
     /**
+     * @param KeyedComponent $keyedComponent The list.
+     *
+     * @throws InvalidArgumentException When the panel's key breaks the key grammar.
+     *
+     * @return KeyedComponent The list in its panel, which keeps its own key in the region, so its path does not
+     *                        move when the totals come and go.
+     */
+    private function panel(KeyedComponent $keyedComponent): KeyedComponent
+    {
+        return new KeyedComponent('stock-panel', new Panel('Recent additions', $keyedComponent));
+    }
+
+    /**
      * @param ServerRequestInterface $serverRequest The request: an optional `limit`, maybe the list's props.
      * @param StockQuery             $stockQuery    What the list asks for.
      * @param string                 $version       What its items are now (`version()`), sealed in its props (#193).
@@ -156,18 +172,6 @@ final readonly class StockList
             new SourcedComponent(new StockListSource($this->stockRepository, $stockQuery, $limit, self::poll($serverRequest))),
             $this->envelopeCodec->seal(['limit' => (string) $limit, 'version' => $version]),
             self::ANCHOR,
-        );
-    }
-
-    /**
-     * @return StockLinks The links that show three or ten, and the one that refreshes the list alone.
-     */
-    private function links(): StockLinks
-    {
-        return new StockLinks(
-            new Link('Show the last 3', '/stock?limit=3', false, '@' . self::ANCHOR),
-            new Link('Show the last 10', '/stock?limit=10', false, '@' . self::ANCHOR),
-            new Link('Refresh the list', '/stock', false, '@' . self::ANCHOR),
         );
     }
 

@@ -2,7 +2,7 @@
 
 Tessera enhances the server-rendered page with navigation, targeted refreshes, form submissions and
 stream updates. Pages remain [Component trees](rendering.md), so a full page and a targeted answer
-render the same data. The server speaks protocol version 1 (Tessera 0.2.0); the browser release is pinned separately
+render the same data. The server speaks protocol version 2 (Tessera 0.3.0); the browser release is pinned separately
 in app config and published by the build with its exact bytes and checksum.
 
 ## Markers and fragments
@@ -25,6 +25,14 @@ moves when a wrapper or an order changes. A region and a component's own key
 (`content/stock-list`) stays allowed; `TesseraProps::forTarget()` reads props by it. The root
 `.semgrepignore`, an aic/gates stub, lets the rule reach `tests/browser/`.
 
+Protocol 2 adds the anchor to a target entry: Tessera sends `target [props] [@NAME]`, the anchor last
+whenever the component's element carries one, however it was targeted. So a module reads a
+component's props by its anchor wherever the page places it: `TesseraProps::forTarget(request,
+'@stock-list')` and `unchanged(request, '@stock-list', version)` match the entry that carries that
+anchor. A keyed component prints its props token and anchor wherever it renders, a template's child
+included, at a positional path such as `content/stock-panel/Panel.1`. Give a component's region
+wrapper its own key too, so a filter that adds or drops a sibling does not move its path.
+
 `AIC\Tessera\Domain\TesseraRequest` validates request kind, protocol, layout identity and target
 syntax. A valid visit naming a region also refreshes the layout's other regions so navigation state
 follows the page. A visit naming only components gets exactly those components. Refresh, submit
@@ -44,7 +52,7 @@ when the answer renders it, so a target's refresh leaves the other parts' reads 
 A poll that finds nothing changed answers `204`, and Tessera leaves the page as it is. Seal a
 `version` in the component's props (what its data is now: a count and the latest timestamps are
 enough), and before building anything ask `AIC\Tessera\Application\TesseraProps::unchanged(request,
-target, version)`. It is true only for a refresh, in protocol 1, of that one target whose verified
+target, version)`. It is true only for a refresh, in protocol 2, of that one target whose verified
 props carry the same version; then return `AIC\Controller\Domain\PageUnchanged`. A visit, a
 submission or a refresh of several targets always renders. The props come back on every refresh
 and are re-sealed on every render, so the version needs no header of its own. Assets use their compiled canonical URLs. A release change is
@@ -56,7 +64,7 @@ These values are checked against the public constants:
 
 | Constant | Meaning |
 |---|---|
-| `TesseraRequest::VERSION = 1` | server protocol, separate from the script's release version |
+| `TesseraRequest::VERSION = 2` | server protocol, separate from the script's release version |
 | `TesseraRequest::REQUEST = Tessera-Request` | request kind: visit, submit, action, refresh or stream |
 | `TesseraRequest::PROTOCOL = Tessera-Protocol` | protocol version |
 | `TesseraRequest::TARGETS = Tessera-Targets` | region/component targets and optional props tokens |
@@ -102,7 +110,7 @@ component.
 | `TesseraEvents::patchSignals()` | scope, JSON object, only-if-missing, id and last; emits tessera-patch-signals |
 | `TesseraEvents::keepAlive()` | keep-alive comment, with the last flag |
 | `TesseraProps::forTarget()` | verifies the requested target's props envelope and returns string values; empty when absent |
-| `TesseraProps::unchanged()` | true only for a protocol 1 refresh of that one target whose verified props carry the given `version` |
+| `TesseraProps::unchanged()` | true only for a protocol 2 refresh of that one target whose verified props carry the given `version` |
 
 Element modes are morph, inner, append, prepend and remove. Event data uses one `KEY VALUE` line
 per value line. IDs support resuming through `Last-Event-ID`; the source decides what follows that

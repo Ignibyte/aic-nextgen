@@ -11,6 +11,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
   `PageUnchanged` answers `204`, which Tessera leaves alone. The fixture's stock list polls and
   seals its version.
 
+- **Props by anchor; Tessera protocol 2** (#194). Tessera 0.3.0 is pinned: a target entry ends
+  with its component's anchor, `TesseraProps::forTarget()` and `unchanged()` take `@NAME`, and a
+  keyed component carries its props inside a template too. The fixture's stock list sits in a
+  keyed theme `Panel` and still swaps, polls and keeps its limit by `@stock-list`.
+
 - **A gate refuses a positional Tessera path** (#195). gate:15 refuses `content/c0`-style paths
   (a `cN` or `Name.N` segment) in modules, themes and browser tests: anchor the component and target
   `@NAME`. A root `.semgrepignore` stub lets semgrep's rules reach `tests/browser/`.
