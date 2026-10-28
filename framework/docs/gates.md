@@ -23,7 +23,10 @@ the app's own requests from `config/native-site.json`: one step a line, each the
 form, extra header and status both sites must answer alike. A new route adds its step. Both sites
 run against one database, so a record each creates gets its own id: a step with `captures: true`
 takes its answer's `Location` as `{note}` for the next steps, and that path reads as `<captured>`
-in each site's answers before they are compared (#178).
+in each site's answers before they are compared (#178). A form posts multipart when it starts with
+`multipart:`; a value `@path` uploads that file, relative to the project root
+(`multipart:aic_csrf={csrf}&photo=@tests/fixtures/car.jpg`). The extra header may hold several
+lines joined by `\r\n` (`Range: bytes=0-4\r\nIf-Range: \"x\"`).
 
 Browser tests (#174) are Playwright specs in `tests/browser/`. `init` writes the root
 `package.json` and `package-lock.json` that pin Playwright 1.62.1 and ignores `/node_modules/`;

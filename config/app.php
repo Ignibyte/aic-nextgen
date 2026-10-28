@@ -12,6 +12,9 @@ declare(strict_types=1);
  *
  * The theme (#153): the folder under themes/ whose components, layouts and
  * assets the build compiles and publishes.
+ *
+ * The request body cap (#196): a larger body answers 413 before the session.
+ * The fixture keeps it small, so gate:23 can send a body over it.
  */
 
 use AIC\Config\Domain\AppConfig;
@@ -24,4 +27,5 @@ return new AppConfig(
         'tessera.csp.iife.js.map' => 'd83e7c9ac70cf1b67ede63a20e5f63ded37402a16dfeee8c47ba3cf40e0a041f',
     ]),
     theme: 'app',
+    maxBodyBytes: 16_384,
 );

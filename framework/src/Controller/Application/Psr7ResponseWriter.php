@@ -19,6 +19,7 @@ use JsonException;
 use JsonSerializable;
 use Override;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 
 use function json_encode;
@@ -137,20 +138,25 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
     }
 
     /**
-     * @param string $path         The file to send.
-     * @param string $mediaType    Its `Content-Type`.
-     * @param string $downloadName The name the browser saves it as.
-     * @param string $range        The request's `Range` header; empty for none.
+     * @param string                 $path          The file to send.
+     * @param string                 $mediaType     Its `Content-Type`.
+     * @param string                 $downloadName  The name the browser saves it as.
+     * @param ServerRequestInterface $serverRequest The request: its `Range` and conditions (#196).
      *
      * @throws InvalidArgumentException When a response field is invalid.
      * @throws RuntimeException         When a file is missing or its whole-file stream cannot be opened.
      *
-     * @return ResponseInterface 200 with `Accept-Ranges`, 206 with the part and its `Content-Range`, or 416.
+     * @return ResponseInterface 200 with `Accept-Ranges`, 206 with the part and its `Content-Range`, 416, 304 or
+     *                           412, each with the file's validators.
      */
     #[Override]
-    public function download(string $path, string $mediaType, string $downloadName, string $range): ResponseInterface
-    {
-        return $this->fileResponses->download($path, $mediaType, $downloadName, $range);
+    public function download(
+        string $path,
+        string $mediaType,
+        string $downloadName,
+        ServerRequestInterface $serverRequest,
+    ): ResponseInterface {
+        return $this->fileResponses->download($path, $mediaType, $downloadName, $serverRequest);
     }
 
     /**

@@ -7,6 +7,7 @@ namespace AIC\Controller\Contracts;
 use AIC\Component\Contracts\Layout;
 use JsonSerializable;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Writes a kind's sealed response as PSR-7, one method per response shape.
@@ -64,14 +65,20 @@ interface ResponseWriter
     public function json(int $status, JsonSerializable $jsonSerializable): ResponseInterface;
 
     /**
-     * @param string $path         The file to send.
-     * @param string $mediaType    Its `Content-Type`.
-     * @param string $downloadName The name the browser saves it as.
-     * @param string $range        The request's `Range` header; empty for none.
+     * @param string                 $path          The file to send.
+     * @param string                 $mediaType     Its `Content-Type`.
+     * @param string                 $downloadName  The name the browser saves it as.
+     * @param ServerRequestInterface $serverRequest The request: its `Range` and conditions (#196).
      *
-     * @return ResponseInterface The response: 200, 206 for a range, or 416 for one the file cannot satisfy.
+     * @return ResponseInterface The response: 200, 206 for a range, 416 for one the file cannot satisfy, or
+     *                           304 or 412 for a condition.
      */
-    public function download(string $path, string $mediaType, string $downloadName, string $range): ResponseInterface;
+    public function download(
+        string $path,
+        string $mediaType,
+        string $downloadName,
+        ServerRequestInterface $serverRequest,
+    ): ResponseInterface;
 
     /**
      * @param EventSource $eventSource Gives the events.

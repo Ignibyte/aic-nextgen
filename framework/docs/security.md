@@ -81,6 +81,7 @@ The accepted enum cases are:
 | `UploadKind::Png = Png` | PNG image |
 | `UploadKind::Jpeg = Jpeg` | JPEG image |
 | `UploadKind::Gif = Gif` | GIF image |
+| `UploadKind::WebP = WebP` | WebP image |
 | `UploadKind::Pdf = Pdf` | PDF document |
 | `UploadKind::Text = Text` | text |
 
@@ -88,6 +89,17 @@ Configure the permitted kinds and byte limit for the feature, handle
 `AIC\Form\Exception\RefusedUpload`, then choose a server-owned destination. A matching signature
 is a format check, not a malware scan or a safe-execution guarantee. Never execute an upload or use
 its supplied name as an unchecked filesystem path.
+
+### The request body cap
+
+`AIC\Config\Domain\AppConfig::$maxBodyBytes` (default 8 MiB, the compiled server's own) is the
+largest request body the app takes. `AIC\Form\Application\BodyLimitMiddleware` answers a larger one
+413 before the session is read, by its `Content-Length`, so PHP and the compiled site refuse it
+alike. Set it above the largest upload a feature allows, so a file over the feature's own limit
+reaches `UploadCheck` and is refused in place with its reason. The servers in front must let the cap
+through: gate:23 and `aic-gate serve` start the compiled server with `--max-body-size` and php -S with
+`post_max_size` 1 MiB above the cap and `upload_max_filesize` at it. A deployment does the same for
+the compiled binary and for php-fpm or nginx (`client_max_body_size`).
 
 ## Authentication and app secret
 

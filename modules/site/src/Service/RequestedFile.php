@@ -42,7 +42,7 @@ final readonly class RequestedFile
 
         $path = $this->root . '/' . $directory . '/' . $name;
 
-        return new FileDownload($path, $this->assetMediaTypes->forFile($name), $name, $serverRequest->getHeaderLine('Range'));
+        return new FileDownload($path, $this->assetMediaTypes->forFile($name), $name, $serverRequest);
     }
 
     /**

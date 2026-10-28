@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Uploads end to end** (#196). WebP is an upload kind. A `FileDownload` takes the request and
+  answers with an ETag and Last-Modified, 304 or 412 for a condition, and the whole file for a stale
+  `If-Range`. `AppConfig::$maxBodyBytes` caps a request body: a larger one answers 413 before the
+  session, on PHP and the compiled site alike, and gate:23 and `aic-gate serve` start both servers to
+  let the cap through. The docs now state gate:23's multipart steps.
+
 - **An unchanged poll answers 204** (#193). A component seals a version in its props;
   `TesseraProps::unchanged()` tells a refresh of that component alone with the same version, and
   `PageUnchanged` answers `204`, which Tessera leaves alone. The fixture's stock list polls and

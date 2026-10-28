@@ -107,8 +107,8 @@ See [rendering.md](rendering.md) and [templates.md](templates.md) for the comple
 ## 5. Middleware
 
 - `AIC\Middleware`: one step of a PSR-15 stack. The stack's order is fixed: the browser runtime's
-  protocol check and redirects, route errors, the session, the modules' middleware, the form guard,
-  the browser runtime's write ledger, then the router.
+  protocol check and redirects, the request body cap (413), route errors, the session, the modules'
+  middleware, the form guard, the browser runtime's write ledger, then the router.
 
 ## 6. Blocks
 
