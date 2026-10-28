@@ -74,6 +74,7 @@ final readonly class ProjectProfile
         'psalm.xml',
         'README.md',
         'rector.php',
+        '.semgrepignore',
     ];
 
     /**

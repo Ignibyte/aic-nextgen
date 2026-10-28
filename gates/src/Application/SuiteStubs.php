@@ -32,6 +32,7 @@ final readonly class SuiteStubs
      * The stubs, by file name at the project's root.
      */
     public const array NAMES = [
+        '.semgrepignore',
         'captainhook.json',
         'deptrac.yaml',
         'package-lock.json',

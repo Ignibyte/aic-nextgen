@@ -149,13 +149,19 @@ test('a poll of the list answers 204 while nothing changed, and the list stays',
 
 test('a fragment holds the same markup for its target as the whole document', async ({ page }) => {
     const whole = await (await page.request.get('/notes')).text();
+    // The content region's first child, by the key the page printed: no test spells a positional path.
+    const region = whole.indexOf('data-region="content"');
+    const key = whole.slice(region).match(/data-t-c="([^"]+)"/)?.[1] ?? '';
+    const path = ['content', key].join('/');
     const fragment = await (await page.request.get('/notes', {
-        headers: { 'Tessera-Request': 'visit', 'Tessera-Protocol': '1', 'Tessera-Layout': 'app', 'Tessera-Targets': 'content/c0' },
+        headers: { 'Tessera-Request': 'visit', 'Tessera-Protocol': '1', 'Tessera-Layout': 'app', 'Tessera-Targets': path },
     })).text();
-    const target = fragment.match(/<template data-target="content\/c0">([\s\S]*?)<\/template>/);
+    const start = fragment.indexOf(`<template data-target="${path}">`);
+    const target = start < 0 ? undefined : fragment.slice(start).match(/^<template[^>]*>([\s\S]*?)<\/template>/);
 
     // The component is its element (protocol 1); the newline after its template's root is outside it.
-    expect(target?.[1].trimEnd()).toBe(componentSlice(whole, whole.indexOf('data-region="content"'), 'c0'));
+    expect(key).not.toBe('');
+    expect(target?.[1].trimEnd()).toBe(componentSlice(whole, region, key));
     expect(target?.[1]).toContain('id="note-count"');
 });
 
