@@ -54,6 +54,8 @@ final readonly class NativeSiteServe
 
         fwrite(STDOUT, 'native:serve — http://127.0.0.1:' . $port . '/ (database ' . $nativeSiteSetup->database . ')' . PHP_EOL);
         $command = [$workDir . '/main', '--listen', '127.0.0.1:' . $port, '--workers', '2', '--handler-concurrency', '2', '--access-log'];
+        $command = [...$command, ...$nativeSiteSetup->nativeLimit()];
+
         $server = proc_open($command, [0 => STDIN, 1 => STDOUT, 2 => STDERR], $pipes, $root, $nativeSiteSetup->env);
 
         return is_resource($server) && $pipes === []

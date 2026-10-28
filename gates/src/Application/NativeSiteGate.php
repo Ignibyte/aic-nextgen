@@ -222,9 +222,11 @@ final readonly class NativeSiteGate
      */
     private function startSites(string $root, string $workDir, NativeSiteSetup $nativeSiteSetup): bool
     {
-        $php = [$this->nativeToolchain->phpPath(), '-S', '127.0.0.1:' . $nativeSiteSetup->phpPort, 'public/index.php'];
+        $php = [$this->nativeToolchain->phpPath(), ...$nativeSiteSetup->phpLimit()];
+        $php = [...$php, '-S', '127.0.0.1:' . $nativeSiteSetup->phpPort, 'public/index.php'];
+
         $native = [$workDir . '/main', '--listen', '127.0.0.1:' . $nativeSiteSetup->nativePort, '--workers', '2'];
-        $native = [...$native, '--handler-concurrency', '2'];
+        $native = [...$native, '--handler-concurrency', '2', ...$nativeSiteSetup->nativeLimit()];
 
         $env = $nativeSiteSetup->env;
 

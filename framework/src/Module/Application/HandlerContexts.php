@@ -63,6 +63,12 @@ final readonly class HandlerContexts
         return $this->root;
     }
 
+    /** @return int The largest request body the app takes (#196), before any module provider runs. */
+    public function maxBodyBytes(): int
+    {
+        return $this->appConfig->maxBodyBytes;
+    }
+
     /**
      * @param WebWiring       $webWiring       The compiled request roots.
      * @param Plugins         $plugins         The modules' already composed plugins.

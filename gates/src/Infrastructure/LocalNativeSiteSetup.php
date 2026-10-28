@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Gates\Infrastructure;
 
+use AIC\Config\Domain\AppConfig;
 use Gates\Domain\NativeSiteSetup;
 use Gates\Domain\ProcessRunner;
 use Gates\Domain\RegexCaptures;
+use RuntimeException;
 
 use function array_key_exists;
 use function bin2hex;
 use function fclose;
+use function is_file;
 use function is_resource;
 use function is_string;
 use function random_bytes;
@@ -34,16 +37,20 @@ final readonly class LocalNativeSiteSetup
     /**
      * @param ProcessRunner $processRunner Runs `ddev describe` and the console.
      * @param string        $php           The PHP binary the console runs under.
+     * @param ProjectConfig $projectConfig Reads the app's body cap from `config/app.php` (#196).
      */
     public function __construct(
         private ProcessRunner $processRunner,
         private string $php = PHP_BINARY,
+        private ProjectConfig $projectConfig = new ProjectConfig(),
     ) {
     }
 
     /**
      * @param array<string, string> $env  The process environment.
      * @param string                $root Repo-root absolute path, where DDEV is asked.
+     *
+     * @throws RuntimeException When `config/app.php` exists but is not an AppConfig.
      *
      * @return NativeSiteSetup The setup.
      */
@@ -60,7 +67,9 @@ final readonly class LocalNativeSiteSetup
 
         $database = ($env['PGHOST'] ?? '127.0.0.1') . ':' . $env['PGPORT'];
 
-        return new NativeSiteSetup($env, $database, $this->answers($root, $env), self::freePort(), self::freePort());
+        $reachable = $this->answers($root, $env);
+
+        return new NativeSiteSetup($env, $database, $reachable, self::freePort(), self::freePort(), $this->maxBodyBytes($root));
     }
 
     /**
@@ -84,6 +93,22 @@ final readonly class LocalNativeSiteSetup
     private function answers(string $root, array $env): bool
     {
         return $this->processRunner->run([$this->php, $root . '/bin/aic', 'db:ping'], $root, $env)->exitCode === 0;
+    }
+
+    /**
+     * @param string $root Repo-root absolute path.
+     *
+     * @throws RuntimeException When `config/app.php` exists but is not an AppConfig.
+     *
+     * @return int The app's request body cap; AIC's default when it has no config.
+     */
+    private function maxBodyBytes(string $root): int
+    {
+        $file = $root . '/config/app.php';
+
+        return is_file($file)
+            ? $this->projectConfig->read($file, AppConfig::class)->maxBodyBytes
+            : AppConfig::MAX_BODY_BYTES;
     }
 
     /**

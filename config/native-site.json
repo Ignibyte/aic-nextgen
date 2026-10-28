@@ -92,6 +92,24 @@
             "captures": false
         },
         {
+            "name": "download, unchanged",
+            "method": "GET",
+            "path": "/download/hello.txt",
+            "form": "",
+            "header": "If-None-Match: *",
+            "status": 304,
+            "captures": false
+        },
+        {
+            "name": "download, stale If-Range",
+            "method": "GET",
+            "path": "/download/hello.txt",
+            "form": "",
+            "header": "Range: bytes=0-4\r\nIf-Range: \"stale\"",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "events",
             "method": "GET",
             "path": "/events?count=3",
@@ -332,6 +350,15 @@
             "form": "multipart:aic_csrf={csrf}",
             "header": "",
             "status": 422,
+            "captures": false
+        },
+        {
+            "name": "upload, over the body cap",
+            "method": "POST",
+            "path": "/uploads",
+            "form": "multipart:aic_csrf={csrf}&file=@build/assets/tessera-0.3.0/tessera.csp.iife.js",
+            "header": "",
+            "status": 413,
             "captures": false
         },
         {

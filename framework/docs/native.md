@@ -77,7 +77,9 @@ A class probe is not a complete HTTP scenario. Keep gate:23's whole-site compari
 Gate:23 builds a fresh whole app, serves native and PHP entries beside each other, and executes
 `config/native-site.json` in order. It compares response status, content type, location and normalized
 body. Session/form workflows retain their own cookies and posted values. Asset, download, stream,
-fragment and error cases belong in that configured sequence when the app exposes them.
+fragment and error cases belong in that configured sequence when the app exposes them. Both servers
+are started to let the app's request body cap through (`AppConfig::$maxBodyBytes`, see
+[security.md](security.md#the-request-body-cap)), so an oversized body is the app's 413 on each.
 
 When the database does not answer `bin/aic db:ping`, the whole gate defers and says why; running a
 small database-free subset would not establish site coverage. A suite with deferrals is incomplete.

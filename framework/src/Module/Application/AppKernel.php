@@ -46,7 +46,7 @@ final readonly class AppKernel
         $dynamicApplication = new DynamicApplication(
             $handlerContexts,
             $webWiring,
-            new FrameworkStack($responseBuilder, $database),
+            new FrameworkStack($responseBuilder, $database, $handlerContexts->maxBodyBytes()),
             $webPresentation,
         );
         $staticAssets = new StaticAssets(

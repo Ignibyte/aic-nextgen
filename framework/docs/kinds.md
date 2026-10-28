@@ -58,8 +58,11 @@ An answer sent over time or in pieces:
 
 - `AIC\Controller\Domain\EventStream`: Server-Sent Events, pulled one at a time from an
   `AIC\Controller\Contracts\EventSource`.
-- `AIC\Controller\Domain\FileDownload`: a file with its media type and download name; it answers a
-  `Range` header with 206 or 416.
+- `AIC\Controller\Domain\FileDownload`: a file with its media type, download name and the request; it
+  answers a `Range` header with 206 or 416. It is validated: a strong `ETag` from the file's
+  modification time and size, and `Last-Modified`; `If-None-Match` or `If-Modified-Since` answers 304,
+  `If-Match` or `If-Unmodified-Since` 412, and a stale `If-Range` the whole file. Downloads answer
+  `Cache-Control: private, no-cache`, so a browser revalidates instead of fetching again.
 
 ### Command
 
