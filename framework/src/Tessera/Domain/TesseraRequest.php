@@ -7,6 +7,8 @@ namespace AIC\Tessera\Domain;
 use AIC\Component\Contracts\Layout;
 
 use function array_any;
+use function array_slice;
+use function count;
 use function explode;
 use function in_array;
 use function preg_match;
@@ -24,7 +26,7 @@ use function trim;
 final readonly class TesseraRequest
 {
     /** The protocol AIC speaks. */
-    public const string VERSION = '1';
+    public const string VERSION = '2';
 
     /** The kind of request: visit, submit, action, refresh or stream. */
     public const string REQUEST = 'Tessera-Request';
@@ -81,7 +83,7 @@ final readonly class TesseraRequest
     }
 
     /**
-     * @param string $target A region or a component's path.
+     * @param string $target A region, a component's path, or `@NAME` for the component carrying that anchor (#194).
      *
      * @return string The props token the request sent for it in `Tessera-Targets`, unverified (#74); empty for none.
      */
@@ -99,7 +101,7 @@ final readonly class TesseraRequest
     }
 
     /**
-     * @param string $target A component's path.
+     * @param string $target A component's path, or `@NAME` for the component carrying that anchor (#194).
      *
      * @return bool Whether it is a refresh, in AIC's protocol, of that one target alone: the one request a `204`
      *              may answer when the target has not changed (#193).
@@ -108,7 +110,8 @@ final readonly class TesseraRequest
     {
         return $this->kind === 'refresh'
             && $this->speaksVersion()
-            && $this->targetList() === [$target];
+            && count($this->targetList()) === 1
+            && self::names(trim(explode(',', $this->targets)[0]), $target);
     }
 
     /**
@@ -205,11 +208,28 @@ final readonly class TesseraRequest
      */
     private static function entryProps(string $entry, string $target): string
     {
-        $parts = explode(' ', $entry, 2);
-
-        return $parts[0] === $target
-            ? $parts[1] ?? ''
+        $props = self::names($entry, $target)
+            ? explode(' ', $entry)[1] ?? ''
             : '';
+
+        return str_starts_with($props, '@')
+            ? ''
+            : $props;
+    }
+
+    /**
+     * @param string $entry  One `Tessera-Targets` entry: `target [props] [@NAME]` (protocol 2, 4.3).
+     * @param string $target A target's path, or `@NAME` for the component that anchor names.
+     *
+     * @return bool Whether the entry is for it: its path, or the anchor Tessera sent after the path.
+     */
+    private static function names(string $entry, string $target): bool
+    {
+        $tokens = explode(' ', $entry);
+
+        return str_starts_with($target, '@')
+            ? in_array($target, array_slice($tokens, 1), true)
+            : $tokens[0] === $target;
     }
 
     /**

@@ -497,6 +497,11 @@
                 "source": "themes/app/components/NoteList/note-list.phtml"
             },
             {
+                "component": "App\\Theme\\Components\\Panel\\Panel",
+                "generated": "build/generated/templates/themes/app/components/Panel/panel.phtml",
+                "source": "themes/app/components/Panel/panel.phtml"
+            },
+            {
                 "component": "App\\Theme\\Components\\ScaffoldAboutView\\ScaffoldAboutView",
                 "generated": "build/generated/templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml",
                 "source": "themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml"

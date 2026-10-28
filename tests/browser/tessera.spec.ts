@@ -116,7 +116,9 @@ test('a link that targets an anchor swaps that component alone', async ({ page }
 
     await page.getByRole('link', { name: 'Show the last 3' }).click();
 
-    expect((await asked).headers()['tessera-targets']).toBe('content/stock-list ' + (await page.locator('[data-t-anchor="stock-list"]').getAttribute('data-t-props')));
+    const props = await page.locator('[data-t-anchor="stock-list"]').getAttribute('data-t-props');
+    // Protocol 2 (#194): the list's path inside its panel, its props, then its anchor.
+    expect((await asked).headers()['tessera-targets']).toMatch(new RegExp(`^content/\\S+ ${props} @stock-list$`));
     await expect(page.locator('#stock-limit')).toHaveText('The last 3.');
     expect(await page.evaluate(() => (window as Window & { aicSameDocument?: boolean }).aicSameDocument)).toBe(true);
 });
@@ -141,7 +143,8 @@ test('a poll of the list answers 204 while nothing changed, and the list stays',
 
     const polled = await page.waitForResponse((response) => response.request().headers()['tessera-request'] === 'refresh');
 
-    expect(polled.request().headers()['tessera-targets']).toBe('content/stock-list ' + (await page.locator('[data-t-anchor="stock-list"]').getAttribute('data-t-props')));
+    const props = await page.locator('[data-t-anchor="stock-list"]').getAttribute('data-t-props');
+    expect(polled.request().headers()['tessera-targets']).toMatch(new RegExp(`^content/\\S+ ${props} @stock-list$`));
     expect(polled.status()).toBe(204);
     expect(await page.locator('[data-t-anchor="stock-list"]').innerHTML()).toBe(list);
     expect(await sameDocument(page)).toBe(true);
@@ -154,12 +157,12 @@ test('a fragment holds the same markup for its target as the whole document', as
     const key = whole.slice(region).match(/data-t-c="([^"]+)"/)?.[1] ?? '';
     const path = ['content', key].join('/');
     const fragment = await (await page.request.get('/notes', {
-        headers: { 'Tessera-Request': 'visit', 'Tessera-Protocol': '1', 'Tessera-Layout': 'app', 'Tessera-Targets': path },
+        headers: { 'Tessera-Request': 'visit', 'Tessera-Protocol': '2', 'Tessera-Layout': 'app', 'Tessera-Targets': path },
     })).text();
     const start = fragment.indexOf(`<template data-target="${path}">`);
     const target = start < 0 ? undefined : fragment.slice(start).match(/^<template[^>]*>([\s\S]*?)<\/template>/);
 
-    // The component is its element (protocol 1); the newline after its template's root is outside it.
+    // The component is its element (protocol 1 and 2); the newline after its template's root is outside it.
     expect(key).not.toBe('');
     expect(target?.[1].trimEnd()).toBe(componentSlice(whole, region, key));
     expect(target?.[1]).toContain('id="note-count"');

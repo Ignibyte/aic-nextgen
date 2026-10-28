@@ -28,7 +28,8 @@ final readonly class TesseraProps
 
     /**
      * @param ServerRequestInterface $serverRequest The request.
-     * @param string                 $target        The component's path, such as `content/stock-list`.
+     * @param string                 $target        The component's path, such as `content/stock-list`, or its
+     *                                              anchor as `@stock-list` (#194).
      *
      * @throws InvalidEnvelope When the request carries a token for it that is malformed or altered.
      *
@@ -45,7 +46,7 @@ final readonly class TesseraProps
 
     /**
      * @param ServerRequestInterface $serverRequest The request.
-     * @param string                 $target        The component's path.
+     * @param string                 $target        The component's path, or its anchor as `@NAME` (#194).
      * @param string                 $version       What the component's data is now, as its props seal it.
      *
      * @throws InvalidEnvelope When the request carries a token for it that is malformed or altered.

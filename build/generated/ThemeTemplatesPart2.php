@@ -9,9 +9,9 @@ use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
 use App\Theme\Components\NoteList\NoteList;
+use App\Theme\Components\Panel\Panel;
 use App\Theme\Components\ScaffoldAboutView\ScaffoldAboutView;
 use App\Theme\Components\ScaffoldCard\ScaffoldCard;
-use App\Theme\Components\SiteNav\SiteNav;
 use Override;
 
 /**
@@ -41,9 +41,9 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
     {
         return match (true) {
             $component instanceof NoteList => $this->renderNoteList($component, $renderPass),
+            $component instanceof Panel => $this->renderPanel($component, $renderPass),
             $component instanceof ScaffoldAboutView => $this->renderScaffoldAboutView($component, $renderPass),
             $component instanceof ScaffoldCard => $this->renderScaffoldCard($component, $renderPass),
-            $component instanceof SiteNav => $this->renderSiteNav($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }
@@ -60,6 +60,22 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
     {
         $renderPass->open($noteList);
         require __DIR__ . '/templates/themes/app/components/NoteList/note-list.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Panel      $panel      The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/Panel/panel.phtml.
+     */
+    private function renderPanel(Panel $panel, RenderPass $renderPass): string
+    {
+        $renderPass->open($panel);
+        require __DIR__ . '/templates/themes/app/components/Panel/panel.phtml';
 
         return $renderPass->close();
     }
@@ -92,22 +108,6 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
     {
         $renderPass->open($scaffoldCard);
         require __DIR__ . '/templates/themes/app/components/ScaffoldCard/scaffold-card.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param SiteNav    $siteNav    The component; its template reads it.
-     * @param RenderPass $renderPass The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/SiteNav/site-nav.phtml.
-     */
-    private function renderSiteNav(SiteNav $siteNav, RenderPass $renderPass): string
-    {
-        $renderPass->open($siteNav);
-        require __DIR__ . '/templates/themes/app/components/SiteNav/site-nav.phtml';
 
         return $renderPass->close();
     }
