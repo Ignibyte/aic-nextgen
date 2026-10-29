@@ -14,16 +14,19 @@ use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Database\Contracts\QueryException;
 use AIC\Form\Application\FormTokens;
-use AIC\Notification\Application\DatabaseChannel;
+use App\Site\Service\InboxLines;
 use App\Theme\Components\LineList\LineList;
 use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
+use function is_string;
+
 /**
- * GET /notifications: the demo user's latest notifications from the database
- * channel, and a button that sends one to mail and the database (#48).
- * `bin/aic queue:work` delivers them.
+ * GET /notifications: the demo user's inbox (#202), newest first or after the
+ * `after` id, a button that marks every one read, and a button that sends one
+ * to mail and the database (#48). `bin/aic queue:work` delivers them.
  */
 final readonly class NotificationsPage implements Page
 {
@@ -33,19 +36,19 @@ final readonly class NotificationsPage implements Page
     public const string USER = 'demo';
 
     /**
-     * @param PageDocuments   $pageDocuments   Makes the page.
-     * @param DatabaseChannel $databaseChannel Reads the notifications.
-     * @param FormTokens      $formTokens      Issues the visitor's CSRF token.
+     * @param PageDocuments $pageDocuments Makes the page.
+     * @param InboxLines    $inboxLines    Reads the inbox.
+     * @param FormTokens    $formTokens    Issues the visitor's CSRF token.
      */
     public function __construct(
         private PageDocuments $pageDocuments,
-        private DatabaseChannel $databaseChannel,
+        private InboxLines $inboxLines,
         private FormTokens $formTokens = new FormTokens(),
     ) {
     }
 
     /**
-     * @param ServerRequestInterface $serverRequest The request, with its session.
+     * @param ServerRequestInterface $serverRequest The request, with its session and an optional `after` id.
      *
      * @throws QueryException When the notifications cannot be read.
      * @throws LogicException When the required application state is unavailable.
@@ -55,7 +58,12 @@ final readonly class NotificationsPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $latest = $this->databaseChannel->latest(self::USER, 5);
+        $query = $serverRequest->getQueryParams();
+        $after = array_key_exists('after', $query) && is_string($query['after'])
+            ? $query['after']
+            : '';
+        $lines = $this->inboxLines->lines(self::USER, $after);
+        $token = $this->formTokens->issue($serverRequest)->value();
         $fields = [
             new FormField('Message', 'message', new Input('message', 'message', 'Hello from the demo.')),
             new Button('Send a notification', 'submit', 'notify'),
@@ -64,8 +72,9 @@ final readonly class NotificationsPage implements Page
         return $this->pageDocuments->content(
             [
                 new Heading('Notifications'),
-                new LineList('notifications', $latest, 'None yet.'),
-                new Form('', '/notifications', $fields, $this->formTokens->issue($serverRequest)->value()),
+                new LineList('notifications', $lines, 'None yet.'),
+                new Form('', '/notifications/read', [new Button('Mark all read', 'submit', 'read')], $token),
+                new Form('', '/notifications', $fields, $token),
             ],
             200,
             'Notifications',

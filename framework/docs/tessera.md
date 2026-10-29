@@ -109,6 +109,7 @@ component.
 | `TesseraEvents::patchElements()` | target, component, mode, id and last; emits tessera-patch-elements |
 | `TesseraEvents::patchSignals()` | scope, JSON object, only-if-missing, id and last; emits tessera-patch-signals |
 | `TesseraEvents::keepAlive()` | keep-alive comment, with the last flag |
+| `TesseraEvents::reconnect()` | a last comment that ends the connection but not the stream (#202) |
 | `TesseraProps::forTarget()` | verifies the requested target's props envelope and returns string values; empty when absent |
 | `TesseraProps::unchanged()` | true only for a protocol 2 refresh of that one target whose verified props carry the given `version` |
 
@@ -116,6 +117,12 @@ Element modes are morph, inner, append, prepend and remove. Event data uses one 
 per value line. IDs support resuming through `Last-Event-ID`; the source decides what follows that
 ID. The final event closes the stream with `tessera-close`; an idle source can send keep-alive
 comments while waiting. The server flushes event chunks and disables proxy buffering.
+
+A stream holds a server worker for as long as its connection is open, so a part that stays live for
+a page's whole life should bound each connection: after some seconds its source returns
+`TesseraEvents::reconnect()` (a `ServerEvent` that is last and `resumes`), the connection ends with
+no `tessera-close`, and Tessera reconnects with the last id it saw (#202). A visitor who signed out
+meanwhile is turned away on that reconnect by the protected prefix, which ends the stream.
 
 Seal props with `AIC\Form\Application\EnvelopeCodec` and place the token on a KeyedComponent.
 `AIC\Tessera\Application\TesseraProps` verifies the target's returned token before exposing its

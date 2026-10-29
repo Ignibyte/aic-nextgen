@@ -42,6 +42,7 @@ final readonly class Notifier
                 'body' => $notification->body,
                 'channel' => $channel,
                 'email' => $notification->email,
+                'link' => $notification->link,
                 'subject' => $notification->subject,
                 'user' => $notification->userId,
             ], 0);

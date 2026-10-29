@@ -102,6 +102,7 @@ final readonly class NativeSiteScript
             $this->number($index, $step),
             $this->flag($index, $step),
             $this->prefix($index, $step),
+            $this->count($index, $step),
         );
     }
 
@@ -176,6 +177,27 @@ final readonly class NativeSiteScript
         return is_string($fields['capture']) && str_starts_with($fields['capture'], '/')
             ? $fields['capture']
             : throw $this->wrong($index, 'capture', 'path prefix starting with /');
+    }
+
+    /**
+     * @param int      $index The step's place.
+     * @param stdClass $step  Its fields.
+     *
+     * @throws InvalidArgumentException When `events` is present but not a whole number of 1 or more.
+     *
+     * @return int Its optional `events` (#202); 0 when absent.
+     */
+    private function count(int $index, stdClass $step): int
+    {
+        $fields = get_object_vars($step);
+
+        if (!array_key_exists('events', $fields)) {
+            return 0;
+        }
+
+        return is_int($fields['events']) && $fields['events'] > 0
+            ? $fields['events']
+            : throw $this->wrong($index, 'events', 'whole number of 1 or more');
     }
 
     /**

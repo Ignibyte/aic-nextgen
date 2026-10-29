@@ -14,6 +14,7 @@ use App\Site\Controller\JobsPage;
 use App\Site\Controller\JobsPost;
 use App\Site\Controller\NotificationsPage;
 use App\Site\Controller\NotificationsPost;
+use App\Site\Controller\NotificationsReadPost;
 use App\Site\Controller\ResourceDownload;
 use App\Site\Controller\StatusApi;
 use App\Site\Controller\TickEvents;
@@ -46,6 +47,7 @@ final readonly class SiteRoutes
             ->get('/jobs', JobsPage::class)
             ->post('/jobs', JobsPost::class)
             ->get('/notifications', NotificationsPage::class)
-            ->post('/notifications', NotificationsPost::class);
+            ->post('/notifications', NotificationsPost::class)
+            ->post('/notifications/read', NotificationsReadPost::class);
     }
 }

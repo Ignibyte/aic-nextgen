@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **A notification inbox, resumable streams, a step that reads events** (#202). A notification
+  carries the site path it is about; `Inbox` reads a user's kept notifications (unread count, pages,
+  one by id, those newer than an id) and marks them read. `TesseraEvents::reconnect()` ends a
+  connection without closing its stream, so a live part bounds each connection and Tessera resumes
+  from `Last-Event-ID`. A gate:23 step on an open stream reads `events` and hangs up.
+
 - **A step captures a link; aggregates count their exceptions** (#200). A gate:23 step's optional
   `capture` path prefix keeps the first link under it as `{note}`, so a record no Location names is
   reached through its list. The build sizes each generated aggregate's parts net of the exception
