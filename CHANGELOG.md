@@ -4,6 +4,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Fixed
+
+- **The compiled site no longer keeps a page's blocks alive** (#205). `PageHandler` passes the
+  document to a method typed `PageDocument` again: natively, a call on the narrowed answer never
+  released its argument, so a block holding a database-backed service kept one Postgres connection
+  per request open.
+
 ### Added
 
 - **A stream patch targets an anchor; Tessera 0.3.1** (#204). `TesseraEvents` accepts `@NAME` as a
