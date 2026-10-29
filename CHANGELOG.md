@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **A stream patch targets an anchor; Tessera 0.3.1** (#204). `TesseraEvents` accepts `@NAME` as a
+  patch's target and a signal patch's scope, which Tessera 0.3.1 (Tessera #35) resolves on the live
+  page, so a live part nested in a template is patched without spelling its positional path.
+
 - **Blocks take services** (#203). A block's constructor asks for services as a controller's does;
   the build wires them into `<M>Blocks` and `ModuleBlocks`, and the handler context is built in two
   steps so the services have their roots. The plugin provider registers plugins only.
