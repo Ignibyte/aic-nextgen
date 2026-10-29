@@ -286,6 +286,12 @@
             "name": "migrate:status"
         },
         {
+            "class": "App\\Site\\Command\\NotificationsForget",
+            "kind": "Command",
+            "module": "site",
+            "name": "notifications:forget"
+        },
+        {
             "class": "AIC\\Queue\\Application\\QueueFailedCommand",
             "kind": "Command",
             "module": "framework",

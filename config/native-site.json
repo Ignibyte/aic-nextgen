@@ -343,7 +343,8 @@
             "form": "",
             "header": "",
             "status": 200,
-            "captures": false
+            "captures": false,
+            "console": "notifications:forget demo"
         },
         {
             "name": "notifications, newer than an id",

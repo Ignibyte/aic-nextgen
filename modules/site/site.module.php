@@ -6,8 +6,8 @@ declare(strict_types=1);
  * The site module's manifest (#93; the fixture app's since #126): the home
  * page, the status and health APIs, file downloads, the tick stream and its
  * page, the greeting pages and their greeters, the jobs and notifications pages with the demo job and its
- * schedule, the site's blocks, db:ping and greet. Its components, layouts and
- * assets live in the theme (#153). The build reads it; nothing reads it at
+ * schedule, the site's blocks, db:ping, greet and notifications:forget (#210).
+ * Its components, layouts and assets live in the theme (#153). The build reads it; nothing reads it at
  * run time.
  */
 
@@ -17,6 +17,7 @@ use App\Site\Block\PoweredByBlock;
 use App\Site\Block\SiteNavBlock;
 use App\Site\Command\DatabasePing;
 use App\Site\Command\Greet;
+use App\Site\Command\NotificationsForget;
 use App\Site\Controller\GreetingPage;
 use App\Site\Controller\GreetingPost;
 use App\Site\Controller\HealthApi;
@@ -57,6 +58,7 @@ return (new ModuleManifest('site'))
     ->block(SiteNavBlock::class)
     ->command('db:ping', DatabasePing::class)
     ->command('greet', Greet::class)
+    ->command('notifications:forget', NotificationsForget::class)
     ->job('demo', DemoJob::class)
     ->schedule('demo-every-minute', 'demo', ['mode' => 'succeed'], '* * * * *')
     ->migration(CreateSubscribersTable::class)

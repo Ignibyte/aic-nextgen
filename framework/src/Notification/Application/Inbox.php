@@ -12,7 +12,8 @@ use AIC\Notification\Domain\InboxItem;
 /**
  * A user's notifications as the database channel keeps them (#202): what is
  * unread, a page of them newest first, one by id, and marking them read. Every
- * read and write is scoped to the user, so another user's id finds nothing.
+ * read and write is scoped to the user, so another user's id finds nothing;
+ * `forget()` deletes them all (#210).
  */
 final readonly class Inbox
 {
@@ -144,6 +145,21 @@ final readonly class Inbox
             'UPDATE aic_notifications SET read_at = now() WHERE user_id = ? AND read_at IS NULL',
             [$userId],
         );
+    }
+
+    /**
+     * Deletes a user's kept notifications (#210), read or not: a fresh start, such as each gate:23 pass's for the
+     * gate user.
+     *
+     * @param string $userId The user.
+     *
+     * @throws QueryException When the table cannot be written.
+     *
+     * @return int How many were deleted.
+     */
+    public function forget(string $userId): int
+    {
+        return $this->database->execute('DELETE FROM aic_notifications WHERE user_id = ?', [$userId]);
     }
 
     /**

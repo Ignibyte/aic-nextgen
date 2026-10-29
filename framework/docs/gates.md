@@ -29,7 +29,11 @@ first link in its answer under that prefix as `{note}` (#200). A step on an even
 open sets `"events": N`: gate:23 reads that many events and hangs up (#202). A page that exists only after a
 job runs (an export's download) is reached by a step with `"work": true`: gate:23 runs the app's
 `bin/aic queue:work` before sending it, on each site's pass, and a worker that fails is a difference
-(#209). A form posts multipart when it starts with
+(#209). Both passes share one database, so a record a pass leaves behind for the gate user (a
+notification an export job sends it) shows in the next pass: a step's `"console": "<command> <args>"`
+runs the app's `bin/aic` with those words before it, on each pass and before the worker, so the app
+starts that record afresh (`"console": "inbox:forget gate"`), and a command that fails is a
+difference (#210). A form posts multipart when it starts with
 `multipart:`; a value `@path` uploads that file, relative to the project root
 (`multipart:aic_csrf={csrf}&photo=@tests/fixtures/car.jpg`). The extra header may hold several
 lines joined by `\r\n` (`Range: bytes=0-4\r\nIf-Range: \"x\"`).
