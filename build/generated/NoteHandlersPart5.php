@@ -7,9 +7,12 @@ namespace App\Generated;
 use AIC\Container\Exception\ContainerException;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
+use App\Note\Controller\StockCsv;
 use App\Note\Controller\StockDaysPage;
+use App\Note\Form\StockQueries;
 use App\Note\Repository\StockReportRepository;
 use App\Note\Repository\StockRepository;
+use App\Note\Service\StockExport;
 use App\Note\Service\StockReportDay;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -37,12 +40,15 @@ final readonly class NoteHandlersPart5
     public function byId(): array
     {
         $entityStore = new EntityStore($this->handlerContext->database());
+        $stockRepository = new StockRepository($entityStore);
+        $stockExport = new StockExport($stockRepository, $this->handlerContext->root());
 
         return [
+            StockCsv::class => $this->handlerContext->stream(new StockCsv(new StockQueries(), $stockExport)),
             StockDaysPage::class => $this->handlerContext->page(
                 new StockDaysPage(
                     $this->handlerContext->documents(),
-                    new StockRepository($entityStore),
+                    $stockRepository,
                     new StockReportRepository($entityStore),
                     new StockReportDay(),
                 ),

@@ -178,9 +178,10 @@ final readonly class NativeSiteGate
         }
 
         $password = $this->gateUser->create($root, $nativeSiteSetup->env);
-        $php = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->phpPort, $steps, $password);
-        $native = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->nativePort, $steps, $password);
+        $env = $nativeSiteSetup->env;
+        $php = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->phpPort, $steps, $password, $root, $env);
         $nativeOrigin = 'http://127.0.0.1:' . $nativeSiteSetup->nativePort;
+        $native = $this->nativeSiteComparer->run($nativeOrigin, $steps, $password, $root, $env);
         $browser = $this->nativeSiteBrowser->findings($root, $nativeOrigin, $nativeSiteSetup->env, $password);
         $this->serverLauncher->stopAll();
 

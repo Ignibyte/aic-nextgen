@@ -31,6 +31,18 @@ final readonly class StockForm
 
     /**
      * @param ServerRequestInterface $serverRequest The request, with its session.
+     *
+     * @throws LogicException When the required application state is unavailable.
+     *
+     * @return Form The form, empty.
+     */
+    public function blank(ServerRequestInterface $serverRequest): Form
+    {
+        return $this->form($serverRequest, new StockEntry('', '', '', false), '');
+    }
+
+    /**
+     * @param ServerRequestInterface $serverRequest The request, with its session.
      * @param StockEntry             $stockEntry    The values to show.
      * @param string                 $error         Why the last post was refused; empty for none.
      *

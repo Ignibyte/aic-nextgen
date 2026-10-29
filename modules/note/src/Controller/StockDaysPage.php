@@ -25,13 +25,13 @@ use function array_map;
 /**
  * `GET /stock/days` (#191): the stock report, the latest days stock came in
  * (or one `day`) read from the `stock_days` view, and what those items are
- * worth by whether they are certified.
+ * worth and their average price (#209) by whether they are certified.
  */
 final readonly class StockDaysPage implements Page
 {
     /**
      * @param PageDocuments         $pageDocuments         Makes the page.
-     * @param StockRepository       $stockRepository       The stock, for its worth by certification.
+     * @param StockRepository       $stockRepository       The stock, for its worth and average price by certification.
      * @param StockReportRepository $stockReportRepository The report's days.
      * @param StockReportDay        $stockReportDay        Reads the day asked for.
      */
@@ -56,12 +56,17 @@ final readonly class StockDaysPage implements Page
     {
         $day = $this->stockReportDay->day($serverRequest);
         $worth = $this->stockRepository->worthByCertification($day);
+        $average = $this->stockRepository->averagePriceByCertification($day);
         $days = array_map(static fn (StockDay $stockDay): string => $stockDay->line(), $this->stockReportRepository->days(10, $day));
 
         return $this->pageDocuments->content([
             new Heading('Stock by day'),
             new LineList('stock-days', $days, 'Nothing in stock yet.'),
             new Paragraph('Certified: $' . ($worth['true'] ?? '0') . '; not certified: $' . ($worth['false'] ?? '0') . '.', 'stock-worth'),
+            new Paragraph(
+                'Average price, certified: $' . ($average['true'] ?? '0') . '; not certified: $' . ($average['false'] ?? '0') . '.',
+                'stock-average',
+            ),
         ], 200, 'Stock by day', ThemeLayoutName::Focus);
     }
 }

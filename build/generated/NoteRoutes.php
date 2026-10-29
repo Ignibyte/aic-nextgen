@@ -13,6 +13,7 @@ use App\Note\Controller\NoteShowPage;
 use App\Note\Controller\NoteTagPost;
 use App\Note\Controller\NoteTagsPage;
 use App\Note\Controller\NoteUpdatePost;
+use App\Note\Controller\StockCsv;
 use App\Note\Controller\StockDaysPage;
 use App\Note\Controller\StockPage;
 use App\Note\Controller\StockPost;
@@ -42,6 +43,7 @@ final readonly class NoteRoutes
             ->post('/stock', StockPost::class)
             ->get('/notes/tags', NoteTagsPage::class)
             ->post('/notes/tags', NoteTagPost::class)
-            ->get('/stock/days', StockDaysPage::class);
+            ->get('/stock/days', StockDaysPage::class)
+            ->get('/stock.csv', StockCsv::class);
     }
 }

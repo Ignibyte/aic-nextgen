@@ -26,6 +26,8 @@ final readonly class NativeSiteStep
      *                         a record whose page no Location names; empty for none.
      * @param int    $events   For an event stream that stays open, how many events to read before hanging up (#202);
      *                         0 reads it to its end.
+     * @param bool   $work     Whether the app's queue worker runs before it is sent (#209), for a page that exists only
+     *                         after a job runs.
      */
     public function __construct(
         public string $name,
@@ -37,6 +39,7 @@ final readonly class NativeSiteStep
         public bool $captures,
         public string $capture = '',
         public int $events = 0,
+        public bool $work = false,
     ) {
     }
 

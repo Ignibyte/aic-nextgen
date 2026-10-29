@@ -103,6 +103,7 @@ final readonly class NativeSiteScript
             $this->flag($index, $step),
             $this->prefix($index, $step),
             $this->count($index, $step),
+            $this->works($index, $step),
         );
     }
 
@@ -198,6 +199,27 @@ final readonly class NativeSiteScript
         return is_int($fields['events']) && $fields['events'] > 0
             ? $fields['events']
             : throw $this->wrong($index, 'events', 'whole number of 1 or more');
+    }
+
+    /**
+     * @param int      $index The step's place.
+     * @param stdClass $step  Its fields.
+     *
+     * @throws InvalidArgumentException When `work` is present but not a boolean.
+     *
+     * @return bool Its optional `work` (#209): whether the queue worker runs first; false when absent.
+     */
+    private function works(int $index, stdClass $step): bool
+    {
+        $fields = get_object_vars($step);
+
+        if (!array_key_exists('work', $fields)) {
+            return false;
+        }
+
+        return is_bool($fields['work'])
+            ? $fields['work']
+            : throw $this->wrong($index, 'work', 'boolean');
     }
 
     /**

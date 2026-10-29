@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 /*
  * The note module's manifest (#93; stock's pages and table joined it in #126):
- * CRUD on notes, their tips block, the stock page, and the notes and stock
- * tables. The build reads it; nothing reads it at run time.
+ * CRUD on notes, their tips block, the stock page, its report and its CSV
+ * export (#209), and the notes and stock tables. The build reads it; nothing reads it at run time.
  */
 
 use AIC\Module\Contracts\ModuleManifest;
@@ -19,6 +19,7 @@ use App\Note\Controller\NoteShowPage;
 use App\Note\Controller\NoteTagPost;
 use App\Note\Controller\NoteTagsPage;
 use App\Note\Controller\NoteUpdatePost;
+use App\Note\Controller\StockCsv;
 use App\Note\Controller\StockDaysPage;
 use App\Note\Controller\StockPage;
 use App\Note\Controller\StockPost;
@@ -43,6 +44,7 @@ return (new ModuleManifest('note'))
     ->route(RouteMethod::Get, '/notes/tags', NoteTagsPage::class)
     ->route(RouteMethod::Post, '/notes/tags', NoteTagPost::class)
     ->route(RouteMethod::Get, '/stock/days', StockDaysPage::class)
+    ->route(RouteMethod::Get, '/stock.csv', StockCsv::class)
     ->block(NoteTipsBlock::class)
     ->command('stock:sample', StockSample::class)
     ->migration(CreateNotesTable::class)
