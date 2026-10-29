@@ -329,7 +329,7 @@
         {
             "name": "jobs, after the worker ran",
             "method": "GET",
-            "path": "/jobs",
+            "path": "{location}",
             "form": "",
             "header": "",
             "status": 200,

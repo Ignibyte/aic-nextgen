@@ -16,7 +16,8 @@ use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * POST /jobs?mode=succeed|fail: queues the demo job (#46) and goes back to
- * /jobs.
+ * /jobs, naming the mode it queued (`?queued=succeed`), the Location gate:23
+ * opens as `{location}` (#212).
  */
 final readonly class JobsPost implements Page
 {
@@ -35,7 +36,7 @@ final readonly class JobsPost implements Page
      * @throws QueryException           When the job cannot be queued.
      * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
-     * @return PageResponse 303 to /jobs.
+     * @return PageResponse 303 to /jobs with the queued mode.
      */
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
@@ -46,6 +47,6 @@ final readonly class JobsPost implements Page
             : 'succeed';
         $this->postgresQueue->dispatch('demo', ['mode' => $mode], 0);
 
-        return new PageRedirect('/jobs');
+        return new PageRedirect('/jobs?queued=' . $mode);
     }
 }
