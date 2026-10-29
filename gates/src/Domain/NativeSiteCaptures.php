@@ -12,8 +12,9 @@ use function strlen;
  * The records one site's run of gate:23 created (#178), as the paths its
  * capturing steps kept, and how each reads once normalised: the path, as a
  * whole path segment, reads `<captured>`, and a path ending in a number also
- * normalises that number where a page names it after a `-`, as an element id
- * or a key does (`notification-12`, #214). Each site creates its own records,
+ * normalises that number where a page names it after a `-` or a `=`, as an
+ * element id, a key or a query does (`notification-12`, #214; `?after=12`,
+ * #215). Each site creates its own records,
  * with their own ids, against the one database.
  */
 final readonly class NativeSiteCaptures
@@ -50,7 +51,7 @@ final readonly class NativeSiteCaptures
      * @param string $text Text from an answer.
      *
      * @return string The text with each captured path read as `<captured>`, and its trailing id as `<captured-id>`
-     *                after a `-`.
+     *                after a `-` or a `=`.
      */
     public function normalised(string $text): string
     {
@@ -63,7 +64,7 @@ final readonly class NativeSiteCaptures
                 continue;
             }
 
-            $text = preg_replace('#(?<=-)' . $id . '(?![\\w-])#', '<captured-id>', $text) ?? $text;
+            $text = preg_replace('#(?<=[-=])' . $id . '(?![\\w-])#', '<captured-id>', $text) ?? $text;
         }
 
         return $text;
