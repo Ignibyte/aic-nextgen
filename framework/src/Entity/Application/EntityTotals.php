@@ -106,7 +106,7 @@ final readonly class EntityTotals
         $counts = [];
 
         foreach ($this->grouped('count(*)::integer', $field) as $row) {
-            $counts[$row->string('value')] = $row->int('total');
+            $counts[$row->string('value')] = (int) $row->string('total');
         }
 
         return $counts;
@@ -168,14 +168,15 @@ final readonly class EntityTotals
      * @throws QueryException           When the query fails.
      * @throws InvalidArgumentException When the query has no such field.
      *
-     * @return list<Row> One row per group: its value as `value`, the aggregate as `total`, largest first.
+     * @return list<Row> One row per group: its value as `value`, the aggregate as text in `total` (an integer
+     *                   sum is a bigint, which PDO hands back as an int, #211), largest first by the aggregate.
      */
     private function grouped(string $aggregate, string $group): array
     {
         $column = $this->entityConditions->column($group);
-        $sql = 'SELECT ' . $column . '::text AS value, ' . $aggregate . ' AS total FROM ' . $this->entityJoins->from()
+        $sql = 'SELECT ' . $column . '::text AS value, (' . $aggregate . ')::text AS total FROM ' . $this->entityJoins->from()
             . $this->entityConditions->sql() . ($this->entityConditions->hasAny() ? ' AND ' : ' WHERE ') . $column
-            . ' IS NOT NULL GROUP BY ' . $column . ' ORDER BY 2 DESC, 1';
+            . ' IS NOT NULL GROUP BY ' . $column . ' ORDER BY ' . $aggregate . ' DESC, 1';
 
         return $this->database->fetchAll($sql, $this->entityConditions->params());
     }
