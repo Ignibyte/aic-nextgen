@@ -21,6 +21,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **gate:23's `{location}`** (#212). A step's path may name `{location}`, the path and query of
+  the last Location a step was answered with, for a redirect that names its record in the query;
+  `{note}` stays a path that later steps extend.
+
 - **A gate:23 step runs an app command** (#210). `"console": "<command> <args>"` runs the app's
   `bin/aic` before the step on each pass, so an app starts what a pass depends on afresh; both
   passes still share one database. `Inbox::forget()` deletes a user's kept notifications, and the

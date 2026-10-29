@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace Gates\Domain;
 
+use function is_string;
+use function parse_url;
 use function str_contains;
 use function str_ends_with;
 use function str_replace;
 
+use const PHP_URL_PATH;
+use const PHP_URL_QUERY;
+
 /**
  * What one site's run of gate:23 remembers between steps (#42): the session
  * cookie it last set, the CSRF token and the signed envelope its last page
- * carried, and the note the capturing step created. Each site gets its own.
+ * carried, the note the capturing step created, and the last Location with
+ * its query (#212). Each site gets its own.
  */
 final class NativeSiteSession
 {
@@ -38,6 +44,11 @@ final class NativeSiteSession
     private string $note = '/notes/0';
 
     /**
+     * The last Location a step was answered with: its path and query, without the fragment (#212).
+     */
+    private string $location = '/';
+
+    /**
      * @param string $password The gate user's password, for `{password}` (#9).
      */
     public function __construct(
@@ -48,11 +59,11 @@ final class NativeSiteSession
     /**
      * @param NativeSiteStep $nativeSiteStep A step.
      *
-     * @return string Its path, `{note}` replaced.
+     * @return string Its path, `{note}` and `{location}` replaced.
      */
     public function path(NativeSiteStep $nativeSiteStep): string
     {
-        return str_replace('{note}', $this->note, $nativeSiteStep->path);
+        return str_replace(['{note}', '{location}'], [$this->note, $this->location], $nativeSiteStep->path);
     }
 
     /**
@@ -104,11 +115,38 @@ final class NativeSiteSession
         $this->token = self::captured('/name="aic_csrf" value="([0-9a-f]{64})"/', $httpExchange->body, $this->token);
         $this->envelope = self::captured('/name="aic_envelope" value="([\\w.-]+)"/', $httpExchange->body, $this->envelope);
 
+        $this->follow($httpExchange->location);
+
         if (!$nativeSiteStep->captures && $nativeSiteStep->capture === '') {
             return;
         }
 
         $this->note = $nativeSiteStep->captured($location, $httpExchange->body);
+    }
+
+    /**
+     * @param string $location The answer's `Location`; empty for none, which keeps the last one.
+     */
+    private function follow(string $location): void
+    {
+        if ($location === '') {
+            return;
+        }
+
+        $this->location = self::target($location);
+    }
+
+    /**
+     * @param string $location A `Location` value.
+     *
+     * @return string Its path and query, without the fragment; `/` for a Location with no path.
+     */
+    private static function target(string $location): string
+    {
+        $path = parse_url($location, PHP_URL_PATH);
+        $query = parse_url($location, PHP_URL_QUERY);
+
+        return (is_string($path) ? $path : '/') . (is_string($query) && $query !== '' ? '?' . $query : '');
     }
 
     /**

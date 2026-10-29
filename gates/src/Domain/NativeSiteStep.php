@@ -17,7 +17,8 @@ final readonly class NativeSiteStep
     /**
      * @param string       $name     What the step checks, for the report.
      * @param string       $method   The HTTP method.
-     * @param string       $path     The path; `{note}` stands for the Location the capturing step kept.
+     * @param string       $path     The path; `{note}` stands for the Location the capturing step kept,
+     *                               `{location}` for the last Location with its query (#212).
      * @param string       $form     A form-encoded body; empty for none.
      * @param string       $header   One extra request header line (`Range: bytes=0-4`); empty for none.
      * @param int          $status   The status both sites must answer.

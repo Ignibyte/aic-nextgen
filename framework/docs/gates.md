@@ -22,10 +22,13 @@ the package's, so `init` again after `composer update` brings them back in step.
 the app's own requests from `config/native-site.json`: one step a line, each the method, path,
 form, extra header and status both sites must answer alike. A new route adds its step. Both sites
 run against one database, so a record each creates gets its own id: a step with `captures: true`
-takes its answer's `Location` as `{note}` for the next steps, and that path reads as `<captured>`
+takes its answer's `Location` as `{note}` for the next steps (a path, which a later step may extend,
+`{note}/delete`), and that path reads as `<captured>`
 in each site's answers before they are compared (#178). A record no Location names (a form that
 answers in place) is reached through a list instead: a step with `"capture": "/app/leads/"` keeps the
-first link in its answer under that prefix as `{note}` (#200). A step on an event stream that stays
+first link in its answer under that prefix as `{note}` (#200). `{location}` is the path and query of the last
+`Location` any step was answered with (#212), for a redirect that names its record in the query
+(`/app/reports?export=7`). A step on an event stream that stays
 open sets `"events": N`: gate:23 reads that many events and hangs up (#202). A page that exists only after a
 job runs (an export's download) is reached by a step with `"work": true`: gate:23 runs the app's
 `bin/aic queue:work` before sending it, on each site's pass, and a worker that fails is a difference
