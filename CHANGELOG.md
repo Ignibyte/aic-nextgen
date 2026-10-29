@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **gate:23 serves the compiled site with room for open streams** (#206). gate:23 and
+  `aic-gate serve` start it with 2 workers of 8 handlers: an open event stream holds a handler until
+  its connection ends, a left page's included, and four slots starved a poll beside two live pages.
+
 - **The compiled site no longer keeps a page's blocks alive** (#205). `PageHandler` passes the
   document to a method typed `PageDocument` again: natively, a call on the narrowed answer never
   released its argument, so a block holding a database-backed service kept one Postgres connection
