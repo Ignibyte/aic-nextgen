@@ -44,14 +44,15 @@ final readonly class NativeSiteBuilder
     }
 
     /**
-     * @param string $root    Repo-root absolute path.
-     * @param string $workDir Where the program and the binary go.
+     * @param string       $root    Repo-root absolute path.
+     * @param string       $workDir Where the program and the binary go.
+     * @param list<string> $flags   More compiler flags: the heap the app's body cap needs (#198).
      *
      * @throws RuntimeException When the work directory or the program cannot be written.
      *
      * @return ProcessResult The package install's failure, or the compile's result.
      */
-    public function build(string $root, string $workDir): ProcessResult
+    public function build(string $root, string $workDir, array $flags): ProcessResult
     {
         if (!is_dir($workDir) && !mkdir($workDir, 0o755, true)) {
             throw new RuntimeException('native site — cannot create ' . $workDir);
@@ -65,7 +66,7 @@ final readonly class NativeSiteBuilder
         $processResult = $this->nativeToolchain->installPackages($workDir);
 
         return $processResult->exitCode === 0
-            ? $this->nativeToolchain->compileWeb($workDir)
+            ? $this->nativeToolchain->compileWeb($workDir, $flags)
             : $processResult;
     }
 

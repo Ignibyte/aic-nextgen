@@ -96,7 +96,7 @@ final readonly class NativeSiteGate
         $workDir = $root . '/.native-site';
         $processResult = $steps === []
             ? null
-            : $this->nativeSiteBuilder->build($root, $workDir);
+            : $this->nativeSiteBuilder->build($root, $workDir, $nativeSiteSetup->heapLimit());
 
         return match (true) {
             $processResult === null => 1,
