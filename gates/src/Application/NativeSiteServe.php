@@ -44,7 +44,7 @@ final readonly class NativeSiteServe
     public function serve(string $root, NativeSiteSetup $nativeSiteSetup, string $port): int
     {
         $workDir = $root . '/.native-site';
-        $processResult = $this->nativeSiteBuilder->build($root, $workDir);
+        $processResult = $this->nativeSiteBuilder->build($root, $workDir, $nativeSiteSetup->heapLimit());
 
         if ($processResult->exitCode !== 0) {
             fwrite(STDERR, $processResult->stdout . $processResult->stderr);

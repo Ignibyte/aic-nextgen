@@ -97,9 +97,11 @@ largest request body the app takes. `AIC\Form\Application\BodyLimitMiddleware` a
 413 before the session is read, by its `Content-Length`, so PHP and the compiled site refuse it
 alike. Set it above the largest upload a feature allows, so a file over the feature's own limit
 reaches `UploadCheck` and is refused in place with its reason. The servers in front must let the cap
-through: gate:23 and `aic-gate serve` start the compiled server with `--max-body-size` and php -S with
-`post_max_size` 1 MiB above the cap and `upload_max_filesize` at it. A deployment does the same for
-the compiled binary and for php-fpm or nginx (`client_max_body_size`).
+through, and the compiled site's heap must hold it ([native.md](native.md#whole-site-comparison-and-diagnosis)).
+gate:23 and `aic-gate serve` build the compiled site with a `--heap-size` sized from the cap and start
+it with `--max-body-size`, and start php -S with `post_max_size` 1 MiB above the cap and
+`upload_max_filesize` at it. A deployment does the same for the compiled binary and for php-fpm or
+nginx (`client_max_body_size`).
 
 ## Authentication and app secret
 

@@ -80,6 +80,10 @@ body. Session/form workflows retain their own cookies and posted values. Asset, 
 fragment and error cases belong in that configured sequence when the app exposes them. Both servers
 are started to let the app's request body cap through (`AppConfig::$maxBodyBytes`, see
 [security.md](security.md#the-request-body-cap)), so an oversized body is the app's 413 on each.
+The compiled program's heap is fixed at build time (elephc's default is 8 MB), so gate:23 and
+`aic-gate serve` build the site with `--heap-size` of 64 MiB plus four times the cap: room for the raw
+body, its parsed form and the app's own handling. The heap is reserved, not touched, so pages a request
+never uses cost no memory. A deployment builds its binary the same way.
 
 When the database does not answer `bin/aic db:ping`, the whole gate defers and says why; running a
 small database-free subset would not establish site coverage. A suite with deferrals is incomplete.

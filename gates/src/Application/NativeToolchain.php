@@ -105,13 +105,14 @@ final readonly class NativeToolchain
      * prefork server with persistent handler processes (`--web-isolation=pool`),
      * the model its PDO drivers run under.
      *
-     * @param string $dir The site's work directory.
+     * @param string       $dir   The site's work directory.
+     * @param list<string> $flags More compiler flags: the heap (#198).
      *
      * @return ProcessResult The compiler's result.
      */
-    public function compileWeb(string $dir): ProcessResult
+    public function compileWeb(string $dir, array $flags): ProcessResult
     {
-        return $this->processRunner->run([$this->elephc, '--web', '--web-isolation=pool', 'main.php'], $dir, $this->env);
+        return $this->processRunner->run([$this->elephc, '--web', '--web-isolation=pool', ...$flags, 'main.php'], $dir, $this->env);
     }
 
     /**
