@@ -46,6 +46,15 @@ final readonly class NativeSiteSetup
     }
 
     /**
+     * @return list<string> The compiled server's capacity (#206): 2 workers of 8 handlers each, since every open
+     *                      event stream holds a handler until its connection ends, a left page's included.
+     */
+    public function nativeCapacity(): array
+    {
+        return ['--workers', '2', '--handler-concurrency', '8'];
+    }
+
+    /**
      * @return list<string> The compiled server's arguments for the cap.
      */
     public function nativeLimit(): array
