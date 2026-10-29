@@ -85,6 +85,13 @@
             "path": "/notifications"
         },
         {
+            "handler": "App\\Site\\Controller\\NotificationsReadPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "site",
+            "path": "/notifications/read"
+        },
+        {
             "handler": "App\\Account\\Controller\\LoginPage",
             "kind": "Page",
             "method": "GET",

@@ -25,7 +25,9 @@ use function min;
 final readonly class TickEvents implements Stream
 {
     /**
-     * @param ServerRequestInterface $serverRequest The request, with an optional `count` query field and `Last-Event-ID`.
+     * @param ServerRequestInterface $serverRequest The request, with optional `count` and `resume` (`1`: end the
+     *                                              connection without closing the stream, #202) query fields and
+     *                                              `Last-Event-ID`.
      *
      * @return StreamResponse The event stream.
      */
@@ -44,6 +46,6 @@ final readonly class TickEvents implements Stream
             ? (int) $seen
             : 0;
 
-        return new EventStream(new TickSource(max(1, min(10, $ticks)), $after));
+        return new EventStream(new TickSource(max(1, min(10, $ticks)), $after, ($query['resume'] ?? '') === '1'));
     }
 }

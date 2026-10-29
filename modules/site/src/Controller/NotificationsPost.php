@@ -48,7 +48,7 @@ final readonly class NotificationsPost implements Page
         $body = $message === ''
             ? 'This went out by mail and to the database.'
             : $message;
-        $notification = new Notification(NotificationsPage::USER, 'demo@aic-nextgen.test', 'Hello from AIC', $body);
+        $notification = new Notification(NotificationsPage::USER, 'demo@aic-nextgen.test', 'Hello from AIC', $body, '/notifications');
         $this->notifier->send($notification, ['mail', 'database']);
 
         return new PageRedirect('/notifications');

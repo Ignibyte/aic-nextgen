@@ -77,6 +77,7 @@ final readonly class NativeSiteComparer
                 $path,
                 $nativeSiteSession->form($step),
                 $this->nativeSiteAnchors->resolved($origin, $path, $nativeSiteSession->header($step)),
+                $step->events,
             );
             $nativeSiteSession->absorb($step, $exchange, self::path($exchange->location));
             $captured = $step->captured(self::path($exchange->location), $exchange->body);

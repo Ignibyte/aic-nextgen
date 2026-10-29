@@ -24,6 +24,8 @@ final readonly class NativeSiteStep
      * @param bool   $captures Whether its Location is kept as `{note}` for the later steps.
      * @param string $capture  A path prefix: the first link in its answer under it is kept as `{note}` (#200), for
      *                         a record whose page no Location names; empty for none.
+     * @param int    $events   For an event stream that stays open, how many events to read before hanging up (#202);
+     *                         0 reads it to its end.
      */
     public function __construct(
         public string $name,
@@ -34,6 +36,7 @@ final readonly class NativeSiteStep
         public int $status,
         public bool $captures,
         public string $capture = '',
+        public int $events = 0,
     ) {
     }
 

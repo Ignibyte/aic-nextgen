@@ -13,7 +13,10 @@ use Override;
 use function array_key_exists;
 use function basename;
 use function explode;
+use function fclose;
+use function fgets;
 use function file_get_contents;
+use function fopen;
 use function http_clear_last_response_headers;
 use function http_get_last_response_headers;
 use function mb_strtolower;
@@ -24,11 +27,13 @@ use function str_starts_with;
 use function stream_context_create;
 use function strlen;
 use function substr;
+use function substr_count;
 use function urldecode;
 
 /**
  * An HTTP client over PHP's `http://` stream wrapper: no redirect followed,
- * error statuses read like any other, a ten-second timeout. A refused
+ * error statuses read like any other, a ten-second timeout; an event stream
+ * can be read for a number of events and left (#202). A refused
  * connection is an answer with status 0; its warning is caught, not printed.
  */
 final readonly class StreamHttpClient implements HttpClient
@@ -52,33 +57,82 @@ final readonly class StreamHttpClient implements HttpClient
      * @param string $path   The path.
      * @param string $form   A form-encoded body; empty for none.
      * @param string $header One extra request header line; empty for none.
+     * @param int    $events For an event stream, how many events to read before hanging up (#202); 0 reads to the end.
      *
      * @return HttpExchange The answer; status 0 when there was none.
      */
     #[Override]
-    public function send(string $origin, string $method, string $path, string $form, string $header): HttpExchange
-    {
+    public function send(
+        string $origin,
+        string $method,
+        string $path,
+        string $form,
+        string $header,
+        int $events = 0,
+    ): HttpExchange {
         [$contentType, $content] = self::body($form);
         $lines = 'Connection: close' . ($form === '' ? '' : "\r\nContent-Type: " . $contentType)
             . ($header === '' ? '' : "\r\n" . $header);
-        $context = stream_context_create(['http' => [
+        $options = ['http' => [
             'content' => $content,
             'follow_location' => 0,
             'header' => $lines,
             'ignore_errors' => true,
             'method' => $method,
             'timeout' => 10,
-        ]]);
+        ]];
+        $body = self::fetch($origin . $path, $options, $events);
+
+        return self::exchange(self::headers(), $body === false ? '' : $body);
+    }
+
+    /**
+     * @param string                                        $url     The URL.
+     * @param array<string, array<string, bool|int|string>> $options The request's stream context options.
+     * @param int                                           $events  For an event stream, how many events to read; 0
+     *                                                               reads to the end.
+     *
+     * @return string|false The body; false when there was no answer.
+     */
+    private static function fetch(string $url, array $options, int $events): string|false
+    {
         http_clear_last_response_headers();
         set_error_handler(static fn (): bool => true);
 
         try {
-            $body = file_get_contents($origin . $path, false, $context);
+            return $events === 0
+                ? file_get_contents($url, false, stream_context_create($options))
+                : self::events($url, $options, $events);
         } finally {
             restore_error_handler();
         }
+    }
 
-        return self::exchange(self::headers(), $body === false ? '' : $body);
+    /**
+     * @param string                                        $url     The stream's URL.
+     * @param array<string, array<string, bool|int|string>> $options The request's stream context options.
+     * @param int                                           $events  How many events to read.
+     *
+     * @return string|false The body up to the end of that many events (each ends with a blank line); false when
+     *                      there was no answer.
+     */
+    private static function events(string $url, array $options, int $events): string|false
+    {
+        $handle = fopen($url, 'r', false, stream_context_create($options));
+
+        if ($handle === false) {
+            return false;
+        }
+
+        $body = '';
+
+        while (substr_count($body, "\n\n") < $events && ($line = fgets($handle)) !== false) {
+            $body .= $line;
+        }
+
+        fclose($handle);
+
+        return $body;
     }
 
     /**

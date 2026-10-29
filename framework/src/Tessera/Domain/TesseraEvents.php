@@ -92,6 +92,17 @@ final readonly class TesseraEvents
     }
 
     /**
+     * A source that bounds each connection returns this when one has lasted long enough (#202): the connection
+     * ends without `tessera-close`, and Tessera reconnects with the last event id it saw.
+     *
+     * @return ServerEvent The `: reconnect` comment, last and resuming.
+     */
+    public function reconnect(): ServerEvent
+    {
+        return new ServerEvent('', 'reconnect', true, '', null, true);
+    }
+
+    /**
      * @param string $key  The data key.
      * @param string $text Its value, any number of lines.
      *

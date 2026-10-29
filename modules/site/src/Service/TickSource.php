@@ -33,11 +33,14 @@ final class TickSource implements EventSource
     /**
      * @param int           $count         The last tick, 1 or more.
      * @param int           $given         The last tick given: at first the one the client last saw (`Last-Event-ID`), 0 for none.
+     * @param bool          $resumes       Whether the connection ends after the last tick without closing the stream,
+     *                                     so Tessera reconnects (#202).
      * @param TesseraEvents $tesseraEvents Makes the events.
      */
     public function __construct(
         private readonly int $count,
         private int $given,
+        private readonly bool $resumes = false,
         private readonly TesseraEvents $tesseraEvents = new TesseraEvents(),
     ) {
     }
@@ -46,7 +49,7 @@ final class TickSource implements EventSource
      * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ServerEvent The next tick, after a pause unless it is the first, then its signal patch; a closing
-     *                     comment when none is left.
+     *                     comment when none is left, or a reconnect when the stream resumes.
      */
     #[Override]
     public function next(): ServerEvent
@@ -54,11 +57,11 @@ final class TickSource implements EventSource
         if ($this->signalDue) {
             $this->signalDue = false;
 
-            return $this->tesseraEvents->patchSignals('page', '{"ticks":' . $this->given . '}', false, '', $this->given >= $this->count);
+            return $this->tesseraEvents->patchSignals('page', '{"ticks":' . $this->given . '}', false, '', $this->closes());
         }
 
         if ($this->given >= $this->count) {
-            return $this->tesseraEvents->keepAlive(true);
+            return $this->end();
         }
 
         if ($this->started) {
@@ -70,5 +73,25 @@ final class TickSource implements EventSource
         $this->signalDue = true;
 
         return $this->tesseraEvents->patchElements('ticks', new Tick($this->given), 'append', (string) $this->given, false);
+    }
+
+    /**
+     * @return bool Whether the last tick's signal patch closes the stream: it is the last, and the stream does not
+     *              resume.
+     */
+    private function closes(): bool
+    {
+        return $this->given >= $this->count && !$this->resumes;
+    }
+
+    /**
+     * @return ServerEvent What follows the last tick: a reconnect when the stream resumes (#202), else a closing
+     *                     comment.
+     */
+    private function end(): ServerEvent
+    {
+        return $this->resumes
+            ? $this->tesseraEvents->reconnect()
+            : $this->tesseraEvents->keepAlive(true);
     }
 }

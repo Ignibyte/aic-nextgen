@@ -64,6 +64,7 @@ final readonly class DeliverNotification implements Job
             $jobInput->value('email', ''),
             $jobInput->value('subject', ''),
             $jobInput->value('body', ''),
+            $jobInput->value('link', ''),
         ));
 
         return new JobDone();

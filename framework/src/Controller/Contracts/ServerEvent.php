@@ -12,7 +12,10 @@ use function str_replace;
 /**
  * One Server-Sent Event: its name, data and id, and whether it is the last of
  * its stream. An event with no name is a comment line, the keep-alive Tessera
- * asks for at least every 15 seconds (protocol 7.1, #73).
+ * asks for at least every 15 seconds (protocol 7.1, #73). A last event that
+ * resumes ends only the connection (#202): no `tessera-close` follows, so
+ * Tessera reconnects with the last id it saw, and a live part need not hold a
+ * server worker for as long as its page is open.
  */
 final readonly class ServerEvent
 {
@@ -23,6 +26,8 @@ final readonly class ServerEvent
      * @param string         $id       Its id, which a reconnect sends back as `Last-Event-ID`; empty for none.
      * @param Component|null $elements An element patch's component, rendered as `elements` lines after the data;
      *                                 null for any other event.
+     * @param bool           $resumes  With `last`: the connection ends but the stream does not, and Tessera
+     *                                 reconnects from `Last-Event-ID` (#202).
      */
     public function __construct(
         public string $name,
@@ -30,6 +35,7 @@ final readonly class ServerEvent
         public bool $last,
         public string $id = '',
         public ?Component $elements = null,
+        public bool $resumes = false,
     ) {
     }
 

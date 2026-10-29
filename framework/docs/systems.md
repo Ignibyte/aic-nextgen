@@ -152,8 +152,10 @@ See [security.md](security.md) for sessions, form guards, uploads, auth and secr
   minutes.
 - `AIC\Schedule`: schedules declared in manifests; `bin/aic schedule:run`, once a minute, queues
   each one that is due, and a ledger keeps a minute from firing twice.
-- `AIC\Notification`: a notification goes to the database and by mail (AIC's own SMTP client),
-  each delivery a job.
+- `AIC\Notification`: a notification, with the site path it is about, goes to the database and by
+  mail (AIC's own SMTP client), each delivery a job. `AIC\Notification\Application\Inbox` reads a
+  user's kept notifications (unread count, a page newest first, one by id, those newer than an id)
+  and marks them read, every query scoped to that user (#202).
 
 ## The layer ladder
 

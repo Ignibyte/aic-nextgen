@@ -191,7 +191,7 @@ final class EventStreamBody implements StreamInterface
     {
         if ($this->buffer === '' && !$this->ended) {
             $event = $this->eventSource->next();
-            $this->buffer = $this->eventWriter->frame($event) . ($event->last ? self::CLOSE : '');
+            $this->buffer = $this->eventWriter->frame($event) . ($event->last && !$event->resumes ? self::CLOSE : '');
             $this->ended = $event->last;
         }
 

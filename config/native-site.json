@@ -137,6 +137,25 @@
             "captures": false
         },
         {
+            "name": "events, resumable",
+            "method": "GET",
+            "path": "/events?count=2&resume=1",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "events, two read and left",
+            "method": "GET",
+            "path": "/events?count=5",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false,
+            "events": 2
+        },
+        {
             "name": "scaffold, a made page",
             "method": "GET",
             "path": "/scaffold",
@@ -305,6 +324,33 @@
             "form": "",
             "header": "",
             "status": 200,
+            "captures": false
+        },
+        {
+            "name": "notifications, newer than an id",
+            "method": "GET",
+            "path": "/notifications?after=0",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "notifications, all read",
+            "method": "POST",
+            "path": "/notifications/read",
+            "form": "aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "notifications, read one not theirs",
+            "method": "POST",
+            "path": "/notifications/read",
+            "form": "aic_csrf={csrf}&id=999999999",
+            "header": "",
+            "status": 404,
             "captures": false
         },
         {

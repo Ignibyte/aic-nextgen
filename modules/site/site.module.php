@@ -25,6 +25,7 @@ use App\Site\Controller\JobsPage;
 use App\Site\Controller\JobsPost;
 use App\Site\Controller\NotificationsPage;
 use App\Site\Controller\NotificationsPost;
+use App\Site\Controller\NotificationsReadPost;
 use App\Site\Controller\ResourceDownload;
 use App\Site\Controller\StatusApi;
 use App\Site\Controller\TickEvents;
@@ -49,6 +50,7 @@ return (new ModuleManifest('site'))
     ->route(RouteMethod::Post, '/jobs', JobsPost::class)
     ->route(RouteMethod::Get, '/notifications', NotificationsPage::class)
     ->route(RouteMethod::Post, '/notifications', NotificationsPost::class)
+    ->route(RouteMethod::Post, '/notifications/read', NotificationsReadPost::class)
     ->plugin(Greeter::class, EnglishGreeter::class)
     ->plugin(Greeter::class, SpanishGreeter::class)
     ->block(PoweredByBlock::class)
