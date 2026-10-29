@@ -95,7 +95,7 @@ final readonly class NativeSiteAnchors
      * @param string       $line         A `Tessera-Targets` line.
      * @param HTMLDocument $htmlDocument The page.
      *
-     * @return string The line, each anchor the page holds written as Tessera 0.3.0 sends it: its component's path,
+     * @return string The line, each anchor the page holds written as Tessera 0.3.x sends it: its component's path,
      *                then the anchor (protocol 2, #194).
      */
     private static function replaced(string $line, HTMLDocument $htmlDocument): string

@@ -2,7 +2,7 @@
 
 Tessera enhances the server-rendered page with navigation, targeted refreshes, form submissions and
 stream updates. Pages remain [Component trees](rendering.md), so a full page and a targeted answer
-render the same data. The server speaks protocol version 2 (Tessera 0.3.0); the browser release is pinned separately
+render the same data. The server speaks protocol version 2 (Tessera 0.3.1); the browser release is pinned separately
 in app config and published by the build with its exact bytes and checksum.
 
 ## Markers and fragments
@@ -16,7 +16,8 @@ whose template printed no marks fails the render. Keys form paths such as `conte
 markers. HTML/page wrappers are transparent, so changing a wrapper does not add target segments.
 
 A `KeyedComponent` may also carry an anchor, a name in the key grammar written as `data-t-anchor`.
-A link, form or poll targets it as `@NAME`; Tessera finds the anchored element and sends its path,
+A link, form, poll or stream patch (since Tessera 0.3.1) targets it as `@NAME` (#204);
+Tessera finds the anchored element and sends its path,
 so module code never spells a path that a layout change could strand. One page holds each anchor
 once: a second on one render fails it (`DuplicateAnchor`). A gate:23 step may send
 `Tessera-Targets: @NAME`, which each site resolves from its own page of the step's path. Gate:15

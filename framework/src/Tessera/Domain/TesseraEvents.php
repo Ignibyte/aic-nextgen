@@ -23,11 +23,14 @@ final readonly class TesseraEvents
     /** A target: `page`, a region, or a component's path (protocol 2.6). */
     private const string TARGET = '#^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[A-Za-z0-9_.:]+(-[A-Za-z0-9_.:]+)*)*$#';
 
+    /** An anchor as a target (#204, Tessera 0.3.1): `@` and a name in the key grammar, up to 64. */
+    private const string ANCHOR = '#^@(?=.{1,64}$)[A-Za-z0-9_.:]+(-[A-Za-z0-9_.:]+)*$#';
+
     /** How a fragment lands (protocol 5.3). */
     private const array MODES = ['morph', 'inner', 'append', 'prepend', 'remove'];
 
     /**
-     * @param string    $target    The target, `page` included.
+     * @param string    $target    The target, `page` included, or `@NAME` for an anchored component (#204).
      * @param Component $component What lands there, rendered when the event goes on the wire (#115); ignored for
      *                             `remove`.
      * @param string    $mode      `morph`, `inner`, `append`, `prepend` or `remove`.
@@ -45,7 +48,7 @@ final readonly class TesseraEvents
         string $id,
         bool $last,
     ): ServerEvent {
-        if (preg_match(self::TARGET, $target) !== 1 || !in_array($mode, self::MODES, true)) {
+        if (!self::targets($target) || !in_array($mode, self::MODES, true)) {
             throw new InvalidArgumentException('A patch names a target and one of morph, inner, append, prepend or remove.');
         }
 
@@ -58,7 +61,7 @@ final readonly class TesseraEvents
     }
 
     /**
-     * @param string $scope         The target whose signal scope it patches; `page` for the document.
+     * @param string $scope         The target whose signal scope it patches, `@NAME` included; `page` for the document.
      * @param string $json          A strict JSON object.
      * @param bool   $onlyIfMissing Whether it sets only signals that do not exist yet.
      * @param string $id            The event's id; empty for none.
@@ -70,7 +73,7 @@ final readonly class TesseraEvents
      */
     public function patchSignals(string $scope, string $json, bool $onlyIfMissing, string $id, bool $last): ServerEvent
     {
-        if (preg_match(self::TARGET, $scope) !== 1) {
+        if (!self::targets($scope)) {
             throw new InvalidArgumentException('A signal patch names a target as its scope.');
         }
 
@@ -117,5 +120,15 @@ final readonly class TesseraEvents
         }
 
         return $data;
+    }
+
+    /**
+     * @param string $target A patch's target or a signal patch's scope.
+     *
+     * @return bool Whether Tessera reads it: a path, or `@NAME`, which Tessera resolves on the live page (#204).
+     */
+    private static function targets(string $target): bool
+    {
+        return preg_match(self::TARGET, $target) === 1 || preg_match(self::ANCHOR, $target) === 1;
     }
 }
