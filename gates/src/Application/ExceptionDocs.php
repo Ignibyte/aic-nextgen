@@ -18,6 +18,7 @@ use function array_values;
 use function class_exists;
 use function explode;
 use function file_get_contents;
+use function get_parent_class;
 use function implode;
 use function interface_exists;
 use function is_a;
@@ -25,6 +26,7 @@ use function is_string;
 use function ltrim;
 use function max;
 use function method_exists;
+use function str_contains;
 use function str_pad;
 use function str_starts_with;
 use function strlen;
@@ -99,6 +101,25 @@ final readonly class ExceptionDocs
                 static fn (string $parent): bool => $type !== $parent && is_a($type, $parent, true),
             ),
         ));
+    }
+
+    /**
+     * For a class that only delegates (a generated facade, #214): each type as its first ancestor outside any
+     * namespace, so the class imports PHP's own exceptions and stays under PHPMD's coupling.
+     *
+     * @param list<class-string<Throwable>> $types The possible exception types.
+     *
+     * @return list<class-string<Throwable>> Each as its first ancestor with no namespace, once.
+     */
+    public function widened(array $types): array
+    {
+        $widened = [];
+
+        foreach ($types as $type) {
+            $widened[] = self::rooted($type);
+        }
+
+        return array_values(array_unique($widened));
     }
 
     /**
@@ -224,5 +245,27 @@ final readonly class ExceptionDocs
     private function short(string $type): string
     {
         return substr($type, (int) strrpos('\\' . $type, '\\'));
+    }
+
+    /**
+     * @param class-string<Throwable> $type An exception type.
+     *
+     * @return class-string<Throwable> It, or its first ancestor with no namespace.
+     */
+    private static function rooted(string $type): string
+    {
+        $class = $type;
+
+        while (str_contains($class, '\\')) {
+            $parent = get_parent_class($class);
+
+            if ($parent === false || !is_a($parent, Throwable::class, true)) {
+                return $class;
+            }
+
+            $class = $parent;
+        }
+
+        return $class;
     }
 }

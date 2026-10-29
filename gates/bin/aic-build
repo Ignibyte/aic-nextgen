@@ -177,7 +177,7 @@ if (!$checking) {
     }
 }
 
-$consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTransport($mailConfig), $mailConfig, new ConsoleModules());
+$consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTransport($mailConfig), $mailConfig, new ConsoleModules(), $root);
 try {
     $routes = $moduleBuild->routes($modules, new RouteCollector(new RoutePatternCompiler()))->table();
     $outputs = [

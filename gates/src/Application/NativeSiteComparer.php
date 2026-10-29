@@ -7,6 +7,7 @@ namespace Gates\Application;
 use Gates\Domain\HttpClient;
 use Gates\Domain\HttpExchange;
 use Gates\Domain\NativeSiteAnswer;
+use Gates\Domain\NativeSiteCaptures;
 use Gates\Domain\NativeSiteSession;
 use Gates\Domain\NativeSiteStep;
 
@@ -17,10 +18,8 @@ use function is_string;
 use function mb_strtolower;
 use function mb_trim;
 use function parse_url;
-use function preg_quote;
 use function preg_replace;
 use function sprintf;
-use function strlen;
 
 use const PHP_URL_PATH;
 
@@ -43,6 +42,7 @@ final readonly class NativeSiteComparer
         '/name="aic_envelope" value="[\\w.-]+"/' => 'name="aic_envelope" value="<envelope>"',
         '/name="tessera-csrf-token" content="[0-9a-f]{64}"/' => 'name="tessera-csrf-token" content="<token>"',
         '/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z/' => '<time>',
+        '/\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}( [A-Z]{2,5}|[+-]\\d{2}(:\\d{2})?)?(?![\\d:])/' => '<time>',
         '/\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(\\.\\d+)?[+-]\\d{2}(:\\d{2})?/' => '<time>',
     ];
 
@@ -102,8 +102,8 @@ final readonly class NativeSiteComparer
     public function differences(array $steps, array $expected, array $actual): array
     {
         $differences = [];
-        $phpCaptured = self::captures($expected);
-        $nativeCaptured = self::captures($actual);
+        $phpCaptured = new NativeSiteCaptures($expected);
+        $nativeCaptured = new NativeSiteCaptures($actual);
 
         foreach ($steps as $index => $step) {
             $php = self::normalised(self::exchange($expected[$index] ?? null), $phpCaptured);
@@ -187,34 +187,14 @@ final readonly class NativeSiteComparer
     }
 
     /**
-     * @param list<NativeSiteAnswer> $answers One site's answers.
-     *
-     * @return list<string> The paths its capturing steps captured: the records that run created (#178).
-     */
-    private static function captures(array $answers): array
-    {
-        $captured = [];
-
-        foreach ($answers as $answer) {
-            if (strlen($answer->captured) < 2) {
-                continue;
-            }
-
-            $captured[] = $answer->captured;
-        }
-
-        return $captured;
-    }
-
-    /**
-     * @param HttpExchange $httpExchange An answer.
-     * @param list<string> $captured     The paths its site captured, each read as `<captured>` (#178).
+     * @param HttpExchange       $httpExchange       An answer.
+     * @param NativeSiteCaptures $nativeSiteCaptures The records its site created (#178, #214).
      *
      * @return HttpExchange The answer with its volatile values normalised.
      */
-    private static function normalised(HttpExchange $httpExchange, array $captured): HttpExchange
+    private static function normalised(HttpExchange $httpExchange, NativeSiteCaptures $nativeSiteCaptures): HttpExchange
     {
-        $normal = static fn (string $text): string => self::volatile(self::uncaptured($text, $captured));
+        $normal = static fn (string $text): string => self::volatile($nativeSiteCaptures->normalised($text));
 
         return new HttpExchange(
             $httpExchange->status,
@@ -224,22 +204,6 @@ final readonly class NativeSiteComparer
             '',
             array_map($normal, $httpExchange->headers),
         );
-    }
-
-    /**
-     * @param string       $text     Text from an answer.
-     * @param list<string> $captured The paths the site captured.
-     *
-     * @return string The text with each captured path, as a whole path segment, read as `<captured>`: each site
-     *                creates its own record, with its own id, against the one database.
-     */
-    private static function uncaptured(string $text, array $captured): string
-    {
-        foreach ($captured as $path) {
-            $text = preg_replace('#' . preg_quote($path, '#') . '(?![\\w-])#', '<captured>', $text) ?? $text;
-        }
-
-        return $text;
     }
 
     /**

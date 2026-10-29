@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Run 23's three** (#214). `aic-build` passes `ConsoleKernel` the project root, so a job that
+  takes `PrivateFiles` builds. A generated facade writes each part's exceptions as their nearest PHP
+  ancestor, so a block built from tagged plugins keeps the facade under PHPMD's coupling. gate:23
+  normalises a captured record's id after a `-` and minute-precision times.
+
 - **`EntityTotals::sumBy()` on an Integer field** (#211). An integer sum is a bigint, which PDO
   hands back as an int, so reading it as text answered 500. Grouped totals now come back as text and
   are ordered by the number itself; `/stock/days` shows units by certification, an Integer sum.
