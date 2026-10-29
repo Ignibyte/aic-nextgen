@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The compiled site's heap fits the body cap** (#198). gate:23 and `aic-gate serve` build the site
+  with a `--heap-size` of 64 MiB plus four times `AppConfig::$maxBodyBytes`, so an upload the cap
+  admits reaches the app instead of exhausting elephc's 8 MB default heap.
+
 - **A page answers 403** (#197). `PageDocument` takes 403 for a signed-in user who may not do
   what was asked, so a role check refuses in the app's look instead of failing with 500.
 
