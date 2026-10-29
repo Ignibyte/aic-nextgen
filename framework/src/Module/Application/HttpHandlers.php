@@ -36,7 +36,7 @@ final readonly class HttpHandlers
     public function __construct(
         ResponseBuilder $responseBuilder,
         ComponentTemplates $componentTemplates,
-        Blocks $blocks,
+        Blocks $blocks = new Blocks([]),
     ) {
         $fileResponses = new FileResponses($responseBuilder);
         $this->responseWriter = new Psr7ResponseWriter($responseBuilder, new Renderer($componentTemplates), $fileResponses);

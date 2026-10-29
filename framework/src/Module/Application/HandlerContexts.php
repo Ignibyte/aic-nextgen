@@ -50,11 +50,9 @@ final readonly class HandlerContexts
     public function create(WebWiring $webWiring, WebPresentation $webPresentation): HandlerContext
     {
         $plugins = new Plugins($webWiring instanceof PluginWiring ? $webWiring : null);
+        $roots = $this->roots($webWiring, $plugins, $webPresentation);
 
-        return new HandlerContext(
-            new HttpHandlers($this->responseBuilder, $webPresentation->componentTemplates, $plugins->blocks()),
-            $this->roots($webWiring, $plugins, $webPresentation),
-        );
+        return (new ModuleLayers())->context($webWiring, $roots, $this->responseBuilder, $webPresentation->componentTemplates);
     }
 
     /** @return string The inert application root, available before any module provider runs. */

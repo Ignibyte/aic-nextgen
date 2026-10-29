@@ -114,7 +114,9 @@ See [rendering.md](rendering.md) and [templates.md](templates.md) for the comple
 
 - `AIC\Block`: a block (`AIC\Block\Contracts\Block`) gives its placement (a region, a weight and a
   route prefix) and the component it shows. On every page whose path matches, it joins the region
-  after the page's own components, lighter weights first.
+  after the page's own components, lighter weights first. A block's constructor asks for services as a
+  controller's does; the build wires them, and the handler context is built in two steps so the
+  blocks' services have their roots (#203).
 
 ## 7. The browser runtime
 

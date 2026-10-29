@@ -9,6 +9,7 @@ use AIC\Module\Contracts\ModuleCommand;
 use AIC\Module\Contracts\ModuleJob;
 use AIC\Module\Contracts\ModuleMiddleware;
 use AIC\Module\Contracts\ModuleRoute;
+use AIC\Module\Contracts\ModuleSection;
 use Gates\Domain\ModuleDefinition;
 use Gates\Domain\WiredModule;
 use Gates\Domain\WiredObject;
@@ -17,6 +18,7 @@ use InvalidArgumentException;
 
 use function array_key_exists;
 use function array_values;
+use function class_exists;
 
 /**
  * Wires every module's declarations (#92, #93): its route controllers and
@@ -76,7 +78,17 @@ final readonly class ModuleWirer
             };
         }
 
-        return new WiredModule($moduleDefinition, $controllers, $middleware, $commands, $jobs);
+        $blocks = [];
+
+        foreach ($moduleDefinition->entries(ModuleSection::Blocks) as $block) {
+            if (!class_exists($block)) {
+                throw new InvalidArgumentException('module ' . $moduleDefinition->name . ': block ' . $block . ' is no class.');
+            }
+
+            $blocks[] = $this->autowirer->wire($block, $wiringScope);
+        }
+
+        return new WiredModule($moduleDefinition, $controllers, $middleware, $commands, $jobs, $blocks);
     }
 
     /**

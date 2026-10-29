@@ -4,20 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Container\Contracts\ServiceRegistry;
-use AIC\Controller\Contracts\Command;
-use AIC\Controller\Contracts\Job;
-use AIC\Module\Application\CommandWiring;
-use AIC\Module\Application\ConsoleContext;
 use AIC\Module\Application\ConsoleWiring;
-use AIC\Module\Application\HandlerContext;
-use AIC\Module\Application\HandlerWiring;
-use AIC\Module\Application\JobWiring;
-use AIC\Module\Application\MiddlewareWiring;
-use AIC\Module\Application\PluginWiring;
-use AIC\Module\Application\RootlessCommandWiring;
-use AIC\Module\Application\RootlessJobWiring;
-use AIC\Module\Application\RootlessMiddlewareWiring;
 use AIC\Module\Application\WebPresentation;
 use AIC\Module\Application\WebWiring;
 use AIC\Routing\Application\RouteCollector;
@@ -26,8 +13,6 @@ use AIC\Schedule\Domain\Schedule;
 use AIC\Schema\Contracts\Migration;
 use InvalidArgumentException;
 use Override;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 use function array_diff;
 use function array_key_exists;
@@ -50,95 +35,6 @@ use const SORT_STRING;
  */
 final readonly class FacadeSource
 {
-    /**
-     * Each optional web interface's method, by the aggregator it calls.
-     */
-    private const array WEB_PARTS = [
-        'ModuleHandlers' => [HandlerWiring::class, <<<'PHP'
-                /**
-                 * @param HandlerContext $handlerContext The roots and the kind wrappers.
-                 *
-                 * @return array<string, RequestHandlerInterface> The modules' handlers by id.
-                 */
-                #[Override]
-                public function handlers(HandlerContext $handlerContext): array
-                {
-                    return (new ModuleHandlers($handlerContext))->byId();
-                }
-            PHP, [HandlerContext::class, RequestHandlerInterface::class]],
-        'ModuleMiddleware' => [MiddlewareWiring::class, <<<'PHP'
-                /**
-                 * @param HandlerContext $handlerContext The roots.
-                 *
-                 * @return list<MiddlewareInterface> The modules' middleware after the session, in build order.
-                 */
-                #[Override]
-                public function afterSession(HandlerContext $handlerContext): array
-                {
-                    return (new ModuleMiddleware($handlerContext))->afterSession();
-                }
-            PHP, [HandlerContext::class, MiddlewareInterface::class]],
-        'ModuleProvider' => [PluginWiring::class, <<<'PHP'
-                /**
-                 * @param ServiceRegistry $serviceRegistry Where the modules' blocks and plugins go.
-                 */
-                #[Override]
-                public function register(ServiceRegistry $serviceRegistry): void
-                {
-                    (new ModuleProvider())->register($serviceRegistry);
-                }
-            PHP, [ServiceRegistry::class]],
-    ];
-
-    /**
-     * Each optional console interface's method, by the aggregator it calls.
-     */
-    private const array CONSOLE_PARTS = [
-        'ModuleCommands' => [CommandWiring::class, <<<'PHP'
-                /**
-                 * @param ConsoleContext $consoleContext The console's roots.
-                 *
-                 * @return array<string, Command> The modules' commands by name.
-                 */
-                #[Override]
-                public function commands(ConsoleContext $consoleContext): array
-                {
-                    return (new ModuleCommands($consoleContext))->byName();
-                }
-            PHP, [ConsoleContext::class, Command::class]],
-        'ModuleJobs' => [JobWiring::class, <<<'PHP'
-                /**
-                 * @param ConsoleContext $consoleContext The console's roots.
-                 *
-                 * @return array<string, Job> The modules' jobs by name.
-                 */
-                #[Override]
-                public function jobs(ConsoleContext $consoleContext): array
-                {
-                    return (new ModuleJobs($consoleContext))->byName();
-                }
-            PHP, [ConsoleContext::class, Job::class]],
-        'ModuleProvider' => [PluginWiring::class, <<<'PHP'
-                /**
-                 * @param ServiceRegistry $serviceRegistry Where the modules' blocks and plugins go.
-                 */
-                #[Override]
-                public function register(ServiceRegistry $serviceRegistry): void
-                {
-                    (new ModuleProvider())->register($serviceRegistry);
-                }
-            PHP, [ServiceRegistry::class]],
-    ];
-
-    /**
-     * The context-free sibling of each optional interface whose aggregator may read no root (#93).
-     */
-    private const array ROOTLESS = [
-        CommandWiring::class => RootlessCommandWiring::class,
-        JobWiring::class => RootlessJobWiring::class,
-        MiddlewareWiring::class => RootlessMiddlewareWiring::class,
-    ];
-
     /**
      * `WebModules`' required methods.
      */
@@ -245,8 +141,8 @@ final readonly class FacadeSource
         ];
         $console = [ConsoleWiring::class, Override::class, Migration::class, Schedule::class, ...$scheduleTypes];
 
-        $consoleParts = $this->parts(self::CONSOLE_PARTS, $aggregates, $rootless, $sources);
-        $webParts = $this->parts(self::WEB_PARTS, $aggregates, $rootless, $sources);
+        $consoleParts = $this->parts(FacadeParts::CONSOLE, $aggregates, $rootless, $sources);
+        $webParts = $this->parts(FacadeParts::WEB, $aggregates, $rootless, $sources);
         $replace = ['{scheduleThrows}' => $this->exceptionDocs->block($scheduleTypes)];
 
         return [
@@ -300,7 +196,7 @@ final readonly class FacadeSource
     {
         [$interface, $method, $types] = $part;
 
-        if (!array_key_exists($interface, self::ROOTLESS)) {
+        if (!array_key_exists($interface, FacadeParts::ROOTLESS)) {
             return $part;
         }
 
@@ -309,7 +205,7 @@ final readonly class FacadeSource
         $method = (string) preg_replace('/\\n\\h+\\* @param [^\\n]+\\n\\h+\\*\\n/', "\n", $method);
         $method = strtr($method, [$this->phpClassFile->short($context) . ' ' . $variable => '', '(' . $variable . ')' => '()']);
 
-        return [self::ROOTLESS[$interface], $method, array_values(array_diff($types, [$context]))];
+        return [FacadeParts::ROOTLESS[$interface], $method, array_values(array_diff($types, [$context]))];
     }
 
     /**

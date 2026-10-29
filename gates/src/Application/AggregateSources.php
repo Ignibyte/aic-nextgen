@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use AIC\Block\Contracts\Block;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
 use AIC\Schedule\Domain\Schedule;
@@ -30,6 +31,7 @@ final readonly class AggregateSources
      * when some module has its kind; the others always exist.
      */
     private const array KINDS = [
+        'Blocks' => ['ModuleBlocks', 'all', 'list<Block>', "The modules' blocks, in build order.", [Block::class], 'web'],
         'Commands' => ['ModuleCommands', 'byName', 'array<string, Command>', "The modules' commands by name.", [Command::class], 'console'],
         'Handlers' => [
             'ModuleHandlers',

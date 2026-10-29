@@ -66,7 +66,7 @@ final readonly class DeclarationChecks
     private function checkPlugins(ModuleDefinition $moduleDefinition): void
     {
         foreach ($moduleDefinition->entries(ModuleSection::Blocks) as $block) {
-            $this->checkPlain($moduleDefinition, $block, Block::class, 'block');
+            $this->checkBlock($moduleDefinition, $block);
         }
 
         foreach ($moduleDefinition->declared(PluginTag::class) as $pluginTag) {
@@ -93,6 +93,21 @@ final readonly class DeclarationChecks
             if (!str_starts_with($migration, $moduleDefinition->namespace . 'Migration\\')) {
                 throw $this->refusal($moduleDefinition, 'migration ' . $migration . ' must live in src/Migration/');
             }
+        }
+    }
+
+    /**
+     * @param ModuleDefinition $moduleDefinition The module.
+     * @param string           $class            A block, built by the generated wiring like a controller (#203).
+     *
+     * @throws InvalidArgumentException When it is not the module's, or not a Block.
+     */
+    private function checkBlock(ModuleDefinition $moduleDefinition, string $class): void
+    {
+        $this->checkOwned($moduleDefinition, $class, 'block');
+
+        if (!is_a($class, Block::class, true)) {
+            throw $this->refusal($moduleDefinition, 'block ' . $class . ' must implement ' . Block::class);
         }
     }
 

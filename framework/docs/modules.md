@@ -46,7 +46,7 @@ ordinary code with literal class names.
 | `->binding(Iface::class, Impl::class)` | the readonly class a constructor gets when it asks for the interface |
 | `->plugin(Type::class, Impl::class)` | a plugin of a type; a constructor list parameter marked `#[Tagged(Type::class)]` receives every plugin of that type |
 | `->factory(Factory::class)` | a readonly class whose methods build services from values; a constructor asking for a method's return type gets its product |
-| `->block(Block::class)` | a block, placed by its own `placement()` |
+| `->block(Block::class)` | a block, placed by its own `placement()`; its constructor's services are wired as a controller's (#203) |
 | `->middleware(Mw::class, MiddlewarePosition::AfterSession)` | a PSR-15 middleware at a position in the fixed stack |
 | `->protectedPrefix('/account')` | a path prefix only a signed-in visitor may open |
 | `->command('note:prune', Cmd::class)` | a Command, run as `bin/aic note:prune` |
@@ -64,8 +64,8 @@ of a service.
 `composer run build` writes everything under `build/` (#167). Under `build/generated/` (namespace
 `App\Generated\`):
 
-- per module, the classes for its routes, handlers, middleware, commands, jobs, provider,
-  migrations, schedules and protected prefixes;
+- per module, the classes for its routes, handlers, middleware, blocks, commands, jobs, provider
+  (its plugins), migrations, schedules and protected prefixes;
 - the aggregators that join every module's pieces, and the facades `WebModules` and
   `ConsoleModules` that the framework's `AIC\Module\Application\AppKernel` and
   `AIC\Module\Application\ConsoleKernel` take;

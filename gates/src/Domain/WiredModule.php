@@ -17,6 +17,7 @@ final readonly class WiredModule
      * @param list<WiredObject>          $middleware  Its middleware, in declaration order.
      * @param array<string, WiredObject> $commands    Its commands by name.
      * @param array<string, WiredObject> $jobs        Its jobs by name.
+     * @param list<WiredObject>          $blocks      Its blocks, in declaration order (#203).
      */
     public function __construct(
         public ModuleDefinition $module,
@@ -24,6 +25,7 @@ final readonly class WiredModule
         public array $middleware,
         public array $commands,
         public array $jobs,
+        public array $blocks = [],
     ) {
     }
 }

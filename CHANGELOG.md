@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Blocks take services** (#203). A block's constructor asks for services as a controller's does;
+  the build wires them into `<M>Blocks` and `ModuleBlocks`, and the handler context is built in two
+  steps so the services have their roots. The plugin provider registers plugins only.
+
 - **A notification inbox, resumable streams, a step that reads events** (#202). A notification
   carries the site path it is about; `Inbox` reads a user's kept notifications (unread count, pages,
   one by id, those newer than an id) and marks them read. `TesseraEvents::reconnect()` ends a

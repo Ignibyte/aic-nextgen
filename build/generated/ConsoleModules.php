@@ -68,7 +68,7 @@ final readonly class ConsoleModules implements CommandWiring, ConsoleWiring, Plu
     }
 
     /**
-     * @param ServiceRegistry $serviceRegistry Where the modules' blocks and plugins go.
+     * @param ServiceRegistry $serviceRegistry Where the modules' plugins go.
      */
     #[Override]
     public function register(ServiceRegistry $serviceRegistry): void
