@@ -86,7 +86,8 @@ final class NativeSiteSession
 
     /**
      * Keeps what the answer carried: a new cookie (a cleared one forgets the
-     * session), the token in its body, and its location when the step captures.
+     * session), the token in its body, and the path a capturing step keeps (its
+     * Location, or the first link under its prefix, #200).
      *
      * @param NativeSiteStep $nativeSiteStep The step.
      * @param HttpExchange   $httpExchange   Its answer.
@@ -103,11 +104,11 @@ final class NativeSiteSession
         $this->token = self::captured('/name="aic_csrf" value="([0-9a-f]{64})"/', $httpExchange->body, $this->token);
         $this->envelope = self::captured('/name="aic_envelope" value="([\\w.-]+)"/', $httpExchange->body, $this->envelope);
 
-        if (!$nativeSiteStep->captures) {
+        if (!$nativeSiteStep->captures && $nativeSiteStep->capture === '') {
             return;
         }
 
-        $this->note = $location;
+        $this->note = $nativeSiteStep->captured($location, $httpExchange->body);
     }
 
     /**

@@ -15,6 +15,7 @@ use function array_reverse;
 use function count;
 use function implode;
 use function in_array;
+use function max;
 use function strtr;
 
 /**
@@ -80,7 +81,8 @@ final readonly class MergeSource
     {
         $files = [];
         $docblock = $this->phpClassFile->generated('the module manifests', $aggregate->what);
-        $parts = $this->chainSource->parts($aggregate->root, $members, $aggregate->partSize(), $aggregate->partSize());
+        $size = max(1, $aggregate->partSize() - count($this->exceptions($members, $sources)));
+        $parts = $this->chainSource->parts($aggregate->root, $members, $size, $size);
         $rooted = $aggregate->roots instanceof WiringRoots
             ? [...$this->rootedParts($aggregate, $parts, $rootless), ...array_diff($members, $rootless)]
             : [];

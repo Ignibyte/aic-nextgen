@@ -79,9 +79,7 @@ final readonly class NativeSiteComparer
                 $this->nativeSiteAnchors->resolved($origin, $path, $nativeSiteSession->header($step)),
             );
             $nativeSiteSession->absorb($step, $exchange, self::path($exchange->location));
-            $captured = $step->captures
-                ? self::path($exchange->location)
-                : '';
+            $captured = $step->captured(self::path($exchange->location), $exchange->body);
             $answers[] = new NativeSiteAnswer($path, $exchange, $captured);
         }
 

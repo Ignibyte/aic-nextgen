@@ -443,6 +443,25 @@
             "captures": false
         },
         {
+            "name": "note list, its first note kept",
+            "method": "GET",
+            "path": "/notes",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false,
+            "capture": "/notes/"
+        },
+        {
+            "name": "note show, from the list's link",
+            "method": "GET",
+            "path": "{note}",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "stock, bad price",
             "method": "POST",
             "path": "/stock",

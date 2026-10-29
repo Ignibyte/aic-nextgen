@@ -17,6 +17,7 @@ use function is_bool;
 use function is_int;
 use function is_string;
 use function json_decode;
+use function str_starts_with;
 
 /**
  * The requests gate:23 sends to both sites, in order (#130): the app's own
@@ -100,6 +101,7 @@ final readonly class NativeSiteScript
             $this->text($index, $step, 'header'),
             $this->number($index, $step),
             $this->flag($index, $step),
+            $this->prefix($index, $step),
         );
     }
 
@@ -153,6 +155,27 @@ final readonly class NativeSiteScript
         return array_key_exists('captures', $fields) && is_bool($fields['captures'])
             ? $fields['captures']
             : throw $this->wrong($index, 'captures', 'boolean');
+    }
+
+    /**
+     * @param int      $index The step's place.
+     * @param stdClass $step  Its fields.
+     *
+     * @throws InvalidArgumentException When `capture` is present but not a path prefix.
+     *
+     * @return string Its optional `capture` prefix (#200); empty when absent.
+     */
+    private function prefix(int $index, stdClass $step): string
+    {
+        $fields = get_object_vars($step);
+
+        if (!array_key_exists('capture', $fields)) {
+            return '';
+        }
+
+        return is_string($fields['capture']) && str_starts_with($fields['capture'], '/')
+            ? $fields['capture']
+            : throw $this->wrong($index, 'capture', 'path prefix starting with /');
     }
 
     /**
