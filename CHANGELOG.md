@@ -6,6 +6,9 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **gate:23 normalises a captured id after `=` too** (#215), as a stream cursor in a query writes it
+  (`?after=12`).
+
 - **Run 23's three** (#214). `aic-build` passes `ConsoleKernel` the project root, so a job that
   takes `PrivateFiles` builds. A generated facade writes each part's exceptions as their nearest PHP
   ancestor, so a block built from tagged plugins keeps the facade under PHPMD's coupling. gate:23
