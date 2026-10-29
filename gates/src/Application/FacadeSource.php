@@ -172,7 +172,7 @@ final readonly class FacadeSource
                 continue;
             }
 
-            $exceptions = $this->exceptionDocs->source($sources[$aggregate . '.php'] ?? '');
+            $exceptions = $this->exceptionDocs->widened($this->exceptionDocs->source($sources[$aggregate . '.php'] ?? ''));
             $part = [$part[0], $this->exceptionDocs->append($part[1], $exceptions), [...$part[2], ...$exceptions]];
 
             $present[] = in_array($aggregate, $rootless, true)
