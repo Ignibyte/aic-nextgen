@@ -5,11 +5,7 @@ declare(strict_types=1);
 namespace AIC\Module\Application;
 
 use AIC\Database\Contracts\Database;
-use AIC\Http\Application\AssetFiles;
-use AIC\Http\Application\AssetResponses;
-use AIC\Http\Application\FileResponses;
 use AIC\Http\Application\ResponseBuilder;
-use AIC\Http\Application\StaticAssets;
 use AIC\Kernel\Application\Kernel;
 use AIC\Sapi\Contracts\RequestExtractor;
 use InvalidArgumentException;
@@ -17,7 +13,8 @@ use InvalidArgumentException;
 /**
  * Compose the public boundary around an inert dynamic handler. No user
  * provider, route, handler or session is assembled before StaticAssets decides
- * whether the request belongs to the compiled public catalog.
+ * whether the request belongs to the compiled public catalog, and then
+ * PublicFileHandler whether it names a public file (#213).
  */
 final readonly class AppKernel
 {
@@ -49,17 +46,10 @@ final readonly class AppKernel
             new FrameworkStack($responseBuilder, $database, $handlerContexts->maxBodyBytes()),
             $webPresentation,
         );
-        $staticAssets = new StaticAssets(
-            $webPresentation->publicAssets,
-            new AssetFiles($handlerContexts->root()),
-            new AssetResponses($responseBuilder, new FileResponses($responseBuilder)),
-            $dynamicApplication,
-        );
-        $this->kernel = new Kernel(
-            $requestExtractor,
-            $staticAssets,
-            $responseBuilder,
-        );
+        $publicBoundary = new PublicBoundary($responseBuilder);
+        $root = $handlerContexts->root();
+        $staticAssets = $publicBoundary->around($root, $webPresentation->publicAssets, $dynamicApplication);
+        $this->kernel = new Kernel($requestExtractor, $staticAssets, $responseBuilder);
     }
 
     /**

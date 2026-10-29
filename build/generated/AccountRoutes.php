@@ -10,6 +10,7 @@ use App\Account\Controller\AccountPage;
 use App\Account\Controller\LoginPage;
 use App\Account\Controller\LoginPost;
 use App\Account\Controller\LogoutPost;
+use App\Account\Controller\UploadDownload;
 use App\Account\Controller\UploadsPage;
 use App\Account\Controller\UploadsPost;
 use App\Account\Controller\VisitsForget;
@@ -38,6 +39,7 @@ final readonly class AccountRoutes
             ->get('/visits', VisitsPage::class)
             ->post('/visits/forget', VisitsForget::class)
             ->get('/uploads', UploadsPage::class)
-            ->post('/uploads', UploadsPost::class);
+            ->post('/uploads', UploadsPost::class)
+            ->get('/uploads/latest', UploadDownload::class);
     }
 }

@@ -42,7 +42,13 @@ try {
         throw new RuntimeException('config/mail.php must return an ' . MailConfig::class . '.');
     }
 
-    $consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTransport($mailConfig), $mailConfig, new ConsoleModules());
+    $consoleKernel = new ConsoleKernel(
+        new PdoDatabase($databaseConfig),
+        new SmtpTransport($mailConfig),
+        $mailConfig,
+        new ConsoleModules(),
+        dirname(__DIR__),
+    );
     $commands = $consoleKernel->commands();
 
     if (class_exists(WorkflowKernel::class)) {

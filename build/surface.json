@@ -148,6 +148,13 @@
             "path": "/uploads"
         },
         {
+            "handler": "App\\Account\\Controller\\UploadDownload",
+            "kind": "Stream",
+            "method": "GET",
+            "module": "account",
+            "path": "/uploads/latest"
+        },
+        {
             "handler": "App\\Note\\Controller\\NoteListPage",
             "kind": "Page",
             "method": "GET",

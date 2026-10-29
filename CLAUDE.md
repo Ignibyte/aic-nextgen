@@ -210,6 +210,9 @@ Background work is a job; the HTTP server's processes are its workers.
   run as templates (#155): the build escapes each into `build/generated/templates/`, and a generated
   lookup method requires it inside the render pass's buffer. Every file in `assets/` is
   published, its role from its extension; stylesheets join `aic.css` in path order.
+- Stored files (#213): `AIC\Storage`'s `PublicFiles` (served at `/files/<key>` before any session) and
+  `PrivateFiles` (no URL; a module's Stream sends one through `download()`), under
+  `<root>/var/storage/`, which a deploy keeps across releases.
 - `composer run build` owns `build/assets/` (served at `/assets/` by AIC's asset handler), the typed `PublicAssets` lookup and private
   `build/assets.json`. A full-set SHA-256 directory supplies canonical URLs; exact compatibility
   aliases preserve bytes, including adjacent pinned Tessera script/map. Resolve logical names

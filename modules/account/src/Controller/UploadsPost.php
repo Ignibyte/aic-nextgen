@@ -13,6 +13,7 @@ use AIC\Form\Application\UploadCheck;
 use AIC\Form\Exception\RefusedUpload;
 use AIC\Session\Application\RequestSession;
 use App\Account\Form\UploadForm;
+use App\Account\Service\KeptUploads;
 use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -21,8 +22,8 @@ use RuntimeException;
 
 /**
  * POST /uploads: checks the uploaded file (#44). An accepted one is noted in
- * the session and the page shown again (303); a refused one shows the form
- * with the reason (422). The demo keeps no file.
+ * the session, kept in the app's public and private files (#213), and the
+ * page shown again (303); a refused one shows the form with the reason (422).
  */
 final readonly class UploadsPost implements Page
 {
@@ -31,12 +32,14 @@ final readonly class UploadsPost implements Page
      * @param RequestSession $requestSession Reads the session off the request.
      * @param UploadForm     $uploadForm     The form, shown again on a refusal.
      * @param UploadCheck    $uploadCheck    Checks the file.
+     * @param KeptUploads    $keptUploads    Keeps an accepted one.
      */
     public function __construct(
         private PageDocuments $pageDocuments,
         private RequestSession $requestSession,
         private UploadForm $uploadForm,
         private UploadCheck $uploadCheck,
+        private KeptUploads $keptUploads,
     ) {
     }
 
@@ -73,14 +76,15 @@ final readonly class UploadsPost implements Page
     private function accepted(ServerRequestInterface $serverRequest, UploadedFileInterface $uploadedFile): PageResponse
     {
         try {
-            $kind = $this->uploadCheck->check($uploadedFile);
+            $checkedUpload = $this->uploadCheck->kind($uploadedFile);
         } catch (RefusedUpload $refusedUpload) {
             return $this->refused($serverRequest, $refusedUpload->getMessage());
         }
 
         $name = $uploadedFile->getClientFilename() ?? 'a file';
-        $this->requestSession->read($serverRequest)
-            ->set(UploadsPage::LAST, $name . ': ' . $kind . ', ' . ($uploadedFile->getSize() ?? 0) . ' bytes');
+        $session = $this->requestSession->read($serverRequest);
+        $session->set(UploadsPage::LAST, $name . ': ' . $checkedUpload->label . ', ' . ($uploadedFile->getSize() ?? 0) . ' bytes');
+        $session->set(UploadsPage::KEPT, $this->keptUploads->keep($uploadedFile, $checkedUpload));
 
         return new PageRedirect('/uploads');
     }

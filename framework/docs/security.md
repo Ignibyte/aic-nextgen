@@ -90,6 +90,19 @@ Configure the permitted kinds and byte limit for the feature, handle
 is a format check, not a malware scan or a safe-execution guarantee. Never execute an upload or use
 its supplied name as an unchecked filesystem path.
 
+### Stored files
+
+An accepted upload goes to the app's stores (#213), never to a path built from what the client sent:
+`UploadCheck::kind()` answers its kind and the extension it is stored under, and a module names the
+key. `PublicFiles` holds what any visitor may fetch. The framework serves it at `/files/<key>`
+before any session: `public, no-cache` with a strong ETag, `X-Content-Type-Options: nosniff` and
+`Content-Security-Policy: sandbox`, and inline only for images (PNG, JPEG, GIF, WebP, AVIF), PDF and
+plain text; any other file, an SVG included, is an attachment, so stored content never runs as the
+site. `PrivateFiles` has no URL: a module's own Stream checks who asks before it answers
+`download()`. A key is `/`-joined segments of letters, digits, `.`, `_` and `-`, none starting with
+a dot, so it never climbs out of its store or names a hidden file. Private files are written
+`0600`, public ones `0644`.
+
 ### The request body cap
 
 `AIC\Config\Domain\AppConfig::$maxBodyBytes` (default 8 MiB, the compiled server's own) is the

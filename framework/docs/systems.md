@@ -88,6 +88,17 @@ The development engine and its guard are described in [workflow.md](workflow.md)
     place a module writes SQL; an `EntityType` marked read-only maps it and is queried like a
     table, and every write to it is refused.
   - Every value is bound, and only the entity types' own field names reach the SQL.
+- `AIC\Storage`: the app's stored files (#213), in two stores under `<root>/var/storage/`, which a
+  deploy keeps across releases. `AIC\Storage\Application\PublicFiles` holds what any visitor may
+  fetch; `AIC\Storage\Application\PublicFileHandler` serves it at `/files/<key>` after the assets
+  and before any session or database work. `AIC\Storage\Application\PrivateFiles` holds what only
+  a module's own Stream sends, through `download()` (a `FileDownload`), after its own check; a
+  private file has no URL. Both take `put`, `putUpload` (the upload's bytes are copied, since
+  `moveTo()` is a rename across file systems), `exists` and `delete`; a write goes to a temporary
+  file beside its target and is renamed over it. A key (`AIC\Storage\Domain\StorageKey`) is
+  `/`-joined segments of letters, digits, `.`, `_` and `-`, none starting with a dot. A page,
+  block, command or job asks for either in its constructor; `bin/aic` passes `ConsoleKernel` the
+  app's root for the console's.
 
 ## 4. Components
 

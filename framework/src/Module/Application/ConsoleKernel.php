@@ -32,15 +32,18 @@ final readonly class ConsoleKernel
      * @param MailTransport $mailTransport Sends mail.
      * @param MailConfig    $mailConfig    The mail settings.
      * @param ConsoleWiring $consoleWiring The modules' generated wiring.
+     * @param string        $root          The app's root directory, for its stored files (#213); empty for an app
+     *                                     whose `bin/aic` predates them.
      */
     public function __construct(
         private Database $database,
         private MailTransport $mailTransport,
         private MailConfig $mailConfig,
         private ConsoleWiring $consoleWiring,
+        string $root = '',
     ) {
         $plugins = new Plugins($consoleWiring instanceof PluginWiring ? $consoleWiring : null);
-        $this->consoleContext = new ConsoleContext($database, $mailTransport, $mailConfig, $plugins);
+        $this->consoleContext = new ConsoleContext($database, $mailTransport, $mailConfig, $plugins, $root);
     }
 
     /**

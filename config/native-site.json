@@ -401,6 +401,78 @@
             "captures": false
         },
         {
+            "name": "public file",
+            "method": "GET",
+            "path": "/files/uploads/latest.png",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "public file, unchanged",
+            "method": "GET",
+            "path": "/files/uploads/latest.png",
+            "form": "",
+            "header": "If-None-Match: *",
+            "status": 304,
+            "captures": false
+        },
+        {
+            "name": "public file, a range",
+            "method": "GET",
+            "path": "/files/uploads/latest.png",
+            "form": "",
+            "header": "Range: bytes=0-7",
+            "status": 206,
+            "captures": false
+        },
+        {
+            "name": "public file, missing",
+            "method": "GET",
+            "path": "/files/uploads/none.png",
+            "form": "",
+            "header": "",
+            "status": 404,
+            "captures": false
+        },
+        {
+            "name": "public file, a hidden key",
+            "method": "GET",
+            "path": "/files/uploads/.latest.png",
+            "form": "",
+            "header": "",
+            "status": 404,
+            "captures": false
+        },
+        {
+            "name": "public file, posted",
+            "method": "POST",
+            "path": "/files/uploads/latest.png",
+            "form": "",
+            "header": "",
+            "status": 405,
+            "captures": false
+        },
+        {
+            "name": "private file",
+            "method": "GET",
+            "path": "/uploads/latest",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "private file, a range",
+            "method": "GET",
+            "path": "/uploads/latest",
+            "form": "",
+            "header": "Range: bytes=0-7",
+            "status": 206,
+            "captures": false
+        },
+        {
             "name": "upload, disguised",
             "method": "POST",
             "path": "/uploads",
