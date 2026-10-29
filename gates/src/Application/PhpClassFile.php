@@ -6,15 +6,19 @@ namespace Gates\Application;
 
 use Gates\Domain\RegexCaptures;
 use InvalidArgumentException;
+use Override;
 
 use function array_filter;
 use function array_map;
 use function array_unique;
 use function array_values;
 use function count;
+use function explode;
 use function implode;
+use function in_array;
 use function sort;
 use function sprintf;
+use function str_replace;
 use function strrpos;
 use function substr;
 
@@ -103,11 +107,13 @@ final readonly class PhpClassFile
     {
         $name = self::regexMatch('/class (\\w+)/', $class)[1] ?? 'a generated class';
 
-        if (count($classes) > self::MAX_COUPLING) {
+        $counted = $this->counted($classes, $class);
+
+        if ($counted > self::MAX_COUPLING) {
             throw new InvalidArgumentException(sprintf(
                 "the generated %s would depend on %d classes, over PHPMD's %d; split the module.",
                 $name,
-                count($classes),
+                $counted,
                 self::MAX_COUPLING,
             ));
         }
@@ -119,6 +125,29 @@ final readonly class PhpClassFile
                 'the generated ' . $name . ' would import two classes with one short name; rename one: ' . implode(', ', $classes) . '.',
             );
         }
+    }
+
+    /**
+     * @param list<string> $classes The distinct classes it uses.
+     * @param string       $class   Its declaration and body.
+     *
+     * @return int How many of them PHPMD's coupling counts (#203): pdepend counts neither an attribute (`Override`)
+     *             nor an interface the class implements, so neither is counted here.
+     */
+    private function counted(array $classes, string $class): int
+    {
+        $implemented = explode(',', str_replace(' ', '', self::regexMatch('/implements ([\\w, ]+)/', $class)[1] ?? ''));
+        $counted = 0;
+
+        foreach ($classes as $used) {
+            if ($used === Override::class || in_array($this->short($used), $implemented, true)) {
+                continue;
+            }
+
+            $counted += 1;
+        }
+
+        return $counted;
     }
 
     /**

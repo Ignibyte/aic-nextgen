@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
-use AIC\Block\Contracts\Block;
-use AIC\Block\Contracts\Blocks;
 use AIC\Container\Application\Container;
 use AIC\Container\Exception\ContainerException;
 
-use function array_filter;
-use function array_values;
-
 /**
- * The modules' blocks and plugins, as both kernels hold them (#93): a
- * container this builds itself, registers the wiring's plugins in and
- * freezes, so no container is handed around; callers ask it for the plugins
- * of a type, or for the blocks.
+ * The modules' plugins, as both kernels hold them (#93): a container this
+ * builds itself, registers the wiring's plugins in and freezes, so no
+ * container is handed around; callers ask it for the plugins of a type.
+ * Blocks are wired like controllers since #203.
  *
  * @api
  */
@@ -52,18 +47,5 @@ final readonly class Plugins
     public function tagged(string $type): array
     {
         return $this->container->tagged($type);
-    }
-
-    /**
-     * @throws ContainerException When a registered service cannot be resolved.
-     *
-     * @return Blocks The blocks among the plugins, in registration order.
-     */
-    public function blocks(): Blocks
-    {
-        return new Blocks(array_values(array_filter(
-            $this->container->tagged(Block::class),
-            static fn (object $plugin): bool => $plugin instanceof Block,
-        )));
     }
 }

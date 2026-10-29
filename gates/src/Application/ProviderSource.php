@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Block\Contracts\Block;
 use AIC\Container\Contracts\ServiceProvider;
 use AIC\Container\Contracts\ServiceRegistry;
-use AIC\Module\Contracts\ModuleSection;
 use AIC\Module\Contracts\PluginTag;
 use Gates\Domain\ModuleDefinition;
 use InvalidArgumentException;
@@ -22,9 +20,9 @@ use function strtr;
 
 /**
  * Writes the generated providers (#92): one `<M>Provider` per module with
- * blocks or plugins, each a singleton tagged under its type, and
- * `App\Generated\ModuleProvider`, which calls each module's in build order, in
- * chained parts (`ChainSource`).
+ * plugins, each a singleton tagged under its type (blocks are wired like
+ * controllers since #203), and `App\Generated\ModuleProvider`, which calls
+ * each module's in build order, in chained parts (`ChainSource`).
  */
 final readonly class ProviderSource
 {
@@ -81,7 +79,7 @@ final readonly class ProviderSource
     }
 
     /**
-     * @param ModuleDefinition $moduleDefinition A module with blocks or plugins.
+     * @param ModuleDefinition $moduleDefinition A module with plugins.
      *
      * @throws InvalidArgumentException When its class would not fit the gates.
      *
@@ -101,7 +99,7 @@ final readonly class ProviderSource
 
         if (count(explode("\n", $body)) > self::MAX_LINES) {
             throw new InvalidArgumentException(
-                sprintf('module %s: its blocks and plugins do not fit one generated class; split the module.', $moduleDefinition->name),
+                sprintf('module %s: its plugins do not fit one generated class; split the module.', $moduleDefinition->name),
             );
         }
 
@@ -109,9 +107,9 @@ final readonly class ProviderSource
         $source = strtr(self::TEMPLATE, [
             '{body}' => $body,
             '{class}' => $moduleDefinition->studlyName() . 'Provider',
-            '{what}' => "the module's blocks and plugins",
+            '{what}' => "the module's plugins",
         ]);
-        $docblock = $this->phpClassFile->generated($from, 'its blocks and plugins.');
+        $docblock = $this->phpClassFile->generated($from, 'its plugins.');
 
         return $this->phpClassFile->file('App\\Generated', $classes, [], $docblock, $source);
     }
@@ -127,12 +125,12 @@ final readonly class ProviderSource
     {
         if ($moduleClasses === []) {
             throw new InvalidArgumentException(
-                'no module declares a block or a plugin; the generated ModuleProvider needs at least one (#92).',
+                'no module declares a plugin; the generated ModuleProvider needs at least one (#92).',
             );
         }
 
         $files = [];
-        $docblock = $this->phpClassFile->generated('the module manifests', "the modules' blocks and plugins, after App\\AppProvider's.");
+        $docblock = $this->phpClassFile->generated('the module manifests', "the modules' plugins, after App\\AppProvider's.");
 
         foreach ($this->chainSource->parts('ModuleProvider', $moduleClasses, self::PART_SIZE, self::PART_SIZE) as $part) {
             $files[$part['class'] . '.php'] = $this->part($part, $docblock);
@@ -161,7 +159,7 @@ final readonly class ProviderSource
         $source = strtr(self::TEMPLATE, [
             '{body}' => implode("\n", $lines),
             '{class}' => $part['class'],
-            '{what}' => "the modules' blocks and plugins",
+            '{what}' => "the modules' plugins",
         ]);
         $classes = [ServiceProvider::class, ServiceRegistry::class, Override::class, ...$this->chainSource->qualified($calls)];
 
@@ -171,15 +169,11 @@ final readonly class ProviderSource
     /**
      * @param ModuleDefinition $moduleDefinition A module.
      *
-     * @return list<array{string, string}> Its blocks and plugins, each as its type and its class.
+     * @return list<array{string, string}> Its plugins, each as its type and its class.
      */
     private function plugins(ModuleDefinition $moduleDefinition): array
     {
         $plugins = [];
-
-        foreach ($moduleDefinition->entries(ModuleSection::Blocks) as $block) {
-            $plugins[] = [Block::class, $block];
-        }
 
         foreach ($moduleDefinition->declared(PluginTag::class) as $pluginTag) {
             $plugins[] = [$pluginTag->type, $pluginTag->class];

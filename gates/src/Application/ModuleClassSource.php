@@ -13,7 +13,6 @@ use Gates\Domain\ContextEntry;
 use Gates\Domain\WiredModule;
 use Gates\Domain\WiredObject;
 use InvalidArgumentException;
-use Psr\Http\Server\MiddlewareInterface;
 
 use function array_filter;
 use function array_keys;
@@ -35,12 +34,14 @@ final readonly class ModuleClassSource
      * @param RoutesSource       $routesSource       The routes.
      * @param WiringContexts     $wiringContexts     The two sides' roots.
      * @param HandlerParts       $handlerParts       The handlers, split to fit (#126).
+     * @param ModuleLayerClasses $moduleLayerClasses Its middleware and blocks classes.
      */
     public function __construct(
         private ContextClassSource $contextClassSource = new ContextClassSource(),
         private RoutesSource $routesSource = new RoutesSource(),
         private WiringContexts $wiringContexts = new WiringContexts(),
         private HandlerParts $handlerParts = new HandlerParts(),
+        private ModuleLayerClasses $moduleLayerClasses = new ModuleLayerClasses(),
     ) {
     }
 
@@ -87,7 +88,8 @@ final readonly class ModuleClassSource
     {
         return [
             ...$this->handlers($wiredModule),
-            ...$this->middleware($wiredModule),
+            ...$this->moduleLayerClasses->middleware($wiredModule),
+            ...$this->moduleLayerClasses->blocks($wiredModule),
             ...$this->byName($wiredModule, 'Commands', $wiredModule->commands, Command::class),
             ...$this->byName($wiredModule, 'Jobs', $wiredModule->jobs, Job::class),
         ];
@@ -103,30 +105,6 @@ final readonly class ModuleClassSource
         return $wiredModule->controllers === []
             ? []
             : $this->handlerParts->parts($wiredModule, array_map($this->controllerEntry(...), $wiredModule->controllers));
-    }
-
-    /**
-     * @param WiredModule $wiredModule A module, wired.
-     *
-     * @return array<string, ContextClass> Its middleware, when it has some.
-     */
-    private function middleware(WiredModule $wiredModule): array
-    {
-        if ($wiredModule->middleware === []) {
-            return [];
-        }
-
-        $contextClass = new ContextClass(
-            $wiredModule->module->studlyName() . 'Middleware',
-            $this->wiringContexts->web(),
-            'afterSession',
-            'list<MiddlewareInterface>',
-            "The module's middleware after the session, in order.",
-            [MiddlewareInterface::class],
-            array_map(static fn (WiredObject $wiredObject): ContextEntry => new ContextEntry('', $wiredObject), $wiredModule->middleware),
-        );
-
-        return ['Middleware' => $contextClass];
     }
 
     /**

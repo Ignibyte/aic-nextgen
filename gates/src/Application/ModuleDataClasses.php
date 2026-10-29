@@ -40,10 +40,7 @@ final readonly class ModuleDataClasses
     {
         $files = [];
 
-        if (
-            $moduleDefinition->entries(ModuleSection::Blocks) !== []
-            || $moduleDefinition->declared(PluginTag::class) !== []
-        ) {
+        if ($moduleDefinition->declared(PluginTag::class) !== []) {
             $files['Provider'] = $this->providerSource->module($moduleDefinition);
         }
 
