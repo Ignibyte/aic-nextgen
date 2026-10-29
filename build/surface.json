@@ -279,6 +279,18 @@
             "name": "migrate:status"
         },
         {
+            "class": "AIC\\Queue\\Application\\QueueFailedCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "queue:failed"
+        },
+        {
+            "class": "AIC\\Queue\\Application\\QueueRetryCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "queue:retry"
+        },
+        {
             "class": "AIC\\Queue\\Application\\QueueWorkCommand",
             "kind": "Command",
             "module": "framework",

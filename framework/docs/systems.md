@@ -153,9 +153,11 @@ See [security.md](security.md) for sessions, form guards, uploads, auth and secr
   LOCKED`, so several workers can share it, and a job whose worker died is due again after ten
   minutes.
 - `AIC\Schedule`: schedules declared in manifests; `bin/aic schedule:run`, once a minute, queues
-  each one that is due, and a ledger keeps a minute from firing twice.
+  each one that is due, and a ledger keeps a minute from firing twice. Given a UTC minute
+  (`schedule:run 2026-10-29T07:00`) it queues what is due then (#208).
 - `AIC\Notification`: a notification, with the site path it is about, goes to the database and by
-  mail (AIC's own SMTP client), each delivery a job. `AIC\Notification\Application\Inbox` reads a
+  mail (AIC's own SMTP client), each delivery a job; a delivery whose channel cannot deliver now
+  (a mail server that is down) retries after a delay and fails with the reason on its fifth attempt. `AIC\Notification\Application\Inbox` reads a
   user's kept notifications (unread count, a page newest first, one by id, those newer than an id)
   and marks them read, every query scoped to that user (#202).
 
