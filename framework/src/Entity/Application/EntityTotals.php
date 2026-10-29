@@ -11,8 +11,9 @@ use InvalidArgumentException;
 
 /**
  * What a query's matching rows add up to (#184): their count, a field's sum
- * and largest value, and a field's distinct values. Sums and maxima come back
- * as text, so a Numeric field's money never passes through a float.
+ * and largest value, and a field's distinct values; by group, counts, sums
+ * and rounded averages (#209). Sums, averages and maxima come back as text, so
+ * a Numeric field's money never passes through a float.
  */
 final readonly class EntityTotals
 {
@@ -131,6 +132,33 @@ final readonly class EntityTotals
         }
 
         return $sums;
+    }
+
+    /**
+     * @param string $field An Integer or Numeric field to average.
+     * @param string $group A field to group the matching rows by.
+     * @param int    $scale How many decimal places to round each average to, from 0.
+     *
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When the query has no such field, or the scale is below 0.
+     *
+     * @return array<string, string> Each group's average, rounded, as text, by the group's value as text, largest
+     *                               first; null groups left out.
+     */
+    public function averageBy(string $field, string $group, int $scale = 0): array
+    {
+        if ($scale < 0) {
+            throw new InvalidArgumentException("An average's scale is 0 or more, not " . $scale . '.');
+        }
+
+        $averages = [];
+        $average = 'round(avg(' . $this->entityConditions->column($field) . '), ' . $scale . ')';
+
+        foreach ($this->grouped($average, $group) as $row) {
+            $averages[$row->string('value')] = $row->string('total');
+        }
+
+        return $averages;
     }
 
     /**

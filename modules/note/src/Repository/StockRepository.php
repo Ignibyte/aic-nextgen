@@ -26,8 +26,8 @@ use function array_reverse;
 /**
  * The stock items: the `stock_items` entity type over the entity store, with
  * a date, a numeric, a boolean, a nullable text and integer, and an updated-at
- * field; listed by a search, a lowest price and a page, added up, and saved
- * over by SKU (#184).
+ * field; listed by a search, a lowest price and a page, added up, averaged
+ * by group (#209), and saved over by SKU (#184).
  */
 final readonly class StockRepository
 {
@@ -70,6 +70,19 @@ final readonly class StockRepository
         $rows = $this->matching($stockQuery)->orderByDescending('id')->limit($count)->offset(($stockQuery->page - 1) * $count)->rows();
 
         return array_map(self::item(...), array_reverse($rows));
+    }
+
+    /**
+     * @param StockQuery $stockQuery What the list asks for; its page does not apply.
+     *
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When a constructed value is invalid.
+     *
+     * @return list<StockItem> Every matching item, oldest first: the export's rows (#209).
+     */
+    public function all(StockQuery $stockQuery): array
+    {
+        return array_map(self::item(...), $this->matching($stockQuery)->orderBy('id')->rows());
     }
 
     /**
@@ -185,6 +198,25 @@ final readonly class StockRepository
         }
 
         return $entityQuery->totals()->sumBy('price', 'certified');
+    }
+
+    /**
+     * @param string $day One day, `YYYY-MM-DD`; empty for every item.
+     *
+     * @throws QueryException           When the query fails.
+     * @throws InvalidArgumentException When a constructed value is invalid.
+     *
+     * @return array<string, string> The items' average price to the cent, by whether they are certified (#209).
+     */
+    public function averagePriceByCertification(string $day): array
+    {
+        $entityQuery = $this->entityStore->query($this->entityType);
+
+        if ($day !== '') {
+            $entityQuery->where('added_on', $day);
+        }
+
+        return $entityQuery->totals()->averageBy('price', 'certified', 2);
     }
 
     /**

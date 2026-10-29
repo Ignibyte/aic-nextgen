@@ -26,7 +26,10 @@ takes its answer's `Location` as `{note}` for the next steps, and that path read
 in each site's answers before they are compared (#178). A record no Location names (a form that
 answers in place) is reached through a list instead: a step with `"capture": "/app/leads/"` keeps the
 first link in its answer under that prefix as `{note}` (#200). A step on an event stream that stays
-open sets `"events": N`: gate:23 reads that many events and hangs up (#202). A form posts multipart when it starts with
+open sets `"events": N`: gate:23 reads that many events and hangs up (#202). A page that exists only after a
+job runs (an export's download) is reached by a step with `"work": true`: gate:23 runs the app's
+`bin/aic queue:work` before sending it, on each site's pass, and a worker that fails is a difference
+(#209). A form posts multipart when it starts with
 `multipart:`; a value `@path` uploads that file, relative to the project root
 (`multipart:aic_csrf={csrf}&photo=@tests/fixtures/car.jpg`). The extra header may hold several
 lines joined by `\r\n` (`Range: bytes=0-4\r\nIf-Range: \"x\"`).

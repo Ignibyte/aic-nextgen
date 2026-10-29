@@ -218,6 +218,13 @@
             "path": "/stock/days"
         },
         {
+            "handler": "App\\Note\\Controller\\StockCsv",
+            "kind": "Stream",
+            "method": "GET",
+            "module": "note",
+            "path": "/stock.csv"
+        },
+        {
             "handler": "App\\Scaffold\\Controller\\ScaffoldPage",
             "kind": "Page",
             "method": "GET",

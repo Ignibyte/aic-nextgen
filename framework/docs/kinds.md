@@ -64,6 +64,12 @@ An answer sent over time or in pieces:
   modification time and size, and `Last-Modified`; `If-None-Match` or `If-Modified-Since` answers 304,
   `If-Match` or `If-Unmodified-Since` 412, and a stale `If-Range` the whole file. Downloads answer
   `Cache-Control: private, no-cache`, so a browser revalidates instead of fetching again.
+- `AIC\Controller\Domain\CsvDocument` is not an answer but what an export puts in its file (#209):
+  a header and rows as RFC 4180 text, CRLF line ends, a field quoted when it holds a comma, quote,
+  CR or LF. A field starting with `=`, `+`, `-`, `@`, a tab or CR gets a leading `'` so a
+  spreadsheet never runs it as a formula; a plain number such as `-12` stays a number. A job (or a
+  Stream) writes `text()` to a file outside `public/`, through `tempnam()` and `rename()` so a
+  download never reads half a file, and a Stream sends it as a `FileDownload`.
 
 ### Command
 

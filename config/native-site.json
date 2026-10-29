@@ -318,6 +318,25 @@
             "captures": false
         },
         {
+            "name": "jobs, queue the demo job",
+            "method": "POST",
+            "path": "/jobs",
+            "form": "aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "jobs, after the worker ran",
+            "method": "GET",
+            "path": "/jobs",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false,
+            "work": true
+        },
+        {
             "name": "notifications",
             "method": "GET",
             "path": "/notifications",
@@ -1054,6 +1073,24 @@
             "form": "",
             "header": "",
             "status": 200,
+            "captures": false
+        },
+        {
+            "name": "stock export, CSV",
+            "method": "GET",
+            "path": "/stock.csv?sku=GATE-184,GATE-184-U",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "stock export, a range",
+            "method": "GET",
+            "path": "/stock.csv?sku=GATE-184,GATE-184-U",
+            "form": "",
+            "header": "Range: bytes=0-9",
+            "status": 206,
             "captures": false
         },
         {

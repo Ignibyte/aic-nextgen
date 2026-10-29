@@ -12,6 +12,7 @@ use AIC\Tessera\Application\TesseraProps;
 use App\Note\Controller\StockPage;
 use App\Note\Controller\StockPost;
 use App\Note\Form\StockForm;
+use App\Note\Form\StockQueries;
 use App\Note\Repository\StockRepository;
 use App\Note\Service\StockList;
 use App\Note\Service\StockListLinks;
@@ -51,7 +52,9 @@ final readonly class NoteHandlersPart3
         );
 
         return [
-            StockPage::class => $this->handlerContext->page(new StockPage($this->handlerContext->documents(), $stockForm, $stockList)),
+            StockPage::class => $this->handlerContext->page(
+                new StockPage($this->handlerContext->documents(), $stockForm, $stockList, new StockQueries()),
+            ),
             StockPost::class => $this->handlerContext->page(
                 new StockPost($this->handlerContext->documents(), $stockRepository, $stockForm, new PostedFields()),
             ),

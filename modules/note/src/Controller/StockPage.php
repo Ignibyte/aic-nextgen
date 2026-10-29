@@ -13,8 +13,8 @@ use AIC\Controller\Domain\PageUnchanged;
 use AIC\Database\Contracts\QueryException;
 use AIC\Form\Exception\InvalidEnvelope;
 use App\Generated\ThemeLayoutName;
-use App\Note\Form\StockEntry;
 use App\Note\Form\StockForm;
+use App\Note\Form\StockQueries;
 use App\Note\Service\StockList;
 use InvalidArgumentException;
 use JsonException;
@@ -36,11 +36,13 @@ final readonly class StockPage implements Page
      * @param PageDocuments $pageDocuments Makes the page.
      * @param StockForm     $stockForm     The form.
      * @param StockList     $stockList     The list, the component Tessera refreshes alone.
+     * @param StockQueries  $stockQueries  Reads what the list asks for.
      */
     public function __construct(
         private PageDocuments $pageDocuments,
         private StockForm $stockForm,
         private StockList $stockList,
+        private StockQueries $stockQueries,
     ) {
     }
 
@@ -58,7 +60,7 @@ final readonly class StockPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $stockQuery = $this->stockList->query($serverRequest);
+        $stockQuery = $this->stockQueries->query($serverRequest);
         $version = $this->stockList->version($stockQuery);
 
         try {
@@ -74,7 +76,7 @@ final readonly class StockPage implements Page
         $components = [
             new Heading('Stock'),
             ...$parts,
-            $this->stockForm->form($serverRequest, new StockEntry('', '', '', false), ''),
+            $this->stockForm->blank($serverRequest),
         ];
 
         return $this->pageDocuments->content($components, 200, 'Stock', ThemeLayoutName::Focus);

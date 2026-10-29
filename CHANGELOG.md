@@ -17,6 +17,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Exports** (#209). `CsvDocument` writes a table as RFC 4180 CSV and guards a field a
+  spreadsheet would run as a formula; `EntityTotals::averageBy()` averages a field by group, rounded
+  in SQL; a gate:23 step with `"work": true` runs the app's queue worker first, so an export's
+  download is reachable. The fixture downloads its stock as `/stock.csv` and shows the average price
+  on `/stock/days`.
+
 - **Background work an app can run** (#208). `JobRetry` takes the attempts it allows (three by
   default); the notify job answers a mail server that is down with a delayed retry and fails with the
   reason on its fifth attempt; `bin/aic queue:failed` lists failed jobs with their ids and

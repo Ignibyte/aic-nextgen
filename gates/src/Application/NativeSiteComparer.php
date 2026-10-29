@@ -49,27 +49,34 @@ final readonly class NativeSiteComparer
     /**
      * @param HttpClient        $httpClient        Sends the requests.
      * @param NativeSiteAnchors $nativeSiteAnchors Resolves a step's `@NAME` targets from the site's page (#188).
+     * @param GateWorker        $gateWorker        Runs the queue worker before a step with `work` (#209).
      */
     public function __construct(
         private HttpClient $httpClient,
         private NativeSiteAnchors $nativeSiteAnchors,
+        private GateWorker $gateWorker,
     ) {
     }
 
     /**
-     * @param string               $origin   `http://host:port` of the site.
-     * @param list<NativeSiteStep> $steps    The steps to send, in order.
-     * @param string               $password The gate user's password, for `{password}`; empty when there is none.
+     * @param string                $origin   `http://host:port` of the site.
+     * @param list<NativeSiteStep>  $steps    The steps to send, in order.
+     * @param string                $password The gate user's password, for `{password}`; empty when there is none.
+     * @param string                $root     The app's root, where a step's queue worker runs.
+     * @param array<string, string> $env      The sites' environment, the worker's too.
      *
      * @return list<NativeSiteAnswer> One answer per step, with the path it was sent to (#171), as sent: the
      *                                HTML lint reads it whole (#170).
      */
-    public function run(string $origin, array $steps, string $password): array
+    public function run(string $origin, array $steps, string $password, string $root, array $env): array
     {
         $nativeSiteSession = new NativeSiteSession($password);
         $answers = [];
 
         foreach ($steps as $step) {
+            $worker = $step->work
+                ? $this->gateWorker->work($root, $env)
+                : '';
             $path = $nativeSiteSession->path($step);
             $exchange = $this->httpClient->send(
                 $origin,
@@ -81,7 +88,7 @@ final readonly class NativeSiteComparer
             );
             $nativeSiteSession->absorb($step, $exchange, self::path($exchange->location));
             $captured = $step->captured(self::path($exchange->location), $exchange->body);
-            $answers[] = new NativeSiteAnswer($path, $exchange, $captured);
+            $answers[] = new NativeSiteAnswer($path, $exchange, $captured, $worker);
         }
 
         return $answers;
@@ -104,7 +111,9 @@ final readonly class NativeSiteComparer
             $php = self::normalised(self::exchange($expected[$index] ?? null), $phpCaptured);
             $native = self::normalised(self::exchange($actual[$index] ?? null), $nativeCaptured);
 
-            foreach (self::compared($step, $php, $native) as $difference) {
+            $worked = self::worked($expected[$index] ?? null, $actual[$index] ?? null);
+
+            foreach ([...self::compared($step, $php, $native), ...$worked] as $difference) {
                 $differences[] = sprintf('%s (%s %s): %s', $step->name, $step->method, $step->path, $difference);
             }
         }
@@ -144,6 +153,27 @@ final readonly class NativeSiteComparer
         }
 
         return [...$found, ...self::headers($php, $native)];
+    }
+
+    /**
+     * @param NativeSiteAnswer|null $php    The step's interpreted answer; null when the site gave none.
+     * @param NativeSiteAnswer|null $native The step's compiled answer; null when the site gave none.
+     *
+     * @return list<string> Each pass whose queue worker failed before the step (#209), with why.
+     */
+    private static function worked(?NativeSiteAnswer $php, ?NativeSiteAnswer $native): array
+    {
+        $found = [];
+
+        if ($php instanceof NativeSiteAnswer && $php->worker !== '') {
+            $found[] = 'before the PHP pass, ' . $php->worker;
+        }
+
+        if ($native instanceof NativeSiteAnswer && $native->worker !== '') {
+            $found[] = 'before the native pass, ' . $native->worker;
+        }
+
+        return $found;
     }
 
     /**
