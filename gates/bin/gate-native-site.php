@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Gates\Application\BrowserLook;
 use Gates\Application\BrowserTests;
+use Gates\Application\GateConsole;
 use Gates\Application\GateUser;
-use Gates\Application\GateWorker;
 use Gates\Application\NativeSiteAnchors;
 use Gates\Application\NativeSiteBrowser;
 use Gates\Application\NativeSiteBuilder;
@@ -68,7 +68,7 @@ if (($arguments[1] ?? '') !== 'serve') {
         new NativeSiteComparer(
             new StreamHttpClient(),
             new NativeSiteAnchors(new StreamHttpClient()),
-            new GateWorker($processRunner, $toolchain->phpPath()),
+            new GateConsole($processRunner, $toolchain->phpPath()),
         ),
         $gateUser,
         new NativeSiteBrowser($browserTests),

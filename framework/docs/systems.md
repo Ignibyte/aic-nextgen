@@ -160,7 +160,8 @@ See [security.md](security.md) for sessions, form guards, uploads, auth and secr
   mail (AIC's own SMTP client), each delivery a job; a delivery whose channel cannot deliver now
   (a mail server that is down) retries after a delay and fails with the reason on its fifth attempt. `AIC\Notification\Application\Inbox` reads a
   user's kept notifications (unread count, a page newest first, one by id, those newer than an id)
-  and marks them read, every query scoped to that user (#202).
+  and marks them read, every query scoped to that user (#202); `forget(userId)` deletes them all, so
+  a gate:23 pass can start the gate user's inbox afresh (#210).
 
 ## The layer ladder
 

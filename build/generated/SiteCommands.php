@@ -8,8 +8,10 @@ use AIC\Container\Exception\ContainerException;
 use AIC\Controller\Contracts\Command;
 use AIC\Database\Application\DatabaseStatus;
 use AIC\Module\Application\ConsoleContext;
+use AIC\Notification\Application\Inbox;
 use App\Site\Command\DatabasePing;
 use App\Site\Command\Greet;
+use App\Site\Command\NotificationsForget;
 use App\Site\Service\Greeter;
 
 /**
@@ -36,6 +38,7 @@ final readonly class SiteCommands
         return [
             'db:ping' => new DatabasePing(new DatabaseStatus($this->consoleContext->database())),
             'greet' => new Greet($this->consoleContext->tagged(Greeter::class)),
+            'notifications:forget' => new NotificationsForget(new Inbox($this->consoleContext->database())),
         ];
     }
 }

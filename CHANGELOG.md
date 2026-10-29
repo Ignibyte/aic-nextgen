@@ -17,6 +17,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **A gate:23 step runs an app command** (#210). `"console": "<command> <args>"` runs the app's
+  `bin/aic` before the step on each pass, so an app starts what a pass depends on afresh; both
+  passes still share one database. `Inbox::forget()` deletes a user's kept notifications, and the
+  fixture's `notifications:forget` uses it.
+
 - **Exports** (#209). `CsvDocument` writes a table as RFC 4180 CSV and guards a field a
   spreadsheet would run as a formula; `EntityTotals::averageBy()` averages a field by group, rounded
   in SQL; a gate:23 step with `"work": true` runs the app's queue worker first, so an export's

@@ -11,12 +11,14 @@ use stdClass;
 use function array_is_list;
 use function array_key_exists;
 use function array_keys;
+use function explode;
 use function get_object_vars;
 use function is_array;
 use function is_bool;
 use function is_int;
 use function is_string;
 use function json_decode;
+use function preg_match;
 use function str_starts_with;
 
 /**
@@ -104,6 +106,7 @@ final readonly class NativeSiteScript
             $this->prefix($index, $step),
             $this->count($index, $step),
             $this->works($index, $step),
+            $this->words($index, $step),
         );
     }
 
@@ -220,6 +223,27 @@ final readonly class NativeSiteScript
         return is_bool($fields['work'])
             ? $fields['work']
             : throw $this->wrong($index, 'work', 'boolean');
+    }
+
+    /**
+     * @param int      $index The step's place.
+     * @param stdClass $step  Its fields.
+     *
+     * @throws InvalidArgumentException When `console` is present but not words separated by single spaces.
+     *
+     * @return list<string> Its optional `console` (#210), split into words; none when absent.
+     */
+    private function words(int $index, stdClass $step): array
+    {
+        $fields = get_object_vars($step);
+
+        if (!array_key_exists('console', $fields)) {
+            return [];
+        }
+
+        return is_string($fields['console']) && preg_match('/^[^\\s]+( [^\\s]+)*$/', $fields['console']) === 1
+            ? explode(' ', $fields['console'])
+            : throw $this->wrong($index, 'console', 'command and its arguments, separated by single spaces');
     }
 
     /**
