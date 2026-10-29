@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **A step captures a link; aggregates count their exceptions** (#200). A gate:23 step's optional
+  `capture` path prefix keeps the first link under it as `{note}`, so a record no Location names is
+  reached through its list. The build sizes each generated aggregate's parts net of the exception
+  types its members declare, so a ninth module with a route no longer breaks it.
+
 - **The compiled site's heap fits the body cap** (#198). gate:23 and `aic-gate serve` build the site
   with a `--heap-size` of 64 MiB plus four times `AppConfig::$maxBodyBytes`, so an upload the cap
   admits reaches the app instead of exhausting elephc's 8 MB default heap.
