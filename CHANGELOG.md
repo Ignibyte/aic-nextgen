@@ -21,6 +21,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **File storage, public and private** (#213). `AIC\Storage`: `PublicFiles` and `PrivateFiles`
+  under `<root>/var/storage/`, written atomically, reached from any page, block, command or job's
+  constructor. The framework serves public files at `/files/<key>` before any session, validated,
+  with `nosniff` and a `sandbox` policy, inline only for images, PDF and plain text; a private file
+  is sent only by a module's own Stream. `UploadCheck::kind()` answers an upload's kind and
+  extension; `bin/aic` passes `ConsoleKernel` the app's root. The fixture keeps its accepted upload
+  in both stores.
+
 - **gate:23's `{location}`** (#212). A step's path may name `{location}`, the path and query of
   the last Location a step was answered with, for a redirect that names its record in the query;
   `{note}` stays a path that later steps extend.

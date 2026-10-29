@@ -52,7 +52,7 @@ final readonly class WiringContexts
             ConsoleContext::class,
             'consoleContext',
             [Database::class => 'database', MailConfig::class => 'mailConfig', MailTransport::class => 'mailTransport'],
-            [],
+            ['root' => 'root'],
         );
     }
 }

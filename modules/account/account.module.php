@@ -6,7 +6,8 @@ declare(strict_types=1);
  * The account module's manifest (#126, from #93's auth and session): sign-in
  * and sign-out, the account page, the sign-in middleware guarding /account,
  * the users table and user:add, the visit counter, and the uploads page with
- * its rules as a factory. The build reads it; nothing reads it at run
+ * its rules as a factory, which keeps an accepted upload in the app's public
+ * and private files and sends the private copy (#213). The build reads it; nothing reads it at run
  * time.
  */
 
@@ -22,6 +23,7 @@ use App\Account\Controller\AccountPage;
 use App\Account\Controller\LoginPage;
 use App\Account\Controller\LoginPost;
 use App\Account\Controller\LogoutPost;
+use App\Account\Controller\UploadDownload;
 use App\Account\Controller\UploadsPage;
 use App\Account\Controller\UploadsPost;
 use App\Account\Controller\VisitsForget;
@@ -42,6 +44,7 @@ return (new ModuleManifest('account'))
     ->route(RouteMethod::Post, '/visits/forget', VisitsForget::class)
     ->route(RouteMethod::Get, '/uploads', UploadsPage::class)
     ->route(RouteMethod::Post, '/uploads', UploadsPost::class)
+    ->route(RouteMethod::Get, '/uploads/latest', UploadDownload::class)
     ->binding(UserProvider::class, UserRepository::class)
     ->binding(PasswordHasher::class, PgcryptoPasswordHasher::class)
     ->middleware(RequireAuthenticationMiddleware::class, MiddlewarePosition::AfterSession)

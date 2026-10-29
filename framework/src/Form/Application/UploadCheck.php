@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Form\Application;
 
+use AIC\Form\Domain\CheckedUpload;
 use AIC\Form\Domain\UploadKind;
 use AIC\Form\Exception\RefusedUpload;
 use Psr\Http\Message\UploadedFileInterface;
@@ -16,6 +17,8 @@ use function implode;
  * Checks an upload before an app keeps it (#44): it uploaded, it is not empty
  * or over the limit, and its first bytes are one of the allowed kinds. The
  * client's file name and media type play no part.
+ *
+ * @api
  */
 final readonly class UploadCheck
 {
@@ -43,6 +46,18 @@ final readonly class UploadCheck
      */
     public function check(UploadedFileInterface $uploadedFile): string
     {
+        return $this->kind($uploadedFile)->label;
+    }
+
+    /**
+     * @param UploadedFileInterface $uploadedFile An upload.
+     *
+     * @throws RuntimeException When the underlying operation fails.
+     *
+     * @return CheckedUpload Its kind and the extension it is stored under (#213).
+     */
+    public function kind(UploadedFileInterface $uploadedFile): CheckedUpload
+    {
         $refusal = $this->refusal($uploadedFile);
 
         if ($refusal !== '') {
@@ -53,7 +68,7 @@ final readonly class UploadCheck
 
         foreach ($this->kinds as $kind) {
             if ($kind->matches($head)) {
-                return $kind->label();
+                return new CheckedUpload($kind->label(), $kind->extension());
             }
         }
 

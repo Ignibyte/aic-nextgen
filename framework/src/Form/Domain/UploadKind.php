@@ -39,6 +39,21 @@ enum UploadKind
     }
 
     /**
+     * @return string The extension a file of this kind is stored under (#213), which decides how `/files/` sends it.
+     */
+    public function extension(): string
+    {
+        return match ($this) {
+            self::Png => 'png',
+            self::Jpeg => 'jpg',
+            self::Gif => 'gif',
+            self::WebP => 'webp',
+            self::Pdf => 'pdf',
+            self::Text => 'txt',
+        };
+    }
+
+    /**
      * @param string $head A file's first bytes.
      *
      * @return bool Whether they are this kind's: its signature, or for text, UTF-8 with no NUL.
