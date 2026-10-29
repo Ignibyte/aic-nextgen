@@ -132,17 +132,37 @@ final readonly class PostgresQueue
     /**
      * @throws QueryException When the record cannot be read.
      *
-     * @return list<string> The failed jobs, newest first, each with its reason.
+     * @return list<string> The failed jobs, newest first, each with its id (for `queue:retry`, #208) and reason.
      */
     public function failed(): array
     {
         return array_map(
             static fn (Row $row): string => $row->string('line'),
             $this->database->fetchAll(
-                "SELECT job || ' ' || payload || ' after ' || attempts || ' attempts: ' || reason AS line"
+                "SELECT '#' || id || ' ' || job || ' ' || payload || ' after ' || attempts || ' attempts: ' || reason AS line"
                 . ' FROM aic_failed_jobs ORDER BY id DESC LIMIT 20',
                 [],
             ),
         );
+    }
+
+    /**
+     * @param int $id A failed job's id.
+     *
+     * @throws QueryException When the queue cannot be changed.
+     *
+     * @return bool Whether it was failed and is queued again now, with its attempts from 0 (#208).
+     */
+    public function retry(int $id): bool
+    {
+        $this->database->beginTransaction();
+        $queued = $this->database->execute(
+            'INSERT INTO aic_jobs (job, payload, attempts, available_at) SELECT job, payload, 0, now() FROM aic_failed_jobs WHERE id = ?',
+            [$id],
+        );
+        $this->database->execute('DELETE FROM aic_failed_jobs WHERE id = ?', [$id]);
+        $this->database->commit();
+
+        return $queued === 1;
     }
 }

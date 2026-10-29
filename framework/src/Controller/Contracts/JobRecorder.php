@@ -17,8 +17,9 @@ interface JobRecorder
 
     /**
      * @param int $delaySeconds The least time to wait before the next attempt.
+     * @param int $attempts     How many attempts the job gets in all (#208); when this one reached it, the job fails.
      */
-    public function retry(int $delaySeconds): void;
+    public function retry(int $delaySeconds, int $attempts): void;
 
     /**
      * @param string $reason Why it cannot succeed, for the failed record.

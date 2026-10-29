@@ -104,6 +104,8 @@ graph LR
 | `greet` | site | `App\Site\Command\Greet` |
 | `migrate` | framework | `AIC\Schema\Application\MigrateCommand` |
 | `migrate:status` | framework | `AIC\Schema\Application\MigrationStatusCommand` |
+| `queue:failed` | framework | `AIC\Queue\Application\QueueFailedCommand` |
+| `queue:retry` | framework | `AIC\Queue\Application\QueueRetryCommand` |
 | `queue:work` | framework | `AIC\Queue\Application\QueueWorkCommand` |
 | `scaffold:hello` | scaffold | `App\Scaffold\Command\ScaffoldHello` |
 | `schedule:run` | framework | `AIC\Schedule\Application\ScheduleRunCommand` |

@@ -87,7 +87,7 @@ final readonly class QueueWorker
         try {
             return $job->run(new JobInput($this->stringMapJson->decode($reservedJob->payload), $reservedJob->attempts));
         } catch (Throwable $throwable) {
-            return $reservedJob->attempts >= ReservedJobRecorder::ATTEMPTS
+            return $reservedJob->attempts >= JobRetry::ATTEMPTS
                 ? new JobFailed($throwable->getMessage())
                 : new JobRetry();
         }

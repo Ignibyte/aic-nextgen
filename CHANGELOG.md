@@ -17,6 +17,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Background work an app can run** (#208). `JobRetry` takes the attempts it allows (three by
+  default); the notify job answers a mail server that is down with a delayed retry and fails with the
+  reason on its fifth attempt; `bin/aic queue:failed` lists failed jobs with their ids and
+  `bin/aic queue:retry <id>` queues one again; `bin/aic schedule:run` takes a UTC minute.
+
 - **A stream patch targets an anchor; Tessera 0.3.1** (#204). `TesseraEvents` accepts `@NAME` as a
   patch's target and a signal patch's scope, which Tessera 0.3.1 (Tessera #35) resolves on the live
   page, so a live part nested in a template is patched without spelling its positional path.

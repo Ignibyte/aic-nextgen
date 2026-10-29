@@ -19,11 +19,6 @@ use function max;
 final readonly class ReservedJobRecorder implements JobRecorder
 {
     /**
-     * The attempts a job gets.
-     */
-    public const int ATTEMPTS = 3;
-
-    /**
      * The first backoff, in seconds; each later one doubles.
      */
     private const int BACKOFF = 10;
@@ -49,13 +44,14 @@ final readonly class ReservedJobRecorder implements JobRecorder
 
     /**
      * @param int $delaySeconds The least time to wait before the next attempt.
+     * @param int $attempts     How many attempts the job gets in all (#208).
      *
      * @throws QueryException When the queue cannot be changed.
      */
     #[Override]
-    public function retry(int $delaySeconds): void
+    public function retry(int $delaySeconds, int $attempts): void
     {
-        if ($this->reservedJob->attempts >= self::ATTEMPTS) {
+        if ($this->reservedJob->attempts >= $attempts) {
             $this->fail('Gave up after ' . $this->reservedJob->attempts . ' attempts.');
 
             return;
