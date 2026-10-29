@@ -225,8 +225,8 @@ final readonly class NativeSiteGate
         $php = [$this->nativeToolchain->phpPath(), ...$nativeSiteSetup->phpLimit()];
         $php = [...$php, '-S', '127.0.0.1:' . $nativeSiteSetup->phpPort, 'public/index.php'];
 
-        $native = [$workDir . '/main', '--listen', '127.0.0.1:' . $nativeSiteSetup->nativePort, '--workers', '2'];
-        $native = [...$native, '--handler-concurrency', '2', ...$nativeSiteSetup->nativeLimit()];
+        $native = [$workDir . '/main', '--listen', '127.0.0.1:' . $nativeSiteSetup->nativePort];
+        $native = [...$native, ...$nativeSiteSetup->nativeCapacity(), ...$nativeSiteSetup->nativeLimit()];
 
         $env = $nativeSiteSetup->env;
 

@@ -87,7 +87,10 @@ are started to let the app's request body cap through (`AppConfig::$maxBodyBytes
 The compiled program's heap is fixed at build time (elephc's default is 8 MB), so gate:23 and
 `aic-gate serve` build the site with `--heap-size` of 64 MiB plus four times the cap: room for the raw
 body, its parsed form and the app's own handling. The heap is reserved, not touched, so pages a request
-never uses cost no memory. A deployment builds its binary the same way.
+never uses cost no memory. A deployment builds its binary the same way. An open event stream holds
+a handler until its connection ends, and when a page is left its handler runs on until the source's
+own bound, so gate:23 and `aic-gate serve` start the site with 2 workers of 8 handlers (#206); a
+deployment sizes `--workers` and `--handler-concurrency` for the pages that may be open at once.
 
 When the database does not answer `bin/aic db:ping`, the whole gate defers and says why; running a
 small database-free subset would not establish site coverage. A suite with deferrals is incomplete.
