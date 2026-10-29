@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **`EntityTotals::sumBy()` on an Integer field** (#211). An integer sum is a bigint, which PDO
+  hands back as an int, so reading it as text answered 500. Grouped totals now come back as text and
+  are ordered by the number itself; `/stock/days` shows units by certification, an Integer sum.
+
 - **gate:23 serves the compiled site with room for open streams** (#206). gate:23 and
   `aic-gate serve` start it with 2 workers of 8 handlers: an open event stream holds a handler until
   its connection ends, a left page's included, and four slots starved a poll beside two live pages.

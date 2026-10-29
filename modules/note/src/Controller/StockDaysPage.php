@@ -25,13 +25,14 @@ use function array_map;
 /**
  * `GET /stock/days` (#191): the stock report, the latest days stock came in
  * (or one `day`) read from the `stock_days` view, and what those items are
- * worth and their average price (#209) by whether they are certified.
+ * worth, their average price (#209) and their units (#211) by whether they are
+ * certified.
  */
 final readonly class StockDaysPage implements Page
 {
     /**
      * @param PageDocuments         $pageDocuments         Makes the page.
-     * @param StockRepository       $stockRepository       The stock, for its worth and average price by certification.
+     * @param StockRepository       $stockRepository       The stock, for its worth, average price and units.
      * @param StockReportRepository $stockReportRepository The report's days.
      * @param StockReportDay        $stockReportDay        Reads the day asked for.
      */
@@ -57,6 +58,7 @@ final readonly class StockDaysPage implements Page
         $day = $this->stockReportDay->day($serverRequest);
         $worth = $this->stockRepository->worthByCertification($day);
         $average = $this->stockRepository->averagePriceByCertification($day);
+        $units = $this->stockRepository->unitsByCertification($day);
         $days = array_map(static fn (StockDay $stockDay): string => $stockDay->line(), $this->stockReportRepository->days(10, $day));
 
         return $this->pageDocuments->content([
@@ -66,6 +68,10 @@ final readonly class StockDaysPage implements Page
             new Paragraph(
                 'Average price, certified: $' . ($average['true'] ?? '0') . '; not certified: $' . ($average['false'] ?? '0') . '.',
                 'stock-average',
+            ),
+            new Paragraph(
+                'Units, certified: ' . ($units['true'] ?? '0') . '; not certified: ' . ($units['false'] ?? '0') . '.',
+                'stock-units',
             ),
         ], 200, 'Stock by day', ThemeLayoutName::Focus);
     }
