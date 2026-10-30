@@ -93,9 +93,6 @@ final readonly class FileStore
     }
 
     /**
-     * Takes a local, not `dirname()` passed straight in: natively, a `dirname()` result handed directly to a
-     * method that returns it frees the string it was taken from (#201).
-     *
      * @param string $directory A directory.
      *
      * @throws RuntimeException When it is missing and cannot be made.
