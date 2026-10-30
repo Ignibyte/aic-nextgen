@@ -47,9 +47,7 @@ final readonly class Blocks
         $placed = $regions;
 
         foreach ($matching as $block) {
-            // Bound first: elephc cannot put an interface-typed call on a loop element inside an array literal (#69).
-            $component = $block->component($serverRequest);
-            $placed = $placed->append($block->placement()->region, [$component]);
+            $placed = $placed->append($block->placement()->region, [$block->component($serverRequest)]);
         }
 
         return $placed;

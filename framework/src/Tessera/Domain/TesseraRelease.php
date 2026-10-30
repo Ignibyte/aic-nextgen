@@ -65,21 +65,9 @@ final readonly class TesseraRelease
     private static function checkSums(array $sums): void
     {
         foreach ($sums as $name => $sum) {
-            // Through a typed method: elephc cannot match a pattern against a map's key or value in the loop (#75).
-            self::checkSum($name, $sum);
-        }
-    }
-
-    /**
-     * @param string $name A file's name in the release.
-     * @param string $sum  Its SHA-256.
-     *
-     * @throws InvalidArgumentException When either is malformed.
-     */
-    private static function checkSum(string $name, string $sum): void
-    {
-        if (preg_match('/^[a-z0-9.]+$/', $name) !== 1 || preg_match('/^[0-9a-f]{64}$/', $sum) !== 1) {
-            throw new InvalidArgumentException('Tessera pin "' . $name . '": a file name and a 64-character hex SHA-256.');
+            if (preg_match('/^[a-z0-9.]+$/', $name) !== 1 || preg_match('/^[0-9a-f]{64}$/', $sum) !== 1) {
+                throw new InvalidArgumentException('Tessera pin "' . $name . '": a file name and a 64-character hex SHA-256.');
+            }
         }
     }
 }
