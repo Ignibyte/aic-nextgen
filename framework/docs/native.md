@@ -38,10 +38,6 @@ every PHP expression:
 - A closure takes what it uses through `use`, the object's own services too: natively a closure
   does not bind `$this`, so `$this->store` inside one is null (#184). Copy the property into a
   local first and capture the local, as `EntityStore::transaction()` callers do.
-- After `instanceof` narrows an interface-typed value, pass it to a method typed with the class
-  rather than calling methods on the narrowed variable: natively such a call never releases an
-  object passed to it, so whatever that object holds outlives the request (#205; a page's blocks,
-  and the database connection a block's service held, in `PageHandler`).
 - Read PSR-7 bodies as streams using rewind/getContents where appropriate. Use the response builder
   for headers so methods retain the response type across PSR-7 withers.
 - Keep resource ownership and cleanup explicit. The runtime adapters use typed resource slots and

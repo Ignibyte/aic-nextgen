@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **The compiler is the elephc fork synced with upstream past 0.27.6, with new carries** (#216);
+  `aic/gates` pins native recipe 7. A call on a narrowed value releases its arguments (#205), a
+  literal holds a call on an untyped loop element (#69) and a preg call reads a loop's key or
+  value (#75), so `PageHandler`, `Blocks` and `TesseraRelease` drop their workarounds.
 - **gate:23 normalises a captured id after `=` too** (#215), as a stream cursor in a query writes it
   (`?after=12`).
 
