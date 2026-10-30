@@ -67,7 +67,7 @@ when those values come back. A stale signed value can still be stale business da
 Use `AIC\Form\Domain\SameOriginPath` when taking a redirect destination from input. It limits the
 value to a path on this site and refuses unsafe forms. Do not turn an unvalidated next parameter
 into a Location header. PageRedirect refuses any location that is not a path on this site, by the
-same rule (`SameOriginPath::PATTERN`, #207), so a forgotten check fails instead of redirecting away.
+same rule, `SameOriginPath::PATTERN` (#207), so a forgotten check fails instead of redirecting away.
 PageRedirect defaults to 303 after a successful form post; enhanced replies
 follow the [Tessera redirect contract](tessera.md#forms-redirects-and-write-identifiers).
 

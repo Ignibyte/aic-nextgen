@@ -6,6 +6,8 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **gate:23 says how two bodies differ** (#217): both sizes, the byte where they part and an escaped
+  excerpt of each side, so a difference seen once names its cause.
 - **Run 19's follow-ups** (#207). `Inbox::newerThan()` takes a limit and answers the newest after an
   id; the session middleware only touches a session the request left unchanged, through the new
   `SessionStore::touch()`, so a read-only request or stream cannot overwrite another's write; and

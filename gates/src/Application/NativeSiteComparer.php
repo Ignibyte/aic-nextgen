@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\BodyDifference;
 use Gates\Domain\HttpClient;
 use Gates\Domain\HttpExchange;
 use Gates\Domain\NativeSiteAnswer;
@@ -147,7 +148,7 @@ final readonly class NativeSiteComparer
         }
 
         if ($native->body !== $php->body) {
-            $found[] = 'the bodies differ';
+            $found[] = (new BodyDifference($native->body, $php->body))->line();
         }
 
         return [...$found, ...self::headers($php, $native)];
