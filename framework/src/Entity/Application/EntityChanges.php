@@ -42,6 +42,8 @@ final readonly class EntityChanges
      * @throws QueryException           When the update fails.
      *
      * @return int How many rows it changed.
+     *
+     * @psalm-taint-sink client_upload $values
      */
     public function update(array $values): int
     {

@@ -52,4 +52,6 @@
     <xi:include href="vendor/aic/gates/config/psalm-issue-handlers.xml"/>
     <!-- The issue handlers and the forbidden functions are aic/gates' (#116). -->
     <xi:include href="vendor/aic/gates/config/psalm-forbidden-functions.xml"/>
+    <!-- The client_upload taint sources (#199). -->
+    <xi:include href="vendor/aic/gates/config/psalm-stubs.xml"/>
 </psalm>

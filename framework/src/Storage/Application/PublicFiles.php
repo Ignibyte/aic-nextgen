@@ -58,6 +58,8 @@ final readonly class PublicFiles
      * @throws RuntimeException         When the file cannot be written.
      *
      * @return string Its URL path.
+     *
+     * @psalm-taint-sink client_upload $key
      */
     public function put(string $key, string $contents): string
     {
@@ -76,6 +78,8 @@ final readonly class PublicFiles
      * @throws RuntimeException         When the upload cannot be read or the file cannot be written.
      *
      * @return string Its URL path.
+     *
+     * @psalm-taint-sink client_upload $key
      */
     public function putUpload(string $key, UploadedFileInterface $uploadedFile): string
     {

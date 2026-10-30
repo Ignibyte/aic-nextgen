@@ -26,6 +26,8 @@ final readonly class StorageKey
      * @param string $value The key, as the module names it (`vehicles/12/3.jpg`).
      *
      * @throws InvalidArgumentException When it breaks the grammar.
+     *
+     * @psalm-taint-sink client_upload $value
      */
     public function __construct(
         public string $value,

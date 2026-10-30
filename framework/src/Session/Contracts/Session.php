@@ -21,6 +21,9 @@ interface Session
     /**
      * @param string $key   A key.
      * @param string $value Its new value.
+     *
+     * @psalm-taint-sink client_upload $key
+     * @psalm-taint-sink client_upload $value
      */
     public function set(string $key, string $value): void;
 

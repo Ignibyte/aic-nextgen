@@ -16,6 +16,12 @@ final readonly class Notification
      * @param string $subject One line.
      * @param string $body    The text.
      * @param string $link    The site path it is about, which an inbox links to (#202); empty for none.
+     *
+     * @psalm-taint-sink client_upload $userId
+     * @psalm-taint-sink client_upload $email
+     * @psalm-taint-sink client_upload $subject
+     * @psalm-taint-sink client_upload $body
+     * @psalm-taint-sink client_upload $link
      */
     public function __construct(
         public string $userId,

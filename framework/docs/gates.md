@@ -73,6 +73,14 @@ second pass explicitly enables taint. Method exception and unused-code checks re
 the approved `restrictReturnTypes` setting is false because PHPStan level 10 holds return
 types. Its reason and the typed-startup/global-exception policy are recorded in the XML.
 
+The taint pass also follows a custom kind, `client_upload` (#199). aic/gates' stub
+`psalm-client-upload.phpstub`, loaded through `psalm-stubs.xml`, makes an upload's
+`getClientFilename()` and `getClientMediaType()` its sources. Every framework write an app
+calls is a sink: `Database`'s statements and parameters, `EntityStore` and `EntityChanges`
+values, `Session::set()`, the storage keys of `PublicFiles` and `PrivateFiles`, a
+download's media type and name, a `Notification`, a queued job's values and mail. A flow
+from one to the other is `TaintedCustom`, and nothing escapes it.
+
 ## The rules every gate shares
 
 - **No baselines and no suppressions.** A finding is fixed in the source. No baseline file, no

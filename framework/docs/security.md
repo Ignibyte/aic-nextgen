@@ -75,7 +75,9 @@ follow the [Tessera redirect contract](tessera.md#forms-redirects-and-write-iden
 
 Multipart input becomes PSR-7 UploadedFileInterface values.
 `AIC\Form\Application\UploadCheck` checks upload errors, a nonzero size, the configured maximum
-and the first bytes of the stream. Client filenames and client media types do not decide the kind.
+and the first bytes of the stream. Client filenames and client media types do not decide the kind,
+and gate:13 refuses either one reaching a write: a storage key, a database value, the session, a
+queued job, a notification, mail or a download's headers (#199). Name a stored file yourself.
 The accepted enum cases are:
 
 | Kind | Content |

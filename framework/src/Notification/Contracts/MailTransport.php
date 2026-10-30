@@ -16,6 +16,9 @@ interface MailTransport
      * @param string $message   The message, as MailMessage writes it.
      *
      * @throws RuntimeException When the server cannot take it now.
+     *
+     * @psalm-taint-sink client_upload $recipient
+     * @psalm-taint-sink client_upload $message
      */
     public function send(string $recipient, string $message): void;
 }

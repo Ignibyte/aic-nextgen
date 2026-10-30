@@ -37,6 +37,8 @@ final readonly class PostgresQueue
      *
      * @throws JsonException  When the payload cannot be encoded.
      * @throws QueryException When the job cannot be stored.
+     *
+     * @psalm-taint-sink client_upload $values
      */
     public function dispatch(string $job, array $values, int $delaySeconds): void
     {
