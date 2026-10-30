@@ -4,6 +4,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Added
+
+- **No client file name or media type reaches a write** (#199): gate:13's taint pass follows
+  `client_upload` from the upload getters, through a Psalm stub in aic/gates, into every framework
+  write an app calls; the fixture's upload message no longer shows the client's file name.
+
 ### Fixed
 
 - **gate:23 says how two bodies differ** (#217): both sizes, the byte where they part and an escaped

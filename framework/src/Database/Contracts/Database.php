@@ -17,6 +17,9 @@ interface Database
      * @throws QueryException When the query fails or returns no row.
      *
      * @return Row The first row.
+     *
+     * @psalm-taint-sink client_upload $sql
+     * @psalm-taint-sink client_upload $params
      */
     public function fetchOne(string $sql, array $params): Row;
 
@@ -27,6 +30,9 @@ interface Database
      * @throws QueryException When the query fails.
      *
      * @return list<Row> Every row, in order.
+     *
+     * @psalm-taint-sink client_upload $sql
+     * @psalm-taint-sink client_upload $params
      */
     public function fetchAll(string $sql, array $params): array;
 
@@ -37,6 +43,9 @@ interface Database
      * @throws QueryException When the statement fails.
      *
      * @return int The number of rows it affected.
+     *
+     * @psalm-taint-sink client_upload $sql
+     * @psalm-taint-sink client_upload $params
      */
     public function execute(string $sql, array $params): int;
 

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!--
+    stubs — the PSR-7 upload getters as sources of the client_upload taint (#199), which
+    gate:13's taint pass follows into every framework write that declares it a sink.
+-->
+<stubs xmlns="https://getpsalm.org/schema/config">
+    <file name="vendor/aic/gates/config/psalm-client-upload.phpstub"/>
+</stubs>

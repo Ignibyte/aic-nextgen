@@ -24,6 +24,9 @@ final readonly class FileDownload implements StreamResponse
      * @param string                 $mediaType     Its `Content-Type`.
      * @param string                 $downloadName  The name the browser saves it as; empty to send it inline.
      * @param ServerRequestInterface $serverRequest The request: its `Range` (one byte range) and conditions.
+     *
+     * @psalm-taint-sink client_upload $mediaType
+     * @psalm-taint-sink client_upload $downloadName
      */
     public function __construct(
         private string $path,

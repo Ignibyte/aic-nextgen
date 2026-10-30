@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+// gate:13's taint pass (#199): an upload's client file name and client media type are the
+// client's, so neither may reach a write. Every framework write an app calls declares
+// `@psalm-taint-sink client_upload` on what it stores or sends.
+
+namespace Psr\Http\Message;
+
+interface UploadedFileInterface
+{
+    public function getStream(): StreamInterface;
+
+    public function moveTo(string $targetPath): void;
+
+    public function getSize(): ?int;
+
+    public function getError(): int;
+
+    /**
+     * @psalm-taint-source client_upload
+     */
+    public function getClientFilename(): ?string;
+
+    /**
+     * @psalm-taint-source client_upload
+     */
+    public function getClientMediaType(): ?string;
+}

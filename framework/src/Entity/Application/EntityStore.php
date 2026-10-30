@@ -55,6 +55,8 @@ final readonly class EntityStore
      * @throws QueryException           When the insert fails.
      *
      * @return int The new row's key.
+     *
+     * @psalm-taint-sink client_upload $values
      */
     public function insert(EntityType $entityType, array $values): int
     {
@@ -119,6 +121,8 @@ final readonly class EntityStore
      * @throws InvalidArgumentException When there is nothing to change, or a value does not fit its field.
      * @throws EntityNotFoundException  When no row has the key.
      * @throws QueryException           When the update fails.
+     *
+     * @psalm-taint-sink client_upload $values
      */
     public function update(EntityType $entityType, int $key, array $values): void
     {

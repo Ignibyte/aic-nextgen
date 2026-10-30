@@ -81,9 +81,8 @@ final readonly class UploadsPost implements Page
             return $this->refused($serverRequest, $refusedUpload->getMessage());
         }
 
-        $name = $uploadedFile->getClientFilename() ?? 'a file';
         $session = $this->requestSession->read($serverRequest);
-        $session->set(UploadsPage::LAST, $name . ': ' . $checkedUpload->label . ', ' . ($uploadedFile->getSize() ?? 0) . ' bytes');
+        $session->set(UploadsPage::LAST, $checkedUpload->label . ', ' . ($uploadedFile->getSize() ?? 0) . ' bytes');
         $session->set(UploadsPage::KEPT, $this->keptUploads->keep($uploadedFile, $checkedUpload));
 
         return new PageRedirect('/uploads');

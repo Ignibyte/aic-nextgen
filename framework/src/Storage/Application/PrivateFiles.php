@@ -44,6 +44,10 @@ final readonly class PrivateFiles
      * @throws InvalidArgumentException When it is not a storage key.
      *
      * @return FileDownload The file, validated and ranged; 404 when it does not exist.
+     *
+     * @psalm-taint-sink client_upload $key
+     * @psalm-taint-sink client_upload $mediaType
+     * @psalm-taint-sink client_upload $downloadName
      */
     public function download(
         string $key,
@@ -72,6 +76,8 @@ final readonly class PrivateFiles
      *
      * @throws InvalidArgumentException When it is not a storage key.
      * @throws RuntimeException         When the file cannot be written.
+     *
+     * @psalm-taint-sink client_upload $key
      */
     public function put(string $key, string $contents): void
     {
@@ -86,6 +92,8 @@ final readonly class PrivateFiles
      *
      * @throws InvalidArgumentException When it is not a storage key.
      * @throws RuntimeException         When the upload cannot be read or the file cannot be written.
+     *
+     * @psalm-taint-sink client_upload $key
      */
     public function putUpload(string $key, UploadedFileInterface $uploadedFile): void
     {
