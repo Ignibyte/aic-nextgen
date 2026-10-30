@@ -40,7 +40,8 @@ An HTML answer to a GET or a POST. Form handlers are Pages too. A Page returns o
   was asked, 404, 409 for a conflicting write, or 422 for a form shown again with its errors.
 - `AIC\Controller\Domain\PageFragments`: some regions of that layout, by target, for a request the
   browser runtime sent; a 422 that redraws a form in place is one.
-- `AIC\Controller\Domain\PageRedirect`: a location and a status (303 by default).
+- `AIC\Controller\Domain\PageRedirect`: a location, which must be a path on this site, and a
+  status (303 by default).
 - `AIC\Controller\Domain\PageFullVisit`: tells the browser runtime to load a location as a full
   page.
 - `AIC\Controller\Domain\PageUnchanged`: a `204`, for a poll of one component whose data has not

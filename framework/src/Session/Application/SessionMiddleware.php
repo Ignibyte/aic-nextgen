@@ -26,7 +26,10 @@ use function is_string;
  * the cookie; a session left empty is destroyed and its cookie cleared. An
  * unknown or expired id gets a fresh session with a fresh id, never the one
  * the visitor sent. A request with no cookie that leaves the session empty
- * never touches the store.
+ * never touches the store. A session whose id and values the request left as
+ * they were is only touched, never written back (#207), so a request that
+ * only read it, a long stream included, cannot overwrite what another request
+ * saved meanwhile.
  */
 final readonly class SessionMiddleware implements MiddlewareInterface
 {
@@ -64,7 +67,10 @@ final readonly class SessionMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $incoming = $this->cookie($request);
-        $storedSession = $this->load($incoming);
+        $payload = $incoming === ''
+            ? null
+            : $this->sessionStore->read($incoming);
+        $storedSession = $this->load($incoming, $payload);
         $response = $handler->handle($request->withAttribute(RequestSession::ATTRIBUTE, $storedSession));
 
         if ($storedSession->all() === []) {
@@ -75,7 +81,7 @@ final readonly class SessionMiddleware implements MiddlewareInterface
             $this->sessionStore->destroy($incoming);
         }
 
-        $this->sessionStore->write($storedSession->sessionId(), $this->stringMapJson->encode($storedSession->all()), $this->ttl);
+        $this->save($storedSession, $incoming, $payload);
 
         return $this->responseBuilder->withAddedHeader($response, 'Set-Cookie', $this->setCookie($storedSession->sessionId(), $this->ttl));
     }
@@ -94,19 +100,36 @@ final readonly class SessionMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @param string $incoming The id the visitor sent; empty for none.
+     * @param string      $incoming The id the visitor sent; empty for none.
+     * @param string|null $payload  Its stored payload; null when there is none.
      *
      * @return StoredSession Its session, or a fresh one under a fresh id.
      */
-    private function load(string $incoming): StoredSession
+    private function load(string $incoming, ?string $payload): StoredSession
     {
-        $payload = $incoming === ''
-            ? null
-            : $this->sessionStore->read($incoming);
-
         return $payload === null
             ? new StoredSession($this->randomTokens->fresh(), [], $this->randomTokens)
             : new StoredSession($incoming, $this->stringMapJson->decode($payload), $this->randomTokens);
+    }
+
+    /**
+     * @param StoredSession $storedSession The session after the handler.
+     * @param string        $incoming      The id the visitor sent; empty for none.
+     * @param string|null   $payload       What the store held for it when the request began; null for none.
+     *
+     * @throws JsonException When the session cannot be encoded.
+     */
+    private function save(StoredSession $storedSession, string $incoming, ?string $payload): void
+    {
+        $encoded = $this->stringMapJson->encode($storedSession->all());
+
+        if ($storedSession->sessionId() === $incoming && $encoded === $payload) {
+            $this->sessionStore->touch($incoming, $this->ttl);
+
+            return;
+        }
+
+        $this->sessionStore->write($storedSession->sessionId(), $encoded, $this->ttl);
     }
 
     /**

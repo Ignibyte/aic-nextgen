@@ -15,6 +15,12 @@ use function preg_match;
 final readonly class SameOriginPath
 {
     /**
+     * A path on this site: a leading `/` not followed by `/` or `\`, then no
+     * backslash and no control character. `PageRedirect` holds every location to it.
+     */
+    public const string PATTERN = '#^/(?![/\\\\])[^\\\\\\x00-\\x1f\\x7f]*$#';
+
+    /**
      * @param string $fallback Where to go instead: a path on this site.
      */
     public function __construct(
@@ -29,7 +35,7 @@ final readonly class SameOriginPath
      */
     public function resolve(string $candidate): string
     {
-        return preg_match('#^/(?![/\\\\])[^\\\\\\x00-\\x1f\\x7f]*$#', $candidate) === 1
+        return preg_match(self::PATTERN, $candidate) === 1
             ? $candidate
             : $this->fallback;
     }

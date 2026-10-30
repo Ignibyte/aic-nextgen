@@ -101,17 +101,19 @@ final readonly class Inbox
     /**
      * @param string $userId The user.
      * @param int    $id     The newest id the caller has seen.
+     * @param int    $limit  The most to give: the newest of those after it.
      *
      * @throws QueryException When the table cannot be read.
      *
-     * @return list<InboxItem> Their notifications after it, oldest first: what a live view has not shown yet.
+     * @return list<InboxItem> Their newest notifications after it, oldest first: what a live view has not shown yet.
      */
-    public function newerThan(string $userId, int $id): array
+    public function newerThan(string $userId, int $id, int $limit): array
     {
         return $this->items(
             $this->database->fetchAll(
-                'SELECT ' . self::COLUMNS . ' FROM aic_notifications WHERE user_id = ? AND id > ? ORDER BY id',
-                [$userId, $id],
+                'SELECT * FROM (SELECT ' . self::COLUMNS
+                    . ' FROM aic_notifications WHERE user_id = ? AND id > ? ORDER BY id DESC LIMIT ?) AS newest ORDER BY id',
+                [$userId, $id, $limit],
             ),
         );
     }
