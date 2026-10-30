@@ -24,6 +24,14 @@ interface SessionStore
     public function write(string $id, string $payload, int $ttl): void;
 
     /**
+     * Extends a session's life and leaves its payload alone (#207): what a request that changed nothing does.
+     *
+     * @param string $id  A session id.
+     * @param int    $ttl Seconds it lives from now.
+     */
+    public function touch(string $id, int $ttl): void;
+
+    /**
      * @param string $id A session id to forget.
      */
     public function destroy(string $id): void;

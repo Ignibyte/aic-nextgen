@@ -42,7 +42,7 @@ final readonly class InboxLines
     public function lines(string $userId, string $after): array
     {
         $items = ctype_digit($after) && strlen($after) < 10
-            ? $this->inbox->newerThan($userId, (int) $after)
+            ? $this->inbox->newerThan($userId, (int) $after, self::PAGE)
             : $this->inbox->page($userId, 0, self::PAGE);
         $lines = [$this->inbox->unread($userId) . ' unread of ' . $this->inbox->total($userId)];
 

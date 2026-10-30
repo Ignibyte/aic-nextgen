@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Run 19's follow-ups** (#207). `Inbox::newerThan()` takes a limit and answers the newest after an
+  id; the session middleware only touches a session the request left unchanged, through the new
+  `SessionStore::touch()`, so a read-only request or stream cannot overwrite another's write; and
+  `PageRedirect` refuses a location that is not a path on this site.
 - **The compiler is the elephc fork synced with upstream past 0.27.6, with new carries** (#216);
   `aic/gates` pins native recipe 7. A call on a narrowed value releases its arguments (#205), a
   literal holds a call on an untyped loop element (#69) and a preg call reads a loop's key or

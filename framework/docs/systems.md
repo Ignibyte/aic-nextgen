@@ -146,7 +146,9 @@ See [tessera.md](tessera.md) for markers, requests, replies and streams.
   `AIC\Form\Domain\SameOriginPath` keeps redirects on the site; `AIC\Form\Application\UploadCheck`
   accepts an upload by its content, not its name.
 - `AIC\Session`: a session in Postgres behind the `__Host-aic_session` cookie, string values by
-  key, on the request as the `aic.session` attribute.
+  key, on the request as the `aic.session` attribute. It is written back only when the request
+  changed its id or values; otherwise `SessionStore::touch()` extends its expiry alone, so a request
+  that only read it cannot overwrite what another request saved (#207).
 - `AIC\Secret`: `AIC\Secret\Domain\AppSecret`, the key every signature uses. It comes only from
   the `AIC_APP_SECRET` environment variable, and the app does not boot without 32 bytes or more.
 
@@ -170,7 +172,7 @@ See [security.md](security.md) for sessions, form guards, uploads, auth and secr
 - `AIC\Notification`: a notification, with the site path it is about, goes to the database and by
   mail (AIC's own SMTP client), each delivery a job; a delivery whose channel cannot deliver now
   (a mail server that is down) retries after a delay and fails with the reason on its fifth attempt. `AIC\Notification\Application\Inbox` reads a
-  user's kept notifications (unread count, a page newest first, one by id, those newer than an id)
+  user's kept notifications (unread count, a page newest first, one by id, the newest few after an id, up to a limit (#207))
   and marks them read, every query scoped to that user (#202); `forget(userId)` deletes them all, so
   a gate:23 pass can start the gate user's inbox afresh (#210).
 

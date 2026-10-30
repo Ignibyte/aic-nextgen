@@ -61,6 +61,21 @@ final readonly class PostgresSessionStore implements SessionStore
     }
 
     /**
+     * @param string $id  A session id.
+     * @param int    $ttl Seconds it lives from now.
+     *
+     * @throws QueryException When the statement fails.
+     */
+    #[Override]
+    public function touch(string $id, int $ttl): void
+    {
+        $this->database->execute(
+            'UPDATE aic_sessions SET expires_at = now() + make_interval(secs => ?) WHERE id = ?',
+            [$ttl, $id],
+        );
+    }
+
+    /**
      * @param string $id A session id to forget.
      *
      * @throws QueryException When the statement fails.
