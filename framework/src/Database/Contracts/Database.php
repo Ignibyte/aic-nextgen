@@ -29,12 +29,12 @@ interface Database
      *
      * @throws QueryException When the query fails.
      *
-     * @return list<Row> Every row, in order.
+     * @return Rows Every row, in order.
      *
      * @psalm-taint-sink client_upload $sql
      * @psalm-taint-sink client_upload $params
      */
-    public function fetchAll(string $sql, array $params): array;
+    public function fetchAll(string $sql, array $params): Rows;
 
     /**
      * @param string                           $sql    A statement, with `?` placeholders.

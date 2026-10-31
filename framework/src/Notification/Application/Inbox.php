@@ -7,6 +7,7 @@ namespace AIC\Notification\Application;
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
+use AIC\Database\Contracts\Rows;
 use AIC\Notification\Domain\InboxItem;
 
 /**
@@ -165,13 +166,13 @@ final readonly class Inbox
     }
 
     /**
-     * @param list<Row> $rows Rows of `COLUMNS`.
+     * @param Rows $rows Rows of `COLUMNS`.
      *
      * @throws QueryException When a column is missing or of another type.
      *
      * @return list<InboxItem> The items.
      */
-    private function items(array $rows): array
+    private function items(Rows $rows): array
     {
         $items = [];
 

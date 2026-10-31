@@ -57,7 +57,7 @@ final readonly class StockReportRepository
             $entityQuery->where('added_on', $day);
         }
 
-        $rows = $entityQuery->orderByDescending('added_on')->limit($count)->rows();
+        $rows = $entityQuery->orderByDescending('added_on')->limit($count)->rows()->all();
 
         return array_map(
             static fn (Row $row): StockDay => new StockDay($row->string('added_on'), $row->int('items'), $row->string('worth')),

@@ -6,6 +6,9 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **`Rows`, a typed list of database rows** (#201): `Database::fetchAll()` and `EntityQuery::rows()`
+  answer it, so a loop's `$row` is a `Row` in the compiled site and a row's `string()` is never
+  confused with another class's; array functions read `all()`, an index `first()`.
 - **No client file name or media type reaches a write** (#199): gate:13's taint pass follows
   `client_upload` from the upload getters, through a Psalm stub in aic/gates, into every framework
   write an app calls; the fixture's upload message no longer shows the client's file name.

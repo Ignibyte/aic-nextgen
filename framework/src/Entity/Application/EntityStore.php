@@ -79,7 +79,7 @@ final readonly class EntityStore
     {
         $entityValues = new EntityValues($entityType, $values);
         $sql = $this->insertSql($entityType, $entityValues, ' ON CONFLICT (' . self::unique($entityValues, $unique) . ') DO NOTHING');
-        $row = $this->database->fetchAll($sql, $entityValues->params())[0] ?? null;
+        $row = $this->database->fetchAll($sql, $entityValues->params())->first();
 
         return $row instanceof Row
             ? $row->int($entityType->key)

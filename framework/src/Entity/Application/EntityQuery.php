@@ -7,6 +7,7 @@ namespace AIC\Entity\Application;
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
+use AIC\Database\Contracts\Rows;
 use AIC\Entity\Domain\Comparison;
 use AIC\Entity\Domain\Condition;
 use AIC\Entity\Domain\EntityType;
@@ -223,9 +224,9 @@ final class EntityQuery
     /**
      * @throws QueryException When the query fails.
      *
-     * @return list<Row> The matching rows.
+     * @return Rows The matching rows.
      */
-    public function rows(): array
+    public function rows(): Rows
     {
         $sql = 'SELECT ' . $this->entityJoins->selected() . ' FROM ' . $this->entityJoins->from()
             . $this->entityConditions->sql()
@@ -261,7 +262,7 @@ final class EntityQuery
      */
     public function first(): ?Row
     {
-        return $this->rows()[0] ?? null;
+        return $this->rows()->first();
     }
 
     /**

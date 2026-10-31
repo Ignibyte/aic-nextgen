@@ -38,7 +38,7 @@ final readonly class NoteRepository
      */
     public function all(): array
     {
-        return array_map(self::note(...), $this->entityStore->query($this->noteTypes->notes())->orderBy('id')->rows());
+        return array_map(self::note(...), $this->entityStore->query($this->noteTypes->notes())->orderBy('id')->rows()->all());
     }
 
     /**

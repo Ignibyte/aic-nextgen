@@ -73,7 +73,10 @@ The development engine and its guard are described in [workflow.md](workflow.md)
     `AIC\Entity\Domain\Comparison`, null for `IS NULL`; `whereIn`; `whereAny` over
     `AIC\Entity\Domain\Condition`s; `search`, a case-insensitive contains match across text
     fields with `%` and `_` taken literally), `orderBy`, `orderByDescending`, `limit`, `offset`
-    and `forUpdate`, and answers `rows`, `one` or `first`.
+    and `forUpdate`, and answers `rows`, `one` or `first`. `rows()` (like the database's
+    `fetchAll()`) is an `AIC\Database\Contracts\Rows`: loop over it and each element is a `Row`
+    in the compiled site too; array functions and `count()` take `all()`, and `first()` the
+    first row or null (#201).
   - `totals()` answers `count`, `sum`, `max` and the distinct `values` of a field over the
     matching rows, as text where money is involved; `changes()` updates or deletes the matching
     rows and answers how many, refusing to run without a condition.

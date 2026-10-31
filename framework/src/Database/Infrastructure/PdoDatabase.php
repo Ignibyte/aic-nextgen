@@ -7,6 +7,7 @@ namespace AIC\Database\Infrastructure;
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
+use AIC\Database\Contracts\Rows;
 use AIC\Database\Domain\DatabaseConfig;
 use Override;
 use PDO;
@@ -75,10 +76,10 @@ final class PdoDatabase implements Database
      *
      * @throws QueryException When the query fails.
      *
-     * @return list<Row> Every row, in order.
+     * @return Rows Every row, in order.
      */
     #[Override]
-    public function fetchAll(string $sql, array $params): array
+    public function fetchAll(string $sql, array $params): Rows
     {
         $pdoStatement = $this->run($sql, $params);
 
@@ -95,7 +96,7 @@ final class PdoDatabase implements Database
             throw self::failure($pdoException);
         }
 
-        return $rows;
+        return new Rows($rows);
     }
 
     /**
