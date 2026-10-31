@@ -44,7 +44,8 @@ final readonly class NoteTagRepository
             ->search(['tag', 'note.title'], $search)
             ->orderBy('tag')
             ->orderBy('note.title')
-            ->rows();
+            ->rows()
+            ->all();
 
         return array_map(self::tag(...), $rows);
     }

@@ -127,7 +127,7 @@ final readonly class PostgresQueue
             $this->database->fetchAll(
                 "SELECT job || ' ' || payload || ', attempts ' || attempts AS line FROM aic_jobs ORDER BY id",
                 [],
-            ),
+            )->all(),
         );
     }
 
@@ -144,7 +144,7 @@ final readonly class PostgresQueue
                 "SELECT '#' || id || ' ' || job || ' ' || payload || ' after ' || attempts || ' attempts: ' || reason AS line"
                 . ' FROM aic_failed_jobs ORDER BY id DESC LIMIT 20',
                 [],
-            ),
+            )->all(),
         );
     }
 

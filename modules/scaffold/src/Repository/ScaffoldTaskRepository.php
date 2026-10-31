@@ -42,7 +42,8 @@ final readonly class ScaffoldTaskRepository
         $scaffoldTaskRows = $this->entityStore->query($this->scaffoldTaskType())
             ->orderByDescending('id')
             ->limit($count)
-            ->rows();
+            ->rows()
+            ->all();
 
         return array_map(self::scaffoldTask(...), array_reverse($scaffoldTaskRows));
     }

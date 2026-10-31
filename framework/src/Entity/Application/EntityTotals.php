@@ -6,7 +6,7 @@ namespace AIC\Entity\Application;
 
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
-use AIC\Database\Contracts\Row;
+use AIC\Database\Contracts\Rows;
 use InvalidArgumentException;
 
 /**
@@ -168,10 +168,10 @@ final readonly class EntityTotals
      * @throws QueryException           When the query fails.
      * @throws InvalidArgumentException When the query has no such field.
      *
-     * @return list<Row> One row per group: its value as `value`, the aggregate as text in `total` (an integer
-     *                   sum is a bigint, which PDO hands back as an int, #211), largest first by the aggregate.
+     * @return Rows One row per group: its value as `value`, the aggregate as text in `total` (an integer
+     *              sum is a bigint, which PDO hands back as an int, #211), largest first by the aggregate.
      */
-    private function grouped(string $aggregate, string $group): array
+    private function grouped(string $aggregate, string $group): Rows
     {
         $column = $this->entityConditions->column($group);
         $sql = 'SELECT ' . $column . '::text AS value, (' . $aggregate . ')::text AS total FROM ' . $this->entityJoins->from()

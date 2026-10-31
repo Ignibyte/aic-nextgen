@@ -67,7 +67,12 @@ final readonly class StockRepository
      */
     public function latest(int $count, StockQuery $stockQuery): array
     {
-        $rows = $this->matching($stockQuery)->orderByDescending('id')->limit($count)->offset(($stockQuery->page - 1) * $count)->rows();
+        $rows = $this->matching($stockQuery)
+            ->orderByDescending('id')
+            ->limit($count)
+            ->offset(($stockQuery->page - 1) * $count)
+            ->rows()
+            ->all();
 
         return array_map(self::item(...), array_reverse($rows));
     }
@@ -82,7 +87,7 @@ final readonly class StockRepository
      */
     public function all(StockQuery $stockQuery): array
     {
-        return array_map(self::item(...), $this->matching($stockQuery)->orderBy('id')->rows());
+        return array_map(self::item(...), $this->matching($stockQuery)->orderBy('id')->rows()->all());
     }
 
     /**

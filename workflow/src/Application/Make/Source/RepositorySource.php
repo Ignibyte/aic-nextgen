@@ -63,7 +63,8 @@ final readonly class RepositorySource
                 ${variable}Rows = $this->entityStore->query($this->{variable}Type())
                     ->orderByDescending('id')
                     ->limit($count)
-                    ->rows();
+                    ->rows()
+                    ->all();
 
                 return array_map(self::{variable}(...), array_reverse(${variable}Rows));
             }
