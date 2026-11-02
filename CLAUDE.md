@@ -19,8 +19,10 @@ The architecture set an app's agent reads, shipped in `aic/framework`, is
 **The profiler (Chad, 2026-11-02).** #229 (the core), #230 (the pages) and #231 (the toolbar) are
 delivered: with `AIC_PROFILER=1` every dynamic request is kept in `aic_profiles`, named in
 `X-AIC-Profile`, readable at `/_profiler`, and every page carries a live toolbar
-([framework/docs/profiler.md](framework/docs/profiler.md)). AIC pins Tessera 0.4.0. Next: #232 (`code:coverage`), #233 (an XML
-Api response) and #234 (gate:23 profiled) follow, then Lotline's aic-demo #25 to #38.
+([framework/docs/profiler.md](framework/docs/profiler.md)). AIC pins Tessera 0.4.0. #234 holds it natively: gate:23's
+`profiled` steps run a second pass with the profiler on and compare each step's recorded profile
+on both sites. Next: #232 (`code:coverage`) and #233 (an XML Api response), then Lotline's
+aic-demo #25 to #38.
 
 Current order (Chad, 2026-10-25): finish epic #151, the theme owns all markup. #153 (components,
 layouts and assets in `themes/<theme>/`) and #154 (a controller names a layout through
@@ -437,7 +439,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   manifests, the script folders, gate:26's shell). An app runs every gate but 22, 28 and 29;
   gate:21 probes its `modules/`, `themes/` and `build/generated/`, and gate:23 compiles them with the framework from
   `vendor/`. gate:23's steps are `config/native-site.json` (`aic.native-site/1`, one step a
-  line; with none the gate defers).
+  line; with none the gate defers; `profiled` steps run again with `AIC_PROFILER=1`, #234).
 - **An app's suite files** (#130): `gates/stubs/` holds the eight root files an app keeps.
   `vendor/bin/aic-gate init` writes each that is missing or differs (`phpcs.xml.dist` with one
   root per module), appends the ignore lines, prints composer.json's lines and never writes it;

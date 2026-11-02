@@ -20,7 +20,10 @@ Nothing else may build the profiler: gate:15 refuses it anywhere but `bootstrap/
 and the request still answers.
 
 The compiled site records the same profiles as PHP: start it with the variable set
-(`AIC_PROFILER=1 composer run native:serve`).
+(`AIC_PROFILER=1 composer run native:serve`). gate:23 holds it there (#234): its profiled pass
+serves both sites with the profiler on, compares the profiles each step recorded on each, and runs
+`tests/browser/profiler.spec.ts` against the compiled pages and toolbar
+([gates.md](gates.md#where-the-gates-come-from)).
 
 ## What a profile holds
 

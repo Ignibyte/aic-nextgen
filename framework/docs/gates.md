@@ -51,6 +51,17 @@ against the compiled site it serves, with the gate user's login in `AIC_GATE_LOG
 `vendor/bin/aic-gate browser [--base-url=<url>] [<spec>…]` runs tests against any site with the
 same config, `gates/browser/playwright.config.mjs`; a workflow run takes its looks with it.
 
+`config/native-site.json` may also hold `profiled`, steps written as `steps` are (#234). After the
+plain pass and its browser run, gate:23 restarts both sites from the same build with
+`AIC_PROFILER=1`, sends each profiled step to each, and compares the answers as before, with the
+profile ids, browser keys and toolbar links masked. It then reads the two profiles each step names
+in `X-AIC-Profile` from `aic_profiles` and compares what they recorded: handler, kind, status,
+method, path, query, the Tessera headers both ways, the posted field names, every statement's SQL
+in order and every template's path and class; never a time. A difference names the step and the
+first member that differs, prefixed `PROFILED`. Browser specs whose file name starts `profiler` run
+in this pass only, and skip themselves without `AIC_PROFILER`. With no `profiled` steps there is no
+second pass.
+
 The base NEON files include PHP configs that register the actual PHPStan rules and tagged
 architecture services. PHPat's attributed callables return every named architecture rule. PHPCS
 and PHPMD read custom XML generated from their custom classes. AIC's source build writes those
@@ -121,7 +132,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 20 | captainhook | the git hooks are installed | `composer install` |
 | 21 | native | every runtime class compiles, links, runs and matches PHP under elephc | reshape the class into a form elephc compiles; report a compiler defect |
 | 22 | pipeline docs | *AIC only*: its own process documents | not run in an app |
-| 23 | native site | the app compiled with `elephc --web` answers each step as the PHP app does, a step reaches every GET route in `build/surface.json`, every kept browser test in `tests/browser/` passes on the compiled site, and every HTML answer passes the HTML lint: no inline style or script, each `id` once, an `alt` on every `<img>`, no HTML5 parser error on a full document | find the step that differs and the class behind it; add a step for an unreached route; fix the markup in the template that writes it |
+| 23 | native site | the app compiled with `elephc --web` answers each step as the PHP app does, a step reaches every GET route in `build/surface.json`, every kept browser test in `tests/browser/` passes on the compiled site, each `profiled` step records the same profile on both sites, and every HTML answer passes the HTML lint: no inline style or script, each `id` once, an `alt` on every `<img>`, no HTML5 parser error on a full document | find the step that differs and the class behind it; add a step for an unreached route; fix the markup in the template that writes it |
 | 24 | build outputs | everything under `build/` (the generated wiring and templates, `build/assets/`, the manifests) and the wiki match what the build writes | `composer run build` |
 | 25 | templates | the theme's `*.phtml` files and the atoms use the grammar and the HTML lint (see [templates.md](templates.md#markup-and-whitespace)); a template anywhere else, or an unsupported source, fails | move the logic into the component's props; style through a class in the theme's stylesheet, script from a script file |
 | 26 | module boundaries | kind folders, the 15-file cap, exports and requires, no cycles, no component, template or asset in a module, nothing outside `modules/` but the shell and the theme's classes; each table belongs to the module whose migration creates it, and an entity type or an alteration names only its module's tables, as literals; a migration names a table in a foreign key or SQL only after the version that creates it | move the class (a component to the theme), export it, require the module, or split the module; reach another module's table through its exported repository; give a migration a later version than the one creating the table it names |

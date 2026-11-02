@@ -170,7 +170,9 @@ final readonly class StreamHttpClient implements HttpClient
 
         $location = $fields['location'] ?? $fields['tessera-location'] ?? '';
 
-        return new HttpExchange($status, $fields['content-type'] ?? '', $location, $body, $cookie, self::compared($fields));
+        $profile = $fields['x-aic-profile'] ?? '';
+
+        return new HttpExchange($status, $fields['content-type'] ?? '', $location, $body, $cookie, self::compared($fields), $profile);
     }
 
     /**

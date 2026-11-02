@@ -1175,5 +1175,43 @@
             "status": 200,
             "captures": false
         }
+    ],
+    "profiled": [
+        {
+            "name": "profiled home, the toolbar spliced",
+            "method": "GET",
+            "path": "/",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "profiled notes, a page with statements",
+            "method": "GET",
+            "path": "/notes",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "profiled status, an Api",
+            "method": "GET",
+            "path": "/api/status",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "profiled stock list, a Tessera refresh by anchor",
+            "method": "GET",
+            "path": "/stock?limit=3",
+            "form": "",
+            "header": "Tessera-Request: refresh\r\nTessera-Protocol: 2\r\nTessera-Layout: app-focus\r\nTessera-Targets: @stock-list",
+            "status": 200,
+            "captures": false
+        }
     ]
 }

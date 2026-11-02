@@ -7,6 +7,7 @@ namespace Gates\Application;
 use function array_map;
 use function array_pop;
 use function array_slice;
+use function basename;
 use function count;
 use function explode;
 use function implode;
@@ -15,6 +16,7 @@ use function mb_trim;
 use function preg_match;
 use function preg_replace;
 use function sprintf;
+use function str_starts_with;
 
 use const PHP_EOL;
 
@@ -53,20 +55,22 @@ final readonly class NativeSiteBrowser
      * @param string                $origin   `http://host:port` of the compiled site.
      * @param array<string, string> $env      The environment the sites run with.
      * @param string                $password The gate user's password; empty when there is none.
+     * @param bool                  $profiled Whether this is the profiled pass (#234), which runs only the specs named
+     *                                        `profiler…`; the plain pass runs every other one.
      *
      * @return array{int, list<string>} How many kept test files ran, and one `BROWSER` line per failure.
      */
-    public function findings(string $root, string $origin, array $env, string $password): array
+    public function findings(string $root, string $origin, array $env, string $password, bool $profiled = false): array
     {
-        $specs = count($this->browserTests->kept($root));
+        $specs = self::selected($this->browserTests->kept($root), $profiled);
 
-        if ($specs === 0) {
+        if ($specs === []) {
             return [0, []];
         }
 
         $unready = $this->browserTests->unready($root);
 
-        return [$specs, $unready === null ? $this->ran($root, $origin, $env, $password) : ['BROWSER ' . $unready]];
+        return [count($specs), $unready === null ? $this->ran($root, $origin, $env, $password, $specs) : ['BROWSER ' . $unready]];
     }
 
     /**
@@ -74,18 +78,40 @@ final readonly class NativeSiteBrowser
      * @param string                $origin   The compiled site.
      * @param array<string, string> $env      The environment.
      * @param string                $password The gate user's password.
+     * @param list<string>          $specs    The specs to run.
      *
      * @return list<string> One `BROWSER` line per failing test; none when every kept test passes.
      */
-    private function ran(string $root, string $origin, array $env, string $password): array
+    private function ran(string $root, string $origin, array $env, string $password, array $specs): array
     {
         $env['AIC_GATE_LOGIN'] = GateUser::LOGIN;
         $env['AIC_GATE_PASSWORD'] = $password;
-        $processResult = $this->browserTests->run($root, $origin, $env, []);
+        $processResult = $this->browserTests->run($root, $origin, $env, $specs);
 
         return $processResult->exitCode === 0
             ? []
             : self::failures($processResult->stdout . $processResult->stderr);
+    }
+
+    /**
+     * @param list<string> $specs    Every kept spec, relative to the root.
+     * @param bool         $profiled Whether the profiled pass runs them.
+     *
+     * @return list<string> The `profiler…` specs for the profiled pass; every other one for the plain pass.
+     */
+    private static function selected(array $specs, bool $profiled): array
+    {
+        $selected = [];
+
+        foreach ($specs as $spec) {
+            if (str_starts_with(basename($spec), 'profiler') !== $profiled) {
+                continue;
+            }
+
+            $selected[] = $spec;
+        }
+
+        return $selected;
     }
 
     /**

@@ -11,6 +11,7 @@ use stdClass;
 use function array_is_list;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function explode;
 use function get_object_vars;
 use function is_array;
@@ -53,19 +54,55 @@ final readonly class NativeSiteScript
      */
     public function steps(string $root): array
     {
-        $steps = get_object_vars($this->script($root))['steps'] ?? null;
+        $steps = $this->listed($root, 'steps');
 
-        if (!is_array($steps) || $steps === [] || !array_is_list($steps)) {
+        if ($steps === []) {
             throw new InvalidArgumentException(self::PATH . ' holds no list of steps.');
         }
 
-        $read = [];
+        return $steps;
+    }
 
-        foreach (array_keys($steps) as $index) {
-            $read[] = $this->step($index, $steps[$index] instanceof stdClass ? $steps[$index] : new stdClass());
+    /**
+     * @param string $root The project's root.
+     *
+     * @throws InvalidArgumentException When the script or a profiled step is malformed.
+     *
+     * @return list<NativeSiteStep> The steps gate:23 runs again with the profiler on (#234), in order; none when the
+     *                              script names none.
+     */
+    public function profiled(string $root): array
+    {
+        return $this->listed($root, 'profiled');
+    }
+
+    /**
+     * @param string $root A project's root.
+     * @param string $key  `steps` or `profiled`.
+     *
+     * @throws InvalidArgumentException When the script is not an `aic.native-site/1` object, or the list or a step in it
+     *                                  is malformed.
+     *
+     * @return list<NativeSiteStep> The list's steps, in order; none when the key is absent.
+     */
+    private function listed(string $root, string $key): array
+    {
+        $fields = get_object_vars($this->script($root));
+
+        if (!array_key_exists($key, $fields)) {
+            return [];
         }
 
-        return $read;
+        $steps = $fields[$key];
+
+        if (!is_array($steps) || !array_is_list($steps)) {
+            throw new InvalidArgumentException(self::PATH . ' holds no list at ' . $key . '.');
+        }
+
+        return array_map(
+            fn (int $index): NativeSiteStep => $this->step($index, $steps[$index] instanceof stdClass ? $steps[$index] : new stdClass()),
+            array_keys($steps),
+        );
     }
 
     /**

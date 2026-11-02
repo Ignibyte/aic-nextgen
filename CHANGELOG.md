@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **gate:23 profiled** (#234): `config/native-site.json` may name `profiled` steps. gate:23 runs
+  them in a second pass with `AIC_PROFILER=1` on both sites and fails when the compiled site
+  records a different profile than PHP (handler, kind, status, Tessera headers, field names, SQL in
+  order, templates). The profiler's kept browser test, `tests/browser/profiler.spec.ts`, runs in
+  that pass: the list filtered in place, a visit's Tessera and Timeline tabs, the toolbar's live row
+  and the outline.
+
 - **The profiler's toolbar** (#231): with the profiler on, every whole page carries a toolbar at
   its foot, in any theme. It shows the page's own figures and lists this browser's exchanges live
   over a Tessera stream (`/_profiler/stream`). Each element a response patches is outlined, with a
