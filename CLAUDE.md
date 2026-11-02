@@ -3,7 +3,7 @@
 ## What this is
 
 The fresh start of **AIC** (Absolute Insanity, AI; AIAI), Ignibyte's AI-first, CMS-slim PHP
-framework. Old AIC (`/srv/stacks/aic`, `Ignibyte/aic`) grew to 43 wards; on 2026-10-18 Chad
+framework. Old AIC (`Ignibyte/aic`, checked out beside this repo as `../aic`) grew to 43 wards; on 2026-10-18 Chad
 decided to start over with only what earns its place and move it across by copying and
 trimming. This repo, `Ignibyte/aic-nextgen` (private), is where AIC lives: there is no
 cutover (Chad, 2026-10-20; #11 closed). Old AIC (`Ignibyte/aic`) is the archive and the reference,
@@ -24,9 +24,9 @@ stream renders a theme component), #156 (gate:32, no HTML under `modules/`) and 
 rows it shows, through `EntityQuery::orderByDescending()` and `limit()`) are delivered. The elephc fork carry #152 (`?>`, inline HTML, `<?=`) and
 #155 (templates run as templates, no markup in any PHP class, Tessera framing in framework
 templates) are delivered; #158 (`htmlspecialchars` substitution) stays a parked fork carry. Lotline
-(#128, the port of the old site's theming; #132 closed) has its theme: `/srv/stacks/aic-demo` runs
+(#128, the port of the old site's theming; #132 closed) has its theme: `Ignibyte/aic-demo` (beside this repo as `../aic-demo`) runs
 current AIC with `themes/lotline/` (the drawer shell, every part of the old look as theme components on
-its `/theme` style guide, Tailwind from `frontend/`); its product pages are the next stage. Old `/srv/stacks/lotline` is product and design reference only. #150 (an
+its `/theme` style guide, Tailwind from `frontend/`); its product pages are the next stage. Old Lotline (`../lotline`) is product and design reference only. #150 (an
 intermittent native session-ID defect) is closed: about 42,000 stress requests never reproduced it.
 
 **The theme (#153, Chad 2026-10-25).** "There is no markup in php classes outside of components."
@@ -373,7 +373,7 @@ or was split off, what to check by hand.
 
 ## Porting from old AIC
 
-- Copy from `/srv/stacks/aic` at `e0778896` and trim. Never require an old `aic/ward-*` package.
+- Copy from `../aic` at `e0778896` and trim. Never require an old `aic/ward-*` package.
 - Cut every edge to a removed system on the way in (the list is in `plan.md`). A class that only
   served a removed system stays behind.
 - Keep native-compilation discipline from the first commit: build-time manifests, no
@@ -452,9 +452,9 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 - A new gate or rule is done only when it has been seen to fail on a planted violation.
 - Before a final run: `rm -f .phpcs-cache` (a stale cache passes PHPCS falsely).
 - gate:21 probes each class under `framework/src`, `modules`, `themes` and `build/generated` on its own: its class-graph closure,
-  compiled with `ELEPHC_BIN` or the first `elephc` on `PATH` (#222; on this box
-  `~/.local/bin/elephc` links the fork's in-place `/srv/stacks/elephc/target/release/elephc`, and
-  `~/.cache/elephc-native`, the default `ELEPHC_NATIVE_CACHE`, links `/mnt/fast/cache/elephc-native`),
+  compiled with `ELEPHC_BIN` or the first `elephc` on `PATH` (#222; link the fork's in-place
+  `target/release/elephc` there rather than copying it; native packages cache in
+  `ELEPHC_NATIVE_CACHE`, by default `~/.cache/elephc-native`),
   run, and compared with host PHP. Work files land in `.native-gate/`
   (gitignored); pcre2 and oniguruma are pinned in aic/gates' `native/elephc.{toml,lock}`. Everything
   outside those roots runs interpreted by design.
@@ -541,8 +541,8 @@ Every file:
 - Browser looks run on this box with Playwright 1.62.1 (`npm ci` from the root `package.json`;
   Chromium in `~/.cache/ms-playwright`): explore with `npx playwright cli`, write the look in
   `tests/browser/`, run it with `vendor/bin/aic-gate browser --base-url=https://aic-nextgen.ddev.site:8843`
-  (#174). Marley's Browser tab (the `marley` `browser_*` tools) when Chad needs to watch. Never the
-  Mac mini's Playwright. `aic-nextgen.ddev.site` resolves locally.
+  (#174). Marley's Browser tab (the `marley` `browser_*` tools) when Chad needs to watch.
+  `aic-nextgen.ddev.site` resolves locally.
 - `.mcp.json` is owner-managed (the Playwright MCP server). Never write or overwrite it; it is
   gitignored here.
 - Never `git stash -u`: it takes the untracked `.mcp.json` with it.
@@ -560,6 +560,6 @@ Every file:
   as a whole, before building (#110).
 - Edit `composer.json` with targeted edits, never a JSON dump and rewrite (it reindents and
   escapes unicode).
-- The elephc compiler is `/srv/stacks/elephc` (carry workflow in its `FORK.md`). Run its binary
+- The elephc compiler is AIC's fork, checked out beside this repo as `../elephc` (carry workflow in its `FORK.md`). Run its binary
   in place, one cargo command at a time, never kill a running cargo, and never run `cargo fmt`
   there: it reformats the whole repo.

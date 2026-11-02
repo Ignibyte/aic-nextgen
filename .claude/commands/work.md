@@ -30,7 +30,7 @@ for t in pint phpstan rector phpmd phpcs deptrac psalm composer-unused phpcpd ca
 done
 for t in semgrep shellcheck; do printf '%s: %s\n' "$t" "$(command -v $t >/dev/null && echo OK || echo MISSING)"; done
 printf 'gitleaks: %s\n' "$(test -x tools/gitleaks && echo OK || echo MISSING)"
-printf 'elephc: %s\n' "$(test -x /srv/stacks/elephc/target/release/elephc && echo OK || echo MISSING)"
+printf 'elephc: %s\n' "$(test -x "${ELEPHC_BIN:-$(command -v elephc)}" && echo OK || echo MISSING)"
 # Hooks wired (.claude/settings.json)
 jq -r '.hooks | to_entries[] | .key + ": " + ([.value[].hooks[].command | sub(".*/hooks/"; "")] | join(", "))' .claude/settings.json
 # The served app, when the work is browser-testable

@@ -15,7 +15,7 @@ Restate the goal in one sentence: what is different for the project once this sh
 ## Step 2 — Read the surface
 
 - The files the change touches, and the system that already solves the same shape: mirror its structure.
-- A port: the old-AIC class at `e0778896` (`git -C /srv/stacks/aic show e0778896:<path>`) and the port map in `docs/planning/plan.md`. Cut every edge to a removed system.
+- A port: the old-AIC class at `e0778896` (`git -C ../aic show e0778896:<path>`) and the port map in `docs/planning/plan.md`. Cut every edge to a removed system.
 - Precedent: `docs/planning/pipeline/completed/` and the tickets (`grep -ril '<topic>' docs/planning/tickets/`).
 - A sweep over more than three candidate paths goes to an Explore subagent (CONSTITUTION.md §18.2).
 
