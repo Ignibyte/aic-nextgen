@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Gates\Tables;
 
-use Gates\Application\QuietFileReader;
 use Gates\Domain\BoundaryViolation;
 use Gates\Domain\ModuleDefinition;
 use Gates\Domain\ModuleRule;
@@ -12,9 +11,6 @@ use Gates\Domain\ModuleTables;
 use Gates\Domain\ModuleTree;
 use Gates\Domain\TableName;
 use Override;
-use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\ParserFactory;
 
 use function sprintf;
 use function str_contains;
@@ -42,12 +38,10 @@ final readonly class TableOwnershipRule implements ModuleRule
     private const string COMPUTED = '%s names its table by a computed value: write the table as a literal.';
 
     /**
-     * @param ParserFactory   $parserFactory   Makes the parser.
-     * @param QuietFileReader $quietFileReader Reads each file.
+     * @param ModuleFileTraverser $moduleFileTraverser Reads and walks each module file.
      */
     public function __construct(
-        private ParserFactory $parserFactory = new ParserFactory(),
-        private QuietFileReader $quietFileReader = new QuietFileReader(),
+        private ModuleFileTraverser $moduleFileTraverser = new ModuleFileTraverser(),
     ) {
     }
 
@@ -93,9 +87,7 @@ final readonly class TableOwnershipRule implements ModuleRule
             }
 
             $visitor = new TableOwnershipVisitor(str_contains($path, '/src/Migration/'));
-            $source = $this->quietFileReader->read($moduleTree->root . '/' . $path) ?? '';
-            $statements = $this->parserFactory->createForHostVersion()->parse($source);
-            (new NodeTraverser(new NameResolver(), $visitor))->traverse($statements ?? []);
+            $this->moduleFileTraverser->traverse($moduleTree->root, $path, $visitor);
             $tables[] = new ModuleTables($path, $module, $visitor->owned(), $visitor->named());
         }
 

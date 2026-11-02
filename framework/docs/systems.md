@@ -60,7 +60,7 @@ The development engine and its guard are described in [workflow.md](workflow.md)
   `AIC\Entity`, and ask the database about itself (whether it answers, its version, a setting)
   through `AIC\Database\Application\DatabaseStatus`.
 - `AIC\Schema`: migrations. A migration describes its tables through
-  `AIC\Schema\Contracts\Schema`; `AIC\Schema\Application\Migrator` applies each version once, in a
+  `AIC\Schema\Contracts\Schema`; `AIC\Schema\Application\Migrator` applies each version once, in version order across modules, in a
   transaction, and keeps a ledger with a checksum of each, so a changed migration shows as changed.
 - `AIC\Entity`: tables as entity types with typed fields (Text, Date, Numeric, Boolean, Integer,
   Reference, and the CreatedAt and UpdatedAt stamps the database sets), each nullable or not. A module's
