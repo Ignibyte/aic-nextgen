@@ -452,8 +452,10 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 - A new gate or rule is done only when it has been seen to fail on a planted violation.
 - Before a final run: `rm -f .phpcs-cache` (a stale cache passes PHPCS falsely).
 - gate:21 probes each class under `framework/src`, `modules`, `themes` and `build/generated` on its own: its class-graph closure,
-  compiled with the fork's elephc in place (`/srv/stacks/elephc/target/release/elephc`;
-  `ELEPHC_BIN` overrides), run, and compared with host PHP. Work files land in `.native-gate/`
+  compiled with `ELEPHC_BIN` or the first `elephc` on `PATH` (#222; on this box
+  `~/.local/bin/elephc` links the fork's in-place `/srv/stacks/elephc/target/release/elephc`, and
+  `~/.cache/elephc-native`, the default `ELEPHC_NATIVE_CACHE`, links `/mnt/fast/cache/elephc-native`),
+  run, and compared with host PHP. Work files land in `.native-gate/`
   (gitignored); pcre2 and oniguruma are pinned in aic/gates' `native/elephc.{toml,lock}`. Everything
   outside those roots runs interpreted by design.
 - gate:25 (`gates/bin/gate-templates.php`, #96/#149/#153) audits template candidates under

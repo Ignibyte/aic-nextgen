@@ -12,7 +12,7 @@ templates and signed forms, and stock items with a date, a price and a flag. `ac
 sign-in, sessions and uploads. `scaffold` is what the `bin/aic make:*` commands make (pages, an
 API, components, a block, a command, a job and a migration), held byte for byte by gate:31. The
 compiled binary serves the app, and PHP serves the same app as the reference. The ten-module demo it was cut from is the tag `demo-reference`.
-The proof app will be Lotline, built fresh in `/srv/stacks/aic-demo` with the packaged workflow and gates (#128, #132).
+The proof app is Lotline, a car dealer's site in a repository of its own, built with the packaged workflow and gates (#128).
 
 **Architecture:** [framework/docs/README.md](framework/docs/README.md), the pages an app's agent
 reads before building on AIC (the kinds, the modules, the systems, the conventions, the gates).
@@ -56,10 +56,12 @@ Gate 13 runs ordinary analysis and then explicit taint analysis over the full pr
 results and complete output are reported, and either failure fails the gate. PHPStan level 10
 holds return types; the approved Psalm return-type policy is recorded in both configs.
 
-`ddev start` prints the URL of the interpreted reference. On the Z690 dev box it is
-`https://aic-nextgen.ddev.site:8843` (the router's ports there are 8880 and 8843).
+`ddev start` prints the URL of the interpreted reference, `https://aic-nextgen.ddev.site` on
+DDEV's default router ports.
 
-The compiled site needs the elephc fork (`/srv/stacks/elephc`, or `ELEPHC_BIN`):
+The compiled site needs AIC's elephc fork: `ELEPHC_BIN`, or the first `elephc` on `PATH`. Its
+native packages (pcre2, oniguruma) are cached in `ELEPHC_NATIVE_CACHE`, by default
+`~/.cache/elephc-native`:
 
 ```bash
 composer run native:serve        # build the compiled site and serve it on http://127.0.0.1:8090
@@ -100,8 +102,8 @@ holds it to that grammar, and the class tools skip templates. `composer run buil
 every gate checks, and writes the lookup the Renderer finds each component's template through: a
 page is components, and only the Renderer turns them into HTML.
 The native gate compiles every runtime class with [elephc](https://github.com/illegalstudio/elephc),
-runs it and compares the output with PHP; it needs the compiler checkout at
-`/srv/stacks/elephc` (or `ELEPHC_BIN`).
+runs it and compares the output with PHP; it needs AIC's fork of the compiler, found as for the
+compiled site above.
 There are no baselines and no suppressions. The gate code lives in `gates/` and never ships with
 the framework. `composer install` also installs the git hooks, which hold commit subjects to
 Conventional Commits.
