@@ -65,6 +65,8 @@ final readonly class ProjectProfile
         '.composer-require-checker.json',
         'deptrac.yaml',
         '.gitignore',
+        // The license text (#222).
+        'LICENSE',
         'package.json',
         'package-lock.json',
         'phpcs.xml.dist',
