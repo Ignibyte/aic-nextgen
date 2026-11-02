@@ -33,6 +33,7 @@ Read the first three before you plan a change; the rest when the change touches 
 10. [native.md](native.md): the compiled pool server, concrete source types, class closure cache and PHP oracle.
 11. [workflow.md](workflow.md): installed engine, phases, guard, rules, review, code index, commands and recovery.
 12. [deploy.md](deploy.md): the two runtimes, what a deploy sets, FrankenPHP and php-fpm.
+13. [profiler.md](profiler.md): what `AIC_PROFILER=1` records for each request, and where.
 
 ## Where things are
 

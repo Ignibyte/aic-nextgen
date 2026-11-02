@@ -260,3 +260,35 @@ rules:
       include:
         - "/framework/docs/**"
     severity: ERROR
+
+  # The profiler (#229) is a development tool the composition root switches on: nothing else builds it, so an app
+  # never records a request it did not ask to.
+  - id: aic-profiler-wired-at-root
+    # Both spellings: semgrep resolves a `use`d or aliased name only against the unprefixed pattern, and a written
+    # fully qualified name only against the prefixed one.
+    pattern-either:
+      - pattern: new AIC\Profiler\Application\Profile(...)
+      - pattern: new AIC\Profiler\Application\ProfiledDatabase(...)
+      - pattern: new AIC\Profiler\Application\ProfileWriter(...)
+      - pattern: new \AIC\Profiler\Application\Profile(...)
+      - pattern: new \AIC\Profiler\Application\ProfiledDatabase(...)
+      - pattern: new \AIC\Profiler\Application\ProfileWriter(...)
+    paths:
+      exclude:
+        - "/bootstrap/serve.php"
+    message: "The profiler is built only in bootstrap/serve.php, behind config/profiler.php (#229)."
+    languages: [php]
+    severity: ERROR
+
+  # A profile keeps each statement's SQL, never the values bound to it (#229): in the profiler, `$params` only passes
+  # through to the database that runs the statement.
+  - id: aic-profiler-no-bound-values
+    patterns:
+      - pattern: $params
+      - pattern-not-inside: $this->database->$METHOD($SQL, $params)
+    paths:
+      include:
+        - "/framework/src/Profiler/**"
+    message: "The profiler never records a bound value: pass $params straight to $this->database and nowhere else (#229)."
+    languages: [php]
+    severity: ERROR

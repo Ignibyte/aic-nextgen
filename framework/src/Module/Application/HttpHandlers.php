@@ -6,7 +6,6 @@ namespace AIC\Module\Application;
 
 use AIC\Block\Contracts\Blocks;
 use AIC\Component\Application\ComponentTemplates;
-use AIC\Component\Application\Renderer;
 use AIC\Controller\Application\ApiHandler;
 use AIC\Controller\Application\PageHandlers;
 use AIC\Controller\Application\Psr7ResponseWriter;
@@ -32,14 +31,17 @@ final readonly class HttpHandlers
      * @param ResponseBuilder    $responseBuilder    The response and file factories.
      * @param ComponentTemplates $componentTemplates The compiled component templates.
      * @param Blocks             $blocks             The modules' composed blocks.
+     * @param RequestObservers   $requestObservers   What observes the request; it builds the Renderer (#229).
      */
     public function __construct(
         ResponseBuilder $responseBuilder,
         ComponentTemplates $componentTemplates,
         Blocks $blocks = new Blocks([]),
+        RequestObservers $requestObservers = new RequestObservers(),
     ) {
         $fileResponses = new FileResponses($responseBuilder);
-        $this->responseWriter = new Psr7ResponseWriter($responseBuilder, new Renderer($componentTemplates), $fileResponses);
+        $renderer = $requestObservers->renderer($componentTemplates);
+        $this->responseWriter = new Psr7ResponseWriter($responseBuilder, $renderer, $fileResponses);
         $this->pageHandlers = new PageHandlers($this->responseWriter, $blocks);
     }
 

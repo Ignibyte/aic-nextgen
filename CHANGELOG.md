@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The profiler's core** (#229): with `AIC_PROFILER=1` (`config/profiler.php`), every dynamic
+  request is kept in `aic_profiles` (the newest 500) and named in `X-AIC-Profile`: its handler, its
+  middleware/handler/render times, each statement's SQL (never its values), each template rendered
+  and its Tessera request and answer headers. Three observer seams carry it, none set by default:
+  `RequestObserver` (Kernel), `RouteObserver` (Routing) and `RenderObserver` (Component). The
+  compiled site records the same profiles. Two semgrep rules keep it wired only in
+  `bootstrap/serve.php` and away from bound values. `framework/docs/profiler.md` describes it.
+
 - **Migrations apply in version order** (#228): `Migrator` sorts every module's migrations by version
   and refuses two with one version, so a fresh database migrates whatever the modules' order (Lotline
   stopped at a foreign key to a later module's table). gate:26's R7 refuses a migration that names a

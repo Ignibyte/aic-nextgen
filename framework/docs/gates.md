@@ -113,7 +113,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 12 | Deptrac | the layer ladder in every namespace (see [systems.md](systems.md#the-layer-ladder)) | move the class to the right layer, or depend on a contract |
 | 13 | Psalm | full ordinary error level 1, then full taint analysis; unused code | type the value; validate input before it reaches a sink |
 | 14 | phpcpd | no copy-paste of 4 lines or 50 tokens | extract the shared part |
-| 15 | semgrep | the house ruleset: no env outside config, no static state, no singletons, no eval, no `mixed` in generics, no positional Tessera path (`content/c0`, `Panel.1`) in modules, themes or browser tests | restructure; state lives in wired objects; anchor the component and target `@NAME` |
+| 15 | semgrep | the house ruleset: no env outside config, no static state, no singletons, no eval, no `mixed` in generics, no positional Tessera path (`content/c0`, `Panel.1`) in modules, themes or browser tests, the profiler built only in `bootstrap/serve.php` and never recording a bound value | restructure; state lives in wired objects; anchor the component and target `@NAME` |
 | 16 | no dynamic require | no `require` or `include` of a computed path in runtime code | use a literal path or the build |
 | 17 | gitleaks | no secrets in the history | remove the secret and rotate it |
 | 18 | shellcheck | every shell script, at warning level | fix the script |

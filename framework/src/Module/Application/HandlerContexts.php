@@ -11,7 +11,6 @@ use AIC\Form\Application\EnvelopeCodec;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Secret\Application\HmacSigner;
 use AIC\Secret\Domain\AppSecret;
-use AIC\Session\Domain\StringMapJson;
 
 /**
  * Builds the web side's handler context (#93): the modules' plugins in a
@@ -22,12 +21,13 @@ use AIC\Session\Domain\StringMapJson;
 final readonly class HandlerContexts
 {
     /**
-     * @param AppConfig       $appConfig       The app's settings.
-     * @param ResponseBuilder $responseBuilder Makes the PSR-7 responses.
-     * @param Database        $database        The database.
-     * @param AppSecret       $appSecret       Signs the forms' envelopes.
-     * @param string          $bootedAt        When the app booted to serve this request, ISO 8601 in UTC.
-     * @param string          $root            The app's root directory.
+     * @param AppConfig        $appConfig        The app's settings.
+     * @param ResponseBuilder  $responseBuilder  Makes the PSR-7 responses.
+     * @param Database         $database         The database.
+     * @param AppSecret        $appSecret        Signs the forms' envelopes.
+     * @param string           $bootedAt         When the app booted to serve this request, ISO 8601 in UTC.
+     * @param string           $root             The app's root directory.
+     * @param RequestObservers $requestObservers What observes each request: none, or a profile's (#229).
      */
     public function __construct(
         private AppConfig $appConfig,
@@ -36,6 +36,7 @@ final readonly class HandlerContexts
         private AppSecret $appSecret,
         private string $bootedAt,
         private string $root,
+        private RequestObservers $requestObservers = new RequestObservers(),
     ) {
     }
 
@@ -52,7 +53,13 @@ final readonly class HandlerContexts
         $plugins = new Plugins($webWiring instanceof PluginWiring ? $webWiring : null);
         $roots = $this->roots($webWiring, $plugins, $webPresentation);
 
-        return (new ModuleLayers())->context($webWiring, $roots, $this->responseBuilder, $webPresentation->componentTemplates);
+        return (new ModuleLayers())->context(
+            $webWiring,
+            $roots,
+            $this->responseBuilder,
+            $webPresentation->componentTemplates,
+            $this->requestObservers,
+        );
     }
 
     /** @return string The inert application root, available before any module provider runs. */
@@ -68,6 +75,14 @@ final readonly class HandlerContexts
     }
 
     /**
+     * @return RequestObservers What observes each request.
+     */
+    public function observers(): RequestObservers
+    {
+        return $this->requestObservers;
+    }
+
+    /**
      * @param WebWiring       $webWiring       The compiled request roots.
      * @param Plugins         $plugins         The modules' already composed plugins.
      * @param WebPresentation $webPresentation The already composed presentation catalogs.
@@ -79,7 +94,7 @@ final readonly class HandlerContexts
         return new WebRoots(
             $this->appConfig,
             $this->database,
-            new EnvelopeCodec(new HmacSigner($this->appSecret), new StringMapJson()),
+            new EnvelopeCodec(new HmacSigner($this->appSecret)),
             $this->responseBuilder,
             $plugins,
             $webPresentation->publicAssets,
