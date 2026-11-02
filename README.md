@@ -1,9 +1,41 @@
-# AIC nextgen
+# AIC
 
-The fresh start of AIC (Absolute Insanity, AI): a slim, opinionated PHP 8.5 framework that
-compiles natively with elephc and runs as the compiled `elephc --web` server, one `aic/framework`
-package with a namespace per system. It is built by porting what earns its place from old AIC
-(`Ignibyte/aic`). AIC stays in `Ignibyte/aic-nextgen`; old AIC is the archive.
+AIC is a PHP 8.5 framework for server-rendered sites. It is built for coding agents to write apps
+in, under strict gates, and built so the whole app can also compile to a native binary with
+[elephc](https://github.com/illegalstudio/elephc). It is a working framework: Lotline, a car
+dealer's site, runs on it. It is also young and opinionated, and it is public so PHP people can try
+it and say what breaks.
+
+## What to know first
+
+- **Two runtimes, one code base.** An app runs under plain PHP 8.5 (php-fpm or FrankenPHP) and
+  compiles with elephc into a prefork HTTP server. The gates hold the two to the same answers. Run
+  PHP in production; the compiled runtime is experimental
+  ([framework/docs/deploy.md](framework/docs/deploy.md)).
+- **The compiler is a fork.** Native builds need [AIC's elephc fork](https://github.com/Ignibyte/aic_compiler):
+  upstream elephc plus the fixes AIC needs, listed in its `FIXES.md` and sent upstream where they
+  are about PHP in general. Running under PHP needs no compiler.
+- **Nothing is discovered at run time.** A module declares what it brings in a manifest, and
+  `composer run build` writes the wiring as plain PHP under `build/generated/`. Every entry point is
+  one of five kinds (Page, Api, Stream, Command, Job). Markup lives only in the theme's `.phtml`
+  templates, never in a PHP class.
+- **Gates, not reviews.** 33 gates hold every change: PHPStan level 10, Psalm with taint analysis,
+  Deptrac, PHPMD, a native compile of every class, a whole-site comparison of PHP against the
+  compiled binary, and more. There are no baselines and no suppressions.
+- **The browser side** is [Tessera](https://github.com/Ignibyte/tessera): server HTML morphed into
+  the page by region and component, over responses and Server-Sent Events.
+- **Not on Packagist yet.** Apps require `aic/*` from a checkout of this repository by path.
+
+## The repositories
+
+| Repository | What it is |
+|---|---|
+| [Ignibyte/aic-nextgen](https://github.com/Ignibyte/aic-nextgen) (this one) | The framework (`framework/`, `aic/framework`), the gate suite (`gates/`, `aic/gates`), the agent workflow (`workflow/`, `aic/workflow`), and the fixture app at the root that the gates hold |
+| [Ignibyte/aic-demo](https://github.com/Ignibyte/aic-demo) | Lotline, the demo site. Start here to see an app built on AIC, with install steps |
+| [Ignibyte/tessera](https://github.com/Ignibyte/tessera) | The browser runtime |
+| [Ignibyte/aic_compiler](https://github.com/Ignibyte/aic_compiler) | The elephc fork |
+
+## This repository
 
 The root is AIC's fixture app, the site every gate holds to code: four modules under
 `modules/`. `site` has the home page, greetings, jobs, schedules and notifications,
@@ -11,8 +43,7 @@ Server-Sent Events, downloads, `/api/status` and `/health`. `note` has notes wit
 templates and signed forms, and stock items with a date, a price and a flag. `account` has
 sign-in, sessions and uploads. `scaffold` is what the `bin/aic make:*` commands make (pages, an
 API, components, a block, a command, a job and a migration), held byte for byte by gate:31. The
-compiled binary serves the app, and PHP serves the same app as the reference. The ten-module demo it was cut from is the tag `demo-reference`.
-The proof app is Lotline, a car dealer's site in a repository of its own, built with the packaged workflow and gates (#128).
+compiled binary serves the app, and PHP serves the same app as the reference.
 
 **Architecture:** [framework/docs/README.md](framework/docs/README.md), the pages an app's agent
 reads before building on AIC (the kinds, the modules, the systems, the conventions, the gates).
@@ -57,7 +88,9 @@ results and complete output are reported, and either failure fails the gate. PHP
 holds return types; the approved Psalm return-type policy is recorded in both configs.
 
 `ddev start` prints the URL of the interpreted reference, `https://aic-nextgen.ddev.site` on
-DDEV's default router ports.
+DDEV's default router ports. `ddev exec bin/aic migrate` creates the tables. To run the app under
+FrankenPHP instead, see [framework/docs/deploy.md](framework/docs/deploy.md) and
+`deploy/frankenphp/`.
 
 The compiled site needs AIC's elephc fork: `ELEPHC_BIN`, or the first `elephc` on `PATH`. Its
 native packages (pcre2, oniguruma) are cached in `ELEPHC_NATIVE_CACHE`, by default
@@ -157,4 +190,8 @@ checks, Documentation) with the Claude Code commands in `.claude/commands/` (`/w
 ticket delivered.
 
 Maintainers keep the plan and the tickets in a private checkout at `docs/planning/`, which this
-repository ignores.
+repository ignores; `(#N)` in the docs and the changelog names one of those tickets.
+
+## License
+
+MIT (`LICENSE`), for the app and for each package.
