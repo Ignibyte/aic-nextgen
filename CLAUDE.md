@@ -21,8 +21,9 @@ delivered: with `AIC_PROFILER=1` every dynamic request is kept in `aic_profiles`
 `X-AIC-Profile`, readable at `/_profiler`, and every page carries a live toolbar
 ([framework/docs/profiler.md](framework/docs/profiler.md)). AIC pins Tessera 0.4.0. #234 holds it natively: gate:23's
 `profiled` steps run a second pass with the profiler on and compare each step's recorded profile
-on both sites. #232 delivered `bin/aic code:coverage`, what of AIC and Tessera an app uses. Next:
-#233 (an XML Api response), then Lotline's aic-demo #25 to #38.
+on both sites. #232 delivered `bin/aic code:coverage`, what of AIC and Tessera an app uses; #233 an XML Api
+answer (`XmlResponse`, the fixture's `/stock.xml`). Next: Lotline's aic-demo #25 to #38; the
+compiler carry #235 (`/u` on bad UTF-8) waits.
 
 Current order (Chad, 2026-10-25): finish epic #151, the theme owns all markup. #153 (components,
 layouts and assets in `themes/<theme>/`) and #154 (a controller names a layout through
@@ -179,7 +180,7 @@ scenarios the change touches by name).
 
 Every entry point is one of five kinds, each one interface with one method and one sealed
 response type: **Page** (HTML document, region fragments or a redirect; form controllers are
-Pages), **Api** (JSON, XML, SOAP), **Stream** (SSE, file downloads), **Command** (CLI, exit code)
+Pages), **Api** (JSON or XML; no SOAP), **Stream** (SSE, file downloads), **Command** (CLI, exit code)
 and **Job** (queued or scheduled work: done, retry, fail). A static guard makes every entry-point
 class implement exactly one, and the build writes a manifest of every entry point with its kind.
 Background work is a job; the HTTP server's processes are its workers.
@@ -518,7 +519,9 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   interpolation, holes for values) against an HTML element list, custom element names, markup
   declarations, computed brackets and character references, inline output, HTML functions, raw
   text files, links and unparsable files; any `<` in `src/Controller/`. A usage placeholder named
-  like an element is refused: write `{table}`. `GATE_MODULE_MARKUP_ROOT` takes a plant root.
+  like an element is refused: write `{table}`. Since #233 XML as text too: an `<?` declaration, a
+  closing `</name>` or a self-closing `<name/>` of any name (a lone `<login>` placeholder stays);
+  XML is built as `AIC\Controller\Domain\XmlDocument`. `GATE_MODULE_MARKUP_ROOT` takes a plant root.
 - gate:28 (`gates/bin/gate-house-rules.php`, #104) runs every `workflow/rules/*.php` rule on its
   `.probe/` cases in a temporary directory: each `held-*` must exit 0, each `broken-*` 1.
 - gate:21 caches (#110): a class whose closure files, compiler, bridge libraries, PHP, pinned

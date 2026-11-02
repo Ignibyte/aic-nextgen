@@ -65,6 +65,15 @@ interface ResponseWriter
     public function json(int $status, JsonSerializable $jsonSerializable): ResponseInterface;
 
     /**
+     * @param int    $status   The status.
+     * @param string $document An `XmlDocument`, serialized (#233). Only `XmlResponse` calls this: the response
+     *                         shapes are sealed in `AIC\Controller\Domain`, and no module is handed a writer.
+     *
+     * @return ResponseInterface The response, `application/xml; charset=utf-8`.
+     */
+    public function xml(int $status, string $document): ResponseInterface;
+
+    /**
      * @param string                 $path          The file to send.
      * @param string                 $mediaType     Its `Content-Type`.
      * @param string                 $downloadName  The name the browser saves it as.

@@ -138,6 +138,20 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
     }
 
     /**
+     * @param int    $status   The status.
+     * @param string $document An `XmlDocument`, serialized (#233).
+     *
+     * @throws InvalidArgumentException When a response field is invalid.
+     *
+     * @return ResponseInterface The response, `application/xml; charset=utf-8`.
+     */
+    #[Override]
+    public function xml(int $status, string $document): ResponseInterface
+    {
+        return $this->responseBuilder->create($status, 'application/xml; charset=utf-8', $document);
+    }
+
+    /**
      * @param string                 $path          The file to send.
      * @param string                 $mediaType     Its `Content-Type`.
      * @param string                 $downloadName  The name the browser saves it as.

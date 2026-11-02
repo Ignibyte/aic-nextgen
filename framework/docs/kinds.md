@@ -52,7 +52,19 @@ the Renderer writes the HTML.
 
 ### Api
 
-A JSON answer: `AIC\Controller\Domain\JsonResponse` takes a `JsonSerializable` and a status.
+A JSON or an XML answer. SOAP is not one of them.
+
+- `AIC\Controller\Domain\JsonResponse` takes a `JsonSerializable` and a status.
+- `AIC\Controller\Domain\XmlResponse` takes an `XmlDocument` and a status, and answers
+  `application/xml; charset=utf-8` with an XML declaration (#233). The document is typed data:
+  one root `XmlElement`, each element a name, its `XmlAttribute`s in order, its text and its child
+  elements, the text written before the children. A name must be an XML name (letters, digits,
+  `.`, `_` and `-`, led by a letter or `_`, with one optional `prefix:`; declare the prefix with an
+  `xmlns:prefix` attribute), and text and values may not hold a character XML 1.0 forbids or bytes
+  that are not UTF-8; either is refused when the value is made. `XmlDocument` escapes `&`, `<`,
+  `>`, `"` and `'` when it writes, and nothing else writes XML: gate:32 refuses XML written as text
+  under `modules/`. It is written by hand, not with `XMLWriter`, which would make libxml2 a native
+  dependency of every app. The fixture's `/stock.xml` is the stock list as a feed.
 
 ### Stream
 

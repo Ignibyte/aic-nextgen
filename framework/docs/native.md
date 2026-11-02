@@ -38,6 +38,9 @@ every PHP expression:
 - A closure takes what it uses through `use`, the object's own services too: natively a closure
   does not bind `$this`, so `$this->store` inside one is null (#184). Copy the property into a
   local first and capture the local, as `EntityStore::transaction()` callers do.
+- Check that text is UTF-8 with `mb_check_encoding()` before matching it with a `/u` pattern:
+  natively such a match on other bytes answers `0`, where PHP answers `false` (#235), so a check
+  written as `preg_match('/…/u', $text) !== 0` lets invalid UTF-8 through (#233).
 - Read PSR-7 bodies as streams using rewind/getContents where appropriate. Use the response builder
   for headers so methods retain the response type across PSR-7 withers.
 - Keep resource ownership and cleanup explicit. The runtime adapters use typed resource slots and
