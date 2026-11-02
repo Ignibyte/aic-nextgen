@@ -15,7 +15,7 @@ use AIC\Workflow\Application\UtcTime;
 
 /**
  * The code index's composition (#106): the index over the project at the
- * root and its four commands, which need no `config/workflow.php`. The
+ * root and its commands, which need no `config/workflow.php`. The
  * recorder writes to the open run's event log when there is one.
  */
 final readonly class CodeKernel
@@ -29,7 +29,7 @@ final readonly class CodeKernel
     }
 
     /**
-     * @return array<string, Command> `code:index`, `code:tree`, `code:search` and `code:refs`, and the inspect commands (#109).
+     * @return array<string, Command> The `code:*` commands, the inspect commands (#109, `code:coverage` among them since #232) and make.
      */
     public function commands(): array
     {

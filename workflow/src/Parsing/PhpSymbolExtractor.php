@@ -17,9 +17,10 @@ use function substr;
 /**
  * Reads one PHP file into the code index's symbols and edges (#106,
  * droost-engine's `PhpGraphExtractor`): php-parser for the host's PHP, names
- * resolved, parents connected, then the declaration and the reference
- * visitors over one sink. A file that does not parse gives nothing, and says
- * so.
+ * resolved and parents connected in a pass of their own (a chain's names
+ * are read before the walk reaches them, #232), then the declaration, the
+ * reference and the call chain visitors over one sink. A file that does not parse
+ * gives nothing, and says so.
  */
 final readonly class PhpSymbolExtractor
 {
@@ -46,8 +47,9 @@ final readonly class PhpSymbolExtractor
         $nameReader = new NameReader();
         $declarationVisitor = new DeclarationVisitor($symbolSink, $nameReader);
         $referenceVisitor = new ReferenceVisitor($symbolSink, $nameReader);
-        $nodeTraverser = new NodeTraverser(new NameResolver(), new ParentConnectingVisitor(), $declarationVisitor, $referenceVisitor);
-        $nodeTraverser->traverse($nodes ?? []);
+        $callChainVisitor = new CallChainVisitor($symbolSink, $nameReader, new ReceiverTypes($nameReader));
+        $resolved = (new NodeTraverser(new NameResolver(), new ParentConnectingVisitor()))->traverse($nodes ?? []);
+        (new NodeTraverser($declarationVisitor, $referenceVisitor, $callChainVisitor))->traverse($resolved);
 
         return new ParsedFile($symbolSink->symbols(), $symbolSink->edges());
     }

@@ -41,7 +41,7 @@ final readonly class CodeParts
      */
     public function codeLookup(): CodeIndexQueries
     {
-        return new CodeIndexQueries($this->root);
+        return new CodeIndexQueries(new CodeIndexRows($this->root));
     }
 
     /**

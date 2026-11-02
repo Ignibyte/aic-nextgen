@@ -120,7 +120,13 @@ final class DeclarationVisitor extends NodeVisitorAbstract
             ? ''
             : $class . '::' . $classMethod->name->toString();
         $this->symbolSink->method($method);
-        $this->symbolSink->symbol($method, 'method', $classMethod->getStartLine());
+        $this->symbolSink->symbol(
+            $method,
+            'method',
+            $classMethod->getStartLine(),
+            $this->nameReader->typeName($classMethod->returnType, $class),
+            $classMethod->isPublic(),
+        );
 
         return null;
     }

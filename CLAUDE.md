@@ -21,8 +21,8 @@ delivered: with `AIC_PROFILER=1` every dynamic request is kept in `aic_profiles`
 `X-AIC-Profile`, readable at `/_profiler`, and every page carries a live toolbar
 ([framework/docs/profiler.md](framework/docs/profiler.md)). AIC pins Tessera 0.4.0. #234 holds it natively: gate:23's
 `profiled` steps run a second pass with the profiler on and compare each step's recorded profile
-on both sites. Next: #232 (`code:coverage`) and #233 (an XML Api response), then Lotline's
-aic-demo #25 to #38.
+on both sites. #232 delivered `bin/aic code:coverage`, what of AIC and Tessera an app uses. Next:
+#233 (an XML Api response), then Lotline's aic-demo #25 to #38.
 
 Current order (Chad, 2026-10-25): finish epic #151, the theme owns all markup. #153 (components,
 layouts and assets in `themes/<theme>/`) and #154 (a controller names a layout through
@@ -285,7 +285,11 @@ Background work is a job; the HTTP server's processes are its workers.
     `code:tree [<module|System|path>]`, `code:search <text>` and `code:refs <name>` need no
     `config/workflow.php`. While a run is open, each lookup appends `code.queried` (the files and
     scopes it showed) to the run's event log, which the guard walls. gate:2 admits
-    `nikic/php-parser` for `workflow/composer.json` only.
+    `nikic/php-parser` for `workflow/composer.json` only. Since #232 (schema version 3) methods
+    keep their declared return class and visibility, and calls on typed receivers are `chains`
+    edges, read only by `bin/aic code:coverage [--json] [--missing]`: every framework surface and
+    the app files that use it (a report, exit 0; the Tessera rows are `framework/docs/tessera.md`'s
+    vocabulary table).
   - **The seeker** (#103, one advisory pass since #127): with every other row green, code answers
     `inspection-due` (`CheckStatus::Due`, exit 1, no retry budget spent) until one counted ledger
     is filed; complete runs no seeker. The coding agent dispatches the `aic-seeker` subagent

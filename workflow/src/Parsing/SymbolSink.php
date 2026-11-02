@@ -86,17 +86,19 @@ final class SymbolSink
     }
 
     /**
-     * @param string $name A symbol's full name.
-     * @param string $kind Its kind.
-     * @param int    $line Its line.
+     * @param string $name    A symbol's full name.
+     * @param string $kind    Its kind.
+     * @param int    $line    Its line.
+     * @param string $returns A method's declared return class; empty otherwise (#232).
+     * @param bool   $public  Whether it is a public method (#232).
      */
-    public function symbol(string $name, string $kind, int $line): void
+    public function symbol(string $name, string $kind, int $line, string $returns = '', bool $public = false): void
     {
         if ($name === '') {
             return;
         }
 
-        $this->symbols[] = new CodeSymbol($name, $kind, $this->path, $line, $this->area);
+        $this->symbols[] = new CodeSymbol($name, $kind, $this->path, $line, $this->area, '', $returns, $public);
     }
 
     /**

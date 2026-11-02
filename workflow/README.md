@@ -104,6 +104,15 @@ there is no special exemption for theme or template sources. The engine records 
 The build owns everything under `build/` and the wiki. No generated file is
 written by a make. Run `composer run build` after generation.
 
+## Measure what the app uses
+
+`bin/aic code:coverage` (#232) lists every framework surface an app can use (contracts, the kinds'
+responses, the manifest, Schema and `EntityQuery` methods, the catalog atoms, the Tessera
+vocabulary) with the app files that use each, or `unused`. `--missing` lists only the unused;
+`--json` answers the `aic.console/1` envelope. It reads the code index, refreshed first, and exits
+0 whatever is unused: it is a report, not a gate. What counts as a use is in
+[the workflow docs](../framework/docs/workflow.md#code-index-and-scaffolds).
+
 ## Read stored gate diagnostics
 
 `bin/aic workflow:logs gate:8` reads one stored gate result from the open run, or the latest

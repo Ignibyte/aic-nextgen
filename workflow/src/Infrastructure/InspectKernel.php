@@ -18,8 +18,9 @@ use AIC\Workflow\Application\Console\ScheduleListCommand;
  * `route:list`, `command:list`, `job:list`, `schedule:list`, `module:list`,
  * `module:show` and `kind:list`, each answering from `build/surface.json`
  * (and `module:show` from the code index too) and recording its lookup while
- * a run is open. `CodeKernel` merges them, so `WorkflowKernel` stays under
- * PHPMD's coupling cap.
+ * a run is open; and `code:coverage` (#232), the report over the code index.
+ * `CodeKernel` merges them, so `WorkflowKernel` stays under PHPMD's coupling
+ * cap.
  */
 final readonly class InspectKernel
 {
@@ -32,7 +33,7 @@ final readonly class InspectKernel
     }
 
     /**
-     * @return array<string, Command> The seven commands, by name.
+     * @return array<string, Command> The eight commands, by name.
      */
     public function commands(): array
     {
@@ -40,6 +41,7 @@ final readonly class InspectKernel
         $codeParts = new CodeParts($this->root);
 
         return [
+            'code:coverage' => (new CoverageKernel($this->root))->command($codeParts->codeIndex()),
             'command:list' => new CommandListCommand($inspectRun, fn (): array => (new WorkflowKernel($this->root))->commands()),
             'job:list' => new JobListCommand($inspectRun),
             'kind:list' => new KindListCommand($inspectRun),

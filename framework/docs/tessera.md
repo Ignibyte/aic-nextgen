@@ -142,3 +142,55 @@ styles, fonts and connections from the site itself only, images also as `data:`.
 build runs under it, and the HTML lint (#170) keeps inline script and style out of pages. Gate:24 checks the pinned assets; gate:8 and gate:27 keep
 the render tree and deliberate raw output within their contracts. A missing target should lead to
 a full response, rather than an independent fragment template.
+
+## Vocabulary
+
+What Tessera 0.4.0 reads from a page and what it raises, by name (Tessera's `docs/protocol.md`
+sections 3 and 7.2, `docs/design.md` and its README's events). `bin/aic code:coverage` counts each
+row in an app's PHP and template files, and shows the ones AIC's own code and templates write
+(#232). Keep the table in step when AIC pins another Tessera.
+
+| Name | Kind | What it is |
+|---|---|---|
+| `data-region` | attribute | a region (written by AIC's layouts) |
+| `data-t-c` | attribute | a component's key |
+| `data-t-props` | attribute | a component's signed props token |
+| `data-t-anchor` | attribute | names a component `@NAME` |
+| `data-target` | attribute | the targets a link, form or submitter updates |
+| `data-push` | attribute | `off` leaves history as it was |
+| `data-enhance` | attribute | `off` leaves links and forms to the browser |
+| `data-track` | attribute | a tracked asset in `<head>` |
+| `autofocus` | attribute | the server's choice of focus after an update |
+| `data-focus-key` | attribute | a stable name to restore focus to |
+| `data-error-summary` | attribute | the error list focused after a `422` or `409` |
+| `aria-invalid` | attribute | the focus fallback for a refused field |
+| `data-permanent` | attribute | an element kept across visits |
+| `data-lazy` | attribute | loads its target once rendered |
+| `data-poll` | attribute | refreshes its target on an interval |
+| `data-prefetch` | attribute | `hover` or `off` for link prefetching |
+| `data-stream` | attribute | opens a stream for the element's life |
+| `data-signals` | attribute | declares signals |
+| `data-computed` | attribute | a signal computed from others |
+| `data-bind` | attribute | binds a field to a signal |
+| `data-text` | attribute | text from an expression |
+| `data-show` | attribute | shows the element while an expression holds |
+| `data-class` | attribute | classes from expressions |
+| `data-attr` | attribute | attributes from expressions |
+| `data-style` | attribute | style properties from expressions |
+| `data-on` | attribute | runs an expression on an event |
+| `data-init` | attribute | runs an expression once the element is live |
+| `data-effect` | attribute | runs an expression when its signals change |
+| `data-loading` | attribute | a signal true while a request runs |
+| `data-ignore` | attribute | Tessera leaves the element's directives alone |
+| `data-ignore-morph` | attribute | a morph leaves the element as it is |
+| `tessera-layout` | meta | the layout a page was rendered with |
+| `tessera-csrf-token` | meta | the CSRF token sent on unsafe requests |
+| `tessera-csrf-header` | meta | the header that carries it |
+| `tessera-patch-elements` | stream event | one fragment |
+| `tessera-patch-signals` | stream event | one signal patch |
+| `tessera-close` | stream event | the stream is over; no reconnect |
+| `tessera:error` | browser event | a directive, request, stream, lazy load or poll failed |
+| `tessera:expired` | browser event | an answer was `419` |
+| `tessera:indeterminate` | browser event | a write may have been saved |
+| `tessera:exchange` | browser event | an exchange settled (the profiler's toolbar reads it) |
+| `tessera:patched` | browser event | an element a patch changed |
