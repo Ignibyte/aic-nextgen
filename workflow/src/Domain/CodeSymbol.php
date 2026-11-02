@@ -11,12 +11,14 @@ namespace AIC\Workflow\Domain;
 final readonly class CodeSymbol
 {
     /**
-     * @param string $name   Its full name: `App\Note\Controller\NoteListPage`, `…::render`, `route:GET /notes`.
-     * @param string $kind   `class`, `interface`, `trait`, `enum`, `function`, `method`, `route`, `command`, `job` or `module`.
-     * @param string $file   The file it is in, relative to the project.
-     * @param int    $line   Its line; 0 for a surface symbol.
-     * @param string $area   The file's area: `module:<m>`, `system:<S>`, `generated`, `workflow`, `gates` or `project`.
-     * @param string $detail A route's kind, a module's namespace; empty otherwise.
+     * @param string $name    Its full name: `App\Note\Controller\NoteListPage`, `…::render`, `route:GET /notes`.
+     * @param string $kind    `class`, `interface`, `trait`, `enum`, `function`, `method`, `route`, `command`, `job` or `module`.
+     * @param string $file    The file it is in, relative to the project.
+     * @param int    $line    Its line; 0 for a surface symbol.
+     * @param string $area    The file's area: `module:<m>`, `system:<S>`, `generated`, `workflow`, `gates` or `project`.
+     * @param string $detail  A route's kind, a module's namespace; empty otherwise.
+     * @param string $returns A method's declared return class, `self` and `static` as its class; empty otherwise (#232).
+     * @param bool   $public  Whether it is a public method (#232).
      */
     public function __construct(
         public string $name,
@@ -25,6 +27,8 @@ final readonly class CodeSymbol
         public int $line,
         public string $area,
         public string $detail = '',
+        public string $returns = '',
+        public bool $public = false,
     ) {
     }
 }

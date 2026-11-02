@@ -10,8 +10,6 @@ use AIC\Workflow\Domain\CodeEdge;
 use AIC\Workflow\Domain\CodeSymbol;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
-use PDOException;
-use stdClass;
 
 use function addcslashes;
 use function ksort;
@@ -27,12 +25,12 @@ final readonly class CodeIndexQueries implements CodeLookup
     /**
      * A symbol row's columns.
      */
-    private const string SYMBOL = 'SELECT name, kind, file, line, area, detail FROM symbol';
+    private const string SYMBOL = CodeIndexRows::SYMBOL;
 
     /**
-     * An edge row's columns.
+     * An edge row's columns, call chains left out: they are the coverage report's alone (#232).
      */
-    private const string EDGE = 'SELECT source, target, kind, file FROM edge';
+    private const string EDGE = CodeIndexRows::EDGE . " WHERE kind <> 'chains' AND";
 
     /**
      * Each edge whose source file's area and whose class-like target's area differ, one end in the asked area (#108).
@@ -43,17 +41,15 @@ final readonly class CodeIndexQueries implements CodeLookup
         JOIN file f ON f.path = e.file
         JOIN symbol t ON t.name = CASE WHEN instr(e.target, '::') > 0 THEN substr(e.target, 1, instr(e.target, '::') - 1) ELSE e.target END
             AND t.kind IN ('class', 'interface', 'enum', 'trait')
-        WHERE f.area <> t.area AND (f.area = ? OR t.area = ?)
+        WHERE e.kind <> 'chains' AND f.area <> t.area AND (f.area = ? OR t.area = ?)
         ORDER BY source_area, target_area, target
         SQL;
 
     /**
-     * @param string          $root            The project's root.
-     * @param CodeIndexSchema $codeIndexSchema Opens the index.
+     * @param CodeIndexRows $codeIndexRows Reads its rows.
      */
     public function __construct(
-        private string $root,
-        private CodeIndexSchema $codeIndexSchema = new CodeIndexSchema(),
+        private CodeIndexRows $codeIndexRows,
     ) {
     }
 
@@ -65,11 +61,13 @@ final readonly class CodeIndexQueries implements CodeLookup
     {
         $areas = [];
 
-        foreach ($this->rows('SELECT area, COUNT(*) AS files FROM file GROUP BY area', []) as $jsonReader) {
+        foreach ($this->codeIndexRows->rows('SELECT area, COUNT(*) AS files FROM file GROUP BY area', []) as $jsonReader) {
             $areas[$jsonReader->string('area')] = ['files' => $jsonReader->int('files'), 'symbols' => 0];
         }
 
-        foreach ($this->rows("SELECT area, COUNT(*) AS symbols FROM symbol WHERE kind <> 'method' GROUP BY area", []) as $jsonReader) {
+        $symbols = "SELECT area, COUNT(*) AS symbols FROM symbol WHERE kind <> 'method' GROUP BY area";
+
+        foreach ($this->codeIndexRows->rows($symbols, []) as $jsonReader) {
             $area = $jsonReader->string('area');
             $areas[$area] = ['files' => $areas[$area]['files'] ?? 0, 'symbols' => $jsonReader->int('symbols')];
         }
@@ -87,7 +85,7 @@ final readonly class CodeIndexQueries implements CodeLookup
     #[Override]
     public function inArea(string $area): array
     {
-        return $this->symbols(self::SYMBOL . ' WHERE area = ? ORDER BY file, line, name', [$area]);
+        return $this->codeIndexRows->symbols(self::SYMBOL . ' WHERE area = ? ORDER BY file, line, name', [$area]);
     }
 
     /**
@@ -100,7 +98,7 @@ final readonly class CodeIndexQueries implements CodeLookup
     {
         $files = [];
 
-        $rows = $this->rows(
+        $rows = $this->codeIndexRows->rows(
             "SELECT path FROM file WHERE path = ? OR path LIKE ? ESCAPE '\\' ORDER BY path",
             [$prefix, $this->like($prefix, false)],
         );
@@ -120,7 +118,7 @@ final readonly class CodeIndexQueries implements CodeLookup
     #[Override]
     public function symbolsUnder(string $prefix): array
     {
-        return $this->symbols(
+        return $this->codeIndexRows->symbols(
             self::SYMBOL . " WHERE file = ? OR file LIKE ? ESCAPE '\\' ORDER BY file, line, name",
             [$prefix, $this->like($prefix, false)],
         );
@@ -135,7 +133,7 @@ final readonly class CodeIndexQueries implements CodeLookup
     #[Override]
     public function search(string $text, int $limit): array
     {
-        return $this->symbols(
+        return $this->codeIndexRows->symbols(
             self::SYMBOL . " WHERE name LIKE ? ESCAPE '\\' ORDER BY origin = 'surface', name COLLATE NOCASE LIMIT ?",
             [$this->like($text, true), $limit],
         );
@@ -149,11 +147,11 @@ final readonly class CodeIndexQueries implements CodeLookup
     #[Override]
     public function named(string $name): array
     {
-        $exact = $this->symbols(self::SYMBOL . ' WHERE name = ?', [$name]);
+        $exact = $this->codeIndexRows->symbols(self::SYMBOL . ' WHERE name = ?', [$name]);
 
         return $exact !== []
             ? $exact
-            : $this->symbols(self::SYMBOL . " WHERE short = ? COLLATE NOCASE AND kind <> 'method' ORDER BY name", [$name]);
+            : $this->codeIndexRows->symbols(self::SYMBOL . " WHERE short = ? COLLATE NOCASE AND kind <> 'method' ORDER BY name", [$name]);
     }
 
     /**
@@ -164,8 +162,8 @@ final readonly class CodeIndexQueries implements CodeLookup
     #[Override]
     public function incoming(string $name): array
     {
-        return $this->edges(
-            self::EDGE . " WHERE target = ? OR target LIKE ? ESCAPE '\\' ORDER BY kind, source",
+        return $this->codeIndexRows->edges(
+            self::EDGE . " (target = ? OR target LIKE ? ESCAPE '\\') ORDER BY kind, source",
             [$name, $this->like($name . '::', false)],
         );
     }
@@ -178,8 +176,8 @@ final readonly class CodeIndexQueries implements CodeLookup
     #[Override]
     public function outgoing(string $name): array
     {
-        return $this->edges(
-            self::EDGE . " WHERE source = ? OR source LIKE ? ESCAPE '\\' ORDER BY kind, target",
+        return $this->codeIndexRows->edges(
+            self::EDGE . " (source = ? OR source LIKE ? ESCAPE '\\') ORDER BY kind, target",
             [$name, $this->like($name . '::', false)],
         );
     }
@@ -196,86 +194,12 @@ final readonly class CodeIndexQueries implements CodeLookup
     {
         $crossings = [];
 
-        foreach ($this->rows(self::CROSSING, [$area, $area]) as $jsonReader) {
+        foreach ($this->codeIndexRows->rows(self::CROSSING, [$area, $area]) as $jsonReader) {
             $target = $jsonReader->string('target');
             $crossings[] = new CodeCrossing($target, $jsonReader->string('source_area'), $jsonReader->string('target_area'));
         }
 
         return $crossings;
-    }
-
-    /**
-     * @param string           $sql        A symbol query.
-     * @param list<string|int> $parameters Its values.
-     *
-     * @throws WorkflowRefusal When the index cannot be read.
-     *
-     * @return list<CodeSymbol> Its rows.
-     */
-    private function symbols(string $sql, array $parameters): array
-    {
-        $symbols = [];
-
-        foreach ($this->rows($sql, $parameters) as $jsonReader) {
-            $symbols[] = new CodeSymbol(
-                $jsonReader->string('name'),
-                $jsonReader->string('kind'),
-                $jsonReader->string('file'),
-                $jsonReader->int('line'),
-                $jsonReader->string('area'),
-                $jsonReader->string('detail'),
-            );
-        }
-
-        return $symbols;
-    }
-
-    /**
-     * @param string           $sql        An edge query.
-     * @param list<string|int> $parameters Its values.
-     *
-     * @throws WorkflowRefusal When the index cannot be read.
-     *
-     * @return list<CodeEdge> Its rows.
-     */
-    private function edges(string $sql, array $parameters): array
-    {
-        $edges = [];
-
-        foreach ($this->rows($sql, $parameters) as $jsonReader) {
-            $edges[] = new CodeEdge(
-                $jsonReader->string('source'),
-                $jsonReader->string('target'),
-                $jsonReader->string('kind'),
-                $jsonReader->string('file'),
-            );
-        }
-
-        return $edges;
-    }
-
-    /**
-     * @param string           $sql        A query.
-     * @param list<string|int> $parameters Its values.
-     *
-     * @throws WorkflowRefusal When the index cannot be read.
-     *
-     * @return list<JsonReader> Its rows.
-     */
-    private function rows(string $sql, array $parameters): array
-    {
-        try {
-            $statement = $this->codeIndexSchema->statement($this->codeIndexSchema->open($this->root, false), $sql, $parameters);
-            $rows = [];
-
-            while (($row = $statement->fetchObject()) instanceof stdClass) {
-                $rows[] = new JsonReader($row, CodeIndexSchema::DIRECTORY . '/code.sqlite');
-            }
-        } catch (PDOException $pdoException) {
-            throw new WorkflowRefusal('the code index could not be read: ' . $pdoException->getMessage(), 0, $pdoException);
-        }
-
-        return $rows;
     }
 
     /**

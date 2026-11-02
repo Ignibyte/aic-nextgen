@@ -73,6 +73,18 @@ change: a run begun on a tree that already holds its work, as after `workflow:re
 spec unchanged, and a file already gone from the tree is looked up by its area or folder (#172). `code:wiki` reads the generated module map. Inspect commands read the build's
 surface inventory, rather than scanning runtime objects.
 
+`code:coverage [--json] [--missing]` (#232) lists every framework surface an app can use and the
+app files that use each, or `unused`: the `Contracts` interfaces, the kinds' response classes, the
+public methods of `ModuleManifest`, the Schema contracts and `EntityQuery`, the catalog atoms, and
+each row of the vocabulary table in [tessera.md](tessera.md#vocabulary). The surfaces are found in
+the index, so a new contract shows up by itself. A method counts when an app class implements it
+or a call reaches it through a receiver whose class the declarations give: a typed parameter or
+property, a `new`, a static call, or a fluent chain followed through each method's declared return
+class. A call it cannot type does not count, so `unused` can miss a use but never invents one. A
+Tessera name counts in an app's PHP and template files, and the report shows the ones AIC itself
+renders. It is a report: exit 0 whatever is unused. `--missing` lists only the unused, `--json`
+answers the `aic.console/1` envelope.
+
 Make commands create authored files and edit the owning manifest through the same guard. They
 record what was made. Declare the exact resulting paths in the open run first, run the build and
 keep generated outputs with the authored change. [modules.md](modules.md#generate-theme-files)
@@ -86,6 +98,7 @@ verification tooling. Other commands require their applicable config and open-ru
 
 | Command | Purpose |
 |---|---|
+| `Command::code:coverage` | framework surfaces the app uses |
 | `Command::code:index` | refresh code index |
 | `Command::code:refs` | references to a file or symbol |
 | `Command::code:search` | search indexed code |

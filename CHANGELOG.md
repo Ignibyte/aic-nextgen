@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **`bin/aic code:coverage`** (#232): every framework surface an app can use (the `Contracts`
+  interfaces, the kinds' responses, the `ModuleManifest`, Schema and `EntityQuery` methods, the
+  catalog atoms and a Tessera vocabulary table in `framework/docs/tessera.md`) with the app files
+  that use each, or `unused`; `--missing` and `--json`. The code index now keeps each method's
+  declared return class and records calls on typed receivers as `chains` edges (schema version 3),
+  so a fluent chain such as `(new ModuleManifest('x'))->route(…)->job(…)` counts each method.
+
 - **gate:23 profiled** (#234): `config/native-site.json` may name `profiled` steps. gate:23 runs
   them in a second pass with `AIC_PROFILER=1` on both sites and fails when the compiled site
   records a different profile than PHP (handler, kind, status, Tessera headers, field names, SQL in

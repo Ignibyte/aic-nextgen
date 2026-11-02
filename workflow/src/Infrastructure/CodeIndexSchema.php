@@ -23,12 +23,13 @@ final readonly class CodeIndexSchema
     public const string DIRECTORY = 'var/index';
 
     /**
-     * The index's version: 2 since themes have an area of their own (#157), so stored rows rebuild.
+     * The index's version: 3 since methods keep their declared return class and visibility and calls
+     * on typed receivers are `chains` edges (#232), so stored rows rebuild.
      */
-    private const int VERSION = 2;
+    private const int VERSION = 3;
 
     /**
-     * Version 1: files, symbols, edges and the surface's hash.
+     * The tables: files, symbols, edges and the surface's hash.
      */
     private const string TABLES = <<<'SQL'
         DROP TABLE IF EXISTS file;
@@ -44,6 +45,8 @@ final readonly class CodeIndexSchema
             line INTEGER NOT NULL,
             area TEXT NOT NULL,
             detail TEXT NOT NULL,
+            returns TEXT NOT NULL,
+            public INTEGER NOT NULL,
             origin TEXT NOT NULL
         );
         CREATE INDEX symbol_name ON symbol (name);

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Ignibyte/aic-nextgen/blob/main/workflow/schema/console.v1.json",
   "title": "AIC console answer, version 1",
-  "description": "What a bin/aic inspect command (#109) or make command (#122) prints with --json: one envelope on one line, keys in order. data is the command's answer, shaped per command in $defs; notes holds what the answer noted (a stale surface, a lookup not recorded, the guard's nudge, a code.made record); an error envelope replaces data with error and exit. Additive only within version 1.",
+  "description": "What a bin/aic inspect command (#109), make command (#122) or code:coverage (#232) prints with --json: one envelope on one line, keys in order. data is the command's answer, shaped per command in $defs; notes holds what the answer noted (a stale surface, a lookup not recorded, the guard's nudge, a code.made record); an error envelope replaces data with error and exit. Additive only within version 1.",
   "oneOf": [
     {
       "$ref": "#/$defs/answer:route:list"
@@ -27,6 +27,9 @@
     },
     {
       "$ref": "#/$defs/answer:make"
+    },
+    {
+      "$ref": "#/$defs/answer:code:coverage"
     },
     {
       "$ref": "#/$defs/error"
@@ -695,6 +698,76 @@
         }
       }
     },
+    "code:coverage": {
+      "type": "object",
+      "required": [
+        "surfaces",
+        "total",
+        "unused",
+        "used"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "surfaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "files",
+              "group",
+              "name",
+              "rendered",
+              "used"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The app files that use it, sorted."
+              },
+              "group": {
+                "enum": [
+                  "contracts",
+                  "responses",
+                  "manifest",
+                  "schema",
+                  "query",
+                  "atoms",
+                  "tessera"
+                ]
+              },
+              "name": {
+                "type": "string",
+                "description": "The interface, class or Class::method, or the Tessera attribute, meta or event."
+              },
+              "rendered": {
+                "type": "boolean",
+                "description": "Whether AIC's own code or templates write it (Tessera names)."
+              },
+              "used": {
+                "type": "boolean"
+              }
+            }
+          },
+          "description": "Every surface, or with --missing only the unused ones."
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unused": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "used": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
     "answer:route:list": {
       "type": "object",
       "required": [
@@ -931,6 +1004,36 @@
         },
         "data": {
           "$ref": "#/$defs/make"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "enum": [
+            "aic.console/1"
+          ]
+        }
+      }
+    },
+    "answer:code:coverage": {
+      "type": "object",
+      "required": [
+        "command",
+        "data",
+        "schema"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "enum": [
+            "code:coverage"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/code:coverage"
         },
         "notes": {
           "type": "array",

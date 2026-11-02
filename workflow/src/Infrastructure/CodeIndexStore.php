@@ -25,8 +25,8 @@ final readonly class CodeIndexStore
     /**
      * A symbol's insert.
      */
-    private const string SYMBOL = 'INSERT INTO symbol (name, short, kind, file, line, area, detail, origin)'
-        . ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+    private const string SYMBOL = 'INSERT INTO symbol (name, short, kind, file, line, area, detail, returns, public, origin)'
+        . ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
     /**
      * An edge's insert.
@@ -159,6 +159,8 @@ final readonly class CodeIndexStore
                 $symbol->line,
                 $symbol->area,
                 $symbol->detail,
+                $symbol->returns,
+                $symbol->public ? 1 : 0,
                 $origin,
             ]);
         }
