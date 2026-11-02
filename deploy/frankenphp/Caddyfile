@@ -1,0 +1,11 @@
+# AIC under FrankenPHP in classic mode: every request runs public/index.php with fresh PHP
+# state, as under php-fpm. SERVER_NAME is a domain (automatic HTTPS) or a bare port (:8080).
+{
+	frankenphp
+}
+
+{$SERVER_NAME:localhost} {
+	root * /app/public
+	encode zstd br gzip
+	php_server
+}

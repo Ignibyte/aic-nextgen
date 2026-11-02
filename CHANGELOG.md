@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **FrankenPHP, and a page on running an app** (#222): `deploy/frankenphp/` holds a Caddyfile and a
+  PHP 8.5 container that serve the app in classic mode with no change to it, and gate:26 admits
+  `deploy/`. `framework/docs/deploy.md` names PHP (php-fpm or FrankenPHP) as the production runtime,
+  the compiled one as experimental, and what every deploy sets. The README opens for readers new
+  to AIC.
+
 - **`Rows`, a typed list of database rows** (#201): `Database::fetchAll()` and `EntityQuery::rows()`
   answer it, so a loop's `$row` is a `Row` in the compiled site and a row's `string()` is never
   confused with another class's; array functions read `all()`, an index `first()`.

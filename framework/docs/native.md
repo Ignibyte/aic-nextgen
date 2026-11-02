@@ -1,7 +1,7 @@
 # Native runtime
 
-The production app is compiled with elephc into a prefork HTTP server. The same entry runs under
-PHP as the reference. Build-time declarations produce literal wiring, template classes and asset
+An app compiles with elephc into a prefork HTTP server. The same entry runs under PHP, which is the
+production runtime until the compiled one has earned that place ([deploy.md](deploy.md)). Build-time declarations produce literal wiring, template classes and asset
 catalogs; serving a request does not discover modules or interpret authored templates.
 
 ## Compiled site

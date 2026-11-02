@@ -54,6 +54,8 @@ final readonly class ProjectProfile
         'tests/browser/*',
         // DDEV, the interpreted reference and Postgres.
         '.ddev/*',
+        // Deployment recipes: FrankenPHP's Caddyfile and container (#222).
+        'deploy/*',
         // The root's own files, by exact name, so a stray file at the root fails: the docs, the manifests, and
         // the tools' stubs from aic/gates (#130). AGENTS.md holds the workflow's block (#105).
         'AGENTS.md',

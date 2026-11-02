@@ -4,7 +4,8 @@ AIC is a PHP 8.5 framework for server-rendered sites, built to be written by age
 to a native binary. An app is a set of modules; each module declares what it brings in a manifest,
 and a build step turns every manifest into plain PHP wiring under `build/generated/`. Nothing is
 discovered at run time, so the whole app compiles with elephc into one prefork HTTP server, and the
-same code runs under PHP as the reference.
+same code runs under PHP: php-fpm or FrankenPHP, the runtime for production today
+([deploy.md](deploy.md)).
 
 These pages describe AIC as it stands. They are written for the agent building an app on it: paths
 are the app's (`modules/<name>/`, `config/`, `build/generated/`), and framework code is named by its
@@ -31,6 +32,7 @@ Read the first three before you plan a change; the rest when the change touches 
 9. [security.md](security.md): sessions, form guard, signed values, redirects, uploads, authentication and secrets.
 10. [native.md](native.md): the compiled pool server, concrete source types, class closure cache and PHP oracle.
 11. [workflow.md](workflow.md): installed engine, phases, guard, rules, review, code index, commands and recovery.
+12. [deploy.md](deploy.md): the two runtimes, what a deploy sets, FrankenPHP and php-fpm.
 
 ## Where things are
 
