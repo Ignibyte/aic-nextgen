@@ -38,6 +38,15 @@ final readonly class ProfileWriter
     }
 
     /**
+     * @return string A new profile id: 32 hex digits, made when a request starts so its page can link to it (#231).
+     */
+    public function newId(): string
+    {
+        return bin2hex(random_bytes(16));
+    }
+
+    /**
+     * @param string                $id           The profile's id, from newId().
      * @param RequestFacts          $requestFacts The request and its answer.
      * @param ProfileTimes          $profileTimes Where its time went.
      * @param list<StatementRecord> $statements   Its statements.
@@ -46,13 +55,12 @@ final readonly class ProfileWriter
      * @return string The new profile's id; empty when it could not be kept.
      */
     public function store(
+        string $id,
         RequestFacts $requestFacts,
         ProfileTimes $profileTimes,
         array $statements,
         array $components,
     ): string {
-        $id = bin2hex(random_bytes(16));
-
         try {
             $profile = $this->profileJson->encode($requestFacts, $profileTimes, $statements, $components);
             $this->insert($id, $requestFacts, $profileTimes, $profile);

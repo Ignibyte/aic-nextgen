@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The profiler's toolbar** (#231): with the profiler on, every whole page carries a toolbar at
+  its foot, in any theme. It shows the page's own figures and lists this browser's exchanges live
+  over a Tessera stream (`/_profiler/stream`). Each element a response patches is outlined, with a
+  box to turn the outline off. The render observer offers the toolbar and Tessera's debug meta, and
+  `Renderer::document()` places them. AIC pins Tessera 0.4.0.
+
 - **The profiler's pages** (#230): with the profiler on, `/_profiler` lists the kept requests
   (filtered by path and kind in place, polled) and `/_profiler/{id}` shows one in tabs: Request,
   Timeline, Database, Templates and Tessera, the last with the headers both ways, the answer's size

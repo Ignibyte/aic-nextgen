@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Profiler\Application;
 
+use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\RenderObserver;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Kernel\Contracts\RequestObserver;
@@ -63,6 +64,8 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
 
     private string $browser = '';
 
+    private string $id = '';
+
     /** @var list<StatementRecord> */
     private array $statements = [];
 
@@ -70,16 +73,18 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
     private array $components = [];
 
     /**
-     * @param ProfileWriter   $profileWriter   Keeps the profile.
-     * @param ResponseBuilder $responseBuilder Adds the header naming it.
-     * @param Monotonic       $monotonic       The clock the times are read from.
-     * @param ExchangeReader  $exchangeReader  Reads the request and its answer.
+     * @param ProfileWriter    $profileWriter    Keeps the profile.
+     * @param ResponseBuilder  $responseBuilder  Adds the header naming it.
+     * @param Monotonic        $monotonic        The clock the times are read from.
+     * @param ExchangeReader   $exchangeReader   Reads the request and its answer.
+     * @param ProfilerToolbars $profilerToolbars What a whole page gains: the debug meta and the toolbar (#231).
      */
     public function __construct(
         private readonly ProfileWriter $profileWriter,
         private readonly ResponseBuilder $responseBuilder,
         private readonly Monotonic $monotonic = new Monotonic(),
         private readonly ExchangeReader $exchangeReader = new ExchangeReader(),
+        private readonly ProfilerToolbars $profilerToolbars = new ProfilerToolbars(),
     ) {
     }
 
@@ -91,6 +96,7 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
     {
         $this->recording = !str_starts_with($serverRequest->getUri()->getPath(), '/_profiler');
         $this->started = $this->monotonic->microseconds();
+        $this->id = $this->profileWriter->newId();
     }
 
     /**
@@ -141,6 +147,28 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
     }
 
     /**
+     * @return Component|null Tessera's debug meta for a recorded whole page; null otherwise.
+     */
+    #[Override]
+    public function headEnd(): ?Component
+    {
+        return $this->recording
+            ? $this->profilerToolbars->debug()
+            : null;
+    }
+
+    /**
+     * @return Component|null The toolbar for a recorded whole page; null otherwise.
+     */
+    #[Override]
+    public function bodyEnd(): ?Component
+    {
+        return $this->recording
+            ? $this->profilerToolbars->toolbar($this->id, $this->browser)
+            : null;
+    }
+
+    /**
      * @param StatementRecord $statementRecord A statement the request ran.
      */
     public function statement(StatementRecord $statementRecord): void
@@ -161,7 +189,8 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
             return $response;
         }
 
-        $id = $this->profileWriter->store($this->facts($serverRequest, $response), $this->times(), $this->statements, $this->components);
+        $requestFacts = $this->facts($serverRequest, $response);
+        $id = $this->profileWriter->store($this->id, $requestFacts, $this->times(), $this->statements, $this->components);
 
         return $id === ''
             ? $response

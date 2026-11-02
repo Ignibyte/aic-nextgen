@@ -494,7 +494,7 @@
             "name": "upload, over the body cap",
             "method": "POST",
             "path": "/uploads",
-            "form": "multipart:aic_csrf={csrf}&file=@build/assets/tessera-0.3.1/tessera.csp.iife.js",
+            "form": "multipart:aic_csrf={csrf}&file=@build/assets/tessera-0.4.0/tessera.csp.iife.js",
             "header": "",
             "status": 413,
             "captures": false
