@@ -19,14 +19,16 @@ use function strtolower;
 final readonly class AtomCatalog
 {
     /**
-     * @param TextAtoms    $textAtoms    Text and resource declarations.
-     * @param ControlAtoms $controlAtoms Control declarations.
-     * @param FormAtoms    $formAtoms    Form declarations, with inline-child atoms in the terminal chunk.
+     * @param TextAtoms     $textAtoms     Text and resource declarations.
+     * @param ControlAtoms  $controlAtoms  Control declarations.
+     * @param FormAtoms     $formAtoms     Form declarations, with inline-child atoms in the terminal chunk.
+     * @param ProfilerAtoms $profilerAtoms Data atoms and the profiler's document (#230).
      */
     public function __construct(
         private TextAtoms $textAtoms = new TextAtoms(),
         private ControlAtoms $controlAtoms = new ControlAtoms(),
         private FormAtoms $formAtoms = new FormAtoms(),
+        private ProfilerAtoms $profilerAtoms = new ProfilerAtoms(),
     ) {
     }
 
@@ -39,7 +41,12 @@ final readonly class AtomCatalog
     {
         $bindings = [];
         $claimed = [];
-        $declarations = [...$this->textAtoms->declarations(), ...$this->controlAtoms->declarations(), ...$this->formAtoms->declarations()];
+        $declarations = [
+            ...$this->textAtoms->declarations(),
+            ...$this->controlAtoms->declarations(),
+            ...$this->formAtoms->declarations(),
+            ...$this->profilerAtoms->declarations(),
+        ];
 
         foreach ($declarations as [$component, $source]) {
             $templateBinding = $this->binding($component, $source);

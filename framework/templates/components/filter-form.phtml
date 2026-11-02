@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\FilterForm $filterForm */ ?>
+<form method="get" action="<?= $filterForm->action ?>"<?php if ($filterForm->target !== ''): ?> data-target="<?= $filterForm->target ?>"<?php endif ?> class="aic-filter"><label><?= $filterForm->label ?> <input type="search" name="<?= $filterForm->name ?>" value="<?= $filterForm->value ?>"></label><button type="submit">Filter</button></form>

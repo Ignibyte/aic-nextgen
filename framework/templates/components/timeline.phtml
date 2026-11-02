@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\Timeline $timeline */ ?>
+<figure class="aic-timeline"><svg viewBox="0 0 1000 40" preserveAspectRatio="none" role="img" aria-label="<?= $timeline->label ?>"><?php foreach ($timeline->segments as $timelineSegment): ?><rect class="aic-tone-<?= $timelineSegment->tone ?>" x="<?= $timelineSegment->start ?>" y="0" width="<?= $timelineSegment->width ?>" height="40"><title><?= $timelineSegment->label ?></title></rect><?php endforeach ?></svg><figcaption><?= $timeline->label ?></figcaption></figure>

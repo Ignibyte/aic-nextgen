@@ -16,10 +16,10 @@ The architecture set an app's agent reads, shipped in `aic/framework`, is
 
 ## Status
 
-**The profiler (Chad, 2026-11-02).** #229 (the core) is delivered: with `AIC_PROFILER=1` every
-dynamic request is kept in `aic_profiles` and named in `X-AIC-Profile`
-([framework/docs/profiler.md](framework/docs/profiler.md)). Next are #230 (the `/_profiler` pages)
-and #231 (the toolbar, on Tessera 0.4.0's devtools events); #232 (`code:coverage`), #233 (an XML
+**The profiler (Chad, 2026-11-02).** #229 (the core) and #230 (the pages) are delivered: with
+`AIC_PROFILER=1` every dynamic request is kept in `aic_profiles`, named in `X-AIC-Profile` and
+readable at `/_profiler` ([framework/docs/profiler.md](framework/docs/profiler.md)). Next is #231
+(the toolbar, on Tessera 0.4.0's devtools events); #232 (`code:coverage`), #233 (an XML
 Api response) and #234 (gate:23 profiled) follow, then Lotline's aic-demo #25 to #38.
 
 Current order (Chad, 2026-10-25): finish epic #151, the theme owns all markup. #153 (components,

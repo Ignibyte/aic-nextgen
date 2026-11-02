@@ -48,7 +48,13 @@ final readonly class AppKernel
         );
         $publicBoundary = new PublicBoundary($responseBuilder);
         $root = $handlerContexts->root();
-        $staticAssets = $publicBoundary->around($root, $webPresentation->publicAssets, $dynamicApplication);
+        $requestHandler = $handlerContexts->observers()->around(
+            $dynamicApplication,
+            $database,
+            $responseBuilder,
+            $webPresentation->publicAssets,
+        );
+        $staticAssets = $publicBoundary->around($root, $webPresentation->publicAssets, $requestHandler);
         $this->kernel = new Kernel($requestExtractor, $staticAssets, $responseBuilder);
     }
 

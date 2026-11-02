@@ -72,7 +72,7 @@ final readonly class Router implements RequestHandlerInterface
             return $handler->handle($request);
         }
 
-        $routeObserver->routed($request, $match->route->handler);
+        $routeObserver->routed($request, $match->route->handler, $handler);
         $response = $handler->handle($request);
         $routeObserver->answered();
 

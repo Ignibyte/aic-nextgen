@@ -35,6 +35,9 @@ The compiled site records the same profiles as PHP: start it with the variable s
 | `tessera` | the request's `Tessera-Request`, `Tessera-Protocol`, `Tessera-Targets`, `Tessera-Layout` and `Tessera-Write-Id` |
 | `answer` | the response's `Content-Type`, `Tessera-Protocol`, `Tessera-Location` and `Tessera-Full-Visit` |
 | `bytes` | the response body's length; 0 for a stream |
+| `kind`, `browser` | the route's kind; a hash of the session id that links one browser's requests (#230) |
+| `headers`, `fields` | the request's header names and posted field names, never their values (#230) |
+| `body` | a Tessera fragment answer's markup, at most 64 KiB, its CSRF token redacted; empty otherwise (#230) |
 
 A profile never holds a value bound to a statement (gate:15 holds the profiler to passing them
 through), a cookie, an authorization header or a session token: headers are read by name from the
@@ -44,6 +47,34 @@ The table keeps the newest 500 profiles; each new one deletes the rest. Assets a
 answer before the profiler, and the profiler's own pages (`/_profiler`) are not recorded. A
 stream's time ends when its response is built, not when the stream closes.
 
+## The pages
+
+While the profiler is on, `AIC\Profiler\Application\ProfilerPages` answers `/_profiler` before the
+app (#230), the way the asset and stored-file handlers do, so no route, session or token is
+involved and any app has the pages. They take GET and HEAD only.
+
+- `/_profiler` lists the newest 100 profiles: time, method, path, kind, status, ms, bytes,
+  statements and the Tessera request with its targets. A path filter (`?path=`) and the kind tabs
+  (`?kind=Page`) are answered in place by Tessera, and the table polls every five seconds.
+- `/_profiler/{id}` shows one, in tabs answered in place (`?tab=`): Request (kind, handler, user,
+  query, header and field names), Timeline (an SVG bar of middleware, handler, render and the rest),
+  Database (each statement, a repeated one marked), Templates (each template rendered with its path)
+  and Tessera (the headers asked and answered, the answer's size against the newest whole page for
+  the path, and a fragment answer's markup, escaped). A link leads to the same browser's previous
+  request.
+- `/_profiler/styles.css` is their stylesheet, served from `AIC\Profiler\Domain\ProfilerStyles`.
+
+The pages render in the framework's own layout, `AIC\Profiler\Domain\ProfilerLayout`, from the
+framework's atoms alone, so they look the same in every app; Tessera comes from the app's asset
+catalog by its logical name. Postgres reads each kept profile's JSON for them, so PHP decodes none.
+`AIC\Profiler\Application\ProfilerMount` puts them in front of the app when
+`AIC\Module\Application\RequestObservers` says the pages are on, which `bootstrap/serve.php` does
+with the profiler.
+
+A profile also keeps, for the pages: the route's kind, a key for the browser (the first 16 hex
+digits of a SHA-256 of the session id, never the id), the request's header and field names, and a
+fragment answer's markup up to 64 KiB, its `tessera-csrf-token` value replaced by `redacted`.
+
 ## The seams
 
 Three observers, none set by default, carry the request to the profile:
@@ -51,7 +82,7 @@ Three observers, none set by default, carry the request to the profile:
 - `AIC\Kernel\Contracts\RequestObserver`, told by `AIC\Module\Application\DynamicApplication` when a
   request starts and what it answered; it may add a header.
 - `AIC\Routing\Contracts\RouteObserver`, told by `AIC\Routing\Application\Router` when the handler
-  gets the request (with its session) and when it answers.
+  gets the request (with its session and the kind's handler) and when it answers.
 - `AIC\Component\Contracts\RenderObserver`, told by `AIC\Component\Application\ObservedTemplates`
   each template's time and by `AIC\Component\Application\Renderer` each whole render's.
 
