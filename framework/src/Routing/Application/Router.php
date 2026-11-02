@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Routing\Application;
 
+use AIC\Routing\Contracts\RouteObserver;
 use AIC\Routing\Domain\MethodNotAllowedException;
 use AIC\Routing\Domain\RouteNotFoundException;
 use AIC\Routing\Domain\RouteTable;
@@ -18,19 +19,21 @@ use function array_key_exists;
 /**
  * The PSR-15 handler that routes: it matches the request against the table and
  * hands the matched route's handler the request, with the path parameters as
- * request attributes.
+ * request attributes. Its observer is told around the dispatch (#229).
  */
 final readonly class Router implements RequestHandlerInterface
 {
     /**
-     * @param RouteTable                             $routeTable The routes.
-     * @param array<string, RequestHandlerInterface> $handlers   The handlers by id.
+     * @param RouteTable                             $routeTable    The routes.
+     * @param array<string, RequestHandlerInterface> $handlers      The handlers by id.
+     * @param RouteObserver|null                     $routeObserver Told when a handler gets the request and answers; none by default.
      *
      * @throws LogicException When a route names a handler that is not given.
      */
     public function __construct(
         private RouteTable $routeTable,
         private array $handlers,
+        private ?RouteObserver $routeObserver = null,
     ) {
         foreach ($routeTable->handlers() as $handler) {
             if (!array_key_exists($handler, $handlers)) {
@@ -63,6 +66,16 @@ final readonly class Router implements RequestHandlerInterface
             throw new LogicException('The router has no handler "' . $match->route->handler . '".');
         }
 
-        return $handler->handle($request);
+        $routeObserver = $this->routeObserver;
+
+        if (!$routeObserver instanceof RouteObserver) {
+            return $handler->handle($request);
+        }
+
+        $routeObserver->routed($request, $match->route->handler);
+        $response = $handler->handle($request);
+        $routeObserver->answered();
+
+        return $response;
     }
 }

@@ -23,7 +23,7 @@ final readonly class Authenticator
     /**
      * The session key that keeps the signed-in user's id.
      */
-    private const string USER = 'aic.user';
+    public const string USER = 'aic.user';
 
     /**
      * A bcrypt hash at the hasher's cost (12) of a random password no one holds: an unknown login is checked

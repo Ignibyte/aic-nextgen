@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Module\Application;
 
 use AIC\Container\Exception\ContainerException;
+use AIC\Kernel\Contracts\RequestObserver;
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Application\Router;
 use AIC\Routing\Domain\RoutePatternCompiler;
@@ -49,6 +50,16 @@ final readonly class DynamicApplication implements RequestHandlerInterface
             : [];
         $afterSession = (new ModuleLayers())->afterSession($this->webWiring, $handlerContext);
 
-        return $this->frameworkStack->around(new Router($routeTable, $handlers), $afterSession)->handle($request);
+        $requestObservers = $this->handlerContexts->observers();
+        $router = new Router($routeTable, $handlers, $requestObservers->route);
+        $requestObserver = $requestObservers->request;
+
+        if (!$requestObserver instanceof RequestObserver) {
+            return $this->frameworkStack->around($router, $afterSession)->handle($request);
+        }
+
+        $requestObserver->started($request);
+
+        return $requestObserver->finished($request, $this->frameworkStack->around($router, $afterSession)->handle($request));
     }
 }

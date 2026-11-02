@@ -46,6 +46,8 @@ final readonly class ModuleLayers
      * @param WebRoots           $webRoots           The typed constructor roots.
      * @param ResponseBuilder    $responseBuilder    Makes the responses.
      * @param ComponentTemplates $componentTemplates The compiled templates.
+     * @param RequestObservers   $requestObservers   What observes the request; its render observer times the
+     *                                               Renderer (#229).
      *
      * @throws ContainerException When a block's service cannot be built.
      *
@@ -56,11 +58,15 @@ final readonly class ModuleLayers
         WebRoots $webRoots,
         ResponseBuilder $responseBuilder,
         ComponentTemplates $componentTemplates,
+        RequestObservers $requestObservers = new RequestObservers(),
     ): HandlerContext {
-        $handlerContext = new HandlerContext(new HttpHandlers($responseBuilder, $componentTemplates), $webRoots);
+        $handlerContext = new HandlerContext(
+            new HttpHandlers($responseBuilder, $componentTemplates, new Blocks([]), $requestObservers),
+            $webRoots,
+        );
 
         return new HandlerContext(
-            new HttpHandlers($responseBuilder, $componentTemplates, $this->blocks($webWiring, $handlerContext)),
+            new HttpHandlers($responseBuilder, $componentTemplates, $this->blocks($webWiring, $handlerContext), $requestObservers),
             $webRoots,
         );
     }

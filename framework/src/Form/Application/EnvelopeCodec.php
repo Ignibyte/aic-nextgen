@@ -39,7 +39,7 @@ final readonly class EnvelopeCodec
      */
     public function __construct(
         private HmacSigner $hmacSigner,
-        private StringMapJson $stringMapJson,
+        private StringMapJson $stringMapJson = new StringMapJson(),
     ) {
     }
 

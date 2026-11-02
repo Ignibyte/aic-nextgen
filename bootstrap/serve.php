@@ -8,13 +8,14 @@ declare(strict_types=1);
  * The same file runs interpreted (public/index.php under php-fpm or `php -S`)
  * and compiled (the class bundle and this file built with `elephc --web`, see
  * gate:23). Either way it runs once per request with fresh state, as PHP-FPM
- * does: it reads the app's config (config/app.php, config/database.php and
- * config/secret.php, typed), wires the framework's SAPI services and the app
+ * does: it reads the app's config (config/app.php, config/database.php,
+ * config/secret.php and config/profiler.php, typed), wires the framework's SAPI services and the app
  * kernel (AIC\Module\Application\AppKernel) over the generated wiring
  * (App\Generated\WebModules, #93), narrows the superglobals into a
  * SapiRequest, answers it through the kernel and emits the response through
  * PhpSapiSink (header(), http_response_code() and echo). This is the one place
- * that reads the superglobals.
+ * that reads the superglobals. With the profiler on (#229), it wraps the
+ * database and gives the request one Profile that observes it.
  */
 
 use AIC\Config\Domain\AppConfig;
@@ -23,6 +24,11 @@ use AIC\Database\Infrastructure\PdoDatabase;
 use AIC\Kernel\Infrastructure\SapiServices;
 use AIC\Module\Application\AppKernel;
 use AIC\Module\Application\HandlerContexts;
+use AIC\Module\Application\RequestObservers;
+use AIC\Profiler\Application\Profile;
+use AIC\Profiler\Application\ProfiledDatabase;
+use AIC\Profiler\Application\ProfileWriter;
+use AIC\Profiler\Domain\ProfilerConfig;
 use AIC\Sapi\Contracts\SapiRequest;
 use AIC\Sapi\Contracts\SapiUpload;
 use AIC\Sapi\Infrastructure\PhpSapiSink;
@@ -49,8 +55,24 @@ try {
         throw new RuntimeException('config/secret.php must return an ' . AppSecret::class . '.');
     }
 
+    $profilerConfig = require __DIR__ . '/../config/profiler.php';
+
+    if (!$profilerConfig instanceof ProfilerConfig) {
+        throw new RuntimeException('config/profiler.php must return a ' . ProfilerConfig::class . '.');
+    }
+
     $sapiServices = new SapiServices(new PhpSapiSink());
-    $database = new PdoDatabase($databaseConfig);
+    $pdoDatabase = new PdoDatabase($databaseConfig);
+    $profile = $profilerConfig->enabled
+        ? new Profile(new ProfileWriter($pdoDatabase), $sapiServices->responseBuilder())
+        : null;
+    $database = $profile instanceof Profile
+        ? new ProfiledDatabase($pdoDatabase, $profile)
+        : $pdoDatabase;
+    $requestObservers = $profile instanceof Profile
+        ? new RequestObservers($profile, $profile, $profile)
+        : new RequestObservers();
+
     $appKernel = new AppKernel(
         new HandlerContexts(
             $appConfig,
@@ -59,6 +81,7 @@ try {
             $appSecret,
             gmdate('Y-m-d\\TH:i:s\\Z'),
             __DIR__ . '/..',
+            $requestObservers,
         ),
         $sapiServices->requestExtractor(),
         $sapiServices->responseBuilder(),

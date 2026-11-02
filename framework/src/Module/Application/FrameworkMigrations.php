@@ -7,6 +7,7 @@ namespace AIC\Module\Application;
 use AIC\Auth\Domain\EnablePgcrypto;
 use AIC\Notification\Domain\AddNotificationInbox;
 use AIC\Notification\Domain\CreateNotificationsTable;
+use AIC\Profiler\Domain\CreateProfilesTable;
 use AIC\Queue\Domain\CreateJobTables;
 use AIC\Schedule\Domain\CreateScheduleRuns;
 use AIC\Schema\Contracts\Migration;
@@ -32,6 +33,7 @@ final readonly class FrameworkMigrations
             new CreateNotificationsTable(),
             new CreateTesseraWritesTable(),
             new AddNotificationInbox(),
+            new CreateProfilesTable(),
         ];
     }
 }

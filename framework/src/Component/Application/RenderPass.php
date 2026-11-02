@@ -237,6 +237,15 @@ final class RenderPass
     }
 
     /**
+     * @return string The path being rendered now (`content/c0/NoteList.1`); a template reads it while it renders, and
+     *                an atom inside a component shares that component's path. Empty outside a region (#229).
+     */
+    public function path(): string
+    {
+        return $this->path;
+    }
+
+    /**
      * @return bool Whether the target was rendered.
      */
     public function found(): bool

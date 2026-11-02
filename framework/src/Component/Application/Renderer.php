@@ -7,8 +7,10 @@ namespace AIC\Component\Application;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Html;
 use AIC\Component\Contracts\Layout;
+use AIC\Component\Contracts\RenderObserver;
 use AIC\Component\Domain\FragmentFrame;
 use AIC\Component\Exception\UnknownComponent;
+use AIC\Kernel\Domain\Monotonic;
 use InvalidArgumentException;
 
 use function count;
@@ -22,14 +24,19 @@ use function in_array;
  * each target rendered from the same tree by its path (protocol 5.1), so a
  * fragment is never a second way to make markup. Every pass discards its open
  * buffers when a template throws, so an error leaves no partial markup (#155).
+ * Its observer, when it has one, is told each whole render's time (#229).
  */
 final readonly class Renderer
 {
     /**
-     * @param ComponentTemplates $componentTemplates Each component's template.
+     * @param ComponentTemplates  $componentTemplates Each component's template.
+     * @param RenderObserver|null $renderObserver     Told how long each whole render took; none by default.
+     * @param Monotonic           $monotonic          The clock the times are read from.
      */
     public function __construct(
         private ComponentTemplates $componentTemplates,
+        private ?RenderObserver $renderObserver = null,
+        private Monotonic $monotonic = new Monotonic(),
     ) {
     }
 
@@ -42,13 +49,7 @@ final readonly class Renderer
      */
     public function elements(Component $component): Html
     {
-        $renderPass = $this->pass('');
-
-        try {
-            return new Html($renderPass->inline($component));
-        } finally {
-            $renderPass->discard();
-        }
+        return $this->whole($component);
     }
 
     /**
@@ -60,13 +61,7 @@ final readonly class Renderer
      */
     public function document(Layout $layout): Html
     {
-        $renderPass = $this->pass('');
-
-        try {
-            return new Html($renderPass->inline($layout));
-        } finally {
-            $renderPass->discard();
-        }
+        return $this->whole($layout);
     }
 
     /**
@@ -81,12 +76,15 @@ final readonly class Renderer
      */
     public function fragments(Layout $layout, array $targets): ?Html
     {
+        $started = $this->monotonic->microseconds();
         $templates = [];
 
         foreach ($targets as $target) {
             $markup = $this->fragment($layout, $target);
 
             if ($markup === '') {
+                $this->passed($started);
+
                 return null;
             }
 
@@ -101,6 +99,7 @@ final readonly class Renderer
             return new Html($renderPass->frame(new FragmentFrame($layout->title(), $layout->csrfToken(), $assets, $templates)));
         } finally {
             $renderPass->discard();
+            $this->passed($started);
         }
     }
 
@@ -147,5 +146,37 @@ final readonly class Renderer
     private function pass(string $target): RenderPass
     {
         return new RenderPass($this->componentTemplates, $target);
+    }
+
+    /**
+     * @param Component $component A layout or one component, rendered inline in one timed pass.
+     *
+     * @throws UnknownComponent When no template renders it or one of its children.
+     *
+     * @return Html Its markup.
+     */
+    private function whole(Component $component): Html
+    {
+        $started = $this->monotonic->microseconds();
+        $renderPass = $this->pass('');
+
+        try {
+            return new Html($renderPass->inline($component));
+        } finally {
+            $renderPass->discard();
+            $this->passed($started);
+        }
+    }
+
+    /**
+     * @param int $started When the render began, by the monotonic clock.
+     */
+    private function passed(int $started): void
+    {
+        if (!($this->renderObserver instanceof RenderObserver)) {
+            return;
+        }
+
+        $this->renderObserver->passed($this->monotonic->microseconds() - $started);
     }
 }

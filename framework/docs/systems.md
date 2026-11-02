@@ -6,7 +6,7 @@ app meets first.
 
 | System | Namespaces |
 |---|---|
-| 1. HTTP, routing and the kinds | Http, Routing, Controller, Kernel, Sapi, Config, Console |
+| 1. HTTP, routing and the kinds | Http, Routing, Controller, Kernel, Sapi, Config, Console, Profiler |
 | 2. Wiring and modules | Container, Module |
 | 3. Data | Database, Schema, Entity |
 | 4. Components | Component |
@@ -38,6 +38,11 @@ app meets first.
 - `AIC\Config`: `AIC\Config\Domain\AppConfig`, the typed object `config/app.php` returns.
 - `AIC\Console`: `AIC\Console\Application\Console` runs `bin/aic <name>`; a missing or unknown
   name prints the usage and exits 2.
+- `AIC\Profiler`: with `AIC_PROFILER=1`, `AIC\Profiler\Application\Profile` records each dynamic
+  request (its handler, its times, each statement's SQL, each template, its Tessera exchange) in
+  `aic_profiles` and names it in `X-AIC-Profile` (#229). It plugs into three seams with no
+  observer by default: `AIC\Kernel\Contracts\RequestObserver`, `AIC\Routing\Contracts\RouteObserver`
+  and `AIC\Component\Contracts\RenderObserver`. See [profiler.md](profiler.md).
 
 See [native.md](native.md) for the compiled server and PHP comparison.
 
