@@ -103,8 +103,10 @@ final readonly class MarkupText
         $name = substr($rest, 0, strspn($rest, self::NAME));
         $after = substr($rest, strlen($name), 1);
 
-        if ($this->tagName($name) && in_array($after, self::AFTER, true)) {
-            return 'the HTML tag "<' . $closing . $name . '"';
+        $kind = $this->kind($closing, $name, $after);
+
+        if ($kind !== '') {
+            return 'the ' . $kind . ' tag "<' . $closing . $name . '"';
         }
 
         return $literal && $this->computed($name, $after)
@@ -113,13 +115,49 @@ final readonly class MarkupText
     }
 
     /**
+     * @param string $closing `/` for a closing tag; empty otherwise.
+     * @param string $name    The name-like run after the `<` or `</`.
+     * @param string $after   The character after it.
+     *
+     * @return string `HTML` or `XML` for the tag it opens; empty for none.
+     */
+    private function kind(string $closing, string $name, string $after): string
+    {
+        return match (true) {
+            $this->tagName($name) && in_array($after, self::AFTER, true) => 'HTML',
+            $this->xmlTag($closing, $name, $after) => 'XML',
+            default => '',
+        };
+    }
+
+    /**
+     * @param string $closing `/` for a closing tag; empty otherwise.
+     * @param string $name    The name-like run after the `<` or `</`.
+     * @param string $after   The character after it.
+     *
+     * @return bool Whether it is an XML tag of any name (#233): a name led by a letter or `_` that closes (`</name>`,
+     *              `</p:name>`) or closes itself (`<name/>`). A lone `<name>` stays a usage placeholder, as in
+     *              `bin/aic user:add <login>`. XML belongs in `AIC\Controller\Domain\XmlDocument`.
+     */
+    private function xmlTag(string $closing, string $name, string $after): bool
+    {
+        $closes = $closing === '/'
+            ? in_array($after, ['>', ':'], true)
+            : $after === '/';
+
+        return $closes && preg_match('/^[A-Za-z_][A-Za-z0-9._-]*\\z/', $name) === 1;
+    }
+
+    /**
      * @param string $rest What follows one `<`.
      *
-     * @return bool Whether it opens a comment, a doctype or a CDATA section.
+     * @return bool Whether it opens a comment, a doctype, a CDATA section, or an XML declaration or processing
+     *              instruction (`<?`, #233).
      */
     private function declaration(string $rest): bool
     {
         return str_starts_with($rest, '!--')
+            || str_starts_with($rest, '?')
             || str_starts_with(strtolower($rest), '!doctype')
             || str_starts_with($rest, '![CDATA[');
     }

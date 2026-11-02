@@ -141,7 +141,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 29 | architecture docs | *AIC only*: these pages state what the code has | not run in an app |
 | 30 | suite files | root configs match the stubs, composer scripts/plugins match the suite, and custom PHPCS/PHPMD XML matches its writers | `vendor/bin/aic-gate init` for root stubs; rebuild or reinstall a stale package |
 | 31 | make scaffold | *AIC only*: `modules/scaffold/` and its theme components and layout are what the twelve `bin/aic make:*` lines make, byte for byte, and `make:module` prints the lines the build asks for | not run in an app |
-| 32 | module markup | no file under `modules/` holds HTML: no template or markup file, no inline output, no tag, markup declaration or character reference in a literal or text file, no HTML function; any `<` in a controller | move the markup into a theme component; write a usage placeholder as `{name}` |
+| 32 | module markup | no file under `modules/` holds HTML: no template or markup file, no inline output, no tag, markup declaration or character reference in a literal or text file, no HTML function; any `<` in a controller; no XML as text: an `<?` declaration, a `</name>` or a `<name/>` of any name (#233) | move the markup into a theme component, XML into an `XmlDocument`; write a usage placeholder as `{name}` |
 
 ## The gates that need more than PHP
 

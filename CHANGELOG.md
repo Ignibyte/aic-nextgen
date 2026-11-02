@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **XML Api answers** (#233): `AIC\Controller\Domain\XmlResponse` answers an `XmlDocument`, a
+  typed tree of `XmlElement`s and `XmlAttribute`s, as `application/xml; charset=utf-8`. Names and
+  characters are checked when the values are made and text is escaped when written, natively,
+  without libxml2. gate:32 refuses XML written as text under `modules/`. The fixture's `/stock.xml`
+  serves the stock list as a feed. The docs say an Api answers JSON or XML; SOAP stays out.
+
 - **`bin/aic code:coverage`** (#232): every framework surface an app can use (the `Contracts`
   interfaces, the kinds' responses, the `ModuleManifest`, Schema and `EntityQuery` methods, the
   catalog atoms and a Tessera vocabulary table in `framework/docs/tessera.md`) with the app files

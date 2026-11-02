@@ -232,6 +232,13 @@
             "path": "/stock.csv"
         },
         {
+            "handler": "App\\Note\\Controller\\StockXml",
+            "kind": "Api",
+            "method": "GET",
+            "module": "note",
+            "path": "/stock.xml"
+        },
+        {
             "handler": "App\\Scaffold\\Controller\\ScaffoldPage",
             "kind": "Page",
             "method": "GET",

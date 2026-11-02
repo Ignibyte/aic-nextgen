@@ -1158,6 +1158,15 @@
             "captures": false
         },
         {
+            "name": "stock feed, XML",
+            "method": "GET",
+            "path": "/stock.xml?sku=GATE-184,GATE-184-U",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "stock export, a range",
             "method": "GET",
             "path": "/stock.csv?sku=GATE-184,GATE-184-U",
