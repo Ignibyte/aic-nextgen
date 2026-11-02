@@ -10,6 +10,7 @@ use Gates\Domain\HttpExchange;
 use Gates\Domain\NativeSiteAnswer;
 use Gates\Domain\NativeSiteCaptures;
 use Gates\Domain\NativeSiteSession;
+use Gates\Domain\NativeSiteSetup;
 use Gates\Domain\NativeSiteStep;
 
 use function array_keys;
@@ -37,7 +38,10 @@ final readonly class NativeSiteComparer
      */
     private const array VOLATILE = [
         '#/notes/\\d+#' => '/notes/<id>',
+        '#/_profiler/[0-9a-f]{32}#' => '/_profiler/<profile>',
         '#<(ul|p) id="(waiting|failed|notifications|content-pages|stock)">.*?</\\1>#s' => '<$2-list>',
+        '#after=[0-9a-f]{32}#' => 'after=<profile>',
+        '#browser=[0-9a-f]{16}#' => 'browser=<browser>',
         '#data-t-props="[\\w.~+/=-]+"#' => 'data-t-props="<props>"',
         '/name="aic_csrf" value="[0-9a-f]{64}"/' => 'name="aic_csrf" value="<token>"',
         '/name="aic_envelope" value="[\\w.-]+"/' => 'name="aic_envelope" value="<envelope>"',
@@ -57,6 +61,28 @@ final readonly class NativeSiteComparer
         private NativeSiteAnchors $nativeSiteAnchors,
         private GateConsole $gateConsole,
     ) {
+    }
+
+    /**
+     * @param NativeSiteSetup       $nativeSiteSetup Where the two sites listen.
+     * @param list<NativeSiteStep>  $steps           The steps to send, in order.
+     * @param string                $password        The gate user's password.
+     * @param string                $root            The app's root.
+     * @param array<string, string> $env             The sites' environment.
+     *
+     * @return array{list<NativeSiteAnswer>, list<NativeSiteAnswer>} PHP's answers, then the compiled site's (#234).
+     */
+    public function both(
+        NativeSiteSetup $nativeSiteSetup,
+        array $steps,
+        string $password,
+        string $root,
+        array $env,
+    ): array {
+        return [
+            $this->run('http://127.0.0.1:' . $nativeSiteSetup->phpPort, $steps, $password, $root, $env),
+            $this->run('http://127.0.0.1:' . $nativeSiteSetup->nativePort, $steps, $password, $root, $env),
+        ];
     }
 
     /**

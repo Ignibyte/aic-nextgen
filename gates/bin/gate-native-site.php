@@ -11,7 +11,9 @@ use Gates\Application\NativeSiteBrowser;
 use Gates\Application\NativeSiteBuilder;
 use Gates\Application\NativeSiteComparer;
 use Gates\Application\NativeSiteGate;
+use Gates\Application\NativeSiteProfiledPass;
 use Gates\Application\NativeSiteServe;
+use Gates\Application\NativeSiteSites;
 use Gates\Application\NativeToolchain;
 use Gates\Infrastructure\ElephcLocation;
 use Gates\Infrastructure\GatesPackage;
@@ -60,17 +62,20 @@ if (($arguments[1] ?? '') === 'browser') {
 }
 
 if (($arguments[1] ?? '') !== 'serve') {
+    $comparer = new NativeSiteComparer(
+        new StreamHttpClient(),
+        new NativeSiteAnchors(new StreamHttpClient()),
+        new GateConsole($processRunner, $toolchain->phpPath()),
+    );
+    $browser = new NativeSiteBrowser($browserTests);
     $gate = new NativeSiteGate(
         $toolchain,
         $builder,
-        new ProcServerLauncher(),
-        new NativeSiteComparer(
-            new StreamHttpClient(),
-            new NativeSiteAnchors(new StreamHttpClient()),
-            new GateConsole($processRunner, $toolchain->phpPath()),
-        ),
+        new NativeSiteSites($toolchain, new ProcServerLauncher()),
+        $comparer,
         $gateUser,
-        new NativeSiteBrowser($browserTests),
+        $browser,
+        new NativeSiteProfiledPass($comparer, $browser),
     );
 
     exit($gate->run($root, $setup));

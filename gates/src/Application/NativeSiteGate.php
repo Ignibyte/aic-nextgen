@@ -8,7 +8,6 @@ use Gates\Domain\NativeSiteAnswer;
 use Gates\Domain\NativeSiteSetup;
 use Gates\Domain\NativeSiteStep;
 use Gates\Domain\ProcessResult;
-use Gates\Domain\ServerLauncher;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -41,23 +40,25 @@ final readonly class NativeSiteGate
         . ' (bin/aic db:ping), and every route opens a Postgres session (#41).';
 
     /**
-     * @param NativeToolchain    $nativeToolchain    The compiler and host PHP.
-     * @param NativeSiteBuilder  $nativeSiteBuilder  Builds the compiled site.
-     * @param ServerLauncher     $serverLauncher     Runs the two sites.
-     * @param NativeSiteComparer $nativeSiteComparer Sends the steps and compares the answers.
-     * @param GateUser           $gateUser           Gives the signed-in steps their user.
-     * @param NativeSiteBrowser  $nativeSiteBrowser  Runs the kept browser tests against the compiled site (#174).
-     * @param NativeSiteScript   $nativeSiteScript   The steps.
-     * @param NativeSiteHtml     $nativeSiteHtml     Lints the PHP site's HTML answers (#170).
-     * @param NativeSiteCoverage $nativeSiteCoverage Finds the GET routes no step reaches (#171).
+     * @param NativeToolchain        $nativeToolchain        The compiler and host PHP.
+     * @param NativeSiteBuilder      $nativeSiteBuilder      Builds the compiled site.
+     * @param NativeSiteSites        $nativeSiteSites        Starts and stops the two sites.
+     * @param NativeSiteComparer     $nativeSiteComparer     Sends the steps and compares the answers.
+     * @param GateUser               $gateUser               Gives the signed-in steps their user.
+     * @param NativeSiteBrowser      $nativeSiteBrowser      Runs the kept browser tests against the compiled site (#174).
+     * @param NativeSiteProfiledPass $nativeSiteProfiledPass The second pass, with the profiler on (#234).
+     * @param NativeSiteScript       $nativeSiteScript       The steps.
+     * @param NativeSiteHtml         $nativeSiteHtml         Lints the PHP site's HTML answers (#170).
+     * @param NativeSiteCoverage     $nativeSiteCoverage     Finds the GET routes no step reaches (#171).
      */
     public function __construct(
         private NativeToolchain $nativeToolchain,
         private NativeSiteBuilder $nativeSiteBuilder,
-        private ServerLauncher $serverLauncher,
+        private NativeSiteSites $nativeSiteSites,
         private NativeSiteComparer $nativeSiteComparer,
         private GateUser $gateUser,
         private NativeSiteBrowser $nativeSiteBrowser,
+        private NativeSiteProfiledPass $nativeSiteProfiledPass,
         private NativeSiteScript $nativeSiteScript = new NativeSiteScript(),
         private NativeSiteHtml $nativeSiteHtml = new NativeSiteHtml(),
         private NativeSiteCoverage $nativeSiteCoverage = new NativeSiteCoverage(),
@@ -170,69 +171,95 @@ final readonly class NativeSiteGate
         mixed $stdout,
         mixed $stderr,
     ): int {
-        if (!$this->startSites($root, $workDir, $nativeSiteSetup)) {
-            $this->serverLauncher->stopAll();
+        if (!$this->nativeSiteSites->start($root, $workDir, $nativeSiteSetup, $nativeSiteSetup->env)) {
+            $this->nativeSiteSites->stop();
             fwrite($stderr, 'gate:23 — a site did not start; see ' . $workDir . '/php.log and native.log.' . PHP_EOL);
 
             return 1;
         }
 
         $password = $this->gateUser->create($root, $nativeSiteSetup->env);
-        $env = $nativeSiteSetup->env;
-        $php = $this->nativeSiteComparer->run('http://127.0.0.1:' . $nativeSiteSetup->phpPort, $steps, $password, $root, $env);
+        $answers = $this->nativeSiteComparer->both($nativeSiteSetup, $steps, $password, $root, $nativeSiteSetup->env);
         $nativeOrigin = 'http://127.0.0.1:' . $nativeSiteSetup->nativePort;
-        $native = $this->nativeSiteComparer->run($nativeOrigin, $steps, $password, $root, $env);
         $browser = $this->nativeSiteBrowser->findings($root, $nativeOrigin, $nativeSiteSetup->env, $password);
-        $this->serverLauncher->stopAll();
+        $this->nativeSiteSites->stop();
+        $profiled = $this->profiled($root, $workDir, $nativeSiteSetup, $password);
 
-        return $this->judged($root, $steps, [$php, $native], $browser, [$stdout, $stderr]);
+        return $this->judged($root, $steps, $answers, $browser, $profiled, [$stdout, $stderr]);
     }
 
     /**
-     * @param string                                                $root    Repo-root absolute path.
-     * @param list<NativeSiteStep>                                  $steps   The script.
-     * @param array{list<NativeSiteAnswer>, list<NativeSiteAnswer>} $answers The PHP site's answers, then the compiled site's.
-     * @param array{int, list<string>}                              $browser How many kept browser tests ran, and their failures.
-     * @param array{resource, resource}                             $streams Where the summary goes, then the failures.
+     * @param string          $root            Repo-root absolute path.
+     * @param string          $workDir         The native site's work directory.
+     * @param NativeSiteSetup $nativeSiteSetup Where the sites run.
+     * @param string          $password        The gate user's password.
+     *
+     * @return array{int, list<string>, list<string>} The profiled steps run (#234), their differences and their other
+     *                                                findings; nothing when the script names none.
+     */
+    private function profiled(string $root, string $workDir, NativeSiteSetup $nativeSiteSetup, string $password): array
+    {
+        try {
+            $steps = $this->nativeSiteScript->profiled($root);
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            return [0, [], ['PROFILED ' . $invalidArgumentException->getMessage()]];
+        }
+
+        if ($steps === []) {
+            return [0, [], []];
+        }
+
+        [$differences, $findings] = $this->nativeSiteProfiledPass->run(
+            $root,
+            $workDir,
+            $nativeSiteSetup,
+            $steps,
+            $password,
+            $this->nativeSiteSites,
+        );
+
+        return [count($steps), $differences, $findings];
+    }
+
+    /**
+     * @param string                                                $root     Repo-root absolute path.
+     * @param list<NativeSiteStep>                                  $steps    The script.
+     * @param array{list<NativeSiteAnswer>, list<NativeSiteAnswer>} $answers  The PHP site's answers, then the compiled
+     *                                                                        site's.
+     * @param array{int, list<string>}                              $browser  How many kept browser tests ran, and their
+     *                                                                        failures.
+     * @param array{int, list<string>, list<string>}                $profiled The profiled pass (#234): its steps, its
+     *                                                                        differences, its other findings.
+     * @param array{resource, resource}                             $streams  Where the summary goes, then the failures.
      *
      * @return int The exit code.
      */
-    private function judged(string $root, array $steps, array $answers, array $browser, array $streams): int
-    {
+    private function judged(
+        string $root,
+        array $steps,
+        array $answers,
+        array $browser,
+        array $profiled,
+        array $streams,
+    ): int {
         [$php, $native] = $answers;
-        $differences = $this->nativeSiteComparer->differences($steps, $php, $native);
+        $differences = [...$this->nativeSiteComparer->differences($steps, $php, $native), ...$profiled[1]];
         $findings = [
             ...self::prefixed('HTML ', $this->nativeSiteHtml->findings($steps, $php)),
             ...$this->nativeSiteCoverage->unreached($root, $steps, $php),
             ...$browser[1],
+            ...$profiled[2],
         ];
 
         if ($browser[0] > 0 && $browser[1] === []) {
             fwrite($streams[0], sprintf('gate:23 — browser: %d kept test file(s) pass on the compiled site.%s', $browser[0], PHP_EOL));
         }
 
+        if ($profiled[0] > 0 && $profiled[1] === [] && $profiled[2] === []) {
+            fwrite($streams[0], sprintf('gate:23 — profiled: %d step(s) record the same profiles on both sites.%s', $profiled[0], PHP_EOL));
+        }
+
         return $this->report($differences, $findings, count($steps), $streams[0], $streams[1]);
-    }
-
-    /**
-     * @param string          $root            Repo-root absolute path.
-     * @param string          $workDir         Where the compiled site is.
-     * @param NativeSiteSetup $nativeSiteSetup Where the sites run.
-     *
-     * @return bool Whether both sites accept connections.
-     */
-    private function startSites(string $root, string $workDir, NativeSiteSetup $nativeSiteSetup): bool
-    {
-        $php = [$this->nativeToolchain->phpPath(), ...$nativeSiteSetup->phpLimit()];
-        $php = [...$php, '-S', '127.0.0.1:' . $nativeSiteSetup->phpPort, 'public/index.php'];
-
-        $native = [$workDir . '/main', '--listen', '127.0.0.1:' . $nativeSiteSetup->nativePort];
-        $native = [...$native, ...$nativeSiteSetup->nativeCapacity(), ...$nativeSiteSetup->nativeLimit()];
-
-        $env = $nativeSiteSetup->env;
-
-        return $this->serverLauncher->start($php, $root, $env, $nativeSiteSetup->phpPort, $workDir . '/php.log')
-            && $this->serverLauncher->start($native, $root, $env, $nativeSiteSetup->nativePort, $workDir . '/native.log');
     }
 
     /**

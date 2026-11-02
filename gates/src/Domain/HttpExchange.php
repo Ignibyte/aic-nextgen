@@ -18,6 +18,7 @@ final readonly class HttpExchange
      * @param string                $body        The body.
      * @param string                $cookie      The cookie it set, `name=value`; empty for none.
      * @param array<string, string> $headers     The compared headers, by lower-case name.
+     * @param string                $profile     Its `X-AIC-Profile`, never compared itself (#234); empty for none.
      */
     public function __construct(
         public int $status,
@@ -26,6 +27,7 @@ final readonly class HttpExchange
         public string $body,
         public string $cookie = '',
         public array $headers = [],
+        public string $profile = '',
     ) {
     }
 }
