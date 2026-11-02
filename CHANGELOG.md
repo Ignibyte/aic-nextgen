@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Migrations apply in version order** (#228): `Migrator` sorts every module's migrations by version
+  and refuses two with one version, so a fresh database migrates whatever the modules' order (Lotline
+  stopped at a foreign key to a later module's table). gate:26's R7 refuses a migration that names a
+  table in a foreign key or SQL before the version that creates it, or whose version is not a literal.
+
 - **FrankenPHP, and a page on running an app** (#222): `deploy/frankenphp/` holds a Caddyfile and a
   PHP 8.5 container that serve the app in classic mode with no change to it, and gate:26 admits
   `deploy/`. `framework/docs/deploy.md` names PHP (php-fpm or FrankenPHP) as the production runtime,

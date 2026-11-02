@@ -11,6 +11,7 @@ use Gates\Application\ModuleTreeReader;
 use Gates\Application\RequireGraphRule;
 use Gates\Infrastructure\ProjectRoot;
 use Gates\Infrastructure\SystemProcessRunner;
+use Gates\Tables\MigrationOrderRule;
 use Gates\Tables\TableOwnershipRule;
 
 require __DIR__ . '/project.php';
@@ -24,6 +25,7 @@ $rules = [
     new RequireGraphRule(),
     new ModuleShellRule(),
     new TableOwnershipRule(),
+    new MigrationOrderRule(),
 ];
 
 exit((new ModuleBoundariesGate(new ModuleTreeReader(new SystemProcessRunner()), $rules))->run($root));

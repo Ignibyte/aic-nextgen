@@ -52,7 +52,7 @@ ordinary code with literal class names.
 | `->command('note:prune', Cmd::class)` | a Command, run as `bin/aic note:prune` |
 | `->job('prune', PruneJob::class)` | a Job, queued by that name |
 | `->schedule('prune-nightly', 'prune', ['days' => '30'], '0 3 * * *')` | a job queued on a five-field UTC cron cadence, with its payload |
-| `->migration(CreateNotesTable::class)` | a migration, applied in order by `bin/aic migrate` |
+| `->migration(CreateNotesTable::class)` | a migration; `bin/aic migrate` applies every module's migrations in version order (#228), so one that names another module's table needs a later version than the migration creating it |
 
 A manifest declares no presentation: components, layouts and assets live in the theme (see
 [The theme](#the-theme)). Everything else a class needs comes through its constructor. A constructor asks for what it uses
@@ -129,6 +129,11 @@ or `view` for a report); an entity type (`new EntityType('notes', ...)`) and an 
 their module's tables, written as literals, and one table has one owner. Another module reads or
 writes the table through the owner's exported repository. gate:26 holds this, and gate:9 keeps
 modules off the raw `Database`, so no query reaches a table an entity type does not name.
+
+`bin/aic migrate` applies every module's migrations in version order (#228), whatever their modules'
+order. A migration may name another module's table in a foreign key or in a view's SQL, and then needs
+a later version than the migration that creates it; gate:26 holds this, and a migration's
+`version()` returns a string literal.
 
 ## The theme
 

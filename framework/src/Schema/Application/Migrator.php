@@ -10,13 +10,19 @@ use AIC\Schema\Contracts\Migration;
 use InvalidArgumentException;
 
 use function array_key_exists;
+use function array_values;
 use function hash;
 use function implode;
+use function ksort;
+
+use const SORT_STRING;
 
 /**
  * Runs the app's migrations against the database and keeps the ledger,
  * `aic_migrations`: each applied version with a sha256 checksum of its
- * compiled statements and when it was applied. A migration runs in one
+ * compiled statements and when it was applied. Migrations apply in version
+ * order across every module (#228), so a migration that names another
+ * module's table runs after the one that creates it. A migration runs in one
  * transaction with its ledger row. An applied migration whose statements
  * have since changed reads as changed.
  */
@@ -27,7 +33,7 @@ final readonly class Migrator
     /**
      * @param Database     $database    The database.
      * @param PostgresDdl  $postgresDdl The dialect.
-     * @param list<object> $migrations  The Migrations, in the order they apply.
+     * @param list<object> $migrations  The Migrations, in module order; they apply by version.
      */
     public function __construct(
         private Database $database,
@@ -48,11 +54,7 @@ final readonly class Migrator
         $applied = $this->applied();
         $versions = [];
 
-        foreach ($this->migrations as $migration) {
-            if (!$migration instanceof Migration) {
-                continue;
-            }
-
+        foreach ($this->ordered() as $migration) {
             if (array_key_exists($migration->version(), $applied)) {
                 continue;
             }
@@ -65,7 +67,8 @@ final readonly class Migrator
     }
 
     /**
-     * @throws QueryException When the ledger cannot be read.
+     * @throws QueryException           When the ledger cannot be read.
+     * @throws InvalidArgumentException When two migrations share a version, or a constructed value is invalid.
      *
      * @return array<string, string> Each migration's state by version: applied, pending or changed.
      */
@@ -74,16 +77,40 @@ final readonly class Migrator
         $applied = $this->applied();
         $states = [];
 
+        foreach ($this->ordered() as $migration) {
+            $version = $migration->version();
+            $states[$version] = self::state($applied[$version] ?? '', self::checksum($this->statements($migration)));
+        }
+
+        return $states;
+    }
+
+    /**
+     * @throws InvalidArgumentException When two migrations share a version.
+     *
+     * @return list<Migration> The migrations, by version.
+     */
+    private function ordered(): array
+    {
+        $byVersion = [];
+
         foreach ($this->migrations as $migration) {
             if (!$migration instanceof Migration) {
                 continue;
             }
 
             $version = $migration->version();
-            $states[$version] = self::state($applied[$version] ?? '', self::checksum($this->statements($migration)));
+
+            if (array_key_exists($version, $byVersion)) {
+                throw new InvalidArgumentException('Two migrations have the version ' . $version . '.');
+            }
+
+            $byVersion[$version] = $migration;
         }
 
-        return $states;
+        ksort($byVersion, SORT_STRING);
+
+        return array_values($byVersion);
     }
 
     /**
