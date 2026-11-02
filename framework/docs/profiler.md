@@ -75,6 +75,30 @@ A profile also keeps, for the pages: the route's kind, a key for the browser (th
 digits of a SHA-256 of the session id, never the id), the request's header and field names, and a
 fragment answer's markup up to 64 KiB, its `tessera-csrf-token` value replaced by `redacted`.
 
+## The toolbar
+
+While the profiler is on, every whole HTML page gains Tessera's debug meta
+(`<meta name="tessera-debug" content="highlight">`) at the end of its head and the profiler's
+toolbar at the end of its body (#231), whatever the theme. The render observer offers both
+(`AIC\Component\Contracts\RenderObserver::headEnd()` and `bodyEnd()`), and
+`AIC\Component\Application\Renderer::document()` places them, so no theme places them and none can
+drop them. A Tessera fragment never carries them.
+
+- Collapsed, the toolbar shows the page's own status, time, statements and size. Open, it links to
+  the page's profile and to the list, and lists this browser's exchanges as they happen.
+- Its list is a Tessera stream, `/_profiler/stream` (`AIC\Profiler\Application\ProfilerFeed`). It
+  starts at the page's own profile, whose figures fill the summary (`@profiler-summary`), then
+  appends a link per later profile of the same browser (`@profiler-exchanges`). Each event's id is
+  the profile's, so Tessera resumes where it stopped. The stream reads the table once a second and
+  asks Tessera to reconnect after half a minute.
+- Tessera marks each element a response patched (`data-tessera-patched`, Tessera 0.4.0). The
+  profiler's stylesheet outlines it while the toolbar's "Outline patched elements" box is ticked:
+  a CSS rule, no script.
+
+A profile's id is made when its request starts (`ProfileWriter::newId()`), so the page can link to
+it before it is kept. The profiler's stylesheet scopes every rule under `.aic-profiler` (its pages)
+or `.aic-toolbar`, so it never restyles an app's own atoms.
+
 ## The seams
 
 Three observers, none set by default, carry the request to the profile:
@@ -84,6 +108,7 @@ Three observers, none set by default, carry the request to the profile:
 - `AIC\Routing\Contracts\RouteObserver`, told by `AIC\Routing\Application\Router` when the handler
   gets the request (with its session and the kind's handler) and when it answers.
 - `AIC\Component\Contracts\RenderObserver`, told by `AIC\Component\Application\ObservedTemplates`
-  each template's time and by `AIC\Component\Application\Renderer` each whole render's.
+  each template's time and by `AIC\Component\Application\Renderer` each whole render's; asked by
+  `Renderer::document()` what a whole page gains (#231).
 
 Times come from `AIC\Kernel\Domain\Monotonic`, a monotonic clock in microseconds.

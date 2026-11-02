@@ -16,6 +16,8 @@ use InvalidArgumentException;
 use function count;
 use function explode;
 use function in_array;
+use function strrpos;
+use function substr;
 
 /**
  * Turns a page's layout, regions, components and blocks into HTML (#98, #87),
@@ -61,7 +63,7 @@ final readonly class Renderer
      */
     public function document(Layout $layout): Html
     {
-        return $this->whole($layout);
+        return $this->whole($layout, true);
     }
 
     /**
@@ -150,22 +152,59 @@ final readonly class Renderer
 
     /**
      * @param Component $component A layout or one component, rendered inline in one timed pass.
+     * @param bool      $document  Whether it is a whole document, which the observer may add to (#231).
      *
      * @throws UnknownComponent When no template renders it or one of its children.
      *
      * @return Html Its markup.
      */
-    private function whole(Component $component): Html
+    private function whole(Component $component, bool $document = false): Html
     {
         $started = $this->monotonic->microseconds();
         $renderPass = $this->pass('');
 
         try {
-            return new Html($renderPass->inline($component));
+            $markup = $renderPass->inline($component);
+
+            return new Html($document ? $this->added($markup, $renderPass) : $markup);
         } finally {
             $renderPass->discard();
             $this->passed($started);
         }
+    }
+
+    /**
+     * @param string     $markup     A whole document.
+     * @param RenderPass $renderPass The pass it was rendered in.
+     *
+     * @throws UnknownComponent When no template renders an addition.
+     *
+     * @return string It with the observer's additions before `</head>` and `</body>` (#231); as it was without an
+     *                observer, an addition, or the two closing tags in order.
+     */
+    private function added(string $markup, RenderPass $renderPass): string
+    {
+        $renderObserver = $this->renderObserver;
+        $headEnd = strrpos($markup, '</head>');
+        $bodyEnd = strrpos($markup, '</body>');
+
+        if (
+            !$renderObserver instanceof RenderObserver
+            || $headEnd === false
+            || $bodyEnd === false
+            || $bodyEnd < $headEnd
+        ) {
+            return $markup;
+        }
+
+        $head = $renderObserver->headEnd();
+        $body = $renderObserver->bodyEnd();
+
+        return substr($markup, 0, $headEnd)
+            . ($head instanceof Component ? $renderPass->inline($head) : '')
+            . substr($markup, $headEnd, $bodyEnd - $headEnd)
+            . ($body instanceof Component ? $renderPass->inline($body) : '')
+            . substr($markup, $bodyEnd);
     }
 
     /**

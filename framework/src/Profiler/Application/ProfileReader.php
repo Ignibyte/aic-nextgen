@@ -33,6 +33,11 @@ final readonly class ProfileReader
         . " AND (? = '' OR profile::jsonb->>'kind' = ?) AND (? = 0 OR status = ?)"
         . ' ORDER BY created_at DESC, id DESC LIMIT 100';
 
+    /** One browser's profiles from a given one on, oldest first. */
+    private const string NEWER = self::ROWS . " WHERE profile::jsonb->>'browser' = ?"
+        . ' AND (created_at, id) >= (SELECT created_at, id FROM aic_profiles WHERE id = ?)'
+        . ' ORDER BY created_at, id LIMIT 20';
+
     /** One profile's own members. */
     private const string VIEW = "SELECT coalesce(profile::jsonb->>'handler', '') AS handler,"
         . " coalesce(profile::jsonb->>'user', '') AS user_id,"
@@ -72,6 +77,25 @@ final readonly class ProfileReader
         $profileRows = [];
 
         foreach ($rows as $row) {
+            $profileRows[] = $this->row($row);
+        }
+
+        return $profileRows;
+    }
+
+    /**
+     * @param string $browser A browser's key.
+     * @param string $from    The id of the first profile to read.
+     *
+     * @throws QueryException When the table cannot be read.
+     *
+     * @return list<ProfileRow> Up to 20 of that browser's profiles from it on, oldest first; none when it is gone.
+     */
+    public function newer(string $browser, string $from): array
+    {
+        $profileRows = [];
+
+        foreach ($this->database->fetchAll(self::NEWER, [$browser, $from]) as $row) {
             $profileRows[] = $this->row($row);
         }
 

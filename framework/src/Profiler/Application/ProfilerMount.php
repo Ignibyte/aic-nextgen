@@ -34,9 +34,12 @@ final readonly class ProfilerMount
         ResponseBuilder $responseBuilder,
         PublicAssets $publicAssets,
     ): ProfilerPages {
+        $profileReader = new ProfileReader($database);
+
         return new ProfilerPages(
             $requestHandler,
-            new ProfilerDocuments(new ProfileReader($database), $publicAssets),
+            new ProfilerDocuments($profileReader, $publicAssets),
+            new ProfilerFeed($profileReader),
             new Psr7ResponseWriter($responseBuilder, new Renderer(new AtomTemplates()), new FileResponses($responseBuilder)),
             $responseBuilder,
         );

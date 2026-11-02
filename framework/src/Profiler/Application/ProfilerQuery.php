@@ -57,6 +57,40 @@ final readonly class ProfilerQuery
     }
 
     /**
+     * @param ServerRequestInterface $serverRequest The stream's request.
+     *
+     * @return string The browser's key it streams for.
+     */
+    public function browser(ServerRequestInterface $serverRequest): string
+    {
+        return $this->text($serverRequest, 'browser');
+    }
+
+    /**
+     * @param ServerRequestInterface $serverRequest The stream's request.
+     *
+     * @return string The profile to stream after: the last event Tessera saw when it resumes, else `after`.
+     */
+    public function after(ServerRequestInterface $serverRequest): string
+    {
+        $seen = $serverRequest->getHeaderLine('Last-Event-ID');
+
+        return $seen === ''
+            ? $this->text($serverRequest, 'after')
+            : $seen;
+    }
+
+    /**
+     * @param ServerRequestInterface $serverRequest The stream's request.
+     *
+     * @return bool Whether Tessera is resuming it after the last event it saw.
+     */
+    public function resumed(ServerRequestInterface $serverRequest): bool
+    {
+        return $serverRequest->getHeaderLine('Last-Event-ID') !== '';
+    }
+
+    /**
      * @param ServerRequestInterface $serverRequest A request.
      * @param string                 $name          A query parameter.
      *

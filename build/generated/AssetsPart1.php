@@ -23,8 +23,8 @@ final readonly class AssetsPart1
         return [
             new PublicAsset(
                 'app/styles',
-                '/assets/1d94fedcf4c0535e56bfd5bd3174c22fb4809e9adaea03af698679d21bbef2b4/aic.css',
-                '1d94fedcf4c0535e56bfd5bd3174c22fb4809e9adaea03af698679d21bbef2b4/aic.css',
+                '/assets/daa82b46335c93b4bf8dc7affebcb045cb598a654fdacc39cf0b7a5570f1096f/aic.css',
+                'daa82b46335c93b4bf8dc7affebcb045cb598a654fdacc39cf0b7a5570f1096f/aic.css',
                 'text/css; charset=utf-8',
                 'f4d09a2ff38bc94467b0db4a587eb3b528a251f16ef17dee393825a80f9299d4',
                 5_282,

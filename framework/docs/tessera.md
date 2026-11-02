@@ -2,7 +2,7 @@
 
 Tessera enhances the server-rendered page with navigation, targeted refreshes, form submissions and
 stream updates. Pages remain [Component trees](rendering.md), so a full page and a targeted answer
-render the same data. The server speaks protocol version 2 (Tessera 0.3.1); the browser release is pinned separately
+render the same data. The server speaks protocol version 2 (Tessera 0.3.1 and later; this app pins 0.4.0, whose devtools events and highlight the profiler uses); the browser release is pinned separately
 in app config and published by the build with its exact bytes and checksum.
 
 ## Markers and fragments

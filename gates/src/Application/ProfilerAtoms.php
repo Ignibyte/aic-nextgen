@@ -11,11 +11,14 @@ use AIC\Component\Domain\Stack;
 use AIC\Component\Domain\Table;
 use AIC\Component\Domain\Tabs;
 use AIC\Component\Domain\Timeline;
+use AIC\Profiler\Domain\ProfilerDebug;
 use AIC\Profiler\Domain\ProfilerLayout;
+use AIC\Profiler\Domain\ProfilerToolbar;
 
 /**
  * The fourth atom group (#230): the data atoms the profiler pages are built
- * from, generic enough for any app, and the profiler's own document.
+ * from, generic enough for any app, and the profiler's own document, toolbar
+ * and debug meta (#231).
  */
 final readonly class ProfilerAtoms
 {
@@ -32,6 +35,8 @@ final readonly class ProfilerAtoms
             [Stack::class, 'stack'],
             [FilterForm::class, 'filter-form'],
             [ProfilerLayout::class, 'profiler-layout'],
+            [ProfilerToolbar::class, 'profiler-toolbar'],
+            [ProfilerDebug::class, 'profiler-debug'],
         ];
     }
 }
