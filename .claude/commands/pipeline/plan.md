@@ -33,7 +33,7 @@ Your job: understand the request, decide how it will be built, write that down a
 Detailed procedures are in [plan.runbook.md](plan.runbook.md):
 
 1. **Parse the request**: restate the goal in one sentence.
-2. **Read the code it touches**, and the old-AIC class it ports from (`/srv/stacks/aic` at `e0778896`), if any.
+2. **Read the code it touches**, and the old-AIC class it ports from (`../aic` at `e0778896`), if any.
 3. **Design it**: approach, file manifest (every file to create, modify or delete), locked-in decisions. Native compilation shapes the design (CONSTITUTION.md §3).
 4. **Browser check**: `browser_testable: Yes` with one `- [ ] <URL> — <action> → <expected>` item per check, or `No` and the section deleted.
 5. **Record it on the ticket**: `bin/ticket.sh comment <n>` (or `create`) and `update <n> --status in-progress --phase plan`.

@@ -1,6 +1,6 @@
 # CONSTITUTION — Absolute Insanity, AI (AIAI)
 
-Binding rules for every line of AIC (composer vendor `aic/`, PHP namespaces `AIC\` and `App\`). Any rule can be tightened by amendment; none can be loosened. Ported from old AIC's Constitution (`/srv/stacks/aic` at `e0778896`) and trimmed to one package (#3). The decisions behind these rules are in `docs/planning/plan.md` (the private planning repo).
+Binding rules for every line of AIC (composer vendor `aic/`, PHP namespaces `AIC\` and `App\`). Any rule can be tightened by amendment; none can be loosened. Ported from old AIC's Constitution (`../aic` at `e0778896`) and trimmed to one package (#3). The decisions behind these rules are in `docs/planning/plan.md` (the private planning repo).
 
 ---
 

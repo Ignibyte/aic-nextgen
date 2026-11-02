@@ -44,7 +44,7 @@ The spec is a Plan (`/pipeline:plan` Steps 1–4): goal, approach (systems, laye
 The spec is the Plan of the carry workflow (the fork's `FORK.md`, the `elephc-carry` skill). Binding rules for the agents:
 
 - One cargo command at a time on the box, none while a build or `just check` runs; speccing needs none.
-- `/srv/stacks/elephc` is read-only for speccing: `git show`, `git log`, `git grep`.
+- `../elephc` is read-only for speccing: `git show`, `git log`, `git grep`.
 - Run a compiler binary in place, never a copy (the bridge archives sit beside it). Each compile gets its own runtime cache (`export XDG_CACHE_HOME="$PWD/.cache"`); leave `TMPDIR` alone.
 - No ticket edits, no commits, nothing posted on GitHub. The agent writes its spec to the session scratchpad and reports back in under 15 lines.
 

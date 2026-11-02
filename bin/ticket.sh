@@ -11,7 +11,7 @@
 # titles with colons/quotes round-trip safely. The body is the ticket
 # description; comments append under a `## Comments` heading.
 #
-# Numbering starts at #1. The archived AIC repo (/srv/stacks/aic) has its
+# Numbering starts at #1. The archived AIC repo (../aic) has its
 # own #1-#734; write "AIC #N" when citing one of those.
 #
 # Subcommands:

@@ -9,10 +9,10 @@ AIC's own workflow covers the PHP framework and writes no tests. A compiler fix 
 
 Places:
 
-- Compiler checkout: `/srv/stacks/elephc` (`origin` = Ignibyte/aic_compiler, `upstream` = illegalstudio/elephc, `chadmandoo` = the owner's public fork, used for upstream PRs).
-- Checks: `/srv/stacks/elephc-bundler/justfile`: `just -f /srv/stacks/elephc-bundler/justfile <recipe>`.
+- Compiler checkout: `../elephc` (`origin` = Ignibyte/aic_compiler, `upstream` = illegalstudio/elephc, `chadmandoo` = the owner's public fork, used for upstream PRs).
+- Checks: `../elephc-bundler/justfile`: `just -f ../elephc-bundler/justfile <recipe>`.
 - Upstream rules: `AGENTS.md` and `CONTRIBUTING.md` in the compiler checkout. Read them before the first commit of a session.
-- History: old AIC's carry inventory (`/srv/stacks/aic/docs/planning/elephc-upstream-sync/carry-inventory.md`) and native roadmap (`/srv/stacks/aic/docs/planning/native-compilation-roadmap.md`), read-only; the friction table in `docs/planning/handoff.md`.
+- History: old AIC's carry inventory (`../aic/docs/planning/elephc-upstream-sync/carry-inventory.md`) and native roadmap (`../aic/docs/planning/native-compilation-roadmap.md`), read-only; the friction table in `docs/planning/handoff.md`.
 
 ## 1. Plan
 
@@ -39,6 +39,7 @@ Places:
 2. Only when the fix is solid (`check: PASS`, a byte-parity program) and about PHP rather than shaped around AIC, one narrow fix per PR, and with the owner's OK for this change: `git push chadmandoo fix/<slug>`, then `gh pr create --repo illegalstudio/elephc --head chadmandoo:fix/<slug>`. Say it was verified on Linux x86_64 only.
 3. Comment the outcome on the AIC ticket and push the ticket in `docs/planning`.
 4. `just record <sha>` when the run will be a baseline; commit new ledgers in the bundler.
+5. After a merge into the fork's `main` (a carry or a sync), and after upstream merges one of our PRs, regenerate the fork's public fix list on a docs branch: `../elephc-bundler/tools/fork-fixes.sh ../elephc FIXES.md` run inside the fork, then PR and merge it with `--merge`. A row leaves the list when upstream has the fix.
 
 ## Rules
 
