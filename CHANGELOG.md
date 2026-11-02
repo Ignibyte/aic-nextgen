@@ -6,6 +6,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The profiler's pages** (#230): with the profiler on, `/_profiler` lists the kept requests
+  (filtered by path and kind in place, polled) and `/_profiler/{id}` shows one in tabs: Request,
+  Timeline, Database, Templates and Tessera, the last with the headers both ways, the answer's size
+  against the whole page and its markup. They are answered before the app like `/assets/`, in the
+  framework's own layout and stylesheet, so they need no route, session or theme. Six generic atoms
+  join the catalog (`Table`, `Tabs`, `Timeline`, `CodeBlock`, `Stack`, `FilterForm`). A profile now
+  also keeps the route's kind, a hashed browser key, header and field names, and a fragment's
+  markup with its CSRF token redacted.
+- **The README shows the repository's layout**: a tree of the folders and templates, and what each
+  part is for, with one page traced from route to template.
+
 - **The profiler's core** (#229): with `AIC_PROFILER=1` (`config/profiler.php`), every dynamic
   request is kept in `aic_profiles` (the newest 500) and named in `X-AIC-Profile`: its handler, its
   middleware/handler/render times, each statement's SQL (never its values), each template rendered

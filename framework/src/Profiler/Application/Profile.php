@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AIC\Profiler\Application;
 
-use AIC\Auth\Application\Authenticator;
 use AIC\Component\Contracts\RenderObserver;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Kernel\Contracts\RequestObserver;
@@ -14,14 +13,12 @@ use AIC\Profiler\Domain\ProfileTimes;
 use AIC\Profiler\Domain\RequestFacts;
 use AIC\Profiler\Domain\StatementRecord;
 use AIC\Routing\Contracts\RouteObserver;
-use AIC\Session\Application\RequestSession;
-use AIC\Session\Contracts\Session;
 use AIC\Tessera\Domain\TesseraRequest;
 use Override;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
-use function array_key_exists;
 use function str_starts_with;
 
 /**
@@ -62,6 +59,10 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
 
     private string $user = '';
 
+    private string $kind = '';
+
+    private string $browser = '';
+
     /** @var list<StatementRecord> */
     private array $statements = [];
 
@@ -72,11 +73,13 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
      * @param ProfileWriter   $profileWriter   Keeps the profile.
      * @param ResponseBuilder $responseBuilder Adds the header naming it.
      * @param Monotonic       $monotonic       The clock the times are read from.
+     * @param ExchangeReader  $exchangeReader  Reads the request and its answer.
      */
     public function __construct(
         private readonly ProfileWriter $profileWriter,
         private readonly ResponseBuilder $responseBuilder,
         private readonly Monotonic $monotonic = new Monotonic(),
+        private readonly ExchangeReader $exchangeReader = new ExchangeReader(),
     ) {
     }
 
@@ -91,19 +94,21 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
     }
 
     /**
-     * @param ServerRequestInterface $serverRequest The request as its handler gets it.
-     * @param string                 $handler       The handler's class.
+     * @param ServerRequestInterface  $serverRequest  The request as its handler gets it.
+     * @param string                  $handler        The handler's class.
+     * @param RequestHandlerInterface $requestHandler The kind's handler around it.
      */
     #[Override]
-    public function routed(ServerRequestInterface $serverRequest, string $handler): void
-    {
+    public function routed(
+        ServerRequestInterface $serverRequest,
+        string $handler,
+        RequestHandlerInterface $requestHandler,
+    ): void {
         $this->routed = $this->monotonic->microseconds();
         $this->handler = $handler;
-        $attributes = $serverRequest->getAttributes();
-        $this->user = array_key_exists(RequestSession::ATTRIBUTE, $attributes)
-            && $attributes[RequestSession::ATTRIBUTE] instanceof Session
-            ? $attributes[RequestSession::ATTRIBUTE]->get(Authenticator::USER) ?? ''
-            : '';
+        $this->kind = $this->exchangeReader->kind($requestHandler);
+        $this->user = $this->exchangeReader->user($serverRequest);
+        $this->browser = $this->exchangeReader->browser($serverRequest);
     }
 
     /**
@@ -167,7 +172,7 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
      * @param ServerRequestInterface $serverRequest The request.
      * @param ResponseInterface      $response      Its answer.
      *
-     * @return RequestFacts What they were, by the listed headers only.
+     * @return RequestFacts What they were: the listed headers' values, and other headers' and fields' names only.
      */
     private function facts(ServerRequestInterface $serverRequest, ResponseInterface $response): RequestFacts
     {
@@ -193,6 +198,7 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
             $tessera,
             $answer,
             $response->getBody()->getSize() ?? 0,
+            $this->exchangeReader->detail($serverRequest, $response, $this->kind, $this->browser),
         );
     }
 

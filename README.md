@@ -49,22 +49,125 @@ compiled binary serves the app, and PHP serves the same app as the reference.
 reads before building on AIC (the kinds, the modules, the systems, the conventions, the gates).
 They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs/`.
 
-## Layout
+## How the repository is laid out
 
-| Path | Holds |
-|---|---|
-| `framework/` | `aic/framework`, namespace `AIC\` under `framework/src/`, its architecture pages in `framework/docs/`, pulled in through a composer path repository |
-| `modules/` | The fixture app, `aic/app`: four modules, `modules/<name>/<name>.module.php` (its manifest) and `src/` (`App\<Name>\`) |
-| `build/` | Everything `composer run build` writes, never edited by hand: `generated/` (the wiring and escaped templates, `App\Generated\`), `assets/` (the published files), `surface.json` and `assets.json` |
-| `docs/wiki/` | The code wiki `composer run build` writes from the surface and the code index: an index and a page per module; never edited by hand (notes go in `modules/<m>/README.md`) |
-| `themes/<name>/` | The theme `config/app.php` names (#153, #167): `layouts/` and `components/<Name>/` (templates only), `src/` (their classes: `Layouts/Page.php` with the page's regions, `Components/<Name>/`), `assets/` (CSS, scripts, images) and, optionally, `frontend/` (a front-end build's sources). Modules hold no templates or assets |
-| `bootstrap/serve.php` | Serves one request: the wiring, the request in, the response out; compiled into the site or run under PHP |
-| `public/index.php` | The interpreted entry (php-fpm in DDEV, `php -S`): the autoloader, then `serve.php`; the only file in `public/` |
-| `bin/aic` | The console: `bin/aic <command> [arguments]` (`migrate`, `migrate:status`, `db:ping`, `greet`); with no command it lists them. Run database commands inside DDEV: `ddev exec bin/aic migrate` |
-| `gates/` | `aic/gates`, the gate suite (#116): a dev-only package with every gate's code and entry, the runner, the build (`vendor/bin/aic-build`, behind `composer run build`; `--check` is gate:24) and each tool's base config. `vendor/bin/aic-gate --list` names the gates and `aic-gate N` runs one |
-| `build/surface.json` | The app's surface: every route (method, path, handler, kind) and console command (name, class, kind) |
-| `workflow/` | `aic/workflow`, the agent workflow's engine (`AIC\Workflow\`): a dev-only package. `bin/aic workflow:run <ticket>` runs one phase of a ticket per call; `workflow:status` shows the run; `workflow:reset` is the operator's, from a terminal. At each phase exit the engine runs the gates and the spec's audits itself (#101) and keeps the verdicts in `var/workflow/evidence.sqlite`. `workflow/bin/aic-guard.sh` supplies Claude Code callbacks (#102); the explicit Codex installer uses `workflow/bin/aic-codex-guard.sh` and `workflow/pack/codex/hooks.json` (#136). Both adapt calls to the open run's walls. House rules (`workflow/rules/`, #104) judge each run's change from files frozen at begin; gate:28 holds them to their probes. `bin/aic code:tree`, `code:search`, `code:refs` and `code:index` answer from the code index in `var/index/code.sqlite` (#106). Plan cannot pass until its grounding check finds every declared path and class real and the run's own lookups show the agent looked (#118). `bin/aic route:list`, `command:list`, `job:list`, `schedule:list`, `module:list`, `module:show <name>` and `kind:list` answer what the app declares from `build/surface.json`, as text or with `--json` (#109). `bin/aic make:module`, `make:page`, `make:api`, `make:component`, `make:block`, `make:command`, `make:job` and `make:migration` write a new class that passes every gate and add its manifest call (#122). `bin/aic workflow:probe` replays the engine's planted cases in throwaway apps, from `workflow/probes/sweep/`, and exits 0 only when every expectation held (#119). `bin/aic workflow:init` installs it in an app (#105; `workflow/pack/`). Once per run, at code, an independent `aic-seeker` subagent checks the run's change against the AIC checklist; `bin/aic workflow:seeker-brief` gives it its scope (the diff plus one hop) and `bin/aic workflow:seeker-report` files its ledger, whose findings are advisory (#103, #127). Its state is `var/workflow/` (gitignored) |
-| `.ddev/` | DDEV: nginx-fpm serving the interpreted reference, and Postgres 17 |
+```text
+aic-nextgen/
+├── framework/                  aic/framework, the package an app requires
+│   ├── src/                    AIC\ … one namespace per system
+│   │   ├── Http/ Routing/ Controller/ Kernel/ Sapi/ Config/ Console/ Profiler/
+│   │   ├── Container/ Module/
+│   │   ├── Database/ Schema/ Entity/ Storage/
+│   │   ├── Component/          components, the Renderer, the compiled atom templates
+│   │   ├── Middleware/ Block/ Tessera/ Form/ Session/ Secret/ Auth/
+│   │   └── Queue/ Schedule/ Notification/
+│   │       each system is split by layer: Contracts/ Domain/ Application/ Infrastructure/
+│   ├── templates/
+│   │   ├── components/         the framework's atoms (link, form, table, tabs, …) as .phtml
+│   │   └── tessera/            how regions, markers and fragment answers are framed
+│   └── docs/                   the architecture pages an app's agent reads
+├── modules/                    the fixture app's modules
+│   └── note/
+│       ├── note.module.php     the manifest: routes, jobs, migrations, what it exports
+│       └── src/                App\Note\ … one folder per kind
+│           ├── Controller/     Page, Api and Stream entry points
+│           ├── Command/ Job/ Block/ Form/ Migration/
+│           └── Entity/ Repository/ Service/
+├── themes/
+│   └── app/                    the theme config/app.php names: all markup lives here
+│       ├── layouts/            html.phtml, page.phtml and named variants
+│       ├── components/         one folder per component, its .phtml template
+│       │   └── NoteList/note-list.phtml
+│       ├── src/                the PHP behind the templates
+│       │   ├── Layouts/Page.php            the page's regions
+│       │   └── Components/NoteList/        the component class and its values
+│       └── assets/             CSS, images, fonts: published by the build
+├── config/                     typed settings, one file per concern
+├── bootstrap/serve.php         serves one request, under PHP or compiled
+├── public/index.php            the PHP entry; nothing else is public
+├── bin/aic                     the console
+├── build/                      written by `composer run build`, never by hand
+│   ├── generated/              the wiring and the escaped templates
+│   ├── assets/                 the published files, fingerprinted
+│   └── surface.json            every route, command, job and schedule, with its kind
+├── docs/wiki/                  the code wiki, written by the build
+├── tests/browser/              Playwright looks the gates keep running
+├── gates/                      aic/gates: the 33 quality gates (dev only)
+├── workflow/                   aic/workflow: the agent workflow engine (dev only)
+├── deploy/frankenphp/          a Caddyfile and container for running under FrankenPHP
+└── .ddev/                      the local stack: nginx and php-fpm, Postgres 17
+```
+
+### What each part is for
+
+- **`framework/`** is AIC itself, the `aic/framework` package. An app requires it and finds it in
+  `vendor/aic/framework/`. Each system has its own namespace under `src/`, and every namespace has
+  the same layers:
+  - `Contracts/`: interfaces and values other code may depend on;
+  - `Domain/`: plain typed values and rules;
+  - `Application/`: the code that does the work;
+  - `Infrastructure/`: the adapters to PHP and the outside world.
+
+  gate:12 holds who may use whom. `templates/components/` holds the framework's own atoms: small
+  components such as links, forms, tables and tabs that any page or theme can use. The build
+  compiles them into `src/Component/Application/Templates/`. `docs/` is written for the agent
+  building an app; start at [framework/docs/README.md](framework/docs/README.md).
+
+- **`modules/`** is the app. A module is a folder with a manifest, `<name>.module.php`, that
+  declares everything the module brings: routes, commands, jobs, schedules, migrations, middleware
+  and what it exports to other modules. Its classes sit in `src/`, one folder per kind. Controllers
+  are the five entry kinds (Page, Api, Stream, Command, Job); services, entities, repositories and
+  forms sit beside them. A module holds no HTML: gate:32 refuses it.
+
+  The fixture app has four modules:
+  - `site`: the home page, greetings, jobs, schedules, events and downloads;
+  - `note`: notes and stock;
+  - `account`: sign-in, sessions and uploads;
+  - `scaffold`: what the `bin/aic make:*` commands write.
+
+- **`themes/<theme>/`** owns all markup. Templates are on top and the PHP behind them in `src/`:
+  - `layouts/` holds the document (`html.phtml`) and the page (`page.phtml`, plus named variants a
+    controller can ask for);
+  - `components/<Name>/` holds each component's template;
+  - `src/Components/<Name>/` holds its class, a plain typed value the controller fills;
+  - `src/Layouts/Page.php` declares the page's regions;
+  - `assets/` holds every public file, its stylesheets bundled in path order;
+  - `frontend/` (optional) holds a CSS build's sources.
+
+  A template is restricted PHP: gate:25 allows printing values, conditions and loops, and no
+  function calls. The build escapes every `<?= ?>` by its type.
+
+- **`config/`** holds one typed settings object per file: the app (`app.php`, which names the theme
+  and pins Tessera), the database, mail, the app secret, the profiler. Environment variables are
+  read here and nowhere else.
+
+- **`bootstrap/serve.php`** serves one request. Under PHP it runs behind `public/index.php`. For
+  the native build it is compiled with the classes into one HTTP server. Both serve the same code.
+
+- **`build/`** is everything `composer run build` writes from the manifests, the theme and the
+  framework: the wiring as plain PHP, the escaped templates, the published assets and
+  `surface.json`. It is committed, so a deploy needs no build step. gate:24 fails when it is stale.
+  Never edit it by hand.
+
+- **`gates/`** and **`workflow/`** are development packages:
+  - `aic/gates` runs the quality suite (`composer run gate`; `vendor/bin/aic-gate --list` names
+    each gate);
+  - `aic/workflow` is the engine an agent works tickets through (`bin/aic workflow:run`), with the
+    code index and the inspect commands (`bin/aic route:list`, `code:search`, …).
+
+  Neither ships with an app's runtime.
+
+- **`tests/browser/`** holds Playwright looks at pages, kept as regression checks: gate:23 runs
+  them against the compiled site. AIC writes no other tests; its checks are the gates.
+
+- **`deploy/`** and **`.ddev/`** hold the ways to run it: FrankenPHP for production, DDEV for local
+  work.
+
+When one page and one component meet, the path looks like this: the `GET /notes` route
+(`modules/note/note.module.php`) reaches `App\Note\Controller\NoteListPage`. Its service,
+`App\Note\Service\NoteViews`, fills `App\Theme\Components\NoteList\NoteList` with the notes, and
+the controller places it in the page's `content` region. The Renderer then prints it through `themes/app/components/NoteList/note-list.phtml`, which
+the build escaped into `build/generated/templates/`.
 
 ## Bring it up
 

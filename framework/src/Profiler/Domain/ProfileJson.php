@@ -37,9 +37,14 @@ final readonly class ProfileJson
     ): string {
         return $this->object([
             'answer' => $this->texts($requestFacts->answer),
+            'body' => $this->text($requestFacts->detail->body),
+            'browser' => $this->text($requestFacts->detail->browser),
             'bytes' => (string) $requestFacts->bytes,
             'components' => $this->components($components),
+            'fields' => $this->names($requestFacts->detail->fields),
             'handler' => $this->text($requestFacts->handler),
+            'headers' => $this->names($requestFacts->detail->headers),
+            'kind' => $this->text($requestFacts->detail->kind),
             'method' => $this->text($requestFacts->method),
             'microseconds' => $this->times($profileTimes),
             'path' => $this->text($requestFacts->path),
@@ -101,6 +106,22 @@ final readonly class ProfileJson
                 'microseconds' => (string) $component->microseconds,
                 'path' => $this->text($component->path),
             ]);
+        }
+
+        return '[' . implode(',', $items) . ']';
+    }
+
+    /**
+     * @param list<string> $names Names.
+     *
+     * @return string Them as a list of strings.
+     */
+    private function names(array $names): string
+    {
+        $items = [];
+
+        foreach ($names as $name) {
+            $items[] = $this->text($name);
         }
 
         return '[' . implode(',', $items) . ']';

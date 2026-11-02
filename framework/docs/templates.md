@@ -52,7 +52,11 @@ join at the same context; loops and their exits preserve the entry context. Tag 
 delimiters remain literal: empty branches and zero iterations cannot complete a divided name.
 Quote dynamic attribute values. Render child Components and Regions only in element body context.
 
-The fifteen framework atoms are declared under `framework/templates/components/`. A source-package
+The framework atoms are declared under `framework/templates/components/` in four groups: text,
+controls, forms, and the data atoms (#230), which are `AIC\Component\Domain\Table`, `Tabs`,
+`Timeline`, `CodeBlock`, `Stack` and `FilterForm`, plus the profiler's own document,
+`AIC\Profiler\Domain\ProfilerLayout`. A data atom's value classes (`TableRow`, `TableCell`, `Tab`,
+`TimelineSegment`) are plain values its template reads. A source-package
 build uses the same reader to write their escaped copies and lookup under
 `framework/src/Component/Application/Templates/`. Their inline role preserves the existing
 form-field paths, and an atom rendered inside another prints no marks. Apps consume these shipped files; an app build never

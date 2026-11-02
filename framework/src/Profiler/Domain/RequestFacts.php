@@ -20,6 +20,7 @@ final readonly class RequestFacts
      * @param array<string, string> $tessera The Tessera request headers it carried, by name.
      * @param array<string, string> $answer  The answer's content type and Tessera headers, by name.
      * @param int                   $bytes   The answer body's length; 0 for a stream, which has none yet.
+     * @param RequestDetail         $detail  The kind, the browser, the names and a Tessera answer's markup (#230).
      */
     public function __construct(
         public string $method,
@@ -31,6 +32,7 @@ final readonly class RequestFacts
         public array $tessera,
         public array $answer,
         public int $bytes,
+        public RequestDetail $detail = new RequestDetail(),
     ) {
     }
 }

@@ -1,0 +1,2 @@
+<?php declare(strict_types=1); /* Escaped from framework/templates/components/stack.phtml by composer run build; edit that file, never this one. */ ?>
+<div<?= $renderPass->marks() ?> class="aic-stack"><?php foreach ($stack->items as $component): ?><?= $renderPass->inline($component) ?><?php endforeach; ?></div>

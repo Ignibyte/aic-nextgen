@@ -1,0 +1,2 @@
+<?php /** @var \AIC\Component\Domain\Tabs $tabs */ ?>
+<nav class="aic-tabs"<?php if ($tabs->label !== ''): ?> aria-label="<?= $tabs->label ?>"<?php endif ?>><?php foreach ($tabs->tabs as $tab): ?><a href="<?= $tab->href ?>"<?php if ($tabs->target !== ''): ?> data-target="<?= $tabs->target ?>"<?php endif ?><?php if ($tab->current): ?> aria-current="page"<?php endif ?>><?= $tab->label ?></a><?php endforeach ?></nav>

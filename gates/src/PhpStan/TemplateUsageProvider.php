@@ -71,14 +71,17 @@ final class TemplateUsageProvider extends ReflectionBasedMemberUsageProvider
      *
      * @throws RuntimeException When a template cannot be read.
      *
-     * @return VirtualUsageData|null Used when it is a prop of a component, a frame or a theme value class that a template
-     *                               reads.
+     * @return VirtualUsageData|null Used when it is a prop of a component, a frame, a theme value class or an atom's
+     *                               value class (`AIC\Component\Domain`, #230) that a template reads.
      */
     #[Override]
     protected function shouldMarkPropertyAsRead(ReflectionProperty $property): ?VirtualUsageData
     {
         $class = $property->getDeclaringClass()->getName();
-        $data = is_a($class, Component::class, true) || is_a($class, Frame::class, true) || str_starts_with($class, 'App\\Theme\\');
+        $data = is_a($class, Component::class, true)
+            || is_a($class, Frame::class, true)
+            || str_starts_with($class, 'App\\Theme\\')
+            || str_starts_with($class, 'AIC\\Component\\Domain\\');
 
         return $data && array_key_exists($property->getName(), $this->reads()['properties'])
             ? VirtualUsageData::withNote('read by a template (#155)')

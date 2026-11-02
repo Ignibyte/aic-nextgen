@@ -10,6 +10,7 @@ use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\Alert;
 use AIC\Component\Domain\Form;
 use AIC\Component\Domain\FormField;
+use AIC\Component\Domain\Table;
 use AIC\Component\Exception\UnknownComponent;
 use Override;
 
@@ -19,6 +20,14 @@ use Override;
  */
 final readonly class AtomTemplatesPart4 implements ComponentTemplates
 {
+    /**
+     * @param ComponentTemplates $componentTemplates The templates after these.
+     */
+    public function __construct(
+        private ComponentTemplates $componentTemplates = new AtomTemplatesPart5(),
+    ) {
+    }
+
     /**
      * @param Component  $component  A component.
      * @param RenderPass $renderPass The pass rendering it.
@@ -34,7 +43,8 @@ final readonly class AtomTemplatesPart4 implements ComponentTemplates
             $component instanceof Alert => $this->renderAlert($component, $renderPass),
             $component instanceof Form => $this->renderForm($component, $renderPass),
             $component instanceof FormField => $this->renderFormField($component, $renderPass),
-            default => throw new UnknownComponent($component::class),
+            $component instanceof Table => $this->renderTable($component, $renderPass),
+            default => $this->componentTemplates->compose($component, $renderPass),
         };
     }
 
@@ -82,6 +92,22 @@ final readonly class AtomTemplatesPart4 implements ComponentTemplates
     {
         $renderPass->open($formField);
         require __DIR__ . '/form-field.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Table      $table      The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from table.phtml.
+     */
+    private function renderTable(Table $table, RenderPass $renderPass): string
+    {
+        $renderPass->open($table);
+        require __DIR__ . '/table.phtml';
 
         return $renderPass->close();
     }

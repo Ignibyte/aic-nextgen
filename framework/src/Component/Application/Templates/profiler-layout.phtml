@@ -1,0 +1,5 @@
+<?php declare(strict_types=1); /* Escaped from framework/templates/components/profiler-layout.phtml by composer run build; edit that file, never this one. */ ?>
+<!doctype html><html<?= $renderPass->marks() ?> lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title><?= $renderPass->text($profilerLayout->name) ?></title><meta name="tessera-layout" content="<?= $renderPass->text($profilerLayout->identity) ?>">
+<?= $renderPass->inline($profilerLayout->trackedAssets) ?></head>
+<body class="aic-profiler"><main><?= $renderPass->region($profilerLayout->content) ?></main></body></html>
