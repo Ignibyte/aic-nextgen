@@ -82,6 +82,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **A module routes up to its 15 controllers** (#243): the build wrote a module's routes as one
+  class, so past 13 controllers it refused ("the generated InventoryRoutes would depend on 16
+  classes"). The routes now split into parts (`<M>RoutesPart2` and on) as its handlers do, and
+  `ModuleRoutes` calls each in order. Found by Lotline run 28, and in #233.
 - **`workflow:ask` takes no flag** (#241): `workflow:ask --help` had recorded "--help" as the
   run's one open question, which only the operator could clear. A first word that is a flag now asks
   nothing: `--help` prints the usage, any other flag exits 2. Found by Lotline run 27.

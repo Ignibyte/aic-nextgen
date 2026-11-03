@@ -11,6 +11,7 @@ use AIC\Routing\Domain\DuplicateRouteException;
 use Gates\Domain\ModuleDefinition;
 use InvalidArgumentException;
 
+use function array_key_exists;
 use function array_slice;
 use function count;
 use function implode;
@@ -28,6 +29,12 @@ final readonly class RoutesSource
      * The most modules one part chains: its two fixed types and the next part leave 12 of PHPMD's 15.
      */
     private const int PART_SIZE = 12;
+
+    /**
+     * How many controllers one module routes part may name: with the collector and its exception, PHPMD's coupling
+     * of 15 (#243).
+     */
+    private const int HANDLERS = 13;
 
     /**
      * A module's routes, `{class}` and `{chain}` standing for its name and the route calls.
@@ -82,24 +89,24 @@ final readonly class RoutesSource
     /**
      * @param ModuleDefinition $moduleDefinition A module with routes.
      *
-     * @throws InvalidArgumentException When its class would not fit the gates.
+     * @throws InvalidArgumentException When one of its classes would not fit the gates.
      *
-     * @return string Its `<M>Routes` class file.
+     * @return array<string, string> Its routes' classes by kind suffix: `Routes`, then `RoutesPart2` and on when its
+     *                               controllers do not fit one class (#243), each adding its share; `ModuleRoutes`
+     *                               calls them in order, as it calls handler parts.
      */
-    public function module(ModuleDefinition $moduleDefinition): string
+    public function module(ModuleDefinition $moduleDefinition): array
     {
-        $classes = [RouteCollector::class, DuplicateRouteException::class];
-        $chain = '';
+        $files = [];
 
-        foreach ($moduleDefinition->declared(ModuleRoute::class) as $moduleRoute) {
-            $classes[] = $moduleRoute->handler;
-            $chain .= $this->call($moduleRoute);
+        foreach (self::parts($moduleDefinition->declared(ModuleRoute::class)) as $index => $moduleRoutes) {
+            $suffix = $index === 0
+                ? 'Routes'
+                : 'RoutesPart' . ($index + 1);
+            $files[$suffix] = $this->part($moduleDefinition, $moduleDefinition->studlyName() . $suffix, $moduleRoutes);
         }
 
-        $from = 'modules/' . $moduleDefinition->name . '/' . $moduleDefinition->name . '.module.php';
-        $body = strtr(self::MODULE_TEMPLATE, ['{class}' => $moduleDefinition->studlyName() . 'Routes', '{chain}' => $chain]);
-
-        return $this->phpClassFile->file('App\\Generated', $classes, [], $this->phpClassFile->generated($from, 'its routes.'), $body);
+        return $files;
     }
 
     /**
@@ -122,6 +129,31 @@ final readonly class RoutesSource
         }
 
         return $files;
+    }
+
+    /**
+     * @param ModuleDefinition  $moduleDefinition The module.
+     * @param string            $class            The part's class.
+     * @param list<ModuleRoute> $moduleRoutes     Its routes.
+     *
+     * @throws InvalidArgumentException When the class would not fit the gates.
+     *
+     * @return string The part's class file.
+     */
+    private function part(ModuleDefinition $moduleDefinition, string $class, array $moduleRoutes): string
+    {
+        $classes = [RouteCollector::class, DuplicateRouteException::class];
+        $chain = '';
+
+        foreach ($moduleRoutes as $moduleRoute) {
+            $classes[] = $moduleRoute->handler;
+            $chain .= $this->call($moduleRoute);
+        }
+
+        $from = 'modules/' . $moduleDefinition->name . '/' . $moduleDefinition->name . '.module.php';
+        $body = strtr(self::MODULE_TEMPLATE, ['{class}' => $class, '{chain}' => $chain]);
+
+        return $this->phpClassFile->file('App\\Generated', $classes, [], $this->phpClassFile->generated($from, 'its routes.'), $body);
     }
 
     /**
@@ -163,5 +195,26 @@ final readonly class RoutesSource
         $handler = $this->phpClassFile->short($moduleRoute->handler);
 
         return "\n            ->" . $method . "('" . $moduleRoute->path . "', " . $handler . '::class)';
+    }
+
+    /**
+     * @param list<ModuleRoute> $moduleRoutes A module's routes, in order.
+     *
+     * @return list<list<ModuleRoute>> They in order, in parts that each name at most `HANDLERS` controllers.
+     */
+    private static function parts(array $moduleRoutes): array
+    {
+        $parts = [];
+        $part = [];
+        $handlers = [];
+
+        foreach ($moduleRoutes as $moduleRoute) {
+            $fits = array_key_exists($moduleRoute->handler, $handlers) || count($handlers) < self::HANDLERS;
+            [$parts, $part, $handlers] = $fits ? [$parts, $part, $handlers] : [[...$parts, $part], [], []];
+            $part[] = $moduleRoute;
+            $handlers[$moduleRoute->handler] = true;
+        }
+
+        return [...$parts, $part];
     }
 }
