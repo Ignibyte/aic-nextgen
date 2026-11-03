@@ -71,6 +71,9 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **The profiler redacts a form's CSRF field** (#237): a kept fragment body redacted the
+  `tessera-csrf-token` meta but kept each form's hidden `aic_csrf` value, the same token. Both read
+  `redacted` now (found by Lotline run 25).
 - **gate:23 masks only bodies that differ** (#236): two byte-identical bodies are never a
   difference. A pass's captured-id mask had rewritten `=500` inside one site's copy of the pinned
   Tessera script (found by Lotline run 25).
