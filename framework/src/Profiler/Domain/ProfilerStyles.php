@@ -36,6 +36,7 @@ final readonly class ProfilerStyles
             vertical-align: top;
         }
         .aic-profiler .aic-table th { font-weight: 600; background: #f0f3f7; }
+        .aic-profiler .aic-table .aic-align-end { text-align: end; }
         .aic-profiler .aic-table td { font-variant-numeric: tabular-nums; word-break: break-word; }
         .aic-profiler .aic-table a { color: #2b5cab; }
         .aic-profiler .aic-row-warn td { background: #fff4e0; }

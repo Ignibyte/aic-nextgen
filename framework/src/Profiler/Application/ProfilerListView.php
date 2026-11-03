@@ -12,6 +12,7 @@ use AIC\Component\Domain\Paragraph;
 use AIC\Component\Domain\Stack;
 use AIC\Component\Domain\Tab;
 use AIC\Component\Domain\Table;
+use AIC\Component\Domain\TableAlign;
 use AIC\Component\Domain\TableCell;
 use AIC\Component\Domain\TableRow;
 use AIC\Component\Domain\Tabs;
@@ -40,6 +41,22 @@ final readonly class ProfilerListView
     /** What the list is. */
     private const string INTRO = 'The newest 100 requests recorded with AIC_PROFILER=1, newest first.'
         . ' Open one to see its times, statements, templates and Tessera exchange.';
+
+    /** The list's column names. */
+    private const array HEAD = ['Time', 'Method', 'Path', 'Kind', 'Status', 'ms', 'Bytes', 'SQL', 'Tessera'];
+
+    /** The list's columns: the four that name a request start, its numbers end (#240). */
+    private const array ALIGNMENTS = [
+        TableAlign::Start,
+        TableAlign::Start,
+        TableAlign::Start,
+        TableAlign::Start,
+        TableAlign::End,
+        TableAlign::End,
+        TableAlign::End,
+        TableAlign::End,
+        TableAlign::Start,
+    ];
 
     /** The kinds the filter offers, by label; empty for any. */
     private const array KINDS = ['All' => '', 'Page' => 'Page', 'Api' => 'Api', 'Stream' => 'Stream'];
@@ -122,12 +139,7 @@ final readonly class ProfilerListView
             ], $profileRow->status >= 500 ? 'warn' : '');
         }
 
-        return new Table(
-            ['Time', 'Method', 'Path', 'Kind', 'Status', 'ms', 'Bytes', 'SQL', 'Tessera'],
-            $rows,
-            sprintf('%d request(s)', count($rows)),
-            $this->href($profileFilter),
-        );
+        return new Table(self::HEAD, $rows, sprintf('%d request(s)', count($rows)), $this->href($profileFilter), self::ALIGNMENTS);
     }
 
     /**

@@ -9,6 +9,7 @@ use AIC\Component\Domain\CodeBlock;
 use AIC\Component\Domain\Paragraph;
 use AIC\Component\Domain\Stack;
 use AIC\Component\Domain\Table;
+use AIC\Component\Domain\TableAlign;
 use AIC\Component\Domain\TableCell;
 use AIC\Component\Domain\TableRow;
 use AIC\Profiler\Domain\ProfileView;
@@ -28,6 +29,12 @@ use function sprintf;
  */
 final readonly class ProfilerPanels
 {
+    /** The database tab's columns: the position, the SQL, the time and the rows (#240). */
+    private const array STATEMENT_ALIGNMENTS = [TableAlign::End, TableAlign::Start, TableAlign::End, TableAlign::End];
+
+    /** The templates tab's columns: the path, the component and the time (#240). */
+    private const array TEMPLATE_ALIGNMENTS = [TableAlign::Start, TableAlign::Start, TableAlign::End];
+
     /**
      * @param TimelineBar $timelineBar Draws the times.
      */
@@ -117,7 +124,9 @@ final readonly class ProfilerPanels
             ], $repeat ? 'warn' : '');
         }
 
-        return new Table(['#', 'SQL', 'µs', 'Rows'], $rows, sprintf('%d statement(s), %d of them repeated', count($rows), $repeated));
+        $caption = sprintf('%d statement(s), %d of them repeated', count($rows), $repeated);
+
+        return new Table(['#', 'SQL', 'µs', 'Rows'], $rows, $caption, alignments: self::STATEMENT_ALIGNMENTS);
     }
 
     /**
@@ -137,7 +146,9 @@ final readonly class ProfilerPanels
             ]);
         }
 
-        return new Table(['Path', 'Component', 'µs'], $rows, sprintf('%d template(s), a child before its parent', count($rows)));
+        $caption = sprintf('%d template(s), a child before its parent', count($rows));
+
+        return new Table(['Path', 'Component', 'µs'], $rows, $caption, alignments: self::TEMPLATE_ALIGNMENTS);
     }
 
     /**
