@@ -42,7 +42,11 @@ cannot opt out by returning a different Page response.
 | `FormToken::HONEYPOT = aic_website` | field left empty by a visitor |
 | `FormToken::SESSION_KEY = aic.csrf` | token in the server session |
 
-Build forms with `AIC\Component\Domain\Form` and the issued token value from `FormToken::value()`.
+Build forms with `AIC\Component\Domain\Form` and the guard fields from
+`FormTokens::guard()`: an `AIC\Component\Domain\GuardFields` holding the issued token, which the
+form renders first as the hidden field and the honeypot (#246). A theme component that writes its
+own `<form>` (for Tessera attributes) places the same atom inside it, `<?= $card->guardFields ?>`,
+rather than copying the two inputs.
 Prepare that string in the caller; a template reads ready properties and calls no methods.
 Validate domain inputs again in the posted handler. On validation failure return the form's data as a PageDocument with
 422; enhanced requests can receive its regions in place. A token proves the request came through

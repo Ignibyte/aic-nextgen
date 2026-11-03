@@ -1,0 +1,2 @@
+<?php declare(strict_types=1); /* Escaped from framework/templates/components/guard-fields.phtml by composer run build; edit that file, never this one. */ ?>
+<input<?= $renderPass->marks() ?> type="hidden" name="<?= $renderPass->text(\AIC\Form\Contracts\FormToken::FIELD) ?>" value="<?= $renderPass->text($guardFields->formToken) ?>"><p class="aic-honeypot" aria-hidden="true"><label>Leave this empty <input name="<?= $renderPass->text(\AIC\Form\Contracts\FormToken::HONEYPOT) ?>" tabindex="-1" autocomplete="off"></label></p>

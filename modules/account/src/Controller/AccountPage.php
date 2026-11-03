@@ -51,7 +51,7 @@ final readonly class AccountPage implements Page
         $user = $this->authenticator->userId($serverRequest);
         $joined = $this->requestSession->read($serverRequest)->get(LoginPost::JOINED) ?? '';
         $signedIn = 'Signed in as ' . $user . ($joined === '' ? '.' : ', a member since ' . $joined . '.');
-        $form = new Form('', '/logout', [new Button('Sign out', 'submit', 'sign-out')], $this->formTokens->issue($serverRequest)->value());
+        $form = new Form('', '/logout', [new Button('Sign out', 'submit', 'sign-out')], $this->formTokens->guard($serverRequest));
 
         return $this->pageDocuments->content(
             [new Heading('Account'), new Paragraph($signedIn, 'signed-in'), $form],

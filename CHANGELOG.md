@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Guard fields as an atom** (#246): `AIC\Component\Domain\GuardFields` renders the CSRF field and
+  the honeypot. `Form` takes one in place of its token string, from `FormTokens::guard()`; its
+  markup is unchanged. A theme component that writes its own `<form>` for Tessera attributes places
+  the atom inside instead of copying the inputs. **Breaking:** `new Form(…, $token)` becomes
+  `new Form(…, $formTokens->guard($request))`. Found by Lotline runs 29 and 30, whose copies had
+  drifted (the lead card's lacked the honeypot).
+
 - **Table columns that end-align** (#240): `Table` takes an optional `list<TableAlign>` (`Start`,
   `End`), one per column by position. An end column's `<th>` and every `<td>` carry
   `aic-align-end`, which the theme styles; a start column writes nothing, so existing tables are

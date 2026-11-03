@@ -43,14 +43,14 @@ final readonly class NoteTagForms
      */
     public function form(ServerRequestInterface $serverRequest, string $noteId, string $tag, string $error): Form
     {
-        $token = $this->formTokens->issue($serverRequest)->value();
+        $guardFields = $this->formTokens->guard($serverRequest);
 
         return new Form('tag-form', '/notes/tags', [
             ...self::alerts($error),
             new FormField('Note number', 'note_id', new Input('note_id', 'note_id', $noteId)),
             new FormField('Tag', 'tag', new Input('tag', 'tag', $tag)),
             new Button('Add the tag', 'submit', 'add-tag'),
-        ], $token);
+        ], $guardFields);
     }
 
     /**
