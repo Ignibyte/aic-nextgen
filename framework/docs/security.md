@@ -125,7 +125,9 @@ nginx (`client_max_body_size`).
 `AIC\Auth\Application\Authenticator` uses the app's UserProvider, regenerates the session ID on
 sign-in and ends authentication on logout. A login with no user is checked against a decoy hash, so
 it costs the bcrypt comparison a wrong password costs and its timing does not reveal which logins
-exist (#177). Password hashing uses Postgres pgcrypto bcrypt through
+exist (#177). `login()` answers an `AIC\Auth\Domain\SignedInUser` (the user's id and the
+`profile` fields the provider put on its `UserCredentials`, such as a name and a role, never the
+hash) or null, so a sign-in reads the user once (#238). Password hashing uses Postgres pgcrypto bcrypt through
 `AIC\Auth\Application\PgcryptoPasswordHasher`. Declare protected route prefixes in the module
 manifest; anonymous visitors are redirected to sign-in with a validated same-origin next path.
 Authentication is separate from per-record permissions, which the app must enforce.

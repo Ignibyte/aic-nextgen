@@ -15,6 +15,8 @@ use AIC\Entity\Domain\FieldType;
 use InvalidArgumentException;
 use Override;
 
+use function substr;
+
 /**
  * The demo's users table, as the Authenticator reads it (#9), through the
  * entity API (#186). Users sign in by their login, the table's primary key;
@@ -56,7 +58,7 @@ final readonly class UserRepository implements UserProvider
         $row = $this->entityStore->query($this->entityType)->where('login', $login)->first();
 
         return $row instanceof Row
-            ? new UserCredentials($login, $row->string('password_hash'))
+            ? new UserCredentials($login, $row->string('password_hash'), ['joined' => substr($row->string('created_at'), 0, 10)])
             : null;
     }
 

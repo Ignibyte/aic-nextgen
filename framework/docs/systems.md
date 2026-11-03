@@ -164,7 +164,8 @@ See [tessera.md](tessera.md) for markers, requests, replies and streams.
 
 - `AIC\Auth`: `AIC\Auth\Application\Authenticator` signs a user in and out, with the user's id in
   the session; passwords are hashed by Postgres pgcrypto (bcrypt). Users come from the app through
-  `AIC\Auth\Contracts\UserProvider`, so there is no user entity in the framework. A manifest's
+  `AIC\Auth\Contracts\UserProvider`, so there is no user entity in the framework; a sign-in hands
+  back what the provider read as a `SignedInUser` (#238). A manifest's
   `protectedPrefix` turns an anonymous visitor away.
 
 See [security.md](security.md) for sessions, form guards, uploads, auth and secret handling.

@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **A sign-in hands back the user** (#238): `Authenticator::login()` answers a `SignedInUser` (the
+  id and the `profile` fields the app's `UserProvider` read beside the hash) or null, instead of a
+  bool, so an app reads the user once per sign-in. `UserCredentials` gains the optional `profile`.
+  Found by Lotline run 25, whose sign-in read the member twice.
+
 - **XML Api answers** (#233): `AIC\Controller\Domain\XmlResponse` answers an `XmlDocument`, a
   typed tree of `XmlElement`s and `XmlAttribute`s, as `application/xml; charset=utf-8`. Names and
   characters are checked when the values are made and text is escaped when written, natively,
