@@ -40,7 +40,7 @@ serves both sites with the profiler on, compares the profiles each step recorded
 | `bytes` | the response body's length; 0 for a stream |
 | `kind`, `browser` | the route's kind; a hash of the session id that links one browser's requests (#230) |
 | `headers`, `fields` | the request's header names and posted field names, never their values (#230) |
-| `body` | a Tessera fragment answer's markup, at most 64 KiB, its CSRF token redacted; empty otherwise (#230) |
+| `body` | a Tessera fragment answer's markup, at most 64 KiB, its CSRF token redacted in the meta and in every form's hidden `aic_csrf` field (#237); empty otherwise (#230) |
 
 A profile never holds a value bound to a statement (gate:15 holds the profiler to passing them
 through), a cookie, an authorization header or a session token: headers are read by name from the
@@ -76,7 +76,8 @@ with the profiler.
 
 A profile also keeps, for the pages: the route's kind, a key for the browser (the first 16 hex
 digits of a SHA-256 of the session id, never the id), the request's header and field names, and a
-fragment answer's markup up to 64 KiB, its `tessera-csrf-token` value replaced by `redacted`.
+fragment answer's markup up to 64 KiB, its `tessera-csrf-token` value and each form's hidden
+`aic_csrf` value replaced by `redacted` (#237).
 
 ## The toolbar
 

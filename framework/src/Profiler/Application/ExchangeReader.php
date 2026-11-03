@@ -8,6 +8,7 @@ use AIC\Auth\Application\Authenticator;
 use AIC\Controller\Application\ApiHandler;
 use AIC\Controller\Application\PageHandler;
 use AIC\Controller\Application\StreamHandler;
+use AIC\Form\Contracts\FormToken;
 use AIC\Profiler\Domain\RequestDetail;
 use AIC\Session\Application\RequestSession;
 use AIC\Session\Contracts\Session;
@@ -38,6 +39,11 @@ final readonly class ExchangeReader
 
     /** The CSRF token a fragment answer carries for Tessera, whose value a profile never keeps. */
     private const string CSRF_META = '/(<meta name="tessera-csrf-token" content=")[^"]*(")/';
+
+    /**
+     * A form's hidden CSRF field as the `HiddenInput` atom writes it, its value the same token (#237).
+     */
+    private const string CSRF_FIELD = '/(<input type="hidden" name="' . FormToken::FIELD . '" value=")[^"]*(")/';
 
     /** A Tessera fragment answer's media type. */
     private const string FRAGMENTS = 'text/vnd.tessera+html';
@@ -145,11 +151,13 @@ final readonly class ExchangeReader
     /**
      * @param string $markup A fragment answer's markup.
      *
-     * @return string It with the CSRF token's value replaced by `redacted`.
+     * @return string It with the CSRF token's value replaced by `redacted`, in the meta and in every form's field.
      */
     private function redacted(string $markup): string
     {
-        return preg_replace(self::CSRF_META, '${1}redacted${2}', $markup) ?? '';
+        $meta = preg_replace(self::CSRF_META, '${1}redacted${2}', $markup) ?? '';
+
+        return preg_replace(self::CSRF_FIELD, '${1}redacted${2}', $meta) ?? '';
     }
 
     /**
