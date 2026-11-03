@@ -49,6 +49,9 @@ Browser tests (#174) are Playwright specs in `tests/browser/`. `init` writes the
 `vendor/bin/aic-gate tools` runs `npm ci` and installs Chromium. gate:23 runs every kept test
 against the compiled site it serves, with the gate user's login in `AIC_GATE_LOGIN` and
 `AIC_GATE_PASSWORD`, and fails on any failing test or on Playwright missing or at another version.
+A test also gets the sites' database settings (`PG*`) and `AIC_PHP`, the PHP the gate runs, so a
+look runs the app's console itself, as `tests/browser/jobs.spec.ts` runs the queue worker
+(`$AIC_PHP bin/aic queue:work`) and then sees the job's effect, on whichever site it tests (#225).
 `vendor/bin/aic-gate browser [--base-url=<url>] [<spec>…]` runs tests against any site with the
 same config, `gates/browser/playwright.config.mjs`; a workflow run takes its looks with it.
 
