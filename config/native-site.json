@@ -563,6 +563,24 @@
             "captures": false
         },
         {
+            "name": "note update, PUT",
+            "method": "PUT",
+            "path": "{note}",
+            "form": "title=Gate+put&body=z&aic_csrf={csrf}&aic_envelope={envelope}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "note show after the PUT",
+            "method": "GET",
+            "path": "{note}",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "note delete",
             "method": "POST",
             "path": "{note}/delete",

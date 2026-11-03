@@ -58,6 +58,51 @@ final readonly class RouteCollector
     }
 
     /**
+     * Declare a PUT route (#242).
+     *
+     * @param string $path    The path pattern.
+     * @param string $handler The id of its handler.
+     *
+     * @throws DuplicateRouteException When PUT is already declared for the pattern.
+     *
+     * @return self A collector with the route added.
+     */
+    public function put(string $path, string $handler): self
+    {
+        return $this->with(new Route(Method::PUT, $path, $handler));
+    }
+
+    /**
+     * Declare a PATCH route (#242).
+     *
+     * @param string $path    The path pattern.
+     * @param string $handler The id of its handler.
+     *
+     * @throws DuplicateRouteException When PATCH is already declared for the pattern.
+     *
+     * @return self A collector with the route added.
+     */
+    public function patch(string $path, string $handler): self
+    {
+        return $this->with(new Route(Method::PATCH, $path, $handler));
+    }
+
+    /**
+     * Declare a DELETE route (#242).
+     *
+     * @param string $path    The path pattern.
+     * @param string $handler The id of its handler.
+     *
+     * @throws DuplicateRouteException When DELETE is already declared for the pattern.
+     *
+     * @return self A collector with the route added.
+     */
+    public function delete(string $path, string $handler): self
+    {
+        return $this->with(new Route(Method::DELETE, $path, $handler));
+    }
+
+    /**
      * @throws LogicException When a path pattern does not compile.
      *
      * @return RouteTable The declared routes, compiled.

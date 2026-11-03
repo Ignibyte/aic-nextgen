@@ -153,9 +153,13 @@ final readonly class RoutesSource
      */
     private function call(ModuleRoute $moduleRoute): string
     {
-        $method = $moduleRoute->method === RouteMethod::Get
-            ? 'get'
-            : 'post';
+        $method = match ($moduleRoute->method) {
+            RouteMethod::Get => 'get',
+            RouteMethod::Post => 'post',
+            RouteMethod::Put => 'put',
+            RouteMethod::Patch => 'patch',
+            RouteMethod::Delete => 'delete',
+        };
         $handler = $this->phpClassFile->short($moduleRoute->handler);
 
         return "\n            ->" . $method . "('" . $moduleRoute->path . "', " . $handler . '::class)';

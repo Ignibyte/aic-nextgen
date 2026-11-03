@@ -183,6 +183,13 @@
             "path": "/notes/{id:int}"
         },
         {
+            "handler": "App\\Note\\Controller\\NoteUpdatePost",
+            "kind": "Page",
+            "method": "PUT",
+            "module": "note",
+            "path": "/notes/{id:int}"
+        },
+        {
             "handler": "App\\Note\\Controller\\NoteDeletePost",
             "kind": "Page",
             "method": "POST",
