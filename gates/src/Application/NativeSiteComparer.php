@@ -133,8 +133,9 @@ final readonly class NativeSiteComparer
         $nativeCaptured = new NativeSiteCaptures($actual);
 
         foreach ($steps as $index => $step) {
-            $php = self::normalised(self::exchange($expected[$index] ?? null), $phpCaptured);
-            $native = self::normalised(self::exchange($actual[$index] ?? null), $nativeCaptured);
+            $rawPhp = self::exchange($expected[$index] ?? null);
+            $php = self::normalised($rawPhp, $phpCaptured);
+            $native = self::alike(self::exchange($actual[$index] ?? null), $rawPhp, $php, $nativeCaptured);
 
             $worked = self::worked($expected[$index] ?? null, $actual[$index] ?? null);
 
@@ -211,6 +212,36 @@ final readonly class NativeSiteComparer
         return $nativeSiteAnswer instanceof NativeSiteAnswer
             ? $nativeSiteAnswer->httpExchange
             : new HttpExchange(0, '', '', '');
+    }
+
+    /**
+     * @param HttpExchange       $rawNative          The compiled answer, as sent.
+     * @param HttpExchange       $rawPhp             The interpreted answer, as sent.
+     * @param HttpExchange       $php                The interpreted answer, normalised.
+     * @param NativeSiteCaptures $nativeSiteCaptures The records the compiled site created.
+     *
+     * @return HttpExchange The compiled answer normalised; with the interpreted body when the two bodies were
+     *                      byte-identical, since identical bytes are never a difference and each site's captured
+     *                      ids could otherwise mask them apart (#236: `=500` in a static script).
+     */
+    private static function alike(
+        HttpExchange $rawNative,
+        HttpExchange $rawPhp,
+        HttpExchange $php,
+        NativeSiteCaptures $nativeSiteCaptures,
+    ): HttpExchange {
+        $httpExchange = self::normalised($rawNative, $nativeSiteCaptures);
+
+        return $rawNative->body === $rawPhp->body
+            ? new HttpExchange(
+                $httpExchange->status,
+                $httpExchange->contentType,
+                $httpExchange->location,
+                $php->body,
+                '',
+                $httpExchange->headers,
+            )
+            : $httpExchange;
     }
 
     /**
