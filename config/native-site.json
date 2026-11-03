@@ -65,6 +65,15 @@
             "captures": false
         },
         {
+            "name": "a nested theme asset",
+            "method": "GET",
+            "path": "/assets/themes/app/images/mark.svg",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "range part",
             "method": "GET",
             "path": "/download/hello.txt",

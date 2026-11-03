@@ -22,15 +22,15 @@ final readonly class AssetsPart9
     {
         return [
             new PublicAsset(
-                'theme_app/theme.css',
-                '/assets/33848e2a67287c36dc90155fc30afc45024fdaf4badb5d8f77e9f15d00bd9531/themes/'
-                    . 'app/theme.css',
-                '33848e2a67287c36dc90155fc30afc45024fdaf4badb5d8f77e9f15d00bd9531/themes/app/them'
-                    . 'e.css',
+                'theme_app/site.css',
+                '/assets/9940a1b498ac7efa3f7967d2adaf6a5c764238f73facec57ead642a076aa6464/themes/'
+                    . 'app/site.css',
+                '9940a1b498ac7efa3f7967d2adaf6a5c764238f73facec57ead642a076aa6464/themes/app/site'
+                    . '.css',
                 'text/css; charset=utf-8',
-                'ff3f4005ec9a4a2c62aadd5f58f82f29d3277dd86ac91039bb6d731a406af750',
-                261,
-                '/assets/themes/app/theme.css',
+                'd9e6ad8017058810a16550a8690cc73e515a3452a48e6e3c0339d41f9da38b9d',
+                286,
+                '/assets/themes/app/site.css',
             ),
             ...(new AssetsPart10())->all(),
         ];

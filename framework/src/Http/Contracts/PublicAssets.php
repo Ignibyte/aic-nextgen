@@ -8,7 +8,7 @@ namespace AIC\Http\Contracts;
 interface PublicAssets
 {
     /**
-     * @param string $name The declared owner/name identifier.
+     * @param string $name The declared owner/path identifier.
      *
      * @return PublicAsset|null Its canonical fingerprinted representation, or null when undeclared.
      */
