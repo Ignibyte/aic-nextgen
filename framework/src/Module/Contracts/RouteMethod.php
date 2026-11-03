@@ -17,4 +17,10 @@ enum RouteMethod
 
     /** A POST route (`RouteCollector::post()`). */
     case Post;
+
+    case Put;
+
+    case Patch;
+
+    case Delete;
 }

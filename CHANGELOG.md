@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **PUT, PATCH and DELETE routes** (#242): `RouteMethod` gains `Put`, `Patch` and `Delete`, the
+  router and `RouteCollector` take them, the build wires them, and `build/surface.json` and
+  `route:list` show them. Tessera's `@put`, `@patch` and `@delete` reach a module's Page or Api; the
+  form guard already checked their CSRF. The fixture's `PUT /notes/{id}` updates a note, held by
+  gate:23. Found by Lotline run 28 (inline edit).
+
 - **A sign-in hands back the user** (#238): `Authenticator::login()` answers a `SignedInUser` (the
   id and the `profile` fields the app's `UserProvider` read beside the hash) or null, instead of a
   bool, so an app reads the user once per sign-in. `UserCredentials` gains the optional `profile`.

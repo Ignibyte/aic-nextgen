@@ -39,6 +39,7 @@ final readonly class NoteRoutes
             ->post('/notes', NoteCreatePost::class)
             ->get('/notes/{id:int}', NoteShowPage::class)
             ->post('/notes/{id:int}', NoteUpdatePost::class)
+            ->put('/notes/{id:int}', NoteUpdatePost::class)
             ->post('/notes/{id:int}/delete', NoteDeletePost::class)
             ->get('/stock', StockPage::class)
             ->post('/stock', StockPost::class)

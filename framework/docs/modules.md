@@ -42,7 +42,7 @@ ordinary code with literal class names.
 |---|---|
 | `->requires('site')` | a module this one uses; only an exported class of a required module may be used |
 | `->export(Foo::class)` | a class other modules may use |
-| `->route(RouteMethod::Get, '/path', Handler::class)` | a route to a Page, Api or Stream; `RouteMethod` is `Get` or `Post`; parameters are typed (`{id:int}`) and reach the handler as request attributes |
+| `->route(RouteMethod::Get, '/path', Handler::class)` | a route to a Page, Api or Stream; `RouteMethod` is `Get`, `Post`, `Put`, `Patch` or `Delete` (#242; a GET route answers HEAD too, and a path asked with a method it lacks answers 405 with `Allow`); parameters are typed (`{id:int}`) and reach the handler as request attributes |
 | `->binding(Iface::class, Impl::class)` | the readonly class a constructor gets when it asks for the interface |
 | `->plugin(Type::class, Impl::class)` | a plugin of a type; a constructor list parameter marked `#[Tagged(Type::class)]` receives every plugin of that type |
 | `->factory(Factory::class)` | a readonly class whose methods build services from values; a constructor asking for a method's return type gets its product |

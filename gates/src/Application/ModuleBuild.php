@@ -115,9 +115,13 @@ final readonly class ModuleBuild
         RouteCollector $routeCollector,
     ): RouteCollector {
         try {
-            return $moduleRoute->method === RouteMethod::Get
-                ? $routeCollector->get($moduleRoute->path, $moduleRoute->handler)
-                : $routeCollector->post($moduleRoute->path, $moduleRoute->handler);
+            return match ($moduleRoute->method) {
+                RouteMethod::Get => $routeCollector->get($moduleRoute->path, $moduleRoute->handler),
+                RouteMethod::Post => $routeCollector->post($moduleRoute->path, $moduleRoute->handler),
+                RouteMethod::Put => $routeCollector->put($moduleRoute->path, $moduleRoute->handler),
+                RouteMethod::Patch => $routeCollector->patch($moduleRoute->path, $moduleRoute->handler),
+                RouteMethod::Delete => $routeCollector->delete($moduleRoute->path, $moduleRoute->handler),
+            };
         } catch (DuplicateRouteException $duplicateRouteException) {
             throw new InvalidArgumentException(
                 'module ' . $moduleDefinition->name . ': ' . $duplicateRouteException->getMessage(),

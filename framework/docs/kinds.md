@@ -33,7 +33,7 @@ What holds the kinds:
 
 ### Page
 
-An HTML answer to a GET or a POST. Form handlers are Pages too. A Page returns one of:
+An HTML answer to a GET, or to a POST, PUT, PATCH or DELETE (#242). Form handlers are Pages too. A Page returns one of:
 
 - `AIC\Controller\Domain\PageDocument`: a whole document, a `Layout` holding components, with a
   status: 200 (the default), 400 for an altered form, 403 for a signed-in user who may not do what
