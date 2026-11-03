@@ -19,12 +19,13 @@ use Psr\Http\Message\ServerRequestInterface;
 interface ResponseWriter
 {
     /**
-     * @param int    $status The status.
-     * @param Layout $layout The page, rendered as the whole HTML document (#98).
+     * @param int    $status       The status.
+     * @param Layout $layout       The page, rendered as the whole HTML document (#98).
+     * @param bool   $prefetchable Whether it answers `private, no-cache` rather than `private, no-store` (#254).
      *
      * @return ResponseInterface The response.
      */
-    public function document(int $status, Layout $layout): ResponseInterface;
+    public function document(int $status, Layout $layout, bool $prefetchable = false): ResponseInterface;
 
     /**
      * @param int                                                           $status        The page's status.
@@ -41,6 +42,8 @@ interface ResponseWriter
      * @param list<array{scope: string, json: string, onlyIfMissing: bool}> $signalPatches The page's signal patches,
      *                                                                                     each JSON safe in a script,
      *                                                                                     after the templates (#253).
+     * @param bool                                                          $prefetchable  Whether it answers
+     *                                                                                     `private, no-cache` (#254).
      *
      * @return ResponseInterface Tessera fragments, `text/vnd.tessera+html` with `Tessera-Protocol: 0`: the title, the
      *                           tracked assets, one template per target and the signal patches; the whole document
@@ -52,6 +55,7 @@ interface ResponseWriter
         array $targets,
         bool $removing = false,
         array $signalPatches = [],
+        bool $prefetchable = false,
     ): ResponseInterface;
 
     /**

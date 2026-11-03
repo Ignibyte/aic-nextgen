@@ -79,7 +79,7 @@ final readonly class StockPage implements Page
             $this->stockForm->blank($serverRequest),
         ];
 
-        return $this->pageDocuments->content($components, 200, 'Stock', ThemeLayoutName::Focus);
+        return $this->pageDocuments->content($components, 200, 'Stock', ThemeLayoutName::Focus)->prefetchable();
     }
 
     /**

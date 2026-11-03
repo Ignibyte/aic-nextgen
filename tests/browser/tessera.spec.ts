@@ -52,6 +52,28 @@ test('a visit swaps regions, and back and forward restore them in the same docum
     expect(await sameDocument(page)).toBe(true);
 });
 
+test('a hover prefetch of a prefetchable page is the click\'s answer: one request', async ({ page }) => {
+    await page.goto('/');
+    await mark(page);
+    const requests: string[] = [];
+    page.on('request', (request) => {
+        if (new URL(request.url()).pathname === '/stock') {
+            requests.push(request.headers()['cache-control'] ?? '');
+        }
+    });
+
+    // The stock page answers private, no-cache (#254), so Tessera keeps the hover's answer for the click.
+    const prefetched = page.waitForResponse((response) => new URL(response.url()).pathname === '/stock');
+    await page.locator('#demos a[href="/stock"]').hover();
+    expect((await prefetched).headers()['cache-control']).toBe('private, no-cache');
+    await page.locator('#demos a[href="/stock"]').click();
+
+    await expect(page).toHaveURL(/\/stock$/);
+    await expect(page.locator('[data-region="content"]').getByRole('heading', { name: 'Stock' })).toBeVisible();
+    expect(requests).toHaveLength(1);
+    expect(await sameDocument(page)).toBe(true);
+});
+
 test('a refused greeting is answered in place, the URL kept', async ({ page }) => {
     await page.goto('/');
     await mark(page);

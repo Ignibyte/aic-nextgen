@@ -28,6 +28,7 @@ final readonly class PageFragments implements PageResponse
      * @param bool              $removing      Whether a component path the page no longer renders is answered removed
      *                                         (#247).
      * @param list<SignalPatch> $signalPatches The page's signal patches, in order (#253).
+     * @param bool              $prefetchable  Whether it answers `private, no-cache` (#254).
      */
     public function __construct(
         private int $status,
@@ -35,6 +36,7 @@ final readonly class PageFragments implements PageResponse
         private array $targets,
         private bool $removing = false,
         private array $signalPatches = [],
+        private bool $prefetchable = false,
     ) {
     }
 
@@ -49,6 +51,6 @@ final readonly class PageFragments implements PageResponse
         return $responseWriter->fragments($this->status, $this->layout, $this->targets, $this->removing, array_map(
             static fn (SignalPatch $signalPatch): array => $signalPatch->scripted(),
             $this->signalPatches,
-        ));
+        ), $this->prefetchable);
     }
 }

@@ -46,8 +46,9 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
     }
 
     /**
-     * @param int    $status The status.
-     * @param Layout $layout The page.
+     * @param int    $status       The status.
+     * @param Layout $layout       The page.
+     * @param bool   $prefetchable Whether it answers `private, no-cache` (#254).
      *
      * @throws UnknownComponent         When no template renders one of its components.
      * @throws InvalidArgumentException When a constructed value or argument is invalid.
@@ -55,11 +56,14 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
      * @return ResponseInterface The HTML response, varied.
      */
     #[Override]
-    public function document(int $status, Layout $layout): ResponseInterface
+    public function document(int $status, Layout $layout, bool $prefetchable = false): ResponseInterface
     {
         $html = $this->renderer->document($layout);
 
-        return $this->varied($this->responseBuilder->create($status, 'text/html; charset=utf-8', $html->markup()));
+        return $this->varied($this->cached(
+            $this->responseBuilder->create($status, 'text/html; charset=utf-8', $html->markup()),
+            $prefetchable,
+        ));
     }
 
     /**
@@ -73,6 +77,8 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
      * @param list<array{scope: string, json: string, onlyIfMissing: bool}> $signalPatches The page's signal patches,
      *                                                                                     each JSON safe in a script
      *                                                                                     (#253).
+     * @param bool                                                          $prefetchable  Whether it answers
+     *                                                                                     `private, no-cache` (#254).
      *
      * @throws UnknownComponent         When no template renders one of its components.
      * @throws InvalidArgumentException When a constructed value or argument is invalid.
@@ -87,18 +93,19 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
         array $targets,
         bool $removing = false,
         array $signalPatches = [],
+        bool $prefetchable = false,
     ): ResponseInterface {
         $html = $this->renderer->fragments($layout, $targets, $removing, $signalPatches);
 
         if ($html === null) {
-            return $this->document($status, $layout);
+            return $this->document($status, $layout, $prefetchable);
         }
 
-        return $this->varied($this->responseBuilder->withHeader(
+        return $this->varied($this->cached($this->responseBuilder->withHeader(
             $this->responseBuilder->create($status, 'text/vnd.tessera+html; charset=utf-8', $html->markup()),
             TesseraRequest::PROTOCOL,
             TesseraRequest::VERSION,
-        ));
+        ), $prefetchable));
     }
 
     /**
@@ -247,5 +254,21 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
     private function varied(ResponseInterface $response): ResponseInterface
     {
         return $this->responseBuilder->withHeader($response, 'Vary', TesseraRequest::VARY);
+    }
+
+    /**
+     * @param ResponseInterface $response     A page's answer.
+     * @param bool              $prefetchable Whether the page opted in (#254).
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
+     * @return ResponseInterface It, `private, no-cache` when the page is prefetchable, so Tessera may use a hover
+     *                           prefetch of it; as it was, `private, no-store`, otherwise.
+     */
+    private function cached(ResponseInterface $response, bool $prefetchable): ResponseInterface
+    {
+        return $prefetchable
+            ? $this->responseBuilder->withHeader($response, 'Cache-Control', 'private, no-cache')
+            : $response;
     }
 }
