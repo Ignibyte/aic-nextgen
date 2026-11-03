@@ -71,6 +71,9 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **gate:23 masks only bodies that differ** (#236): two byte-identical bodies are never a
+  difference. A pass's captured-id mask had rewritten `=500` inside one site's copy of the pinned
+  Tessera script (found by Lotline run 25).
 - **gate:23 says how two bodies differ** (#217): both sizes, the byte where they part and an escaped
   excerpt of each side, so a difference seen once names its cause.
 - **Run 19's follow-ups** (#207). `Inbox::newerThan()` takes a limit and answers the newest after an

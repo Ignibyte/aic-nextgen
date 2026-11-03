@@ -26,7 +26,8 @@ takes its answer's `Location` as `{note}` for the next steps (a path, which a la
 `{note}/delete`), and that path reads as `<captured>`
 in each site's answers before they are compared (#178); when it ends in a number, that number reads
 `<captured-id>` wherever a page writes it after a `-` or a `=` (`notification-12`, `?after=12`), and a time to the minute
-reads `<time>` (#214). A record no Location names (a form that
+reads `<time>` (#214). Two bodies that are byte-identical as sent are never a difference, so no
+mask applies to them: a static script holding `=500` stays alike when one pass captured id 500 (#236). A record no Location names (a form that
 answers in place) is reached through a list instead: a step with `"capture": "/app/leads/"` keeps the
 first link in its answer under that prefix as `{note}` (#200). `{location}` is the path and query of the last
 `Location` any step was answered with (#212), for a redirect that names its record in the query
