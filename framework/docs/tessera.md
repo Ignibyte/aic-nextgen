@@ -41,7 +41,12 @@ and action requests receive their requested targets. A refresh, submission or ac
 component path the page no longer renders, below a region the layout places, gets that target with
 `data-mode="remove"` and no markup, so Tessera drops the element, as protocol 5.1 allows (#247): a deleted row
 goes away. Several removals and patches may share one answer; Tessera 0.4.2 lands every one (#251),
-where 0.4.1 and older dropped each fragment after the first removal. A visit's missing target, a missing region, overlapping or malformed paths, a different
+where 0.4.1 and older dropped each fragment after the first removal. A page adds signal patches to its
+answer with `PageDocument::withSignalPatch(new SignalPatch($scope, $json, $onlyIfMissing))` (#253):
+a fragment answer writes each after the templates as `<script type="application/json"
+data-scope="…">`, `data-only-if-missing` when set, and Tessera merges them once every fragment has
+landed. `SignalPatch` refuses a scope that is not a target and JSON that is not an object, and writes
+`<` as `\u003c`. The whole document carries none; its markup sets the signals a page starts with. A visit's missing target, a missing region, overlapping or malformed paths, a different
 layout or a different protocol fall back to a whole document. Each theme layout
 has its own identity: the theme's name for the default (`app`), `<theme>-<name>` for a
 named one (`app-focus`). A visit from a page in one layout to a page in another therefore gets a
@@ -113,6 +118,7 @@ component.
 |---|---|
 | `TesseraEvents::patchElements()` | target, component, mode, id and last; emits tessera-patch-elements |
 | `TesseraEvents::patchSignals()` | scope, JSON object, only-if-missing, id and last; emits tessera-patch-signals |
+| `SignalPatch` | scope, JSON object and only-if-missing; a Page's fragment answer writes it (#253) |
 | `TesseraEvents::keepAlive()` | keep-alive comment, with the last flag |
 | `TesseraEvents::reconnect()` | a last comment that ends the connection but not the stream (#202) |
 | `TesseraProps::forTarget()` | verifies the requested target's props envelope and returns string values; empty when absent |
@@ -192,6 +198,8 @@ row in an app's PHP and template files, and shows the ones AIC's own code and te
 | `tessera-csrf-header` | meta | the header that carries it |
 | `tessera-patch-elements` | stream event | one fragment |
 | `tessera-patch-signals` | stream event | one signal patch |
+| `data-scope` | fragment answer | a signal patch's scope, written by AIC's fragment template (#253) |
+| `data-only-if-missing` | fragment answer | the patch sets only missing signals (#253) |
 | `tessera-close` | stream event | the stream is over; no reconnect |
 | `tessera:error` | browser event | a directive, request, stream, lazy load or poll failed |
 | `tessera:expired` | browser event | an answer was `419` |

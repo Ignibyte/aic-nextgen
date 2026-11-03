@@ -17,6 +17,7 @@ Every component, layout and asset lives in `themes/app/` (#153). The page `theme
 
 | Component | Template |
 | --- | --- |
+| `App\Theme\Components\GreetingStatus\GreetingStatus` | `themes/app/components/GreetingStatus/greeting-status.phtml` |
 | `App\Theme\Components\Greetings\Greetings` | `themes/app/components/Greetings/greetings.phtml` |
 | `App\Theme\Components\Home\Home` | `themes/app/components/Home/home.phtml` |
 | `App\Theme\Components\LineList\LineList` | `themes/app/components/LineList/line-list.phtml` |

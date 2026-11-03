@@ -63,10 +63,16 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
     }
 
     /**
-     * @param int          $status   The page's status.
-     * @param Layout       $layout   The page.
-     * @param list<string> $targets  The regions and component paths Tessera asked for.
-     * @param bool         $removing Whether a component path the page no longer renders is answered removed (#247).
+     * @param int                                                           $status        The page's status.
+     * @param Layout                                                        $layout        The page.
+     * @param list<string>                                                  $targets       The regions and component
+     *                                                                                     paths Tessera asked for.
+     * @param bool                                                          $removing      Whether a component path the
+     *                                                                                     page no longer renders is
+     *                                                                                     answered removed (#247).
+     * @param list<array{scope: string, json: string, onlyIfMissing: bool}> $signalPatches The page's signal patches,
+     *                                                                                     each JSON safe in a script
+     *                                                                                     (#253).
      *
      * @throws UnknownComponent         When no template renders one of its components.
      * @throws InvalidArgumentException When a constructed value or argument is invalid.
@@ -75,9 +81,14 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
      *                           document when the page has no such target and it is not removed.
      */
     #[Override]
-    public function fragments(int $status, Layout $layout, array $targets, bool $removing = false): ResponseInterface
-    {
-        $html = $this->renderer->fragments($layout, $targets, $removing);
+    public function fragments(
+        int $status,
+        Layout $layout,
+        array $targets,
+        bool $removing = false,
+        array $signalPatches = [],
+    ): ResponseInterface {
+        $html = $this->renderer->fragments($layout, $targets, $removing, $signalPatches);
 
         if ($html === null) {
             return $this->document($status, $layout);

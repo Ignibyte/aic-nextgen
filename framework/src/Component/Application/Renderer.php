@@ -67,18 +67,25 @@ final readonly class Renderer
     }
 
     /**
-     * @param Layout       $layout   The page.
-     * @param list<string> $targets  The regions and component paths Tessera asked for, in order; at least one.
-     * @param bool         $removing Whether a component path the page no longer renders, below a region it places,
-     *                               is answered with mode `remove` (#247).
+     * @param Layout                                                        $layout        The page.
+     * @param list<string>                                                  $targets       The regions and component
+     *                                                                                     paths Tessera asked for, in
+     *                                                                                     order; at least one.
+     * @param bool                                                          $removing      Whether a component path the
+     *                                                                                     page no longer renders, below
+     *                                                                                     a region it places, is
+     *                                                                                     answered removed (#247).
+     * @param list<array{scope: string, json: string, onlyIfMissing: bool}> $signalPatches The page's signal patches, in
+     *                                                                                     order, each JSON safe in a
+     *                                                                                     script (#253).
      *
      * @throws UnknownComponent When no template renders one of its components.
      *
-     * @return Html|null The title, the `tessera-csrf-token` meta, the tracked assets and one `<template>` per target,
-     *                   written by the framework's fragment template; null when the page has no such target and it is
-     *                   not removed, and the whole document answers.
+     * @return Html|null The title, the `tessera-csrf-token` meta, the tracked assets, one `<template>` per target and
+     *                   each signal patch, written by the framework's fragment template; null when the page has no such
+     *                   target and it is not removed, and the whole document answers.
      */
-    public function fragments(Layout $layout, array $targets, bool $removing = false): ?Html
+    public function fragments(Layout $layout, array $targets, bool $removing = false, array $signalPatches = []): ?Html
     {
         $started = $this->monotonic->microseconds();
         $templates = [];
@@ -100,7 +107,9 @@ final readonly class Renderer
         try {
             $assets = $renderPass->inline($layout->assets());
 
-            return new Html($renderPass->frame(new FragmentFrame($layout->title(), $layout->csrfToken(), $assets, $templates)));
+            $fragmentFrame = new FragmentFrame($layout->title(), $layout->csrfToken(), $assets, $templates, $signalPatches);
+
+            return new Html($renderPass->frame($fragmentFrame));
         } finally {
             $renderPass->discard();
             $this->passed($started);

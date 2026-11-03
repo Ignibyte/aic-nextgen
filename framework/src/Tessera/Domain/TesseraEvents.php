@@ -6,6 +6,7 @@ namespace AIC\Tessera\Domain;
 
 use AIC\Component\Contracts\Component;
 use AIC\Controller\Contracts\ServerEvent;
+use AIC\Controller\Contracts\SignalPatch;
 use InvalidArgumentException;
 
 use function explode;
@@ -21,10 +22,10 @@ use function str_replace;
 final readonly class TesseraEvents
 {
     /** A target: `page`, a region, or a component's path (protocol 2.6). */
-    private const string TARGET = '#^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[A-Za-z0-9_.:]+(-[A-Za-z0-9_.:]+)*)*$#';
+    private const string TARGET = SignalPatch::TARGET;
 
     /** An anchor as a target (#204, Tessera 0.3.1): `@` and a name in the key grammar, up to 64. */
-    private const string ANCHOR = '#^@(?=.{1,64}$)[A-Za-z0-9_.:]+(-[A-Za-z0-9_.:]+)*$#';
+    private const string ANCHOR = SignalPatch::ANCHOR;
 
     /** How a fragment lands (protocol 5.3). */
     private const array MODES = ['morph', 'inner', 'append', 'prepend', 'remove'];

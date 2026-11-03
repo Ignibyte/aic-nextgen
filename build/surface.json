@@ -533,6 +533,11 @@
         ],
         "components": [
             {
+                "component": "App\\Theme\\Components\\GreetingStatus\\GreetingStatus",
+                "generated": "build/generated/templates/themes/app/components/GreetingStatus/greeting-status.phtml",
+                "source": "themes/app/components/GreetingStatus/greeting-status.phtml"
+            },
+            {
                 "component": "App\\Theme\\Components\\Greetings\\Greetings",
                 "generated": "build/generated/templates/themes/app/components/Greetings/greetings.phtml",
                 "source": "themes/app/components/Greetings/greetings.phtml"

@@ -8,6 +8,7 @@ use AIC\Block\Contracts\Blocks;
 use AIC\Component\Contracts\Layout;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Controller\Contracts\ResponseWriter;
+use AIC\Controller\Contracts\SignalPatch;
 use AIC\Tessera\Domain\TesseraRequest;
 use InvalidArgumentException;
 use Override;
@@ -22,7 +23,8 @@ use function in_array;
  * envelope was altered (#43); 403 when the signed-in user may not do what
  * was asked (#197); 404 when what it shows does not exist; 409 for a write
  * that conflicts; or 422 when a form posted to it is rendered again in place
- * with its errors.
+ * with its errors. A Tessera fragment answer of it also carries the signal
+ * patches the page added (#253); the whole document does not.
  */
 final readonly class PageDocument implements PageResponse
 {
@@ -32,15 +34,18 @@ final readonly class PageDocument implements PageResponse
     private const array STATUSES = [200, 400, 403, 404, 409, 422];
 
     /**
-     * @param Layout $layout The document, with its regions filled.
-     * @param int    $status 200, 400 for an altered form, 403 for a user not allowed, 404 for a missing thing, 409
-     *                       for a write that conflicts, or 422 for a form shown again with its errors.
+     * @param Layout            $layout        The document, with its regions filled.
+     * @param int               $status        200, 400 for an altered form, 403 for a user not allowed, 404 for a
+     *                                         missing thing, 409 for a write that conflicts, or 422 for a form shown
+     *                                         again with its errors.
+     * @param list<SignalPatch> $signalPatches What a fragment answer of it patches into the page's signals, in order.
      *
      * @throws InvalidArgumentException When the status is none of these, or a filled region is one the layout does not place.
      */
     public function __construct(
         private Layout $layout,
         private int $status = 200,
+        private array $signalPatches = [],
     ) {
         if (!in_array($status, self::STATUSES, true)) {
             throw new InvalidArgumentException('A page document answers 200, 400, 403, 404, 409 or 422; got ' . $status . '.');
@@ -76,7 +81,7 @@ final readonly class PageDocument implements PageResponse
     {
         $regions = $blocks->place($this->layout->regions(), $this->layout->names(), $serverRequest);
 
-        return new self($this->layout->withRegions($regions), $this->status);
+        return new self($this->layout->withRegions($regions), $this->status, $this->signalPatches);
     }
 
     /**
@@ -88,7 +93,19 @@ final readonly class PageDocument implements PageResponse
      */
     public function withCsrfToken(string $csrfToken): self
     {
-        return new self($this->layout->withCsrfToken($csrfToken), $this->status);
+        return new self($this->layout->withCsrfToken($csrfToken), $this->status, $this->signalPatches);
+    }
+
+    /**
+     * @param SignalPatch $signalPatch A patch for the page's signals.
+     *
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
+     * @return self The same document, a fragment answer of it carrying the patch after those added before (#253).
+     */
+    public function withSignalPatch(SignalPatch $signalPatch): self
+    {
+        return new self($this->layout, $this->status, [...$this->signalPatches, $signalPatch]);
     }
 
     /**
@@ -102,6 +119,6 @@ final readonly class PageDocument implements PageResponse
 
         return $targets === []
             ? $this
-            : new PageFragments($this->status, $this->layout, $targets, $tesseraRequest->removesGone());
+            : new PageFragments($this->status, $this->layout, $targets, $tesseraRequest->removesGone(), $this->signalPatches);
     }
 }

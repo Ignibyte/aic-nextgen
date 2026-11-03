@@ -897,6 +897,15 @@
             "captures": false
         },
         {
+            "name": "tessera, a refused submit patches signals, a long name",
+            "method": "POST",
+            "path": "/hello",
+            "form": "name=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&aic_csrf={csrf}",
+            "header": "Tessera-Request: submit\r\nTessera-Protocol: 2\r\nTessera-Layout: app\r\nTessera-Targets: content",
+            "status": 422,
+            "captures": false
+        },
+        {
             "name": "tessera, a stale token",
             "method": "POST",
             "path": "/hello",
