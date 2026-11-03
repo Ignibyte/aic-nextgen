@@ -76,6 +76,9 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **`workflow:ask` takes no flag** (#241): `workflow:ask --help` had recorded "--help" as the
+  run's one open question, which only the operator could clear. A first word that is a flag now asks
+  nothing: `--help` prints the usage, any other flag exits 2. Found by Lotline run 27.
 - **The profiler redacts a form's CSRF field** (#237): a kept fragment body redacted the
   `tessera-csrf-token` meta but kept each form's hidden `aic_csrf` value, the same token. Both read
   `redacted` now (found by Lotline run 25).

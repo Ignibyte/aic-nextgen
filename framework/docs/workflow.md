@@ -54,7 +54,8 @@ hold rather than assuming an unknown operation is safe.
 
 House rules are frozen when the run begins and judge its actual change. A held rule names the
 contract to fix. `workflow:ask` records an operator question; the operator answers from a terminal
-with `workflow:answer`. In interactive mode phase advance can require an explicit operator answer;
+with `workflow:answer`. A first word that is a flag asks nothing: `--help` prints the usage and any
+other flag is refused (#241). In interactive mode phase advance can require an explicit operator answer;
 agentic mode advances under the configured rules. Elapsed time is not an answer.
 
 At inspection-due, dispatch the installed independent seeker role. Use `workflow:seeker-brief` for
