@@ -114,6 +114,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **gate:23 no longer masks a small id on one side** (#217): each site's captured record id was
+  rewritten after any `-` or `=` in every body, so with id 1 or 8 (a fresh table) `utf-8`,
+  `initial-scale=1` and `tabindex="-1"` read differently on one side and every page of a run
+  differed; Lotline's evidence showed the same with id 500 in the Tessera script. `CapturedIds`
+  now aligns the two answers: a number after `-`/`=` may differ only where each side has one of its
+  own ids, every other byte equal.
+
 - **Theme assets in a subfolder build** (#249): `modules.md` said nested paths under a theme's
   `assets/` were supported, but a catalog name allowed one slash, so `assets/images/mark.svg`
   failed the build ("A public asset needs an owner/name identifier"). A name is now its owner, then
