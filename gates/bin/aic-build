@@ -60,6 +60,7 @@ use Gates\Application\TemplateCompiler;
 use Gates\Application\TemplatesSource;
 use Gates\Application\TesseraBuild;
 use Gates\Application\ThemeHtmlSource;
+use Gates\Application\ThemeAssetInputs;
 use Gates\Application\ThemeLayoutsSource;
 use Gates\Application\ThemePageSource;
 use Gates\Application\WebPresentationSource;
@@ -119,7 +120,11 @@ try {
 
     if ($theme !== null) {
         $themeLayoutsSource = new ThemeLayoutsSource();
-        $generated[$root . '/' . BuildPaths::GENERATED . '/ThemeLayouts.php'] = $themeLayoutsSource->layouts($theme, $appConfig->tessera->scriptPath());
+        $generated[$root . '/' . BuildPaths::GENERATED . '/ThemeLayouts.php'] = $themeLayoutsSource->layouts(
+            $theme,
+            $appConfig->tessera->scriptPath(),
+            (new ThemeAssetInputs($root))->pageScripts($theme),
+        );
         $generated[$root . '/' . BuildPaths::GENERATED . '/ThemePageTemplate.php'] = (new ThemePageSource())->pageTemplate($theme);
         $generated[$root . '/' . BuildPaths::GENERATED . '/ThemeHtmlTemplate.php'] = (new ThemeHtmlSource())->htmlTemplate($theme);
         $layoutNames = $themeLayoutsSource->layoutNames($theme);

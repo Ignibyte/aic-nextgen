@@ -255,8 +255,11 @@ number a file's name (`10-tokens.css`) to order the cascade. Scripts, images, ma
 other files keep their bytes under `build/assets/themes/<theme>/`. AIC's asset handler serves
 `build/assets/` at `/assets/` under PHP and compiled alike; in production Caddy may map `/assets/`
 there directly. Publishing a script does not
-select it; a page or component must still load it when needed. Every asset shares the same
-fingerprint and HTTP policy.
+select it, with one exception: a script named `*.page.js` is a page script (#239). Every layout
+loads the theme's page scripts after the pinned Tessera script, deferred, in path order, each by
+its canonical URL with `data-track` through `TrackedAssets`, so a fragment answer carries their
+copies and a changed one makes Tessera load the page whole. Any other script a page or component
+must load itself. Every asset shares the same fingerprint and HTTP policy.
 
 A theme whose stylesheet is built (Tailwind, for one) keeps the build's sources in its own
 `frontend/` folder, as a Drupal theme does: its `package.json`, lockfile and input CSS and

@@ -1,2 +1,2 @@
 <?php /** @var \AIC\Component\Domain\TrackedAssets $trackedAssets */ ?>
-<link rel="stylesheet" href="<?= $trackedAssets->stylesheet ?>" data-track><script defer src="<?= $trackedAssets->script ?>" data-track></script>
+<link rel="stylesheet" href="<?= $trackedAssets->stylesheet ?>" data-track><script defer src="<?= $trackedAssets->script ?>" data-track></script><?php foreach ($trackedAssets->scripts as $script): ?><script defer src="<?= $script ?>" data-track></script><?php endforeach ?>
