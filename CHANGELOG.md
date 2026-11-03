@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Table columns that end-align** (#240): `Table` takes an optional `list<TableAlign>` (`Start`,
+  `End`), one per column by position. An end column's `<th>` and every `<td>` carry
+  `aic-align-end`, which the theme styles; a start column writes nothing, so existing tables are
+  byte-identical. The profiler's number columns use it. Found by Lotline run 26, whose payment
+  table was hand-written for its money columns.
+
 - **PUT, PATCH and DELETE routes** (#242): `RouteMethod` gains `Put`, `Patch` and `Delete`, the
   router and `RouteCollector` take them, the build wires them, and `build/surface.json` and
   `route:list` show them. Tessera's `@put`, `@patch` and `@delete` reach a module's Page or Api; the
