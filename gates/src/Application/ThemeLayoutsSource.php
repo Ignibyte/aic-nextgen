@@ -86,7 +86,7 @@ final readonly class ThemeLayoutsSource
             {
                 return new TrackedAssets(
                     $this->assetPath($this->publicAssets->named('app/styles'), 'application stylesheet'),
-                    $this->assetPath($this->publicAssets->byPath({scriptPath}), 'pinned Tessera script'),
+                    $this->assetPath($this->publicAssets->byPath({scriptPath}), 'pinned Tessera script'),{pageScripts}
                 );
             }
 
@@ -117,12 +117,13 @@ final readonly class ThemeLayoutsSource
     /**
      * @param ThemeBinding $themeBinding The theme.
      * @param string       $scriptPath   The pinned Tessera script's alias.
+     * @param list<string> $pageScripts  The theme's page scripts' aliases, in order (#239).
      *
      * @throws InvalidArgumentException When generated imports or structure conflict.
      *
      * @return string `ThemeLayouts`, choosing each named layout's identity and regions.
      */
-    public function layouts(ThemeBinding $themeBinding, string $scriptPath): string
+    public function layouts(ThemeBinding $themeBinding, string $scriptPath, array $pageScripts = []): string
     {
         $rows = $this->row('', $themeBinding->name, $themeBinding->regions);
 
@@ -138,6 +139,7 @@ final readonly class ThemeLayoutsSource
 
         $source = strtr(self::LAYOUTS, [
             '{arms}' => $arms,
+            '{pageScripts}' => $this->pageScripts($pageScripts),
             '{rows}' => $rows,
             '{scriptPath}' => var_export($scriptPath, true),
         ]);
@@ -173,6 +175,27 @@ final readonly class ThemeLayoutsSource
             $this->generated('the layout names a controller may pick.'),
             "enum ThemeLayoutName: string implements LayoutName\n{\n" . $cases . '}',
         );
+    }
+
+    /**
+     * @param list<string> $pageScripts The theme's page scripts' aliases.
+     *
+     * @return string The third `TrackedAssets` argument, a list of their canonical URLs; nothing when there are none.
+     */
+    private function pageScripts(array $pageScripts): string
+    {
+        if ($pageScripts === []) {
+            return '';
+        }
+
+        $paths = '';
+
+        foreach ($pageScripts as $pageScript) {
+            $paths .= "\n                \$this->assetPath(\$this->publicAssets->byPath(" . var_export($pageScript, true)
+                . "), 'a theme page script'),";
+        }
+
+        return "\n            [" . $paths . "\n            ],";
     }
 
     /**

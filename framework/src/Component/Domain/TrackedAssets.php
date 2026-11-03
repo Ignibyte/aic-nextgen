@@ -14,12 +14,14 @@ use AIC\Component\Contracts\Component;
 final readonly class TrackedAssets implements Component
 {
     /**
-     * @param string $stylesheet The stylesheet's path, such as `/assets/aic.css`.
-     * @param string $script     The script's path, loaded deferred.
+     * @param string       $stylesheet The stylesheet's path, such as `/assets/aic.css`.
+     * @param string       $script     The script's path, loaded deferred.
+     * @param list<string> $scripts    The theme's page scripts' paths, loaded deferred after it, in order (#239).
      */
     public function __construct(
         public string $stylesheet,
         public string $script,
+        public array $scripts = [],
     ) {
     }
 }

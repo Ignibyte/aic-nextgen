@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Theme page scripts** (#239): a theme's `assets/*.page.js` loads on every page after the pinned
+  Tessera script, deferred, in path order, by its fingerprinted URL with `data-track`
+  (`TrackedAssets`' new `scripts`), so a changed script forces Tessera's full load. Any other
+  script stays published and unselected. The fixture's `theme.page.js` marks the document;
+  `tests/browser/theme-script.spec.ts` holds it, a changed copy included. Found by Lotline run 26,
+  whose layouts loaded `helpers.js` by its alias, untracked.
+
 - **A Tessera answer removes a gone component** (#247): a refresh, submission or action whose
   component path the page no longer renders gets `<template data-target="…" data-mode="remove">`,
   Tessera protocol 2's removal, instead of the whole document; a visit's missing target still

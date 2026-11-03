@@ -521,6 +521,10 @@
             {
                 "kind": "Style",
                 "path": "themes/app/assets/theme.css"
+            },
+            {
+                "kind": "Script",
+                "path": "themes/app/assets/theme.page.js"
             }
         ],
         "components": [
