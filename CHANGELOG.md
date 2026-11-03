@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **A look runs the queue worker** (#225): gate:23 and `aic-gate browser` hand each browser test
+  `AIC_PHP` with the sites' database settings, so a look runs `bin/aic queue:work` itself and sees
+  a job's effect on either site; `tests/browser/jobs.spec.ts` does. `systems.md` states that a job
+  queued inside `EntityStore::transaction()` commits or rolls back with the write: the queue writes
+  through the request's one connection. Split from #201.
+
 - **Theme page scripts** (#239): a theme's `assets/*.page.js` loads on every page after the pinned
   Tessera script, deferred, in path order, by its fingerprinted URL with `data-track`
   (`TrackedAssets`' new `scripts`), so a changed script forces Tessera's full load. Any other

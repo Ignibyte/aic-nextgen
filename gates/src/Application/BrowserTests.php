@@ -19,6 +19,8 @@ use function sprintf;
 use function strlen;
 use function substr;
 
+use const PHP_BINARY;
+
 /**
  * An app's browser tests (#174): Playwright specs, run with aic/gates' one
  * config from the app's root, at the pinned version. The tests an app keeps
@@ -118,6 +120,8 @@ final readonly class BrowserTests
         $config = $this->package . '/browser/playwright.config.mjs';
         $command = [$root . '/node_modules/.bin/playwright', 'test', '--config', $config, ...$specs];
         $env['AIC_BROWSER_BASE_URL'] = $baseUrl;
+        // A look runs the app's console, the queue worker above all, with the PHP and the database the sites use (#225).
+        $env['AIC_PHP'] ??= PHP_BINARY;
         // gate:23 points XDG_CACHE_HOME at the compiler's caches; the browsers stay in the user's Playwright cache.
         $env['PLAYWRIGHT_BROWSERS_PATH'] ??= ($env['HOME'] ?? '') . '/.cache/ms-playwright';
 

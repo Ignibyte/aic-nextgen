@@ -174,7 +174,10 @@ See [security.md](security.md) for sessions, form guards, uploads, auth and secr
 
 - `AIC\Queue`: a job queue in Postgres; `bin/aic queue:work` takes jobs with `FOR UPDATE SKIP
   LOCKED`, so several workers can share it, and a job whose worker died is due again after ten
-  minutes.
+  minutes. A job is queued through the request's one database connection, the one
+  `EntityStore::transaction()` holds, so a job dispatched inside the transaction commits with the
+  write or is rolled back with it (#225): queue a notification of a write inside that write's
+  transaction, never after it.
 - `AIC\Schedule`: schedules declared in manifests; `bin/aic schedule:run`, once a minute, queues
   each one that is due, and a ledger keeps a minute from firing twice. Given a UTC minute
   (`schedule:run 2026-10-29T07:00`) it queues what is due then (#208).
