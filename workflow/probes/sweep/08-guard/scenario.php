@@ -8,7 +8,9 @@ declare(strict_types=1);
  * is refused; at code, an undeclared write, a write to the run's state, the
  * operator's reset in the agent's shell and a write that lands outside the
  * app through a symlink are refused, a declared write is allowed, and Stop
- * is held mid-phase.
+ * is held mid-phase. Before Stop, `workflow:ask --help` prints the usage and
+ * `workflow:ask --verbose` is refused (#241): had either been recorded as the
+ * run's question, the run would await the operator and Stop would pass.
  */
 
 use AIC\Workflow\Domain\Probe\CommandStep;
@@ -57,5 +59,7 @@ return new ProbeScenario([
         2,
         'outside the project: the guard refuses every write that leaves it',
     ),
+    new CommandStep(['php', 'bin/aic', 'workflow:ask', '--help']),
+    new CommandStep(['php', 'bin/aic', 'workflow:ask', '--verbose'], 2),
     new GuardStep('Stop mid-phase', 'stop', '{"session_id":"probe","cwd":"{root}","stop_hook_active":false}', 2, 'may not end mid-phase'),
 ]);
