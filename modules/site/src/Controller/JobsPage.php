@@ -54,10 +54,10 @@ final readonly class JobsPage implements Page
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
-        $formToken = $this->formTokens->issue($serverRequest)->value();
+        $guardFields = $this->formTokens->guard($serverRequest);
         $button = new Button('Queue a job (retries once, then succeeds)', 'submit', 'queue-succeed');
-        $succeed = new Form('', '/jobs?mode=succeed', [$button], $formToken);
-        $fail = new Form('', '/jobs?mode=fail', [new Button('Queue a failing job', 'submit', 'queue-fail')], $formToken);
+        $succeed = new Form('', '/jobs?mode=succeed', [$button], $guardFields);
+        $fail = new Form('', '/jobs?mode=fail', [new Button('Queue a failing job', 'submit', 'queue-fail')], $guardFields);
 
         return $this->pageDocuments->content(
             [

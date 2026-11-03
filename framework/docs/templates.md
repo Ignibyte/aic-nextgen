@@ -59,7 +59,9 @@ controls, forms, and the data atoms (#230), which are `AIC\Component\Domain\Tabl
 `TimelineSegment`) are plain values its template reads. `Table`'s optional `alignments` (#240)
 (`list<TableAlign>`, by column position) puts `class="aic-align-end"` on an end column's
 header and cells; the framework ships no atom stylesheet, so the theme styles that class (the
-profiler styles its own in `ProfilerStyles`). A source-package
+profiler styles its own in `ProfilerStyles`). `GuardFields`, in the forms group, is the CSRF field and the
+honeypot (#246): `Form` renders it first, and a theme template that writes its own `<form>` renders
+one inside. A source-package
 build uses the same reader to write their escaped copies and lookup under
 `framework/src/Component/Application/Templates/`. Their inline role preserves the existing
 form-field paths, and an atom rendered inside another prints no marks. Apps consume these shipped files; an app build never

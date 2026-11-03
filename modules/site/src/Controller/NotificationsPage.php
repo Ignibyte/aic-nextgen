@@ -63,7 +63,7 @@ final readonly class NotificationsPage implements Page
             ? $query['after']
             : '';
         $lines = $this->inboxLines->lines(self::USER, $after);
-        $token = $this->formTokens->issue($serverRequest)->value();
+        $guardFields = $this->formTokens->guard($serverRequest);
         $fields = [
             new FormField('Message', 'message', new Input('message', 'message', 'Hello from the demo.')),
             new Button('Send a notification', 'submit', 'notify'),
@@ -73,8 +73,8 @@ final readonly class NotificationsPage implements Page
             [
                 new Heading('Notifications'),
                 new LineList('notifications', $lines, 'None yet.'),
-                new Form('', '/notifications/read', [new Button('Mark all read', 'submit', 'read')], $token),
-                new Form('', '/notifications', $fields, $token),
+                new Form('', '/notifications/read', [new Button('Mark all read', 'submit', 'read')], $guardFields),
+                new Form('', '/notifications', $fields, $guardFields),
             ],
             200,
             'Notifications',

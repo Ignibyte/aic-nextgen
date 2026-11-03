@@ -53,6 +53,6 @@ final readonly class LoginForm
             new Button('Sign in', 'submit', ''),
         ];
 
-        return new Form('login-form', '/login', $fields, $this->formTokens->issue($serverRequest)->value());
+        return new Form('login-form', '/login', $fields, $this->formTokens->guard($serverRequest));
     }
 }

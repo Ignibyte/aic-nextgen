@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Form\Application;
 
+use AIC\Component\Domain\GuardFields;
 use AIC\Form\Contracts\FormToken;
 use AIC\Session\Application\RequestSession;
 use AIC\Session\Domain\RandomTokens;
@@ -44,5 +45,17 @@ final readonly class FormTokens
         }
 
         return new FormToken($token);
+    }
+
+    /**
+     * @param ServerRequestInterface $serverRequest The request, with its session.
+     *
+     * @throws LogicException When the request carries no session.
+     *
+     * @return GuardFields The session's token and the honeypot, for a form to render first (#246).
+     */
+    public function guard(ServerRequestInterface $serverRequest): GuardFields
+    {
+        return new GuardFields($this->issue($serverRequest)->value());
     }
 }

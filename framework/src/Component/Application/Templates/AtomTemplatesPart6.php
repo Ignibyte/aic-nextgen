@@ -8,8 +8,8 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\FilterForm;
+use AIC\Component\Domain\Stack;
 use AIC\Component\Exception\UnknownComponent;
-use AIC\Profiler\Domain\ProfilerDebug;
 use AIC\Profiler\Domain\ProfilerLayout;
 use AIC\Profiler\Domain\ProfilerToolbar;
 use Override;
@@ -20,6 +20,14 @@ use Override;
  */
 final readonly class AtomTemplatesPart6 implements ComponentTemplates
 {
+    /**
+     * @param ComponentTemplates $componentTemplates The templates after these.
+     */
+    public function __construct(
+        private ComponentTemplates $componentTemplates = new AtomTemplatesPart7(),
+    ) {
+    }
+
     /**
      * @param Component  $component  A component.
      * @param RenderPass $renderPass The pass rendering it.
@@ -32,12 +40,28 @@ final readonly class AtomTemplatesPart6 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
+            $component instanceof Stack => $this->renderStack($component, $renderPass),
             $component instanceof FilterForm => $this->renderFilterForm($component, $renderPass),
             $component instanceof ProfilerLayout => $this->renderProfilerLayout($component, $renderPass),
             $component instanceof ProfilerToolbar => $this->renderProfilerToolbar($component, $renderPass),
-            $component instanceof ProfilerDebug => $this->renderProfilerDebug($component, $renderPass),
-            default => throw new UnknownComponent($component::class),
+            default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param Stack      $stack      The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from stack.phtml.
+     */
+    private function renderStack(Stack $stack, RenderPass $renderPass): string
+    {
+        $renderPass->open($stack);
+        require __DIR__ . '/stack.phtml';
+
+        return $renderPass->close();
     }
 
     /**
@@ -84,22 +108,6 @@ final readonly class AtomTemplatesPart6 implements ComponentTemplates
     {
         $renderPass->open($profilerToolbar);
         require __DIR__ . '/profiler-toolbar.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param ProfilerDebug $profilerDebug The component; its template reads it.
-     * @param RenderPass    $renderPass    The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from profiler-debug.phtml.
-     */
-    private function renderProfilerDebug(ProfilerDebug $profilerDebug, RenderPass $renderPass): string
-    {
-        $renderPass->open($profilerDebug);
-        require __DIR__ . '/profiler-debug.phtml';
 
         return $renderPass->close();
     }

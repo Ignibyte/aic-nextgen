@@ -8,7 +8,7 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\CodeBlock;
-use AIC\Component\Domain\Stack;
+use AIC\Component\Domain\Table;
 use AIC\Component\Domain\Tabs;
 use AIC\Component\Domain\Timeline;
 use AIC\Component\Exception\UnknownComponent;
@@ -40,12 +40,28 @@ final readonly class AtomTemplatesPart5 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
+            $component instanceof Table => $this->renderTable($component, $renderPass),
             $component instanceof Tabs => $this->renderTabs($component, $renderPass),
             $component instanceof Timeline => $this->renderTimeline($component, $renderPass),
             $component instanceof CodeBlock => $this->renderCodeBlock($component, $renderPass),
-            $component instanceof Stack => $this->renderStack($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param Table      $table      The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from table.phtml.
+     */
+    private function renderTable(Table $table, RenderPass $renderPass): string
+    {
+        $renderPass->open($table);
+        require __DIR__ . '/table.phtml';
+
+        return $renderPass->close();
     }
 
     /**
@@ -92,22 +108,6 @@ final readonly class AtomTemplatesPart5 implements ComponentTemplates
     {
         $renderPass->open($codeBlock);
         require __DIR__ . '/code-block.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param Stack      $stack      The component; its template reads it.
-     * @param RenderPass $renderPass The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from stack.phtml.
-     */
-    private function renderStack(Stack $stack, RenderPass $renderPass): string
-    {
-        $renderPass->open($stack);
-        require __DIR__ . '/stack.phtml';
 
         return $renderPass->close();
     }

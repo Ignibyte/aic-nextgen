@@ -7,9 +7,9 @@ namespace AIC\Component\Application\Templates;
 use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
-use AIC\Component\Domain\Button;
 use AIC\Component\Domain\Checkbox;
 use AIC\Component\Domain\FileInput;
+use AIC\Component\Domain\GuardFields;
 use AIC\Component\Domain\HiddenInput;
 use AIC\Component\Exception\UnknownComponent;
 use Override;
@@ -43,7 +43,7 @@ final readonly class AtomTemplatesPart3 implements ComponentTemplates
             $component instanceof Checkbox => $this->renderCheckbox($component, $renderPass),
             $component instanceof FileInput => $this->renderFileInput($component, $renderPass),
             $component instanceof HiddenInput => $this->renderHiddenInput($component, $renderPass),
-            $component instanceof Button => $this->renderButton($component, $renderPass),
+            $component instanceof GuardFields => $this->renderGuardFields($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }
@@ -97,17 +97,17 @@ final readonly class AtomTemplatesPart3 implements ComponentTemplates
     }
 
     /**
-     * @param Button     $button     The component; its template reads it.
-     * @param RenderPass $renderPass The pass its template writes through.
+     * @param GuardFields $guardFields The component; its template reads it.
+     * @param RenderPass  $renderPass  The pass its template writes through.
      *
      * @throws UnknownComponent When a child has no template.
      *
-     * @return string Its markup, from button.phtml.
+     * @return string Its markup, from guard-fields.phtml.
      */
-    private function renderButton(Button $button, RenderPass $renderPass): string
+    private function renderGuardFields(GuardFields $guardFields, RenderPass $renderPass): string
     {
-        $renderPass->open($button);
-        require __DIR__ . '/button.phtml';
+        $renderPass->open($guardFields);
+        require __DIR__ . '/guard-fields.phtml';
 
         return $renderPass->close();
     }
