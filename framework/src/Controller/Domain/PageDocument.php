@@ -39,6 +39,8 @@ final readonly class PageDocument implements PageResponse
      *                                         missing thing, 409 for a write that conflicts, or 422 for a form shown
      *                                         again with its errors.
      * @param list<SignalPatch> $signalPatches What a fragment answer of it patches into the page's signals, in order.
+     * @param bool              $prefetchable  Whether it answers `private, no-cache`, so Tessera may use a hover
+     *                                         prefetch of it (#254); `private, no-store` otherwise.
      *
      * @throws InvalidArgumentException When the status is none of these, or a filled region is one the layout does not place.
      */
@@ -46,6 +48,7 @@ final readonly class PageDocument implements PageResponse
         private Layout $layout,
         private int $status = 200,
         private array $signalPatches = [],
+        private bool $prefetchable = false,
     ) {
         if (!in_array($status, self::STATUSES, true)) {
             throw new InvalidArgumentException('A page document answers 200, 400, 403, 404, 409 or 422; got ' . $status . '.');
@@ -66,7 +69,7 @@ final readonly class PageDocument implements PageResponse
     #[Override]
     public function writeTo(ResponseWriter $responseWriter): ResponseInterface
     {
-        return $responseWriter->document($this->status, $this->layout);
+        return $responseWriter->document($this->status, $this->layout, $this->prefetchable);
     }
 
     /**
@@ -81,7 +84,7 @@ final readonly class PageDocument implements PageResponse
     {
         $regions = $blocks->place($this->layout->regions(), $this->layout->names(), $serverRequest);
 
-        return new self($this->layout->withRegions($regions), $this->status, $this->signalPatches);
+        return new self($this->layout->withRegions($regions), $this->status, $this->signalPatches, $this->prefetchable);
     }
 
     /**
@@ -93,7 +96,18 @@ final readonly class PageDocument implements PageResponse
      */
     public function withCsrfToken(string $csrfToken): self
     {
-        return new self($this->layout->withCsrfToken($csrfToken), $this->status, $this->signalPatches);
+        return new self($this->layout->withCsrfToken($csrfToken), $this->status, $this->signalPatches, $this->prefetchable);
+    }
+
+    /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
+     * @return self The same document, answered `private, no-cache` so a hover prefetch of it is used (#254): for a
+     *              page that may be shown from an answer a few seconds old.
+     */
+    public function prefetchable(): self
+    {
+        return new self($this->layout, $this->status, $this->signalPatches, true);
     }
 
     /**
@@ -105,7 +119,7 @@ final readonly class PageDocument implements PageResponse
      */
     public function withSignalPatch(SignalPatch $signalPatch): self
     {
-        return new self($this->layout, $this->status, [...$this->signalPatches, $signalPatch]);
+        return new self($this->layout, $this->status, [...$this->signalPatches, $signalPatch], $this->prefetchable);
     }
 
     /**
@@ -119,6 +133,13 @@ final readonly class PageDocument implements PageResponse
 
         return $targets === []
             ? $this
-            : new PageFragments($this->status, $this->layout, $targets, $tesseraRequest->removesGone(), $this->signalPatches);
+            : new PageFragments(
+                $this->status,
+                $this->layout,
+                $targets,
+                $tesseraRequest->removesGone(),
+                $this->signalPatches,
+                $this->prefetchable,
+            );
     }
 }

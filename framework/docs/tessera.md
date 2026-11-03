@@ -46,7 +46,13 @@ answer with `PageDocument::withSignalPatch(new SignalPatch($scope, $json, $onlyI
 a fragment answer writes each after the templates as `<script type="application/json"
 data-scope="…">`, `data-only-if-missing` when set, and Tessera merges them once every fragment has
 landed. `SignalPatch` refuses a scope that is not a target and JSON that is not an object, and writes
-`<` as `\u003c`. The whole document carries none; its markup sets the signals a page starts with. A visit's missing target, a missing region, overlapping or malformed paths, a different
+`<` as `\u003c`. The whole document carries none; its markup sets the signals a page starts with.
+Every dynamic answer is `Cache-Control: private, no-store`, and Tessera does not use a hover
+prefetch (`data-prefetch="hover"`) whose answer says `no-store`. A page that may be shown from an
+answer a few seconds old opts in with `PageDocument::prefetchable()` (#254): its document and
+fragment answers say `private, no-cache`, so the click takes the hover's answer. A page with
+anything a shared machine should not keep, or that changes from one second to the next, stays as it
+is; a press prefetch is the click's own request and works either way. A visit's missing target, a missing region, overlapping or malformed paths, a different
 layout or a different protocol fall back to a whole document. Each theme layout
 has its own identity: the theme's name for the default (`app`), `<theme>-<name>` for a
 named one (`app-focus`). A visit from a page in one layout to a page in another therefore gets a

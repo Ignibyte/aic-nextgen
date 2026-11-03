@@ -52,6 +52,11 @@ final readonly class HomePage implements Page
     private const array PLAIN = ['/api/status', '/download/hello.txt', '/events?count=5', '/health'];
 
     /**
+     * The demos prefetched on hover, each a page that answers `private, no-cache` (#254).
+     */
+    private const array PREFETCHED = ['/stock'];
+
+    /**
      * @param PageDocuments $pageDocuments The document around the page.
      * @param GreetingForm  $greetingForm  The form posting a name to /hello.
      * @param AppConfig     $appConfig     The app's settings.
@@ -78,7 +83,7 @@ final readonly class HomePage implements Page
         $demos = [];
 
         foreach (self::DEMOS as $path => $label) {
-            $demos[] = new HomeDemo($path, $label, in_array($path, self::PLAIN, true));
+            $demos[] = new HomeDemo($path, $label, in_array($path, self::PLAIN, true), in_array($path, self::PREFETCHED, true));
         }
 
         $facts = [

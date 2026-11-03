@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Prefetchable pages** (#254): `PageDocument::prefetchable()` answers a page `private, no-cache`
+  instead of `private, no-store`, so Tessera uses a hover prefetch of it. The fixture's stock page opts
+  in and the home page's Stock link prefetches on hover; a kept look counts one request for hover and
+  click.
 - **Signal patches on a page's answer** (#253): `PageDocument::withSignalPatch(SignalPatch)` adds a
   signal patch, which a Tessera fragment answer writes after its templates (`data-scope`,
   `data-only-if-missing`, protocol 5.3); a full document carries none. The fixture's refused greeting
