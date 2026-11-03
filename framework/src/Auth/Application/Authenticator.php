@@ -7,6 +7,7 @@ namespace AIC\Auth\Application;
 use AIC\Auth\Contracts\PasswordHasher;
 use AIC\Auth\Contracts\UserCredentials;
 use AIC\Auth\Contracts\UserProvider;
+use AIC\Auth\Domain\SignedInUser;
 use AIC\Session\Application\RequestSession;
 use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
@@ -50,20 +51,21 @@ final readonly class Authenticator
      *
      * @throws LogicException When the request carries no session.
      *
-     * @return bool Whether they are signed in now.
+     * @return SignedInUser|null Who is signed in now, with what the provider read for the app (#238); null when the
+     *                           login or the password is wrong.
      */
     public function login(
         ServerRequestInterface $serverRequest,
         string $login,
         #[SensitiveParameter]
         string $password,
-    ): bool {
+    ): ?SignedInUser {
         $credentials = $this->userProvider->credentials($login);
 
         if (!$credentials instanceof UserCredentials) {
             $this->passwordHasher->verify($password, self::DECOY);
 
-            return false;
+            return null;
         }
 
         return $this->signIn($serverRequest, $credentials, $password);
@@ -102,22 +104,23 @@ final readonly class Authenticator
      *
      * @throws LogicException When the request carries no session.
      *
-     * @return bool Whether the password matched and they are signed in now.
+     * @return SignedInUser|null Who is signed in now; null when the password did not match.
      */
     private function signIn(
         ServerRequestInterface $serverRequest,
         UserCredentials $userCredentials,
         #[SensitiveParameter]
         string $password,
-    ): bool {
+    ): ?SignedInUser {
         if (!$this->passwordHasher->verify($password, $userCredentials->passwordHash)) {
-            return false;
+            return null;
         }
 
+        $signedInUser = new SignedInUser($userCredentials->userId, $userCredentials->profile);
         $session = $this->requestSession->read($serverRequest);
         $session->regenerateId();
-        $session->set(self::USER, $userCredentials->userId);
+        $session->set(self::USER, $signedInUser->userId);
 
-        return true;
+        return $signedInUser;
     }
 }

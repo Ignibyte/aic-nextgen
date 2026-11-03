@@ -13,6 +13,7 @@ use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Form\Application\FormTokens;
+use AIC\Session\Application\RequestSession;
 use LogicException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
@@ -24,14 +25,16 @@ use Psr\Http\Message\ServerRequestInterface;
 final readonly class AccountPage implements Page
 {
     /**
-     * @param PageDocuments $pageDocuments Makes the page.
-     * @param Authenticator $authenticator Knows who is signed in.
-     * @param FormTokens    $formTokens    Issues the visitor's CSRF token.
+     * @param PageDocuments  $pageDocuments  Makes the page.
+     * @param Authenticator  $authenticator  Knows who is signed in.
+     * @param FormTokens     $formTokens     Issues the visitor's CSRF token.
+     * @param RequestSession $requestSession Reads the day the user joined, kept at sign-in (#238).
      */
     public function __construct(
         private PageDocuments $pageDocuments,
         private Authenticator $authenticator,
         private FormTokens $formTokens = new FormTokens(),
+        private RequestSession $requestSession = new RequestSession(),
     ) {
     }
 
@@ -46,10 +49,12 @@ final readonly class AccountPage implements Page
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
         $user = $this->authenticator->userId($serverRequest);
+        $joined = $this->requestSession->read($serverRequest)->get(LoginPost::JOINED) ?? '';
+        $signedIn = 'Signed in as ' . $user . ($joined === '' ? '.' : ', a member since ' . $joined . '.');
         $form = new Form('', '/logout', [new Button('Sign out', 'submit', 'sign-out')], $this->formTokens->issue($serverRequest)->value());
 
         return $this->pageDocuments->content(
-            [new Heading('Account'), new Paragraph('Signed in as ' . $user . '.', 'signed-in'), $form],
+            [new Heading('Account'), new Paragraph($signedIn, 'signed-in'), $form],
             200,
             'Account',
         );
