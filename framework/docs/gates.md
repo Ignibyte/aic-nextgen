@@ -24,9 +24,11 @@ form, extra header and status both sites must answer alike. A new route adds its
 run against one database, so a record each creates gets its own id: a step with `captures: true`
 takes its answer's `Location` as `{note}` for the next steps (a path, which a later step may extend,
 `{note}/delete`), and that path reads as `<captured>`
-in each site's answers before they are compared (#178); when it ends in a number, that number reads
-`<captured-id>` wherever a page writes it after a `-` or a `=` (`notification-12`, `?after=12`), and a time to the minute
-reads `<time>` (#214). Two bodies that are byte-identical as sent are never a difference, so no
+in each site's answers before they are compared (#178); when it ends in a number, that number is
+one of the site's record ids. The two answers may then differ at a number written after a `-` or a
+`=` (`notification-12`, `?after=12`) only where the PHP answer has one of its ids and the compiled
+answer one of its own, every other byte equal (#217): a small id never masks `utf-8` or
+`initial-scale=1` on one side. A time to the minute reads `<time>` (#214). Two bodies that are byte-identical as sent are never a difference, so no
 mask applies to them: a static script holding `=500` stays alike when one pass captured id 500 (#236). A record no Location names (a form that
 answers in place) is reached through a list instead: a step with `"capture": "/app/leads/"` keeps the
 first link in its answer under that prefix as `{note}` (#200). `{location}` is the path and query of the last

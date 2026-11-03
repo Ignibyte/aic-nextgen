@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use Gates\Domain\BodyDifference;
+use Gates\Domain\CapturedIds;
 use Gates\Domain\HttpClient;
 use Gates\Domain\HttpExchange;
 use Gates\Domain\NativeSiteAnswer;
@@ -131,6 +132,7 @@ final readonly class NativeSiteComparer
         $differences = [];
         $phpCaptured = new NativeSiteCaptures($expected);
         $nativeCaptured = new NativeSiteCaptures($actual);
+        $capturedIds = new CapturedIds($phpCaptured->ids(), $nativeCaptured->ids());
 
         foreach ($steps as $index => $step) {
             $rawPhp = self::exchange($expected[$index] ?? null);
@@ -139,7 +141,7 @@ final readonly class NativeSiteComparer
 
             $worked = self::worked($expected[$index] ?? null, $actual[$index] ?? null);
 
-            foreach ([...self::compared($step, $php, $native), ...$worked] as $difference) {
+            foreach ([...self::compared($step, $php, $native, $capturedIds), ...$worked] as $difference) {
                 $differences[] = sprintf('%s (%s %s): %s', $step->name, $step->method, $step->path, $difference);
             }
         }
@@ -151,11 +153,16 @@ final readonly class NativeSiteComparer
      * @param NativeSiteStep $nativeSiteStep The step.
      * @param HttpExchange   $php            The interpreted answer.
      * @param HttpExchange   $native         The compiled answer.
+     * @param CapturedIds    $capturedIds    Where the two may differ by their sites' record ids.
      *
      * @return list<string> What differs, or which status is not the step's.
      */
-    private static function compared(NativeSiteStep $nativeSiteStep, HttpExchange $php, HttpExchange $native): array
-    {
+    private static function compared(
+        NativeSiteStep $nativeSiteStep,
+        HttpExchange $php,
+        HttpExchange $native,
+        CapturedIds $capturedIds,
+    ): array {
         $found = [];
 
         if ($php->status !== $nativeSiteStep->status) {
@@ -170,15 +177,15 @@ final readonly class NativeSiteComparer
             $found[] = sprintf('content type "%s" natively, "%s" in PHP', $native->contentType, $php->contentType);
         }
 
-        if ($native->location !== $php->location) {
+        if (!$capturedIds->agree($php->location, $native->location)) {
             $found[] = sprintf('location "%s" natively, "%s" in PHP', $native->location, $php->location);
         }
 
-        if ($native->body !== $php->body) {
+        if (!$capturedIds->agree($php->body, $native->body)) {
             $found[] = (new BodyDifference($native->body, $php->body))->line();
         }
 
-        return [...$found, ...self::headers($php, $native)];
+        return [...$found, ...self::headers($php, $native, $capturedIds)];
     }
 
     /**
@@ -293,12 +300,13 @@ final readonly class NativeSiteComparer
     }
 
     /**
-     * @param HttpExchange $php    The interpreted answer.
-     * @param HttpExchange $native The compiled answer.
+     * @param HttpExchange $php         The interpreted answer.
+     * @param HttpExchange $native      The compiled answer.
+     * @param CapturedIds  $capturedIds Where the two may differ by their sites' record ids.
      *
      * @return list<string> Each compared header (#173) whose value differs, or that only one site sent.
      */
-    private static function headers(HttpExchange $php, HttpExchange $native): array
+    private static function headers(HttpExchange $php, HttpExchange $native, CapturedIds $capturedIds): array
     {
         $found = [];
 
@@ -306,7 +314,7 @@ final readonly class NativeSiteComparer
             $nativeValue = $native->headers[$name] ?? '';
             $phpValue = $php->headers[$name] ?? '';
 
-            if ($nativeValue === $phpValue) {
+            if ($capturedIds->agree($phpValue, $nativeValue)) {
                 continue;
             }
 
