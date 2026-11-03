@@ -515,6 +515,10 @@
                 "path": "themes/app/assets/favicon.svg"
             },
             {
+                "kind": "File",
+                "path": "themes/app/assets/images/mark.svg"
+            },
+            {
                 "kind": "Style",
                 "path": "themes/app/assets/site.css"
             },

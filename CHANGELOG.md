@@ -114,6 +114,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Theme assets in a subfolder build** (#249): `modules.md` said nested paths under a theme's
+  `assets/` were supported, but a catalog name allowed one slash, so `assets/images/mark.svg`
+  failed the build ("A public asset needs an owner/name identifier"). A name is now its owner, then
+  its path below it (`theme_app/images/mark.svg`). The fixture keeps a nested asset, served in
+  gate:23. Found by #239.
+
 - **A module routes up to its 15 controllers** (#243): the build wrote a module's routes as one
   class, so past 13 controllers it refused ("the generated InventoryRoutes would depend on 16
   classes"). The routes now split into parts (`<M>RoutesPart2` and on) as its handlers do, and

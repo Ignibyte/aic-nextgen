@@ -23,9 +23,9 @@ final readonly class AssetsPart7
         return [
             new PublicAsset(
                 'theme_app/favicon.svg',
-                '/assets/33848e2a67287c36dc90155fc30afc45024fdaf4badb5d8f77e9f15d00bd9531/themes/'
+                '/assets/9940a1b498ac7efa3f7967d2adaf6a5c764238f73facec57ead642a076aa6464/themes/'
                     . 'app/favicon.svg',
-                '33848e2a67287c36dc90155fc30afc45024fdaf4badb5d8f77e9f15d00bd9531/themes/app/favi'
+                '9940a1b498ac7efa3f7967d2adaf6a5c764238f73facec57ead642a076aa6464/themes/app/favi'
                     . 'con.svg',
                 'image/svg+xml',
                 '7be53ea497c123d3cee7c3e431893bbe93acefa344164ac75b18471408a114c6',

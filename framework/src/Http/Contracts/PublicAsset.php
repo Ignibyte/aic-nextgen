@@ -12,7 +12,7 @@ use function preg_match;
 final readonly class PublicAsset
 {
     /**
-     * @param string $name      The logical owner/name identifier.
+     * @param string $name      The logical identifier: its owner, then its path below it (`theme_app/images/mark.svg`).
      * @param string $path      Its canonical /assets/ URL.
      * @param string $file      Its trusted path relative to build/assets/.
      * @param string $mediaType The declared response media type.
@@ -41,8 +41,8 @@ final readonly class PublicAsset
      */
     private function address(): void
     {
-        if (preg_match('/^[a-z][a-z0-9_-]*\\/[A-Za-z0-9_-][A-Za-z0-9_.-]*\\z/', $this->name) !== 1) {
-            throw new InvalidArgumentException('A public asset needs an owner/name identifier.');
+        if (preg_match('/^[a-z][a-z0-9_-]*(\\/[A-Za-z0-9_-][A-Za-z0-9_.-]*)+\\z/', $this->name) !== 1) {
+            throw new InvalidArgumentException('A public asset needs an owner/path identifier.');
         }
 
         if (

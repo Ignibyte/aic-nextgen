@@ -22,15 +22,15 @@ final readonly class AssetsPart8
     {
         return [
             new PublicAsset(
-                'theme_app/site.css',
-                '/assets/33848e2a67287c36dc90155fc30afc45024fdaf4badb5d8f77e9f15d00bd9531/themes/'
-                    . 'app/site.css',
-                '33848e2a67287c36dc90155fc30afc45024fdaf4badb5d8f77e9f15d00bd9531/themes/app/site'
-                    . '.css',
-                'text/css; charset=utf-8',
-                'd9e6ad8017058810a16550a8690cc73e515a3452a48e6e3c0339d41f9da38b9d',
-                286,
-                '/assets/themes/app/site.css',
+                'theme_app/images/mark.svg',
+                '/assets/9940a1b498ac7efa3f7967d2adaf6a5c764238f73facec57ead642a076aa6464/themes/'
+                    . 'app/images/mark.svg',
+                '9940a1b498ac7efa3f7967d2adaf6a5c764238f73facec57ead642a076aa6464/themes/app/imag'
+                    . 'es/mark.svg',
+                'image/svg+xml',
+                '29eae93a6fb6f224591f7dddd9f9a1f76036a189183e3f247e7dd1f573150bd0',
+                111,
+                '/assets/themes/app/images/mark.svg',
             ),
             ...(new AssetsPart9())->all(),
         ];
