@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Steps name assets; Tessera 0.4.2** (#251): a gate:23 step's path or form may name a published
+  asset as `{asset:<name>}` (its `build/assets.json` name), resolved to its alias path, so a Tessera
+  pin bump no longer changes step lines. AIC pins Tessera 0.4.2, whose #41 lands every fragment
+  after a removal in one answer, and `tests/browser/tessera.spec.ts` holds a two-removal answer in
+  the browser.
 - **A look runs the queue worker** (#225): gate:23 and `aic-gate browser` hand each browser test
   `AIC_PHP` with the sites' database settings, so a look runs `bin/aic queue:work` itself and sees
   a job's effect on either site; `tests/browser/jobs.spec.ts` does. `systems.md` states that a job

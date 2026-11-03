@@ -168,6 +168,34 @@ test('a fragment holds the same markup for its target as the whole document', as
     expect(target?.[1]).toContain('id="note-count"');
 });
 
+test('one answer removes two gone components and still patches the list after them', async ({ page }) => {
+    await page.goto('/stock');
+    await mark(page);
+
+    // Two components the stock page never renders, as if deleted since it loaded, and an action naming
+    // them and the list. The server answers each gone one removed (#247), then the list; Tessera 0.4.1
+    // and older dropped every fragment after the first removal (Tessera #41, fixed in 0.4.2).
+    await page.evaluate(() => {
+        const content = document.querySelector('[data-region="content"]');
+        content?.insertAdjacentHTML('beforeend', '<p data-t-c="gone-a" id="gone-a">a</p><p data-t-c="gone-b" id="gone-b">b</p>'
+            + '<button type="button" id="remove-gone" data-on:click="@get(\'/stock\', {target: \'content/gone-a content/gone-b @stock-list\'})">Remove</button>');
+        const limit = document.querySelector('#stock-limit');
+        if (limit) {
+            limit.textContent = 'planted';
+        }
+    });
+
+    const answered = page.waitForResponse((response) => response.url().endsWith('/stock') && response.request().headers()['tessera-request'] === 'action');
+    await page.locator('#remove-gone').click();
+    const body = await (await answered).text();
+
+    expect(body.match(/data-mode="remove"/g)).toHaveLength(2);
+    await expect(page.locator('#gone-a')).toHaveCount(0);
+    await expect(page.locator('#gone-b')).toHaveCount(0);
+    await expect(page.locator('#stock-limit')).toHaveText('The last 10.');
+    expect(await sameDocument(page)).toBe(true);
+});
+
 test.describe('with JavaScript off', () => {
     test.use({ javaScriptEnabled: false });
 
