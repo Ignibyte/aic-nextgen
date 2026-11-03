@@ -27,14 +27,17 @@ interface ResponseWriter
     public function document(int $status, Layout $layout): ResponseInterface;
 
     /**
-     * @param int          $status  The page's status.
-     * @param Layout       $layout  The page.
-     * @param list<string> $targets The regions and component paths Tessera asked for, in order (#70).
+     * @param int          $status   The page's status.
+     * @param Layout       $layout   The page.
+     * @param list<string> $targets  The regions and component paths Tessera asked for, in order (#70).
+     * @param bool         $removing Whether a component path the page no longer renders is answered with mode
+     *                               `remove` (a refresh, a submission or an action, #247) rather than the whole document.
      *
      * @return ResponseInterface Tessera fragments, `text/vnd.tessera+html` with `Tessera-Protocol: 0`: the title, the
-     *                           tracked assets and one template per target; the whole document when one is missing.
+     *                           tracked assets and one template per target; the whole document when one is missing
+     *                           and not removed.
      */
-    public function fragments(int $status, Layout $layout, array $targets): ResponseInterface;
+    public function fragments(int $status, Layout $layout, array $targets, bool $removing = false): ResponseInterface;
 
     /**
      * @param string $location Where the browser loads in full.

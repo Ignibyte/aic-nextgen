@@ -798,6 +798,24 @@
             "captures": false
         },
         {
+            "name": "tessera, a refresh of a gone component",
+            "method": "GET",
+            "path": "/stock",
+            "form": "",
+            "header": "Tessera-Request: refresh\r\nTessera-Protocol: 2\r\nTessera-Layout: app-focus\r\nTessera-Targets: content/nope",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "tessera, a refresh of one kept and one gone",
+            "method": "GET",
+            "path": "/stock",
+            "form": "",
+            "header": "Tessera-Request: refresh\r\nTessera-Protocol: 2\r\nTessera-Layout: app-focus\r\nTessera-Targets: @stock-list, content/nope",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "tessera, altered props",
             "method": "GET",
             "path": "/stock",

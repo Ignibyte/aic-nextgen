@@ -13,10 +13,11 @@ use AIC\Component\Contracts\Frame;
 final readonly class FragmentFrame implements Frame
 {
     /**
-     * @param string                                      $title     The page title.
-     * @param string                                      $csrfToken The form token Tessera sends back; empty for none.
-     * @param string                                      $assets    The tracked assets' rendered markup.
-     * @param list<array{target: string, markup: string}> $templates Each target with its rendered markup, in order.
+     * @param string                                                    $title     The page title.
+     * @param string                                                    $csrfToken The form token Tessera sends back; empty for none.
+     * @param string                                                    $assets    The tracked assets' rendered markup.
+     * @param list<array{target: string, markup: string, mode: string}> $templates Each target with its rendered markup and
+     *                                                                             its mode, empty for morph or `remove` (#247), in order.
      */
     public function __construct(
         public string $title,

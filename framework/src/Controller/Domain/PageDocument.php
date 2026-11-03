@@ -102,6 +102,6 @@ final readonly class PageDocument implements PageResponse
 
         return $targets === []
             ? $this
-            : new PageFragments($this->status, $this->layout, $targets);
+            : new PageFragments($this->status, $this->layout, $targets, $tesseraRequest->removesGone());
     }
 }
