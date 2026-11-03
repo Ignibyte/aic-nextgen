@@ -61,7 +61,7 @@ final readonly class ModuleClassSource
 
         return $wiredModule->controllers === []
             ? $files
-            : [...$files, 'Routes' => $this->routesSource->module($wiredModule->module)];
+            : [...$files, ...$this->routesSource->module($wiredModule->module)];
     }
 
     /**
