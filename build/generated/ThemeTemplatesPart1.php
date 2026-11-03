@@ -11,9 +11,9 @@ use AIC\Component\Domain\ThemeLayout;
 use AIC\Component\Domain\ThemePage;
 use AIC\Component\Exception\UnknownComponent;
 use App\Theme\Components\Greetings\Greetings;
+use App\Theme\Components\GreetingStatus\GreetingStatus;
 use App\Theme\Components\Home\Home;
 use App\Theme\Components\LineList\LineList;
-use App\Theme\Components\NoteCard\NoteCard;
 use Override;
 
 /**
@@ -44,12 +44,28 @@ final readonly class ThemeTemplatesPart1 implements ComponentTemplates
         return match (true) {
             $component instanceof ThemeLayout => (new ThemeHtmlTemplate())->render($component, $renderPass),
             $component instanceof ThemePage => (new ThemePageTemplate())->render($component, $renderPass),
+            $component instanceof GreetingStatus => $this->renderGreetingStatus($component, $renderPass),
             $component instanceof Greetings => $this->renderGreetings($component, $renderPass),
             $component instanceof Home => $this->renderHome($component, $renderPass),
             $component instanceof LineList => $this->renderLineList($component, $renderPass),
-            $component instanceof NoteCard => $this->renderNoteCard($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param GreetingStatus $greetingStatus The component; its template reads it.
+     * @param RenderPass     $renderPass     The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/GreetingStatus/greeting-status.phtml.
+     */
+    private function renderGreetingStatus(GreetingStatus $greetingStatus, RenderPass $renderPass): string
+    {
+        $renderPass->open($greetingStatus);
+        require __DIR__ . '/templates/themes/app/components/GreetingStatus/greeting-status.phtml';
+
+        return $renderPass->close();
     }
 
     /**
@@ -96,22 +112,6 @@ final readonly class ThemeTemplatesPart1 implements ComponentTemplates
     {
         $renderPass->open($lineList);
         require __DIR__ . '/templates/themes/app/components/LineList/line-list.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param NoteCard   $noteCard   The component; its template reads it.
-     * @param RenderPass $renderPass The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/NoteCard/note-card.phtml.
-     */
-    private function renderNoteCard(NoteCard $noteCard, RenderPass $renderPass): string
-    {
-        $renderPass->open($noteCard);
-        require __DIR__ . '/templates/themes/app/components/NoteCard/note-card.phtml';
 
         return $renderPass->close();
     }

@@ -11,6 +11,7 @@ use AIC\Component\Domain\Form;
 use AIC\Component\Domain\FormField;
 use AIC\Component\Domain\Input;
 use AIC\Form\Application\FormTokens;
+use App\Theme\Components\GreetingStatus\GreetingStatus;
 use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -42,7 +43,12 @@ final readonly class GreetingForm
         $alerts = $error === ''
             ? []
             : [new Alert(AlertSeverity::Error, $error, 'form-error')];
-        $fields = [...$alerts, new FormField('Name', 'name', new Input('name', 'name', $value)), new Button('Greet', 'submit', '')];
+        $fields = [
+            ...$alerts,
+            new FormField('Name', 'name', new Input('name', 'name', $value)),
+            new Button('Greet', 'submit', ''),
+            new GreetingStatus(),
+        ];
 
         return new Form('greeting-form', '/hello', $fields, $this->formTokens->guard($serverRequest));
     }

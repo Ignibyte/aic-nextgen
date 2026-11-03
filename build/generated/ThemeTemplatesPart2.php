@@ -8,10 +8,10 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
+use App\Theme\Components\NoteCard\NoteCard;
 use App\Theme\Components\NoteList\NoteList;
 use App\Theme\Components\Panel\Panel;
 use App\Theme\Components\ScaffoldAboutView\ScaffoldAboutView;
-use App\Theme\Components\ScaffoldCard\ScaffoldCard;
 use Override;
 
 /**
@@ -40,12 +40,28 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
+            $component instanceof NoteCard => $this->renderNoteCard($component, $renderPass),
             $component instanceof NoteList => $this->renderNoteList($component, $renderPass),
             $component instanceof Panel => $this->renderPanel($component, $renderPass),
             $component instanceof ScaffoldAboutView => $this->renderScaffoldAboutView($component, $renderPass),
-            $component instanceof ScaffoldCard => $this->renderScaffoldCard($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param NoteCard   $noteCard   The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/NoteCard/note-card.phtml.
+     */
+    private function renderNoteCard(NoteCard $noteCard, RenderPass $renderPass): string
+    {
+        $renderPass->open($noteCard);
+        require __DIR__ . '/templates/themes/app/components/NoteCard/note-card.phtml';
+
+        return $renderPass->close();
     }
 
     /**
@@ -92,22 +108,6 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
     {
         $renderPass->open($scaffoldAboutView);
         require __DIR__ . '/templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param ScaffoldCard $scaffoldCard The component; its template reads it.
-     * @param RenderPass   $renderPass   The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/ScaffoldCard/scaffold-card.phtml.
-     */
-    private function renderScaffoldCard(ScaffoldCard $scaffoldCard, RenderPass $renderPass): string
-    {
-        $renderPass->open($scaffoldCard);
-        require __DIR__ . '/templates/themes/app/components/ScaffoldCard/scaffold-card.phtml';
 
         return $renderPass->close();
     }

@@ -6,6 +6,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Signal patches on a page's answer** (#253): `PageDocument::withSignalPatch(SignalPatch)` adds a
+  signal patch, which a Tessera fragment answer writes after its templates (`data-scope`,
+  `data-only-if-missing`, protocol 5.3); a full document carries none. The fixture's refused greeting
+  patches `greetingProblem` and, only if missing, `greetingFirstProblem`, and refuses a name over 40
+  characters; a kept look holds both.
 - **Steps name assets; Tessera 0.4.2** (#251): a gate:23 step's path or form may name a published
   asset as `{asset:<name>}` (its `build/assets.json` name), resolved to its alias path, so a Tessera
   pin bump no longer changes step lines. AIC pins Tessera 0.4.2, whose #41 lands every fragment

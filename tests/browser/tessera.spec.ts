@@ -66,6 +66,28 @@ test('a refused greeting is answered in place, the URL kept', async ({ page }) =
     expect(await sameDocument(page)).toBe(true);
 });
 
+test('a refused greeting patches the page signals, the first reason only if missing', async ({ page }) => {
+    await page.goto('/');
+    await mark(page);
+    const form = page.locator('#greeting-form');
+
+    const blank = page.waitForResponse((response) => response.url().endsWith('/hello') && response.request().method() === 'POST');
+    await form.getByRole('button', { name: 'Greet' }).click();
+    expect((await blank).status()).toBe(422);
+    await expect(page.locator('#greeting-last')).toHaveText('A name is required.');
+    await expect(page.locator('#greeting-first')).toHaveText('A name is required.');
+
+    // A second refusal, for another reason: the plain patch replaces the latest, and the
+    // only-if-missing patch leaves the first as it was (#253).
+    const long = page.waitForResponse((response) => response.url().endsWith('/hello') && response.request().method() === 'POST');
+    await page.locator('#greeting-form').getByLabel('Name').fill('A'.repeat(41));
+    await page.locator('#greeting-form').getByRole('button', { name: 'Greet' }).click();
+    expect((await long).status()).toBe(422);
+    await expect(page.locator('#greeting-last')).toHaveText('A name is at most 40 characters.');
+    await expect(page.locator('#greeting-first')).toHaveText('A name is required.');
+    expect(await sameDocument(page)).toBe(true);
+});
+
 test('a greeting follows the redirect without a new document', async ({ page }) => {
     await page.goto('/');
     await mark(page);
@@ -187,9 +209,9 @@ test('one answer removes two gone components and still patches the list after th
 
     const answered = page.waitForResponse((response) => response.url().endsWith('/stock') && response.request().headers()['tessera-request'] === 'action');
     await page.locator('#remove-gone').click();
-    const body = await (await answered).text();
+    expect((await answered).status()).toBe(200);
 
-    expect(body.match(/data-mode="remove"/g)).toHaveLength(2);
+    // The DOM shows the answer: a browser may drop the body of a fetch Tessera has read.
     await expect(page.locator('#gone-a')).toHaveCount(0);
     await expect(page.locator('#gone-b')).toHaveCount(0);
     await expect(page.locator('#stock-limit')).toHaveText('The last 10.');
