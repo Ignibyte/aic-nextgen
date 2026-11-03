@@ -19,7 +19,7 @@ The architecture set an app's agent reads, shipped in `aic/framework`, is
 **The profiler (Chad, 2026-11-02).** #229 (the core), #230 (the pages) and #231 (the toolbar) are
 delivered: with `AIC_PROFILER=1` every dynamic request is kept in `aic_profiles`, named in
 `X-AIC-Profile`, readable at `/_profiler`, and every page carries a live toolbar
-([framework/docs/profiler.md](framework/docs/profiler.md)). AIC pins Tessera 0.4.0. #234 holds it natively: gate:23's
+([framework/docs/profiler.md](framework/docs/profiler.md)). AIC pins Tessera 0.4.2 (#251). #234 holds it natively: gate:23's
 `profiled` steps run a second pass with the profiler on and compare each step's recorded profile
 on both sites. #232 delivered `bin/aic code:coverage`, what of AIC and Tessera an app uses; #233 an XML Api
 answer (`XmlResponse`, the fixture's `/stock.xml`). Next: Lotline's aic-demo #25 to #38; the

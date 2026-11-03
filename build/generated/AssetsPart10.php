@@ -23,9 +23,9 @@ final readonly class AssetsPart10
         return [
             new PublicAsset(
                 'theme_app/theme.css',
-                '/assets/9940a1b498ac7efa3f7967d2adaf6a5c764238f73facec57ead642a076aa6464/themes/'
+                '/assets/2b09c0d34588d725b8b7b19fd6d6940521d6b57da70b987b80ef60c576edd6bf/themes/'
                     . 'app/theme.css',
-                '9940a1b498ac7efa3f7967d2adaf6a5c764238f73facec57ead642a076aa6464/themes/app/them'
+                '2b09c0d34588d725b8b7b19fd6d6940521d6b57da70b987b80ef60c576edd6bf/themes/app/them'
                     . 'e.css',
                 'text/css; charset=utf-8',
                 'ff3f4005ec9a4a2c62aadd5f58f82f29d3277dd86ac91039bb6d731a406af750',

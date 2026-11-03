@@ -43,7 +43,11 @@ runs the app's `bin/aic` with those words before it, on each pass and before the
 starts that record afresh (`"console": "inbox:forget gate"`), and a command that fails is a
 difference (#210). A form posts multipart when it starts with
 `multipart:`; a value `@path` uploads that file, relative to the project root
-(`multipart:aic_csrf={csrf}&photo=@tests/fixtures/car.jpg`). The extra header may hold several
+(`multipart:aic_csrf={csrf}&photo=@tests/fixtures/car.jpg`). A step's path or form may name a published asset as
+`{asset:<name>}`, its name in `build/assets.json`, which gate:23 replaces with that asset's alias path
+before either site sees the step (#251): `@build{asset:tessera/tessera.csp.iife.js}` uploads the pinned
+script, so a Tessera pin bump changes `config/app.php` and no step. A name the catalog does not list
+refuses the script. The extra header may hold several
 lines joined by `\r\n` (`Range: bytes=0-4\r\nIf-Range: \"x\"`).
 
 Browser tests (#174) are Playwright specs in `tests/browser/`. `init` writes the root

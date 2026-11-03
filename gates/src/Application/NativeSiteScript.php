@@ -38,10 +38,12 @@ final readonly class NativeSiteScript
     public const string PATH = 'config/native-site.json';
 
     /**
-     * @param QuietFileReader $quietFileReader Reads the script.
+     * @param QuietFileReader  $quietFileReader  Reads the script.
+     * @param NativeSiteAssets $nativeSiteAssets Resolves a step's `{asset:<name>}` (#251).
      */
     public function __construct(
         private QuietFileReader $quietFileReader = new QuietFileReader(),
+        private NativeSiteAssets $nativeSiteAssets = new NativeSiteAssets(),
     ) {
     }
 
@@ -99,8 +101,14 @@ final readonly class NativeSiteScript
             throw new InvalidArgumentException(self::PATH . ' holds no list at ' . $key . '.');
         }
 
+        $aliases = $this->nativeSiteAssets->aliases($root);
+
         return array_map(
-            fn (int $index): NativeSiteStep => $this->step($index, $steps[$index] instanceof stdClass ? $steps[$index] : new stdClass()),
+            fn (int $index): NativeSiteStep => $this->step(
+                $index,
+                $steps[$index] instanceof stdClass ? $steps[$index] : new stdClass(),
+                $aliases,
+            ),
             array_keys($steps),
         );
     }
@@ -123,20 +131,23 @@ final readonly class NativeSiteScript
     }
 
     /**
-     * @param int      $index Its place, from 0.
-     * @param stdClass $step  Its fields.
+     * @param int                   $index   Its place, from 0.
+     * @param stdClass              $step    Its fields.
+     * @param array<string, string> $aliases The published assets' alias paths, by name.
      *
-     * @throws InvalidArgumentException When a field is missing or of the wrong type.
+     * @throws InvalidArgumentException When a field is missing or of the wrong type, or names an unpublished asset.
      *
-     * @return NativeSiteStep The step.
+     * @return NativeSiteStep The step, its path and form with each `{asset:<name>}` resolved.
      */
-    private function step(int $index, stdClass $step): NativeSiteStep
+    private function step(int $index, stdClass $step, array $aliases): NativeSiteStep
     {
+        $where = self::PATH . ': step ' . $index;
+
         return new NativeSiteStep(
             $this->text($index, $step, 'name'),
             $this->text($index, $step, 'method'),
-            $this->text($index, $step, 'path'),
-            $this->text($index, $step, 'form'),
+            $this->nativeSiteAssets->resolve($this->text($index, $step, 'path'), $aliases, $where . '\'s "path"'),
+            $this->nativeSiteAssets->resolve($this->text($index, $step, 'form'), $aliases, $where . '\'s "form"'),
             $this->text($index, $step, 'header'),
             $this->number($index, $step),
             $this->flag($index, $step),
