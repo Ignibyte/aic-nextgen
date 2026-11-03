@@ -6,6 +6,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **A Tessera answer removes a gone component** (#247): a refresh, submission or action whose
+  component path the page no longer renders gets `<template data-target="…" data-mode="remove">`,
+  Tessera protocol 2's removal, instead of the whole document; a visit's missing target still
+  answers the document. A bulk delete's rows now leave the page. gate:23 holds a gone target and a
+  kept-plus-gone pair. Found by Lotline run 29.
+
 - **Guard fields as an atom** (#246): `AIC\Component\Domain\GuardFields` renders the CSRF field and
   the honeypot. `Form` takes one in place of its token string, from `FormTokens::guard()`; its
   markup is unchanged. A theme component that writes its own `<form>` for Tessera attributes places

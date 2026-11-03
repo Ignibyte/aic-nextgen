@@ -18,14 +18,16 @@ use Psr\Http\Message\ResponseInterface;
 final readonly class PageFragments implements PageResponse
 {
     /**
-     * @param int          $status  The page's status.
-     * @param Layout       $layout  The page.
-     * @param list<string> $targets The regions and component paths to answer, in order; at least one.
+     * @param int          $status   The page's status.
+     * @param Layout       $layout   The page.
+     * @param list<string> $targets  The regions and component paths to answer, in order; at least one.
+     * @param bool         $removing Whether a component path the page no longer renders is answered removed (#247).
      */
     public function __construct(
         private int $status,
         private Layout $layout,
         private array $targets,
+        private bool $removing = false,
     ) {
     }
 
@@ -37,6 +39,6 @@ final readonly class PageFragments implements PageResponse
     #[Override]
     public function writeTo(ResponseWriter $responseWriter): ResponseInterface
     {
-        return $responseWriter->fragments($this->status, $this->layout, $this->targets);
+        return $responseWriter->fragments($this->status, $this->layout, $this->targets, $this->removing);
     }
 }

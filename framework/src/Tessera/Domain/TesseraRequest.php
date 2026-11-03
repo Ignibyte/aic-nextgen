@@ -101,6 +101,16 @@ final readonly class TesseraRequest
     }
 
     /**
+     * @return bool Whether a component the page no longer renders is answered with mode `remove`: a refresh, a
+     *              submission or an action may remove what it targeted (Tessera protocol 5.1, #247); a visit's
+     *              missing target still gets the whole document.
+     */
+    public function removesGone(): bool
+    {
+        return in_array($this->kind, ['refresh', 'submit', 'action'], true);
+    }
+
+    /**
      * @param string $target A component's path, or `@NAME` for the component carrying that anchor (#194).
      *
      * @return bool Whether it is a refresh, in AIC's protocol, of that one target alone: the one request a `204`

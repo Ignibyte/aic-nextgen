@@ -67,30 +67,32 @@ final readonly class Renderer
     }
 
     /**
-     * @param Layout       $layout  The page.
-     * @param list<string> $targets The regions and component paths Tessera asked for, in order; at least one.
+     * @param Layout       $layout   The page.
+     * @param list<string> $targets  The regions and component paths Tessera asked for, in order; at least one.
+     * @param bool         $removing Whether a component path the page no longer renders, below a region it places,
+     *                               is answered with mode `remove` (#247).
      *
      * @throws UnknownComponent When no template renders one of its components.
      *
      * @return Html|null The title, the `tessera-csrf-token` meta, the tracked assets and one `<template>` per target,
-     *                   written by the framework's fragment template; null when the page has no such target, and the
-     *                   whole document answers.
+     *                   written by the framework's fragment template; null when the page has no such target and it is
+     *                   not removed, and the whole document answers.
      */
-    public function fragments(Layout $layout, array $targets): ?Html
+    public function fragments(Layout $layout, array $targets, bool $removing = false): ?Html
     {
         $started = $this->monotonic->microseconds();
         $templates = [];
 
         foreach ($targets as $target) {
-            $markup = $this->fragment($layout, $target);
+            $template = $this->template($layout, $target, $removing);
 
-            if ($markup === '') {
+            if ($template === null) {
                 $this->passed($started);
 
                 return null;
             }
 
-            $templates[] = ['target' => $target, 'markup' => $markup];
+            $templates[] = $template;
         }
 
         $renderPass = $this->pass('');
@@ -103,6 +105,33 @@ final readonly class Renderer
             $renderPass->discard();
             $this->passed($started);
         }
+    }
+
+    /**
+     * @param Layout $layout   The page.
+     * @param string $target   A region, or a component's path below one.
+     * @param bool   $removing Whether a component path the page no longer renders is answered removed.
+     *
+     * @throws UnknownComponent         When no template renders one of its components.
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
+     * @return array{target: string, markup: string, mode: string}|null The target's template, its mode empty for
+     *                                                                  Tessera's default morph; null when it is gone
+     *                                                                  and not removed.
+     */
+    private function template(Layout $layout, string $target, bool $removing): ?array
+    {
+        $markup = $this->fragment($layout, $target);
+
+        if ($markup !== '') {
+            return ['target' => $target, 'markup' => $markup, 'mode' => ''];
+        }
+
+        $segments = explode('/', $target);
+
+        return $removing && count($segments) > 1 && in_array($segments[0], $layout->names(), true)
+            ? ['target' => $target, 'markup' => '', 'mode' => 'remove']
+            : null;
     }
 
     /**

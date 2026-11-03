@@ -37,8 +37,11 @@ wrapper its own key too, so a filter that adds or drops a sibling does not move 
 `AIC\Tessera\Domain\TesseraRequest` validates request kind, protocol, layout identity and target
 syntax. A valid visit naming a region also refreshes the layout's other regions so navigation state
 follows the page. A visit naming only components gets exactly those components. Refresh, submit
-and action requests receive their requested targets. Missing targets, overlapping or malformed
-paths, a different layout or a different protocol fall back to a whole document. Each theme layout
+and action requests receive their requested targets. A refresh, submission or action whose
+component path the page no longer renders, below a region the layout places, gets that target with
+`data-mode="remove"` and no markup, so Tessera drops the element, as protocol 5.1 allows (#247): a deleted row
+goes away. A visit's missing target, a missing region, overlapping or malformed paths, a different
+layout or a different protocol fall back to a whole document. Each theme layout
 has its own identity: the theme's name for the default (`app`), `<theme>-<name>` for a
 named one (`app-focus`). A visit from a page in one layout to a page in another therefore gets a
 whole document, and a fragment never crosses layouts.
@@ -140,8 +143,8 @@ the same document where Tessera promises it and with no console error.
 Every HTML response carries `ResponseBuilder::POLICY` as its `Content-Security-Policy`: scripts,
 styles, fonts and connections from the site itself only, images also as `data:`. The pinned csp
 build runs under it, and the HTML lint (#170) keeps inline script and style out of pages. Gate:24 checks the pinned assets; gate:8 and gate:27 keep
-the render tree and deliberate raw output within their contracts. A missing target should lead to
-a full response, rather than an independent fragment template.
+the render tree and deliberate raw output within their contracts. A missing target leads to a
+full response, or to its removal as above, never to an independent fragment template.
 
 ## Vocabulary
 
