@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **A handlers part declares only the services locals it reads** (#261): a part's shared services
+  were counted transitively, so a part whose handlers take only a later services class's services
+  still made the first one, an unused local five gates refuse (Lotline's storefront). A part now
+  takes the outermost shared service on each path.
 - **An anchor-scoped signal patch lands** (#260): a fragment answer wrote a `SignalPatch` scoped
   `@NAME` as `data-scope="@NAME"`, which Tessera refuses, since a fragment answer names a path. It now
   writes the path the request named with that anchor, and leaves the patch out when the request named

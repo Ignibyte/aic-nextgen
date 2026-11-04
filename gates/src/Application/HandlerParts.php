@@ -14,6 +14,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use function array_filter;
 use function array_flip;
 use function array_intersect_key;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_slice;
@@ -200,17 +201,42 @@ final readonly class HandlerParts
      * @param list<ContextEntry>    $entries A part's entries.
      * @param array<string, string> $calls   Each shared service's call, by class.
      *
-     * @return array<string, string> The calls of the shared services those entries take, by class.
+     * @return array<string, string> The calls of the shared services those entries take, by class: the outermost on
+     *                               each path, since a shared service's own are built inside its class (#261).
      */
     private static function seeds(array $entries, array $calls): array
     {
         $taken = [];
 
         foreach ($entries as $entry) {
-            $taken = [...$taken, ...$entry->wiredObject->services()];
+            $taken = [...$taken, ...self::outermost($entry->wiredObject, $calls)];
         }
 
         return array_intersect_key($calls, array_flip($taken));
+    }
+
+    /**
+     * @param WiredObject           $wiredObject An object a part builds.
+     * @param array<string, string> $calls       Each shared service's call, by class.
+     *
+     * @return list<string> The shared services it is built from, by class, the first met on each path: a part calls
+     *                      those, and never reaches what they are built from.
+     */
+    private static function outermost(WiredObject $wiredObject, array $calls): array
+    {
+        $taken = [];
+
+        foreach ($wiredObject->arguments as $argument) {
+            if ($argument->root !== '') {
+                continue;
+            }
+
+            $taken = array_key_exists($argument->class, $calls)
+                ? [...$taken, $argument->class]
+                : [...$taken, ...self::outermost($argument, $calls)];
+        }
+
+        return $taken;
     }
 
     /**
