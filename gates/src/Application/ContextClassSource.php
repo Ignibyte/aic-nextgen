@@ -33,6 +33,20 @@ use function strtr;
 final readonly class ContextClassSource
 {
     /**
+     * The constructor holding the context, when an entry reads it: `{context}` and `{property}`.
+     */
+    public const string CONSTRUCTOR = <<<'PHP'
+            /**
+             * @param {context} ${property} The roots.
+             */
+            public function __construct(
+                private {context} ${property},
+            ) {
+            }
+
+        PHP;
+
+    /**
      * The widest line PHPCS allows.
      */
     private const int LINE_LIMIT = 140;
@@ -66,20 +80,6 @@ final readonly class ContextClassSource
         {body}
             }
         }
-        PHP;
-
-    /**
-     * The constructor holding the context, when an entry reads it: `{context}` and `{property}`.
-     */
-    private const string CONSTRUCTOR = <<<'PHP'
-            /**
-             * @param {context} ${property} The roots.
-             */
-            public function __construct(
-                private {context} ${property},
-            ) {
-            }
-
         PHP;
 
     /**
@@ -156,7 +156,7 @@ final readonly class ContextClassSource
      */
     private function lines(ModuleDefinition $moduleDefinition, ContextClass $contextClass): array
     {
-        $state = [[], [], [], $contextClass->uses()];
+        $state = [$contextClass->seeds, $contextClass->prelude === '' ? [] : [$contextClass->prelude], [], $contextClass->uses()];
 
         foreach ($contextClass->entries as $contextEntry) {
             $state = $this->locals($contextEntry->wiredObject->arguments, $state, $contextClass->roots, $moduleDefinition);

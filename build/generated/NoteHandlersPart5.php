@@ -12,7 +12,6 @@ use App\Note\Controller\StockDaysPage;
 use App\Note\Controller\StockXml;
 use App\Note\Form\StockQueries;
 use App\Note\Repository\StockReportRepository;
-use App\Note\Repository\StockRepository;
 use App\Note\Service\StockExport;
 use App\Note\Service\StockFeed;
 use App\Note\Service\StockReportDay;
@@ -41,22 +40,24 @@ final readonly class NoteHandlersPart5
      */
     public function byId(): array
     {
+        $noteHandlerServices = new NoteHandlerServices($this->handlerContext);
         $entityStore = new EntityStore($this->handlerContext->database());
-        $stockRepository = new StockRepository($entityStore);
         $stockQueries = new StockQueries();
-        $stockExport = new StockExport($stockRepository, $this->handlerContext->root());
+        $stockExport = new StockExport($noteHandlerServices->stockRepository(), $this->handlerContext->root());
 
         return [
             StockCsv::class => $this->handlerContext->stream(new StockCsv($stockQueries, $stockExport)),
             StockDaysPage::class => $this->handlerContext->page(
                 new StockDaysPage(
                     $this->handlerContext->documents(),
-                    $stockRepository,
+                    $noteHandlerServices->stockRepository(),
                     new StockReportRepository($entityStore),
                     new StockReportDay(),
                 ),
             ),
-            StockXml::class => $this->handlerContext->api(new StockXml($stockQueries, new StockFeed($stockRepository))),
+            StockXml::class => $this->handlerContext->api(
+                new StockXml($stockQueries, new StockFeed($noteHandlerServices->stockRepository())),
+            ),
         ];
     }
 }

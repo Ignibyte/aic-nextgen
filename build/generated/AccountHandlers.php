@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
-use AIC\Auth\Application\Authenticator;
-use AIC\Auth\Application\PgcryptoPasswordHasher;
 use AIC\Container\Exception\ContainerException;
-use AIC\Entity\Application\EntityStore;
+use AIC\Form\Application\FormTokens;
 use AIC\Module\Application\HandlerContext;
+use AIC\Session\Application\RequestSession;
 use App\Account\Controller\AccountPage;
 use App\Account\Controller\LoginPage;
 use App\Account\Controller\LoginPost;
 use App\Account\Controller\LogoutPost;
+use App\Account\Controller\VisitsForget;
+use App\Account\Controller\VisitsPage;
 use App\Account\Form\LoginForm;
-use App\Account\Repository\UserRepository;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -40,17 +40,23 @@ final readonly class AccountHandlers
      */
     public function byId(): array
     {
+        $accountHandlerServices = new AccountHandlerServices($this->handlerContext);
         $loginForm = new LoginForm();
-        $entityStore = new EntityStore($this->handlerContext->database());
-        $userRepository = new UserRepository($entityStore);
-        $pgcryptoPasswordHasher = new PgcryptoPasswordHasher($this->handlerContext->database());
-        $authenticator = new Authenticator($userRepository, $pgcryptoPasswordHasher);
+        $requestSession = new RequestSession();
 
         return [
-            AccountPage::class => $this->handlerContext->page(new AccountPage($this->handlerContext->documents(), $authenticator)),
+            AccountPage::class => $this->handlerContext->page(
+                new AccountPage($this->handlerContext->documents(), $accountHandlerServices->authenticator()),
+            ),
             LoginPage::class => $this->handlerContext->page(new LoginPage($this->handlerContext->documents(), $loginForm)),
-            LoginPost::class => $this->handlerContext->page(new LoginPost($this->handlerContext->documents(), $loginForm, $authenticator)),
-            LogoutPost::class => $this->handlerContext->page(new LogoutPost($authenticator)),
+            LoginPost::class => $this->handlerContext->page(
+                new LoginPost($this->handlerContext->documents(), $loginForm, $accountHandlerServices->authenticator()),
+            ),
+            LogoutPost::class => $this->handlerContext->page(new LogoutPost($accountHandlerServices->authenticator())),
+            VisitsForget::class => $this->handlerContext->page(new VisitsForget($requestSession)),
+            VisitsPage::class => $this->handlerContext->page(
+                new VisitsPage($this->handlerContext->documents(), $requestSession, new FormTokens()),
+            ),
         ];
     }
 }

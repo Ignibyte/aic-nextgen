@@ -14,13 +14,17 @@ use function array_any;
 final readonly class ContextClass
 {
     /**
-     * @param string             $class     Its short name (`FaqHandlers`).
-     * @param WiringRoots        $roots     The side it is built for: its context and roots.
-     * @param string             $method    Its method (`byId`).
-     * @param string             $returnDoc The method's return type in phpdoc (`array<string, RequestHandlerInterface>`).
-     * @param string             $what      What the method returns, for its docblock.
-     * @param list<class-string> $docTypes  The classes the return type names, to import.
-     * @param list<ContextEntry> $entries   Its entries.
+     * @param string                $class        Its short name (`FaqHandlers`).
+     * @param WiringRoots           $roots        The side it is built for: its context and roots.
+     * @param string                $method       Its method (`byId`).
+     * @param string                $returnDoc    The method's return type in phpdoc (`array<string, RequestHandlerInterface>`).
+     * @param string                $what         What the method returns, for its docblock.
+     * @param list<string>          $docTypes     The classes the return type and the prelude name, to import or count.
+     * @param list<ContextEntry>    $entries      Its entries.
+     * @param array<string, string> $seeds        The services another generated class builds (#257): each one's code
+     *                                            by class, used as its local; none for a class that builds its own.
+     * @param string                $prelude      The statement that makes that class; empty with no seeds.
+     * @param bool                  $preludeRoots Whether the prelude hands it the context.
      */
     public function __construct(
         public string $class,
@@ -30,6 +34,9 @@ final readonly class ContextClass
         public string $what,
         public array $docTypes,
         public array $entries,
+        public array $seeds = [],
+        public string $prelude = '',
+        public bool $preludeRoots = false,
     ) {
     }
 
@@ -63,6 +70,7 @@ final readonly class ContextClass
      */
     public function readsRoots(): bool
     {
-        return array_any($this->entries, static fn (ContextEntry $contextEntry): bool => $contextEntry->readsRoots());
+        return $this->preludeRoots
+            || array_any($this->entries, static fn (ContextEntry $contextEntry): bool => $contextEntry->readsRoots());
     }
 }

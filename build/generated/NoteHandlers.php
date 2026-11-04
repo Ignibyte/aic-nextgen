@@ -5,16 +5,10 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
-use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
 use App\Note\Controller\NoteCreatePost;
 use App\Note\Controller\NoteListPage;
 use App\Note\Controller\NoteShowPage;
-use App\Note\Controller\NoteUpdatePost;
-use App\Note\Entity\NoteTypes;
-use App\Note\Form\NoteEnvelope;
-use App\Note\Form\NoteForms;
-use App\Note\Repository\NoteRepository;
 use App\Note\Service\NoteRequest;
 use App\Note\Service\NoteViews;
 use InvalidArgumentException;
@@ -42,20 +36,19 @@ final readonly class NoteHandlers
      */
     public function byId(): array
     {
-        $entityStore = new EntityStore($this->handlerContext->database());
-        $noteTypes = new NoteTypes();
-        $noteRepository = new NoteRepository($entityStore, $noteTypes);
+        $noteHandlerServices = new NoteHandlerServices($this->handlerContext);
         $noteViews = new NoteViews($this->handlerContext->documents());
-        $noteEnvelope = new NoteEnvelope($this->handlerContext->envelopeCodec());
-        $noteForms = new NoteForms($noteEnvelope);
         $noteRequest = new NoteRequest();
 
         return [
-            NoteCreatePost::class => $this->handlerContext->page(new NoteCreatePost($noteRepository, $noteRequest, $noteViews, $noteForms)),
-            NoteListPage::class => $this->handlerContext->page(new NoteListPage($noteRepository, $noteViews, $noteForms)),
-            NoteShowPage::class => $this->handlerContext->page(new NoteShowPage($noteRepository, $noteRequest, $noteViews, $noteForms)),
-            NoteUpdatePost::class => $this->handlerContext->page(
-                new NoteUpdatePost($noteRepository, $noteRequest, $noteViews, $noteForms, $noteEnvelope),
+            NoteCreatePost::class => $this->handlerContext->page(
+                new NoteCreatePost($noteHandlerServices->noteRepository(), $noteRequest, $noteViews, $noteHandlerServices->noteForms()),
+            ),
+            NoteListPage::class => $this->handlerContext->page(
+                new NoteListPage($noteHandlerServices->noteRepository(), $noteViews, $noteHandlerServices->noteForms()),
+            ),
+            NoteShowPage::class => $this->handlerContext->page(
+                new NoteShowPage($noteHandlerServices->noteRepository(), $noteRequest, $noteViews, $noteHandlerServices->noteForms()),
             ),
         ];
     }

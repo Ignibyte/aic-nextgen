@@ -24,8 +24,9 @@ use function var_export;
 /**
  * Writes one module's own generated classes that are built from a context
  * (#92, #93), each only when the module has something for it: by kind suffix,
- * `Routes` with `Handlers` (and `HandlersPart2` on, #126), `Middleware`,
- * `Commands` and `Jobs`.
+ * `Routes` with `Handlers` (and `HandlersPart2` on, #126, with the
+ * `HandlerServices` the parts share, #257), `Middleware`, `Commands` and
+ * `Jobs`.
  */
 final readonly class ModuleClassSource
 {
@@ -61,7 +62,11 @@ final readonly class ModuleClassSource
 
         return $wiredModule->controllers === []
             ? $files
-            : [...$files, ...$this->routesSource->module($wiredModule->module)];
+            : [
+                ...$files,
+                ...$this->handlerParts->services($wiredModule, array_map($this->controllerEntry(...), $wiredModule->controllers)),
+                ...$this->routesSource->module($wiredModule->module),
+            ];
     }
 
     /**
