@@ -19,7 +19,8 @@ use function is_string;
 use function preg_match;
 
 /**
- * POST /jobs?mode=succeed|fail|broken: queues the demo job (#46) and goes back to
+ * POST /jobs?mode=succeed|fail|broken: queues the demo job (#46), and mode=page
+ * the kept-page job (#265), and goes back to
  * /jobs, naming the mode it queued (`?queued=succeed`), the Location gate:23
  * opens as `{location}` (#212). POST /jobs?mode=discard&id=N drops failed job
  * N (#262) and goes back with `?discarded=N`, or `?discarded=none` when there
@@ -51,6 +52,12 @@ final readonly class JobsPost implements Page
 
         if (($query['mode'] ?? '') === 'discard') {
             return $this->discard(array_key_exists('id', $query) && is_string($query['id']) ? $query['id'] : '');
+        }
+
+        if (($query['mode'] ?? '') === 'page') {
+            $this->postgresQueue->dispatch('kept-page', [], 0);
+
+            return new PageRedirect('/jobs?queued=page');
         }
 
         $mode = match ($query['mode'] ?? '') {

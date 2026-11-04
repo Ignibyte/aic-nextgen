@@ -14,6 +14,7 @@ use AIC\Module\Application\ConsoleContext;
 use AIC\Module\Application\HandlerContext;
 use AIC\Notification\Contracts\MailTransport;
 use AIC\Notification\Domain\MailConfig;
+use AIC\Storage\Application\PageFiles;
 use Gates\Domain\WiringRoots;
 
 /**
@@ -51,7 +52,13 @@ final readonly class WiringContexts
         return new WiringRoots(
             ConsoleContext::class,
             'consoleContext',
-            [Database::class => 'database', MailConfig::class => 'mailConfig', MailTransport::class => 'mailTransport'],
+            [
+                Database::class => 'database',
+                MailConfig::class => 'mailConfig',
+                MailTransport::class => 'mailTransport',
+                PageDocuments::class => 'documents',
+                PageFiles::class => 'pageFiles',
+            ],
             ['root' => 'root'],
         );
     }

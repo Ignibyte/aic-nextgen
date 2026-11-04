@@ -6,7 +6,8 @@ declare(strict_types=1);
 /*
  * bin/aic: the console entry point (`bin/aic <command> [arguments]`).
  *
- * It reads config/database.php and config/mail.php, wires the console kernel
+ * It reads config/database.php, config/mail.php and config/app.php (for the
+ * pages a job keeps, #265), wires the console kernel
  * (AIC\Module\Application\ConsoleKernel) over the generated wiring
  * (App\Generated\ConsoleModules, #93) and runs the command line through the
  * console. Output goes to STDOUT, a line at a time, through the CommandWriter
@@ -17,6 +18,7 @@ declare(strict_types=1);
  * the list, rooted in the directory bin/aic runs in.
  */
 
+use AIC\Config\Domain\AppConfig;
 use AIC\Console\Application\Console;
 use AIC\Controller\Contracts\CommandWriter;
 use AIC\Database\Domain\DatabaseConfig;
@@ -42,12 +44,19 @@ try {
         throw new RuntimeException('config/mail.php must return an ' . MailConfig::class . '.');
     }
 
+    $appConfig = require __DIR__ . '/../config/app.php';
+
+    if (!$appConfig instanceof AppConfig) {
+        throw new RuntimeException('config/app.php must return an ' . AppConfig::class . '.');
+    }
+
     $consoleKernel = new ConsoleKernel(
         new PdoDatabase($databaseConfig),
         new SmtpTransport($mailConfig),
         $mailConfig,
         new ConsoleModules(),
         dirname(__DIR__),
+        $appConfig,
     );
     $commands = $consoleKernel->commands();
 

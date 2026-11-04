@@ -346,6 +346,52 @@
             "work": true
         },
         {
+            "name": "kept page, queue the job",
+            "method": "POST",
+            "path": "/jobs?mode=page",
+            "form": "aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "kept page, after the worker ran",
+            "method": "GET",
+            "path": "{location}",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false,
+            "work": true
+        },
+        {
+            "name": "kept page",
+            "method": "GET",
+            "path": "/kept-page",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "kept page, range",
+            "method": "GET",
+            "path": "/kept-page",
+            "form": "",
+            "header": "Range: bytes=0-14",
+            "status": 206,
+            "captures": false
+        },
+        {
+            "name": "kept page, unchanged",
+            "method": "GET",
+            "path": "/kept-page",
+            "form": "",
+            "header": "If-None-Match: *",
+            "status": 304,
+            "captures": false
+        },
+        {
             "name": "jobs, discard a failed job that is not there",
             "method": "POST",
             "path": "/jobs?mode=discard&id=0",

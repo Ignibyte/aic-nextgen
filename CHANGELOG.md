@@ -29,6 +29,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **A page kept as a private file** (#265): `AIC\Storage\Application\PageFiles::put(key,
+  PageDocument)` renders a page in the theme's layout through the response writer and keeps the
+  document in `PrivateFiles`, for a Stream to send. A command or job may ask for `PageDocuments`
+  and `PageFiles`: the console now has the theme (`ConsoleWiring::presentation()`) and, from
+  `bin/aic`, the app's config (`ConsoleKernel`'s optional last argument). The fixture's `/jobs`
+  keeps a page and `/kept-page` serves it.
+
 - **The queue as typed records** (#262): `AIC\Queue\Application\QueueRecords` lists the queue
   (`QueuedJob`, with a `QueueState` of waiting, running or retrying, its attempts and its due time)
   and the failed record (`FailedJob`, with its reason), newest first, so an app shows them without

@@ -100,6 +100,12 @@ failed jobs with their ids, and `bin/aic queue:retry <id>` queues one again (#20
 shows the queue reads it through `AIC\Queue\Application\QueueRecords`, never SQL of its own (#262). A schedule queues a job on a cron cadence. The manifest names it with `->job(`
 and a schedule with `->schedule(`.
 
+A command or a job may ask for `AIC\Controller\Application\PageDocuments` and
+`AIC\Storage\Application\PageFiles` in its constructor to make a page in the app's theme and keep
+it (#265). The console reads the theme from the generated `ConsoleModules` and the app's name from
+`config/app.php`, which `bin/aic` passes `ConsoleKernel` after the root; without it, asking for a
+page fails with a `LogicException` that says so.
+
 ## Other kinds
 
 These are not entry points; each has a contract or a name suffix and a folder of its own.

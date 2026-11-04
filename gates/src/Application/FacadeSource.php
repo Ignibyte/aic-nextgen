@@ -69,7 +69,37 @@ final readonly class FacadeSource
             {
                 return (new ModulePrefixes())->all();
             }
+        PHP;
 
+    /**
+     * The types `WebModules`' required methods name, its interface first.
+     */
+    private const array WEB_TYPES = [
+        WebWiring::class,
+        Override::class,
+        RouteCollector::class,
+        DuplicateRouteException::class,
+        Schedule::class,
+        WebPresentation::class,
+        InvalidArgumentException::class,
+    ];
+
+    /**
+     * The types `ConsoleModules`' required methods name, its interface first.
+     */
+    private const array CONSOLE_TYPES = [
+        ConsoleWiring::class,
+        Override::class,
+        Migration::class,
+        Schedule::class,
+        WebPresentation::class,
+        InvalidArgumentException::class,
+    ];
+
+    /**
+     * Both facades' `presentation()` (#265: the console keeps pages too).
+     */
+    private const string PRESENTATION = <<<'PHP'
             /**
              * @throws InvalidArgumentException When the compiled asset metadata is invalid.
              *
@@ -129,26 +159,19 @@ final readonly class FacadeSource
     public function files(array $aggregates, array $rootless, array $sources): array
     {
         $scheduleTypes = $this->exceptionDocs->source($sources['ModuleSchedules.php'] ?? '');
-        $web = [
-            WebWiring::class,
-            Override::class,
-            RouteCollector::class,
-            DuplicateRouteException::class,
-            Schedule::class,
-            WebPresentation::class,
-            InvalidArgumentException::class,
-            ...$scheduleTypes,
-        ];
-        $console = [ConsoleWiring::class, Override::class, Migration::class, Schedule::class, ...$scheduleTypes];
+        $web = [...self::WEB_TYPES, ...$scheduleTypes];
+        $console = [...self::CONSOLE_TYPES, ...$scheduleTypes];
 
         $consoleParts = $this->parts(FacadeParts::CONSOLE, $aggregates, $rootless, $sources);
         $webParts = $this->parts(FacadeParts::WEB, $aggregates, $rootless, $sources);
         $replace = ['{scheduleThrows}' => $this->exceptionDocs->block($scheduleTypes)];
+        $consoleMethods = strtr(self::CONSOLE, $replace) . "\n\n" . self::PRESENTATION;
+        $webMethods = strtr(self::WEB, $replace) . "\n\n" . self::PRESENTATION;
 
         return [
-            'ConsoleModules.php' => $this->facade('ConsoleModules', 'console', $console, strtr(self::CONSOLE, $replace), $consoleParts),
+            'ConsoleModules.php' => $this->facade('ConsoleModules', 'console', $console, $consoleMethods, $consoleParts),
             'Presentation.php' => $this->webPresentationSource->file(),
-            'WebModules.php' => $this->facade('WebModules', 'app', $web, strtr(self::WEB, $replace), $webParts),
+            'WebModules.php' => $this->facade('WebModules', 'app', $web, $webMethods, $webParts),
         ];
     }
 
