@@ -46,6 +46,9 @@ final readonly class TesseraRequest
     /** Where the browser must load in full (protocol 5.5). */
     public const string FULL_VISIT = 'Tessera-Full-Visit';
 
+    /** A stream Tessera closes while the page is hidden, its one value `hidden` (protocol 7.1, #259). */
+    public const string STREAM_PAUSE = 'Tessera-Stream-Pause';
+
     /** What every page response varies by (protocol 8). */
     public const string VARY = 'Tessera-Request, Tessera-Protocol, Tessera-Targets, Tessera-Layout';
 

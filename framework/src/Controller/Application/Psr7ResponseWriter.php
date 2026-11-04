@@ -193,21 +193,27 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
     }
 
     /**
-     * @param EventSource $eventSource Gives the events.
+     * @param EventSource $eventSource       Gives the events.
+     * @param bool        $pausedWhileHidden Whether the response asks Tessera to pause the stream while the page is
+     *                                       hidden (#259).
      *
      * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
      * @return ResponseInterface The `text/event-stream` response, not cached and not buffered by a proxy
-     *                           (`X-Accel-Buffering: no`, which nginx in front of php-fpm honours), its body
-     *                           pulling the events.
+     *                           (`X-Accel-Buffering: no`, which nginx in front of php-fpm honours), with
+     *                           `Tessera-Stream-Pause: hidden` when paused while hidden, its body pulling the events.
      */
     #[Override]
-    public function events(EventSource $eventSource): ResponseInterface
+    public function events(EventSource $eventSource, bool $pausedWhileHidden = false): ResponseInterface
     {
         $eventStreamBody = new EventStreamBody($eventSource, $this);
         $response = $this->responseBuilder->createFromStream(200, 'text/event-stream; charset=utf-8', $eventStreamBody);
         $response = $this->responseBuilder->withHeader($response, 'Cache-Control', 'no-store');
         $response = $this->responseBuilder->withHeader($response, 'X-Accel-Buffering', 'no');
+
+        if ($pausedWhileHidden) {
+            $response = $this->responseBuilder->withHeader($response, TesseraRequest::STREAM_PAUSE, 'hidden');
+        }
 
         return $this->varied($this->responseBuilder->withHeader($response, TesseraRequest::PROTOCOL, TesseraRequest::VERSION));
     }

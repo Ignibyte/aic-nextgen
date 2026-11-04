@@ -21,6 +21,7 @@ use function min;
  * GET /events: Server-Sent Events, `count` ticks (from the query, 1 to 10,
  * 3 by default), each sent as it comes as a Tessera fragment for the `ticks`
  * region; a reconnect with `Last-Event-ID` resumes after that tick (#73).
+ * Tessera closes it while the page is hidden and resumes it after (#259).
  */
 final readonly class TickEvents implements Stream
 {
@@ -46,6 +47,8 @@ final readonly class TickEvents implements Stream
             ? (int) $seen
             : 0;
 
-        return new EventStream(new TickSource(max(1, min(10, $ticks)), $after, ($query['resume'] ?? '') === '1'));
+        $eventStream = new EventStream(new TickSource(max(1, min(10, $ticks)), $after, ($query['resume'] ?? '') === '1'));
+
+        return $eventStream->pausedWhileHidden();
     }
 }

@@ -87,6 +87,7 @@ These values are checked against the public constants:
 | `TesseraRequest::LAYOUT = Tessera-Layout` | layout identity of the current page |
 | `TesseraRequest::WRITE_ID = Tessera-Write-Id` | repeat identifier for an unsafe write |
 | `TesseraRequest::FULL_VISIT = Tessera-Full-Visit` | response location to load as a full document |
+| `TesseraRequest::STREAM_PAUSE = Tessera-Stream-Pause` | a stream Tessera closes while the page is hidden (#259) |
 | `TesseraRequest::VARY = Tessera-Request, Tessera-Protocol, Tessera-Targets, Tessera-Layout` | page response Vary value |
 | `TesseraRelease::SCRIPT = tessera.csp.iife.js` | script filename inside the pinned release |
 
@@ -127,6 +128,7 @@ component.
 | `SignalPatch` | scope, JSON object and only-if-missing; a Page's fragment answer writes it (#253) |
 | `TesseraEvents::keepAlive()` | keep-alive comment, with the last flag |
 | `TesseraEvents::reconnect()` | a last comment that ends the connection but not the stream (#202) |
+| `EventStream::pausedWhileHidden()` | the stream answered `Tessera-Stream-Pause: hidden`: Tessera closes it while the page is hidden and reconnects with `Last-Event-ID` when visible (#259) |
 | `TesseraProps::forTarget()` | verifies the requested target's props envelope and returns string values; empty when absent |
 | `TesseraProps::unchanged()` | true only for a protocol 2 refresh of that one target whose verified props carry the given `version` |
 
