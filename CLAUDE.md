@@ -238,8 +238,9 @@ Background work is a job; the HTTP server's processes are its workers.
   framework's; Chad, 2026-10-22). `bin/aic` lists its commands when it is installed:
   `workflow:run <ticket>` (one phase per call, plan → code → check → complete),
   `workflow:status`, `workflow:logs gate[:N]` (#144), `workflow:ask "<question>"` (the agent's, #117),
-  and `workflow:reset` and
-  `workflow:answer advance|stay|"<answer>"` (the operator's, from a terminal only). An app opts in
+  and `workflow:reset`, `workflow:answer advance|stay|"<answer>"` and
+  `workflow:amend "<row>" "<new row>" "<reason>"` (#267, one frozen spec row) (the operator's, from a
+  terminal only). An app opts in
   with `config/workflow.php`. The engine alone writes `var/workflow/` (gitignored): `run.json`,
   the append-only `events.jsonl` (`workflow/schema/run-event.v1.json`) and `history/`. phpat
   keeps runtime code off it and it off everything but the Command kind; gate:21 does not probe

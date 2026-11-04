@@ -143,6 +143,23 @@ A seeker pending beside failed prerequisites was not actionable. Environment-onl
 permits its first inspection-due report. An unchanged repeat of that actionable report still
 becomes an operator hold. Ordinary repeated faults and retry limits retain their existing behavior.
 
+## Amending a frozen row
+
+Planning freezes the spec's criteria, manifest, entry points, decisions and browser items, and
+every later exit holds on a lost row. When a frozen row is wrong, such as an entry point's status,
+the operator amends it from a terminal (#267):
+
+```bash
+bin/aic workflow:amend "<the row as the spec writes it>" "<the new row>" "<why>"
+```
+
+The row must be one whole line of the frozen spec, and the swap must change exactly one frozen
+row of one section for another; the reason is required. The engine replaces the line in the
+freeze, which keeps its time and gate list, and in the run's spec, and logs `spec.amended` with
+both rows, the reason and the phase. Nothing is frozen at plan, so there it is refused. Like
+`workflow:reset` and `workflow:answer`, it is refused without a terminal and walled from the
+agent's shell.
+
 ## What the native guards judge
 
 The adapter reads actual tool and lifecycle fields. It checks every add, update, delete and

@@ -23,4 +23,5 @@ enum EventType: string
     case SeekerFiled = 'seeker.filed';
     case QuestionAsked = 'question.asked';
     case QuestionAnswered = 'question.answered';
+    case SpecAmended = 'spec.amended';
 }

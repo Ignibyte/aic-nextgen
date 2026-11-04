@@ -241,6 +241,23 @@
           "$ref": "#/$defs/question.answered"
         }
       }
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/envelope"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "spec.amended"
+          ]
+        },
+        "payload": {
+          "$ref": "#/$defs/spec.amended"
+        }
+      }
     }
   ],
   "$defs": {
@@ -298,7 +315,8 @@
             "code.made",
             "seeker.filed",
             "question.asked",
-            "question.answered"
+            "question.answered",
+            "spec.amended"
           ]
         },
         "payload": {
@@ -839,6 +857,33 @@
           "enum": [
             "terminal"
           ]
+        }
+      }
+    },
+    "spec.amended": {
+      "description": "The operator amended one row of the run's frozen spec from a terminal with workflow:amend (#267): the line it replaced, the line in its place, why, and the phase.",
+      "type": "object",
+      "required": [
+        "new_row",
+        "phase",
+        "reason",
+        "row"
+      ],
+      "properties": {
+        "new_row": {
+          "type": "string"
+        },
+        "phase": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "row": {
+          "type": "string"
         }
       }
     }

@@ -42,4 +42,12 @@ interface RunStore
      * @return RunState|null The most recently archived run; none when there is none.
      */
     public function lastArchived(): ?RunState;
+
+    /**
+     * @param RunState $runState The open run.
+     * @param string   $text     Its spec, whole, as the operator's amendment left it (#267).
+     *
+     * @throws WorkflowRefusal When it cannot be written.
+     */
+    public function saveSpec(RunState $runState, string $text): void;
 }
