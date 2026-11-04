@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
-use AIC\Form\Application\FormTokens;
 use AIC\Module\Application\HandlerContext;
 use App\Site\Controller\GreetingPage;
 use App\Site\Controller\GreetingPost;
 use App\Site\Controller\HomePage;
-use App\Site\Form\GreetingForm;
 use App\Site\Service\Greeter;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -35,18 +33,19 @@ final readonly class SiteHandlersPart2
      */
     public function byId(): array
     {
-        $formTokens = new FormTokens();
-        $greetingForm = new GreetingForm($formTokens);
+        $siteHandlerServices = new SiteHandlerServices();
 
         return [
             GreetingPage::class => $this->handlerContext->page(
                 new GreetingPage($this->handlerContext->documents(), $this->handlerContext->tagged(Greeter::class)),
             ),
-            GreetingPost::class => $this->handlerContext->page(new GreetingPost($this->handlerContext->documents(), $greetingForm)),
+            GreetingPost::class => $this->handlerContext->page(
+                new GreetingPost($this->handlerContext->documents(), $siteHandlerServices->greetingForm()),
+            ),
             HomePage::class => $this->handlerContext->page(
                 new HomePage(
                     $this->handlerContext->documents(),
-                    $greetingForm,
+                    $siteHandlerServices->greetingForm(),
                     $this->handlerContext->appConfig(),
                     $this->handlerContext->bootedAt(),
                 ),

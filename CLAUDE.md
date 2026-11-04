@@ -331,7 +331,8 @@ Background work is a job; the HTTP server's processes are its workers.
   - A factory is a readonly module class whose methods return services built from values; a
     constructor asking for a method's return type gets its product.
   - `composer run build` checks every manifest and writes the wiring into `build/generated/`
-    (`App\Generated\`). Per module, `<M>Routes`, `<M>Handlers`, `<M>Middleware`, `<M>Blocks` (blocks
+    (`App\Generated\`). Per module, `<M>Routes`, `<M>Handlers` (in parts; a split module's shared
+    services in `<M>HandlerServices`, #257), `<M>Middleware`, `<M>Blocks` (blocks
     wired with their services, #203), `<M>Commands`, `<M>Jobs`, `<M>Provider` (plugins),
     `<M>Migrations`, `<M>Schedules` and `<M>Prefixes`. Then the
     aggregators, chained in `…Part2` and on, and the facades `WebModules` and `ConsoleModules`

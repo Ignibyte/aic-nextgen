@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
-use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
 use App\Note\Controller\NoteDeletePost;
-use App\Note\Entity\NoteTypes;
+use App\Note\Controller\NoteUpdatePost;
 use App\Note\Form\NoteEnvelope;
-use App\Note\Repository\NoteRepository;
 use App\Note\Service\NoteRequest;
 use App\Note\Service\NoteViews;
 use InvalidArgumentException;
@@ -38,15 +36,22 @@ final readonly class NoteHandlersPart2
      */
     public function byId(): array
     {
-        $noteRepository = new NoteRepository(new EntityStore($this->handlerContext->database()), new NoteTypes());
+        $noteHandlerServices = new NoteHandlerServices($this->handlerContext);
+        $noteRequest = new NoteRequest();
+        $noteViews = new NoteViews($this->handlerContext->documents());
+        $noteEnvelope = new NoteEnvelope($this->handlerContext->envelopeCodec());
 
         return [
             NoteDeletePost::class => $this->handlerContext->page(
-                new NoteDeletePost(
-                    $noteRepository,
-                    new NoteRequest(),
-                    new NoteViews($this->handlerContext->documents()),
-                    new NoteEnvelope($this->handlerContext->envelopeCodec()),
+                new NoteDeletePost($noteHandlerServices->noteRepository(), $noteRequest, $noteViews, $noteEnvelope),
+            ),
+            NoteUpdatePost::class => $this->handlerContext->page(
+                new NoteUpdatePost(
+                    $noteHandlerServices->noteRepository(),
+                    $noteRequest,
+                    $noteViews,
+                    $noteHandlerServices->noteForms(),
+                    $noteEnvelope,
                 ),
             ),
         ];

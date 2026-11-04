@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
-use AIC\Entity\Application\EntityStore;
 use AIC\Form\Application\PostedFields;
 use AIC\Module\Application\HandlerContext;
 use AIC\Tessera\Application\TesseraProps;
@@ -13,7 +12,6 @@ use App\Note\Controller\StockPage;
 use App\Note\Controller\StockPost;
 use App\Note\Form\StockForm;
 use App\Note\Form\StockQueries;
-use App\Note\Repository\StockRepository;
 use App\Note\Service\StockList;
 use App\Note\Service\StockListLinks;
 use InvalidArgumentException;
@@ -41,13 +39,12 @@ final readonly class NoteHandlersPart3
      */
     public function byId(): array
     {
+        $noteHandlerServices = new NoteHandlerServices($this->handlerContext);
         $stockForm = new StockForm();
-        $entityStore = new EntityStore($this->handlerContext->database());
-        $stockRepository = new StockRepository($entityStore);
         $stockList = new StockList(
             $this->handlerContext->envelopeCodec(),
             new TesseraProps($this->handlerContext->envelopeCodec()),
-            $stockRepository,
+            $noteHandlerServices->stockRepository(),
             new StockListLinks(),
         );
 
@@ -56,7 +53,7 @@ final readonly class NoteHandlersPart3
                 new StockPage($this->handlerContext->documents(), $stockForm, $stockList, new StockQueries()),
             ),
             StockPost::class => $this->handlerContext->page(
-                new StockPost($this->handlerContext->documents(), $stockRepository, $stockForm, new PostedFields()),
+                new StockPost($this->handlerContext->documents(), $noteHandlerServices->stockRepository(), $stockForm, new PostedFields()),
             ),
         ];
     }

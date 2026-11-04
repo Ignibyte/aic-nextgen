@@ -5,14 +5,10 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
-use AIC\Entity\Application\EntityStore;
 use AIC\Form\Application\PostedFields;
 use AIC\Module\Application\HandlerContext;
 use App\Note\Controller\NoteTagPost;
 use App\Note\Controller\NoteTagsPage;
-use App\Note\Entity\NoteTypes;
-use App\Note\Repository\NoteRepository;
-use App\Note\Repository\NoteTagRepository;
 use App\Note\Service\NoteTagForms;
 use App\Note\Service\NoteViews;
 use InvalidArgumentException;
@@ -40,23 +36,23 @@ final readonly class NoteHandlersPart4
      */
     public function byId(): array
     {
-        $entityStore = new EntityStore($this->handlerContext->database());
-        $noteTypes = new NoteTypes();
-        $noteTagRepository = new NoteTagRepository($entityStore, $noteTypes);
+        $noteHandlerServices = new NoteHandlerServices($this->handlerContext);
         $noteTagForms = new NoteTagForms();
         $noteViews = new NoteViews($this->handlerContext->documents());
 
         return [
             NoteTagPost::class => $this->handlerContext->page(
                 new NoteTagPost(
-                    new NoteRepository($entityStore, $noteTypes),
-                    $noteTagRepository,
+                    $noteHandlerServices->noteRepository(),
+                    $noteHandlerServices->noteTagRepository(),
                     $noteTagForms,
                     $noteViews,
                     new PostedFields(),
                 ),
             ),
-            NoteTagsPage::class => $this->handlerContext->page(new NoteTagsPage($noteTagRepository, $noteTagForms, $noteViews)),
+            NoteTagsPage::class => $this->handlerContext->page(
+                new NoteTagsPage($noteHandlerServices->noteTagRepository(), $noteTagForms, $noteViews),
+            ),
         ];
     }
 }

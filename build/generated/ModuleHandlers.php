@@ -39,11 +39,11 @@ final readonly class ModuleHandlers
             (new SiteHandlersPart3($this->handlerContext))->byId(),
             (new AccountHandlers($this->handlerContext))->byId(),
             (new AccountHandlersPart2($this->handlerContext))->byId(),
-            (new AccountHandlersPart3($this->handlerContext))->byId(),
             (new NoteHandlers($this->handlerContext))->byId(),
             (new NoteHandlersPart2($this->handlerContext))->byId(),
             (new NoteHandlersPart3($this->handlerContext))->byId(),
             (new NoteHandlersPart4($this->handlerContext))->byId(),
+            (new NoteHandlersPart5($this->handlerContext))->byId(),
             (new ModuleHandlersPart2($this->handlerContext))->byId(),
         );
     }

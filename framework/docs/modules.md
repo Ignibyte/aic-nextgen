@@ -65,7 +65,10 @@ of a service.
 `App\Generated\`):
 
 - per module, the classes for its routes, handlers, middleware, blocks, commands, jobs, provider
-  (its plugins), migrations, schedules and protected prefixes;
+  (its plugins), migrations, schedules and protected prefixes. Handlers split into parts that fit
+  the gates; a module split so builds each service two of its controllers take, and that is built
+  from another service, once in `<M>HandlerServices` (and its parts), which every part calls, so no
+  two parts repeat its statements (#257);
 - the aggregators that join every module's pieces, and the facades `WebModules` and
   `ConsoleModules` that the framework's `AIC\Module\Application\AppKernel` and
   `AIC\Module\Application\ConsoleKernel` take;

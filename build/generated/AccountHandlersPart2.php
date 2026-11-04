@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
-use AIC\Form\Application\FormTokens;
 use AIC\Module\Application\HandlerContext;
 use AIC\Session\Application\RequestSession;
+use App\Account\Controller\UploadDownload;
 use App\Account\Controller\UploadsPage;
-use App\Account\Controller\VisitsForget;
-use App\Account\Controller\VisitsPage;
+use App\Account\Controller\UploadsPost;
 use App\Account\Form\UploadForm;
+use App\Account\Service\UploadRules;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -35,15 +35,23 @@ final readonly class AccountHandlersPart2
      */
     public function byId(): array
     {
+        $accountHandlerServices = new AccountHandlerServices($this->handlerContext);
         $requestSession = new RequestSession();
+        $uploadForm = new UploadForm();
 
         return [
+            UploadDownload::class => $this->handlerContext->stream(new UploadDownload($accountHandlerServices->keptUploads())),
             UploadsPage::class => $this->handlerContext->page(
-                new UploadsPage($this->handlerContext->documents(), $requestSession, new UploadForm()),
+                new UploadsPage($this->handlerContext->documents(), $requestSession, $uploadForm),
             ),
-            VisitsForget::class => $this->handlerContext->page(new VisitsForget($requestSession)),
-            VisitsPage::class => $this->handlerContext->page(
-                new VisitsPage($this->handlerContext->documents(), $requestSession, new FormTokens()),
+            UploadsPost::class => $this->handlerContext->page(
+                new UploadsPost(
+                    $this->handlerContext->documents(),
+                    $requestSession,
+                    $uploadForm,
+                    (new UploadRules())->uploadCheck(),
+                    $accountHandlerServices->keptUploads(),
+                ),
             ),
         ];
     }

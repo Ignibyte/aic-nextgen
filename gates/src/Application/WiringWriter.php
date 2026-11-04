@@ -63,6 +63,8 @@ final readonly class WiringWriter
             }
         }
 
+        // A module's shared handler services are its parts' own, never aggregated (#257).
+        unset($members[HandlerServicesNames::KIND]);
         $aggregates = $this->aggregateSources->files($members, $rootless, $files);
         $roots = array_map(static fn (string $file): string => substr($file, 0, -4), array_keys($aggregates));
 

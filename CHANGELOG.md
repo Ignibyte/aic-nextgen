@@ -4,6 +4,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Fixed
+
+- **Handler parts share their services** (#257): a module whose handlers split into parts builds
+  each service two of its controllers take, and that is built from another service, once in a
+  generated `<M>HandlerServices` (split again past PHPMD's coupling of 15), and each part calls it.
+  Two parts no longer open with the same statements, which gate:14 reported as clones in Lotline.
+
 ### Added
 
 - **Tessera 0.4.3** (#255): Back to a nested region's entry lands it, a `data-on:dragstart` drag
