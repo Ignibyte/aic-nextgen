@@ -17,6 +17,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **A stream pauses while the page is hidden** (#259): `EventStream::pausedWhileHidden()` answers a
+  stream with `Tessera-Stream-Pause: hidden`, so Tessera closes its connection while the page is
+  hidden and resumes it with `Last-Event-ID` when visible. Off by default; the fixture's `/events`
+  opts in.
 - **Tessera 0.4.3** (#255): Back to a nested region's entry lands it, a `data-on:dragstart` drag
   starts in Firefox, and a keyboard focus prefetches as a hover does. Only `config/app.php` moved.
 - **Prefetchable pages** (#254): `PageDocument::prefetchable()` answers a page `private, no-cache`

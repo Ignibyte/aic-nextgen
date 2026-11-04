@@ -112,9 +112,11 @@ interface ResponseWriter
     ): ResponseInterface;
 
     /**
-     * @param EventSource $eventSource Gives the events.
+     * @param EventSource $eventSource       Gives the events.
+     * @param bool        $pausedWhileHidden Whether Tessera closes the stream while the page is hidden and resumes it
+     *                                       when visible (`Tessera-Stream-Pause: hidden`, #259).
      *
      * @return ResponseInterface The `text/event-stream` response, its body pulling the events as it is read.
      */
-    public function events(EventSource $eventSource): ResponseInterface;
+    public function events(EventSource $eventSource, bool $pausedWhileHidden = false): ResponseInterface;
 }

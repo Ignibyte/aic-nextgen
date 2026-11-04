@@ -129,6 +129,68 @@ test('the ticks page counts the five streamed ticks', async ({ page }) => {
     await expect(page.locator('ol[data-region="ticks"] li')).toHaveCount(5);
 });
 
+// The ticks stream pauses while the page is hidden (#259): the page goes hidden the moment the
+// first tick lands, the stream closes, and visible again it resumes after the last tick seen.
+test('the ticks stream closes while the page is hidden and resumes after the last tick seen', async ({ page }) => {
+    await page.addInitScript(() => {
+        const state = { hidden: false };
+        Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => (state.hidden ? 'hidden' : 'visible') });
+        Object.defineProperty(document, 'hidden', { configurable: true, get: () => state.hidden });
+        Object.assign(window, {
+            aicShow: () => {
+                state.hidden = false;
+                document.dispatchEvent(new Event('visibilitychange'));
+            },
+        });
+        document.addEventListener('DOMContentLoaded', () => {
+            const list = document.querySelector('ol[data-region="ticks"]');
+            const observer = new MutationObserver(() => {
+                if (list?.querySelector('li') === null) {
+                    return;
+                }
+
+                observer.disconnect();
+                state.hidden = true;
+                document.dispatchEvent(new Event('visibilitychange'));
+            });
+
+            if (list !== null) {
+                observer.observe(list, { childList: true });
+            }
+        });
+    });
+    const streams: { lastEventId: string; pause: Promise<string> }[] = [];
+    page.on('request', (request) => {
+        if (new URL(request.url()).pathname === '/events') {
+            streams.push({
+                lastEventId: request.headers()['last-event-id'] ?? '',
+                pause: request.response().then((response) => response?.headers()['tessera-stream-pause'] ?? ''),
+            });
+        }
+    });
+
+    await page.goto('/ticks');
+    await expect.poll(() => streams.length).toBe(1);
+    expect(await streams[0].pause).toBe('hidden');
+    await expect(page.locator('ol[data-region="ticks"] li').first()).toBeVisible();
+
+    // Hidden: the connection is closed, and no tick arrives for a while.
+    const seen = await page.locator('ol[data-region="ticks"] li').count();
+    expect(seen).toBeLessThan(5);
+    await page.waitForTimeout(1500);
+    await expect(page.locator('ol[data-region="ticks"] li')).toHaveCount(seen);
+    expect(streams).toHaveLength(1);
+
+    // Visible again: one reconnect, after the last tick the page saw, and the rest arrive.
+    await page.evaluate(() => {
+        (window as Window & { aicShow?: () => void }).aicShow?.();
+    });
+    await expect.poll(() => streams.length).toBe(2);
+    expect(streams[1].lastEventId).toBe(String(seen));
+    await expect(page.locator('#ticks-seen')).toHaveText('5', { timeout: 15000 });
+    await expect(page.locator('ol[data-region="ticks"] li')).toHaveCount(5);
+});
+
 // The slice of markup that is a component's element, the one carrying its
 // `data-t-c` (protocol 1, #189), nested same-named tags counted: what a
 // fragment for that target must hold (#179).
