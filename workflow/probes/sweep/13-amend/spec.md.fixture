@@ -1,0 +1,29 @@
+---
+ticket: 1
+browser_testable: No
+---
+
+## Acceptance Criteria
+
+| # | Target | Met |
+|---|---|---|
+| 1 | The status API's body says when the database version reads `unavailable` | [ ] |
+
+## Design
+
+One label in the status API's body changes; the API reads it as before.
+
+### File Manifest
+
+| File | Change | Purpose |
+|---|---|---|
+| `modules/site/src/Service/StatusBody.php` | modify | The database field's description |
+
+### Locked-In Decisions
+
+1. Only the label's text changes.
+
+## Entry Points
+
+| Kind | Method | Path or name | Class | Module | Status | Example |
+|---|---|---|---|---|---|---|

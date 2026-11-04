@@ -29,6 +29,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The operator amends a frozen spec row** (#267): `bin/aic workflow:amend "<row>" "<new row>"
+  "<reason>"`, from a terminal only, swaps one line of the open run's frozen spec in the freeze and in
+  the spec, refuses anything that is not one frozen row for another, and logs `spec.amended`. A
+  planning slip such as a wrong entry-point status no longer costs a reset. The guard walls it from
+  the agent's shell; sweep scenario 13-amend holds it.
 - **A page kept as a private file** (#265): `AIC\Storage\Application\PageFiles::put(key,
   PageDocument)` renders a page in the theme's layout through the response writer and keeps the
   document in `PrivateFiles`, for a Stream to send. A command or job may ask for `PageDocuments`

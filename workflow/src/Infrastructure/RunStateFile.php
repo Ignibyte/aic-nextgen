@@ -74,6 +74,18 @@ final readonly class RunStateFile implements RunStore
     }
 
     /**
+     * @param RunState $runState The open run.
+     * @param string   $text     Its spec, whole, as the operator's amendment left it (#267).
+     *
+     * @throws WorkflowRefusal When it cannot be written.
+     */
+    #[Override]
+    public function saveSpec(RunState $runState, string $text): void
+    {
+        $this->atomicFile->write($this->root . '/' . $runState->runStart->specPath, $text, 0o644);
+    }
+
+    /**
      * @param RunState $runState The run, ended or abandoned.
      *
      * @throws WorkflowRefusal When it cannot be archived.

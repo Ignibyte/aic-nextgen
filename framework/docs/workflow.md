@@ -32,6 +32,11 @@ evidence in evidence.sqlite. Do not edit those files to skip a hold. A run keeps
 judged source hash through recovery. The engine runs gates itself; an unrelated terminal run is
 not the run's evidence.
 
+Planning freezes the spec's criteria, manifest, entry points, decisions and browser items; later
+exits hold on a lost row, and the agent adds rows instead of rewriting them. A frozen row that is
+wrong is the operator's to fix: `bin/aic workflow:amend "<row>" "<new row>" "<reason>"` from a
+terminal swaps that one line in the freeze and in the spec and logs `spec.amended` (#267).
+
 ## Browser looks
 
 A front-end change is looked at with Playwright (#174). When the File Manifest touches a theme (all but the data and text files in its `assets/`),
@@ -123,6 +128,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::module:show` | inspect a module's declarations |
 | `Command::route:list` | inspect routes |
 | `Command::schedule:list` | inspect schedules |
+| `Command::workflow:amend` | operator amendment of one frozen spec row |
 | `Command::workflow:answer` | operator response or phase decision |
 | `Command::workflow:ask` | record a question hold |
 | `Command::workflow:codex-check` | Codex readiness |

@@ -49,6 +49,6 @@ When a row needs something only the operator can give (a browser tool, a decisio
 `bin/aic workflow:ask "<question>"`, then end your turn. While the question waits, every write in
 the project is refused and `workflow:run` is refused; the Stop hook lets the turn end. The
 operator answers from a terminal; read the answer as the last `qa_history` entry in
-`bin/aic workflow:status`, then carry on. One question at a time. `bin/aic workflow:reset` abandons a run and `bin/aic workflow:answer` answers a question; both are
-the operator's, and the hook refuses them from your shell. So does php that loads the project's
+`bin/aic workflow:status`, then carry on. One question at a time. `bin/aic workflow:reset` abandons a run, `bin/aic workflow:answer` answers a question and
+`bin/aic workflow:amend` fixes a frozen spec row; all three are the operator's, and the hook refuses them from your shell. So does php that loads the project's
 autoloader or names the workflow package: run `bin/aic`, `composer run` and `php -l` instead.

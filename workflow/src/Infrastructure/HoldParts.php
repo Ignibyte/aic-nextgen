@@ -10,6 +10,7 @@ use AIC\Workflow\Application\PhaseCheck;
 use AIC\Workflow\Application\ProgressKey;
 use AIC\Workflow\Application\QuestionHold;
 use AIC\Workflow\Application\RunJournal;
+use AIC\Workflow\Application\SpecAmend;
 use AIC\Workflow\Application\StalledRows;
 use AIC\Workflow\Application\UtcTime;
 use AIC\Workflow\Domain\Phase;
@@ -61,6 +62,22 @@ final readonly class HoldParts
         $localHost = $this->evidenceParts->runHost();
 
         return new QuestionHold($this->runStateFile, new EventLogFile($this->root, $this->utcTime, $localHost), $localHost, $this->utcTime);
+    }
+
+    /**
+     * @return SpecAmend The operator's amendment of a frozen spec row (#267).
+     */
+    public function specAmend(): SpecAmend
+    {
+        $localHost = $this->evidenceParts->runHost();
+
+        return new SpecAmend(
+            $this->runStateFile,
+            new EventLogFile($this->root, $this->utcTime, $localHost),
+            $localHost,
+            $this->evidenceParts->evidenceLog(),
+            $this->evidenceParts->specFile(),
+        );
     }
 
     /**

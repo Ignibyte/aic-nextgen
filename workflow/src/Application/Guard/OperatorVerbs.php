@@ -15,7 +15,8 @@ use function str_starts_with;
 
 /**
  * The operator's verbs, refused in the agent's shell run or no run (#102,
- * Droost's `operator_commands_guard`): `workflow:reset` and `workflow:answer` (#117) anywhere a command
+ * Droost's `operator_commands_guard`): `workflow:reset`, `workflow:answer` (#117) and `workflow:amend`
+ * (#267) anywhere a command
  * names it; any `workflow:*` under a pseudo-terminal, which would fake the
  * operator's terminal; an `aic` command the shell fills in at run time; and
  * the composer verbs that remove the workflow. A heredoc fed to a program
@@ -27,7 +28,16 @@ final readonly class OperatorVerbs
     /**
      * The workflow commands only the operator runs.
      */
-    public const array VERBS = ['workflow:reset', 'workflow:answer'];
+    public const array VERBS = ['workflow:reset', 'workflow:answer', 'workflow:amend'];
+
+    /**
+     * Why each is the operator's, by verb.
+     */
+    private const array WHY = [
+        'workflow:amend' => "workflow:amend is the operator's: only they amend a frozen spec row, from a terminal.",
+        'workflow:answer' => "workflow:answer is the operator's: only they answer a run's question, from a terminal.",
+        'workflow:reset' => "workflow:reset is the operator's: only they abandon a run, from a terminal.",
+    ];
 
     /**
      * Programs that give what they run a pseudo-terminal.
@@ -53,6 +63,22 @@ final readonly class OperatorVerbs
     }
 
     /**
+     * @param Invocation $invocation One command that names an operator's verb.
+     *
+     * @return string Why the first verb it names is the operator's.
+     */
+    private function verb(Invocation $invocation): string
+    {
+        foreach (self::WHY as $verb => $why) {
+            if ($this->names($invocation, [$verb])) {
+                return $why;
+            }
+        }
+
+        return self::WHY['workflow:reset'];
+    }
+
+    /**
      * @param Invocation $invocation One command.
      *
      * @return string Why it is the operator's; empty when it is not.
@@ -62,9 +88,7 @@ final readonly class OperatorVerbs
         $workflow = $this->names($invocation, ['workflow:']);
 
         return match (true) {
-            $this->names($invocation, self::VERBS) => $this->names($invocation, ['workflow:answer'])
-                ? "workflow:answer is the operator's: only they answer a run's question, from a terminal."
-                : "workflow:reset is the operator's: only they abandon a run, from a terminal.",
+            $this->names($invocation, self::VERBS) => $this->verb($invocation),
             $this->pty($invocation) && $workflow => "a workflow command under a pseudo-terminal fakes the operator's terminal.",
             $this->aic($invocation) && $invocation->anyDynamic() => 'an aic command the shell fills in cannot be judged; write it out.',
             ($invocation->dynamic[0] ?? false) && $workflow => 'a workflow command run through a variable cannot be judged; write it out.',

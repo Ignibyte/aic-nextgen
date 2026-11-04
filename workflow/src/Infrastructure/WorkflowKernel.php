@@ -40,7 +40,7 @@ final readonly class WorkflowKernel implements WorkflowContext
     public function commands(): array
     {
         return [
-            ...(new HoldKernel($this))->commands(),
+            ...(new HoldKernel($this, $this->root))->commands(),
             ...(new InstallKernel($this->root))->commands(),
             ...(new LogKernel($this->root))->commands(),
             ...(new SeekerKernel($this, $this->root))->commands(),
