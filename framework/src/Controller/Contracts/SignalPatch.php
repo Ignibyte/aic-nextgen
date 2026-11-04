@@ -49,6 +49,27 @@ final readonly class SignalPatch
     }
 
     /**
+     * @return bool Whether it names its scope by an anchor, which a fragment answer writes as the path the request
+     *              named with it (#260).
+     */
+    public function anchored(): bool
+    {
+        return str_starts_with($this->scope, '@');
+    }
+
+    /**
+     * @param string $path The path a request named for its anchor.
+     *
+     * @throws InvalidArgumentException When the path is not a target.
+     *
+     * @return self The same patch, scoped to that path (#260).
+     */
+    public function scopedTo(string $path): self
+    {
+        return new self($path, $this->json, $this->onlyIfMissing);
+    }
+
+    /**
      * @return array{scope: string, json: string, onlyIfMissing: bool} It as the fragment template writes it, `<` in its
      *                                                                 JSON as `\u003c` so no `</script` ends it.
      */

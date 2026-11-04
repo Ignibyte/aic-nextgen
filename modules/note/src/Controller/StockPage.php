@@ -9,6 +9,7 @@ use AIC\Component\Domain\Paragraph;
 use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
+use AIC\Controller\Contracts\SignalPatch;
 use AIC\Controller\Domain\PageUnchanged;
 use AIC\Database\Contracts\QueryException;
 use AIC\Form\Exception\InvalidEnvelope;
@@ -16,7 +17,6 @@ use App\Generated\ThemeLayoutName;
 use App\Note\Form\StockForm;
 use App\Note\Form\StockQueries;
 use App\Note\Service\StockList;
-use InvalidArgumentException;
 use JsonException;
 use LogicException;
 use Override;
@@ -54,8 +54,8 @@ final readonly class StockPage implements Page
      * @throws JsonException  When the list's props cannot be sealed.
      * @throws LogicException When the required application state is unavailable.
      *
-     * @return PageResponse The page; 204 for a poll of the list when nothing changed (#193); 400 when the list's
-     *                      props were altered.
+     * @return PageResponse The page, its fragment answer setting the list's `stockRefreshed` (#260); 204 for a
+     *                      poll of the list when nothing changed (#193); 400 when the list's props were altered.
      */
     #[Override]
     public function page(ServerRequestInterface $serverRequest): PageResponse
@@ -79,11 +79,13 @@ final readonly class StockPage implements Page
             $this->stockForm->blank($serverRequest),
         ];
 
-        return $this->pageDocuments->content($components, 200, 'Stock', ThemeLayoutName::Focus)->prefetchable();
+        return $this->pageDocuments->content($components, 200, 'Stock', ThemeLayoutName::Focus)
+            ->prefetchable()
+            ->withSignalPatch(new SignalPatch(StockList::TARGET, '{"stockRefreshed":true}'));
     }
 
     /**
-     * @throws InvalidArgumentException When a constructed value is invalid.
+     * @throws LogicException When a constructed value is invalid.
      *
      * @return PageResponse The 400 page for a list whose props were altered.
      */

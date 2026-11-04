@@ -40,9 +40,9 @@ final readonly class StockList
 
     /**
      * The list, by its anchor: Tessera sends the list's props with it after the list's path, which sits inside
-     * a panel and so is positional (#194).
+     * a panel and so is positional (#194); the page scopes its signal patch by it (#260).
      */
-    private const string TARGET = '@' . self::ANCHOR;
+    public const string TARGET = '@' . self::ANCHOR;
 
     /**
      * The list's anchor (#188): its links target `@stock-list`, and Tessera finds its path on the page.

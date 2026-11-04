@@ -229,6 +229,32 @@ test('a link that targets an anchor swaps that component alone', async ({ page }
     expect(await page.evaluate(() => (window as Window & { aicSameDocument?: boolean }).aicSameDocument)).toBe(true);
 });
 
+// A patch the page scopes by the list's anchor lands in the list's own scope (#260): the answer names the
+// path Tessera sent with the anchor, never `@stock-list`, and nothing logs an error.
+test('a signal patch scoped by the list anchor lands in the list after its refresh', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('console', (message) => {
+        if (message.type() === 'error') {
+            errors.push(message.text());
+        }
+    });
+    await page.goto('/stock');
+    await expect(page.locator('#stock-refreshed')).toHaveText('');
+    const answered = page.waitForResponse((response) => (response.request().headers()['tessera-targets'] ?? '').includes('@stock-list'));
+
+    await page.getByRole('link', { name: 'Show the last 3' }).click();
+
+    const body = await (await answered).text();
+    // The list's path is the one its template answers: positional, so read, never written here.
+    const path = /<template data-target="([^"]+)">/.exec(body)?.[1] ?? '';
+    expect(path).not.toBe('');
+    expect(body).toContain(`<script type="application/json" data-scope="${path}">{"stockRefreshed":true}</script>`);
+    expect(body).not.toContain('data-scope="@');
+    await expect(page.locator('#stock-limit')).toHaveText('The last 3.');
+    await expect(page.locator('#stock-refreshed')).toHaveText('Refreshed in place.');
+    expect(errors).toEqual([]);
+});
+
 test('a list built from its source carries its latest line, and its refresh leaves the totals alone', async ({ page }) => {
     await page.goto('/stock?q=a');
     await mark(page);
