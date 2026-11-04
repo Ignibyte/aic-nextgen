@@ -2,7 +2,7 @@
 
 Tessera enhances the server-rendered page with navigation, targeted refreshes, form submissions and
 stream updates. Pages remain [Component trees](rendering.md), so a full page and a targeted answer
-render the same data. The server speaks protocol version 2 (Tessera 0.3.1 and later; this app pins 0.4.2; the profiler uses the devtools events and highlight 0.4.0 added); the browser release is pinned separately
+render the same data. The server speaks protocol version 2 (Tessera 0.3.1 and later; this app pins 0.4.3; the profiler uses the devtools events and highlight 0.4.0 added); the browser release is pinned separately
 in app config and published by the build with its exact bytes and checksum.
 
 ## Markers and fragments
@@ -40,7 +40,7 @@ follows the page. A visit naming only components gets exactly those components. 
 and action requests receive their requested targets. A refresh, submission or action whose
 component path the page no longer renders, below a region the layout places, gets that target with
 `data-mode="remove"` and no markup, so Tessera drops the element, as protocol 5.1 allows (#247): a deleted row
-goes away. Several removals and patches may share one answer; Tessera 0.4.2 lands every one (#251),
+goes away. Several removals and patches may share one answer; Tessera 0.4.2 and later land every one (#251),
 where 0.4.1 and older dropped each fragment after the first removal. A page adds signal patches to its
 answer with `PageDocument::withSignalPatch(new SignalPatch($scope, $json, $onlyIfMissing))` (#253):
 a fragment answer writes each after the templates as `<script type="application/json"
@@ -161,7 +161,7 @@ full response, or to its removal as above, never to an independent fragment temp
 
 ## Vocabulary
 
-What Tessera 0.4.2 reads from a page and what it raises, by name (Tessera's `docs/protocol.md`
+What Tessera 0.4.3 reads from a page and what it raises, by name (Tessera's `docs/protocol.md`
 sections 3 and 7.2, `docs/design.md` and its README's events). `bin/aic code:coverage` counts each
 row in an app's PHP and template files, and shows the ones AIC's own code and templates write
 (#232). Keep the table in step when AIC pins another Tessera.

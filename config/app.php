@@ -22,9 +22,9 @@ use AIC\Tessera\Domain\TesseraRelease;
 
 return new AppConfig(
     name: 'AIC nextgen',
-    tessera: new TesseraRelease('0.4.2', [
-        'tessera.csp.iife.js' => '95f7c2c63afd0a48b66cfa9dd524f21a6b2f74e8676586864d37a99c450c9527',
-        'tessera.csp.iife.js.map' => '8b751b5ab2d758af64f0d55c4c2fdfe53c6b92f8664914eec8a3d111bc9ea317',
+    tessera: new TesseraRelease('0.4.3', [
+        'tessera.csp.iife.js' => 'b08e446935ab6d2177935fc79a939afbd6843ed3fc6eca6f57acc812910fcdd4',
+        'tessera.csp.iife.js.map' => 'a9c4fb509fe2cb5a1671cd7655bfe893e14d91b5db7987fd98a92d7a8a392f8a',
     ]),
     theme: 'app',
     maxBodyBytes: 16_384,

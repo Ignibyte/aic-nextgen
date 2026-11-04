@@ -6,6 +6,8 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Tessera 0.4.3** (#255): Back to a nested region's entry lands it, a `data-on:dragstart` drag
+  starts in Firefox, and a keyboard focus prefetches as a hover does. Only `config/app.php` moved.
 - **Prefetchable pages** (#254): `PageDocument::prefetchable()` answers a page `private, no-cache`
   instead of `private, no-store`, so Tessera uses a hover prefetch of it. The fixture's stock page opts
   in and the home page's Stock link prefetches on hover; a kept look counts one request for hover and
