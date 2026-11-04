@@ -23,9 +23,9 @@ final readonly class AssetsPart8
         return [
             new PublicAsset(
                 'theme_app/images/mark.svg',
-                '/assets/2b09c0d34588d725b8b7b19fd6d6940521d6b57da70b987b80ef60c576edd6bf/themes/'
+                '/assets/4884db0e98549c751c78e6b137183faff8291fa4c3b436737d7da1f4c474c961/themes/'
                     . 'app/images/mark.svg',
-                '2b09c0d34588d725b8b7b19fd6d6940521d6b57da70b987b80ef60c576edd6bf/themes/app/imag'
+                '4884db0e98549c751c78e6b137183faff8291fa4c3b436737d7da1f4c474c961/themes/app/imag'
                     . 'es/mark.svg',
                 'image/svg+xml',
                 '29eae93a6fb6f224591f7dddd9f9a1f76036a189183e3f247e7dd1f573150bd0',
