@@ -29,6 +29,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **One reading of a request's Tessera headers** (#268): `AIC\Tessera\Application\TesseraRequests::read()`
+  gives a request's `TesseraRequest`. The page handler, the protocol middleware, `TesseraProps` and
+  the profiler read through it instead of four copies of the same call, and an app asks it what a
+  request refreshes without copying the headers.
 - **The operator amends a frozen spec row** (#267): `bin/aic workflow:amend "<row>" "<new row>"
   "<reason>"`, from a terminal only, swaps one line of the open run's frozen spec in the freeze and in
   the spec, refuses anything that is not one frozen row for another, and logs `spec.amended`. A
@@ -39,7 +43,9 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
   document in `PrivateFiles`, for a Stream to send. A command or job may ask for `PageDocuments`
   and `PageFiles`: the console now has the theme (`ConsoleWiring::presentation()`) and, from
   `bin/aic`, the app's config (`ConsoleKernel`'s optional last argument). The fixture's `/jobs`
-  keeps a page and `/kept-page` serves it.
+  keeps a page and `/kept-page` serves it. An app runs `composer run build` after moving to this
+  AIC: `ConsoleWiring` declares `presentation()`, and until the build regenerates `ConsoleModules`,
+  `bin/aic` fails to load.
 
 - **The queue as typed records** (#262): `AIC\Queue\Application\QueueRecords` lists the queue
   (`QueuedJob`, with a `QueueState` of waiting, running or retrying, its attempts and its due time)

@@ -22,9 +22,11 @@ final readonly class TesseraProtocolMiddleware implements MiddlewareInterface
 {
     /**
      * @param ResponseBuilder $responseBuilder Makes the refusal.
+     * @param TesseraRequests $tesseraRequests Reads the request's Tessera headers (#268).
      */
     public function __construct(
         private ResponseBuilder $responseBuilder,
+        private TesseraRequests $tesseraRequests = new TesseraRequests(),
     ) {
     }
 
@@ -39,12 +41,7 @@ final readonly class TesseraProtocolMiddleware implements MiddlewareInterface
     #[Override]
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $tesseraRequest = new TesseraRequest(
-            $request->getHeaderLine(TesseraRequest::REQUEST),
-            $request->getHeaderLine(TesseraRequest::PROTOCOL),
-            '',
-            '',
-        );
+        $tesseraRequest = $this->tesseraRequests->read($request);
 
         if (!$tesseraRequest->isTessera() || $tesseraRequest->speaksVersion()) {
             return $handler->handle($request);

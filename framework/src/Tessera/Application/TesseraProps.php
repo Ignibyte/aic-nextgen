@@ -6,7 +6,6 @@ namespace AIC\Tessera\Application;
 
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Form\Exception\InvalidEnvelope;
-use AIC\Tessera\Domain\TesseraRequest;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function array_key_exists;
@@ -19,10 +18,12 @@ use function array_key_exists;
 final readonly class TesseraProps
 {
     /**
-     * @param EnvelopeCodec $envelopeCodec Opens and verifies the tokens it sealed.
+     * @param EnvelopeCodec   $envelopeCodec   Opens and verifies the tokens it sealed.
+     * @param TesseraRequests $tesseraRequests Reads the request's Tessera headers (#268).
      */
     public function __construct(
         private EnvelopeCodec $envelopeCodec,
+        private TesseraRequests $tesseraRequests = new TesseraRequests(),
     ) {
     }
 
@@ -37,7 +38,7 @@ final readonly class TesseraProps
      */
     public function forTarget(ServerRequestInterface $serverRequest, string $target): array
     {
-        $token = self::tesseraRequest($serverRequest)->props($target);
+        $token = $this->tesseraRequests->read($serverRequest)->props($target);
 
         return $token === ''
             ? []
@@ -56,27 +57,12 @@ final readonly class TesseraProps
      */
     public function unchanged(ServerRequestInterface $serverRequest, string $target, string $version): bool
     {
-        if (!self::tesseraRequest($serverRequest)->refreshesOnly($target)) {
+        if (!$this->tesseraRequests->read($serverRequest)->refreshesOnly($target)) {
             return false;
         }
 
         $props = $this->forTarget($serverRequest, $target);
 
         return array_key_exists('version', $props) && $props['version'] === $version;
-    }
-
-    /**
-     * @param ServerRequestInterface $serverRequest The request.
-     *
-     * @return TesseraRequest Its Tessera headers.
-     */
-    private static function tesseraRequest(ServerRequestInterface $serverRequest): TesseraRequest
-    {
-        return new TesseraRequest(
-            $serverRequest->getHeaderLine(TesseraRequest::REQUEST),
-            $serverRequest->getHeaderLine(TesseraRequest::PROTOCOL),
-            $serverRequest->getHeaderLine(TesseraRequest::TARGETS),
-            $serverRequest->getHeaderLine(TesseraRequest::LAYOUT),
-        );
     }
 }

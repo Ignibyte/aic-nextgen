@@ -8,7 +8,7 @@ use AIC\Controller\Contracts\ResponseWriter;
 use AIC\Database\Contracts\QueryException;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Profiler\Domain\ProfilerStyles;
-use AIC\Tessera\Domain\TesseraRequest;
+use AIC\Tessera\Application\TesseraRequests;
 use InvalidArgumentException;
 use Override;
 use Psr\Http\Message\ResponseInterface;
@@ -34,6 +34,7 @@ final readonly class ProfilerPages implements RequestHandlerInterface
      * @param ProfilerFeed            $profilerFeed      The toolbar's stream (#231).
      * @param ResponseWriter          $responseWriter    Writes a page, whole or as Tessera fragments.
      * @param ResponseBuilder         $responseBuilder   Makes the stylesheet's and the refusals' responses.
+     * @param TesseraRequests         $tesseraRequests   Reads the request's Tessera headers (#268).
      */
     public function __construct(
         private RequestHandlerInterface $requestHandler,
@@ -41,6 +42,7 @@ final readonly class ProfilerPages implements RequestHandlerInterface
         private ProfilerFeed $profilerFeed,
         private ResponseWriter $responseWriter,
         private ResponseBuilder $responseBuilder,
+        private TesseraRequests $tesseraRequests = new TesseraRequests(),
     ) {
     }
 
@@ -87,12 +89,7 @@ final readonly class ProfilerPages implements RequestHandlerInterface
             return $this->profilerFeed->stream($serverRequest)->writeTo($this->responseWriter);
         }
 
-        $tesseraRequest = new TesseraRequest(
-            $serverRequest->getHeaderLine(TesseraRequest::REQUEST),
-            $serverRequest->getHeaderLine(TesseraRequest::PROTOCOL),
-            $serverRequest->getHeaderLine(TesseraRequest::TARGETS),
-            $serverRequest->getHeaderLine(TesseraRequest::LAYOUT),
-        );
+        $tesseraRequest = $this->tesseraRequests->read($serverRequest);
 
         return $this->profilerDocuments->document($serverRequest, $path)->answer($tesseraRequest)->writeTo($this->responseWriter);
     }
