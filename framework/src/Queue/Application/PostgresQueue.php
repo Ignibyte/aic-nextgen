@@ -6,12 +6,9 @@ namespace AIC\Queue\Application;
 
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
-use AIC\Database\Contracts\Row;
 use AIC\Queue\Domain\ReservedJob;
 use AIC\Session\Domain\StringMapJson;
 use JsonException;
-
-use function array_map;
 
 /**
  * The job queue in Postgres (#46). Workers take jobs with `FOR UPDATE SKIP
@@ -116,39 +113,6 @@ final readonly class PostgresQueue
     }
 
     /**
-     * @throws QueryException When the queue cannot be read.
-     *
-     * @return list<string> The jobs waiting or running, oldest first, each as `name (payload), attempts n`.
-     */
-    public function waiting(): array
-    {
-        return array_map(
-            static fn (Row $row): string => $row->string('line'),
-            $this->database->fetchAll(
-                "SELECT job || ' ' || payload || ', attempts ' || attempts AS line FROM aic_jobs ORDER BY id",
-                [],
-            )->all(),
-        );
-    }
-
-    /**
-     * @throws QueryException When the record cannot be read.
-     *
-     * @return list<string> The failed jobs, newest first, each with its id (for `queue:retry`, #208) and reason.
-     */
-    public function failed(): array
-    {
-        return array_map(
-            static fn (Row $row): string => $row->string('line'),
-            $this->database->fetchAll(
-                "SELECT '#' || id || ' ' || job || ' ' || payload || ' after ' || attempts || ' attempts: ' || reason AS line"
-                . ' FROM aic_failed_jobs ORDER BY id DESC LIMIT 20',
-                [],
-            )->all(),
-        );
-    }
-
-    /**
      * @param int $id A failed job's id.
      *
      * @throws QueryException When the queue cannot be changed.
@@ -166,5 +130,17 @@ final readonly class PostgresQueue
         $this->database->commit();
 
         return $queued === 1;
+    }
+
+    /**
+     * @param int $id A failed job's id.
+     *
+     * @throws QueryException When the record cannot be changed.
+     *
+     * @return bool Whether it was in the failed record and is gone now (#262).
+     */
+    public function discard(int $id): bool
+    {
+        return $this->database->execute('DELETE FROM aic_failed_jobs WHERE id = ?', [$id]) === 1;
     }
 }

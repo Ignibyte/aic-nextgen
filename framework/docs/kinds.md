@@ -96,7 +96,8 @@ Background work. A job is queued by name with a payload of strings, read through
 run by `bin/aic queue:work`. It answers with one of `AIC\Controller\Domain\JobDone`,
 `AIC\Controller\Domain\JobRetry` (after a delay in seconds, within the attempts it allows, three by
 default) or `AIC\Controller\Domain\JobFailed` (with a reason). `bin/aic queue:failed` lists the
-failed jobs with their ids, and `bin/aic queue:retry <id>` queues one again (#208). A schedule queues a job on a cron cadence. The manifest names it with `->job(`
+failed jobs with their ids, and `bin/aic queue:retry <id>` queues one again (#208). A page that
+shows the queue reads it through `AIC\Queue\Application\QueueRecords`, never SQL of its own (#262). A schedule queues a job on a cron cadence. The manifest names it with `->job(`
 and a schedule with `->schedule(`.
 
 ## Other kinds

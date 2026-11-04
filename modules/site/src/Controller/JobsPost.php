@@ -14,10 +14,16 @@ use JsonException;
 use Override;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
+use function is_string;
+use function preg_match;
+
 /**
- * POST /jobs?mode=succeed|fail: queues the demo job (#46) and goes back to
+ * POST /jobs?mode=succeed|fail|broken: queues the demo job (#46) and goes back to
  * /jobs, naming the mode it queued (`?queued=succeed`), the Location gate:23
- * opens as `{location}` (#212).
+ * opens as `{location}` (#212). POST /jobs?mode=discard&id=N drops failed job
+ * N (#262) and goes back with `?discarded=N`, or `?discarded=none` when there
+ * was no such job.
  */
 final readonly class JobsPost implements Page
 {
@@ -42,11 +48,33 @@ final readonly class JobsPost implements Page
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
         $query = $serverRequest->getQueryParams();
-        $mode = ($query['mode'] ?? '') === 'fail'
-            ? 'fail'
-            : 'succeed';
+
+        if (($query['mode'] ?? '') === 'discard') {
+            return $this->discard(array_key_exists('id', $query) && is_string($query['id']) ? $query['id'] : '');
+        }
+
+        $mode = match ($query['mode'] ?? '') {
+            'fail' => 'fail',
+            'broken' => 'broken',
+            default => 'succeed',
+        };
         $this->postgresQueue->dispatch('demo', ['mode' => $mode], 0);
 
         return new PageRedirect('/jobs?queued=' . $mode);
+    }
+
+    /**
+     * @param string $id The failed job's id, as posted.
+     *
+     * @throws QueryException           When the record cannot be changed.
+     * @throws InvalidArgumentException When the redirect is invalid.
+     *
+     * @return PageResponse 303 to /jobs, naming the job discarded or `none`.
+     */
+    private function discard(string $id): PageResponse
+    {
+        $discarded = preg_match('/^[1-9][0-9]{0,17}$/', $id) === 1 && $this->postgresQueue->discard((int) $id);
+
+        return new PageRedirect('/jobs?discarded=' . ($discarded ? $id : 'none'));
     }
 }

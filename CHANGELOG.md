@@ -25,6 +25,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The queue as typed records** (#262): `AIC\Queue\Application\QueueRecords` lists the queue
+  (`QueuedJob`, with a `QueueState` of waiting, running or retrying, its attempts and its due time)
+  and the failed record (`FailedJob`, with its reason), newest first, so an app shows them without
+  SQL of its own. `PostgresQueue::discard()` drops a failed job. `queue:failed` and the fixture's
+  `/jobs` read through the records, which replace `PostgresQueue::waiting()` and `failed()`. The
+  fixture's page discards a failed job, and its demo job gains `mode=broken`, failed on the first
+  attempt.
+
 - **A stream pauses while the page is hidden** (#259): `EventStream::pausedWhileHidden()` answers a
   stream with `Tessera-Stream-Pause: hidden`, so Tessera closes its connection while the page is
   hidden and resumes it with `Last-Event-ID` when visible. Off by default; the fixture's `/events`

@@ -9,8 +9,11 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Database\Contracts\QueryException;
+use AIC\Queue\Domain\FailedJob;
 use InvalidArgumentException;
 use Override;
+
+use function array_map;
 
 /**
  * `bin/aic queue:failed`: the jobs that failed, newest first, each with its
@@ -20,10 +23,10 @@ use Override;
 final readonly class QueueFailedCommand implements Command
 {
     /**
-     * @param PostgresQueue $postgresQueue The queue and its failed jobs.
+     * @param QueueRecords $queueRecords The failed record, as records (#262).
      */
     public function __construct(
-        private PostgresQueue $postgresQueue,
+        private QueueRecords $queueRecords,
     ) {
     }
 
@@ -42,7 +45,11 @@ final readonly class QueueFailedCommand implements Command
             return new CommandResult(['usage: bin/aic queue:failed'], 2);
         }
 
-        $lines = $this->postgresQueue->failed();
+        $lines = array_map(
+            static fn (FailedJob $failedJob): string => '#' . $failedJob->id . ' ' . $failedJob->job . ' ' . $failedJob->payload
+                . ' after ' . $failedJob->attempts . ' attempts: ' . $failedJob->reason,
+            $this->queueRecords->failed(),
+        );
 
         return new CommandResult($lines === [] ? ['queue:failed: no failed job.'] : $lines, 0);
     }
