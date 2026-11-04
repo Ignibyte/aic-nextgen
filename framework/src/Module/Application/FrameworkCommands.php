@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\Job;
 use AIC\Database\Contracts\Database;
 use AIC\Queue\Application\PostgresQueue;
 use AIC\Queue\Application\QueueFailedCommand;
+use AIC\Queue\Application\QueueRecords;
 use AIC\Queue\Application\QueueRetryCommand;
 use AIC\Queue\Application\QueueWorkCommand;
 use AIC\Queue\Application\QueueWorker;
@@ -52,7 +53,7 @@ final readonly class FrameworkCommands
         return [
             'migrate' => new MigrateCommand($migrator),
             'migrate:status' => new MigrationStatusCommand($migrator),
-            'queue:failed' => new QueueFailedCommand($postgresQueue),
+            'queue:failed' => new QueueFailedCommand(new QueueRecords($this->database)),
             'queue:retry' => new QueueRetryCommand($postgresQueue),
             'queue:work' => new QueueWorkCommand(new QueueWorker($postgresQueue, $jobs)),
             'schedule:run' => new ScheduleRunCommand(new Scheduler($this->database, $postgresQueue, $schedules)),

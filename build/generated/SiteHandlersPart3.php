@@ -9,13 +9,14 @@ use AIC\Module\Application\HandlerContext;
 use AIC\Notification\Application\Inbox;
 use AIC\Notification\Application\Notifier;
 use AIC\Queue\Application\PostgresQueue;
+use AIC\Queue\Application\QueueRecords;
 use AIC\Schedule\Application\Scheduler;
 use App\Site\Controller\JobsPage;
 use App\Site\Controller\JobsPost;
 use App\Site\Controller\NotificationsPage;
 use App\Site\Controller\NotificationsPost;
-use App\Site\Controller\NotificationsReadPost;
 use App\Site\Service\InboxLines;
+use App\Site\Service\QueueLines;
 use App\Site\Service\ScheduleLines;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -40,25 +41,24 @@ final readonly class SiteHandlersPart3
      */
     public function byId(): array
     {
+        $queueLines = new QueueLines(new QueueRecords($this->handlerContext->database()));
         $postgresQueue = new PostgresQueue($this->handlerContext->database());
         $scheduler = new Scheduler($this->handlerContext->database(), $postgresQueue, $this->handlerContext->schedules());
-        $inbox = new Inbox($this->handlerContext->database());
 
         return [
             JobsPage::class => $this->handlerContext->page(
                 new JobsPage(
                     $this->handlerContext->documents(),
-                    $postgresQueue,
+                    $queueLines,
                     new ScheduleLines($scheduler),
                     $this->handlerContext->schedules(),
                 ),
             ),
             JobsPost::class => $this->handlerContext->page(new JobsPost($postgresQueue)),
             NotificationsPage::class => $this->handlerContext->page(
-                new NotificationsPage($this->handlerContext->documents(), new InboxLines($inbox)),
+                new NotificationsPage($this->handlerContext->documents(), new InboxLines(new Inbox($this->handlerContext->database()))),
             ),
             NotificationsPost::class => $this->handlerContext->page(new NotificationsPost(new Notifier($postgresQueue))),
-            NotificationsReadPost::class => $this->handlerContext->page(new NotificationsReadPost($inbox)),
         ];
     }
 }

@@ -346,6 +346,15 @@
             "work": true
         },
         {
+            "name": "jobs, discard a failed job that is not there",
+            "method": "POST",
+            "path": "/jobs?mode=discard&id=0",
+            "form": "aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
             "name": "notifications",
             "method": "GET",
             "path": "/notifications",

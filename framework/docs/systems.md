@@ -177,7 +177,11 @@ See [security.md](security.md) for sessions, form guards, uploads, auth and secr
   minutes. A job is queued through the request's one database connection, the one
   `EntityStore::transaction()` holds, so a job dispatched inside the transaction commits with the
   write or is rolled back with it (#225): queue a notification of a write inside that write's
-  transaction, never after it.
+  transaction, never after it. `QueueRecords` reads both tables as typed records, newest first
+  (#262): `queued()` gives each `QueuedJob` with its `QueueState` (waiting, running or retrying, by
+  the ten-minute rule `reserve()` uses) and its due time, and `failed()` each `FailedJob` with its
+  reason. Times are ISO 8601 in UTC. `PostgresQueue::retry()` queues a failed job again, and
+  `discard()` drops it.
 - `AIC\Schedule`: schedules declared in manifests; `bin/aic schedule:run`, once a minute, queues
   each one that is due, and a ledger keeps a minute from firing twice. Given a UTC minute
   (`schedule:run 2026-10-29T07:00`) it queues what is due then (#208).
