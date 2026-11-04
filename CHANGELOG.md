@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **gate:23 names the compiler's error** (#264): a site that does not compile printed the first 12
+  lines of the compiler's output, and elephc prints its warnings first, so with a dozen warnings the
+  error never showed. The error lines now come first, then at most 12 warnings and a count of the
+  rest.
 - **A handlers part declares only the services locals it reads** (#261): a part's shared services
   were counted transitively, so a part whose handlers take only a later services class's services
   still made the first one, an unused local five gates refuse (Lotline's storefront). A part now

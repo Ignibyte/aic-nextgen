@@ -4,19 +4,16 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\CompilerOutput;
 use Gates\Domain\NativeSiteAnswer;
 use Gates\Domain\NativeSiteSetup;
 use Gates\Domain\NativeSiteStep;
-use Gates\Domain\ProcessResult;
 use InvalidArgumentException;
 use RuntimeException;
 
 use function array_map;
-use function array_slice;
 use function count;
-use function explode;
 use function fwrite;
-use function implode;
 use function is_file;
 use function sprintf;
 
@@ -101,7 +98,7 @@ final readonly class NativeSiteGate
 
         return match (true) {
             $processResult === null => 1,
-            $processResult->exitCode !== 0 => $this->buildFailed($processResult, $stderr),
+            $processResult->exitCode !== 0 => $this->buildFailed($processResult->stdout, $processResult->stderr, $stderr),
             default => $this->compare($root, $workDir, $nativeSiteSetup, $steps, $stdout, $stderr),
         };
     }
@@ -138,17 +135,18 @@ final readonly class NativeSiteGate
     }
 
     /**
-     * Report a site that does not compile: the first lines of the compiler's output.
+     * Report a site that does not compile: the compiler's errors, then its first warnings (#264).
      *
-     * @param ProcessResult $processResult The build's result.
-     * @param resource      $stderr        Stream failures are written to.
+     * @param string   $output What the build wrote to stdout.
+     * @param string   $errors What the build wrote to stderr.
+     * @param resource $stderr Stream failures are written to.
      *
      * @return int The exit code, 1.
      */
-    private function buildFailed(ProcessResult $processResult, mixed $stderr): int
+    private function buildFailed(string $output, string $errors, mixed $stderr): int
     {
-        $output = implode(PHP_EOL, array_slice(explode(PHP_EOL, $processResult->stdout . $processResult->stderr), 0, 12));
-        fwrite($stderr, 'gate:23 — the site does not compile natively:' . PHP_EOL . $output . PHP_EOL);
+        $compilerOutput = new CompilerOutput($output, $errors);
+        fwrite($stderr, 'gate:23 — the site does not compile natively:' . PHP_EOL . $compilerOutput->report() . PHP_EOL);
 
         return 1;
     }
