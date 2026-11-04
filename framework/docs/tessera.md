@@ -35,7 +35,9 @@ included, at a positional path such as `content/stock-panel/Panel.1`. Give a com
 wrapper its own key too, so a filter that adds or drops a sibling does not move its path.
 
 `AIC\Tessera\Domain\TesseraRequest` validates request kind, protocol, layout identity and target
-syntax. A valid visit naming a region also refreshes the layout's other regions so navigation state
+syntax. `AIC\Tessera\Application\TesseraRequests::read()` reads it from a request's four Tessera
+headers, in one place for the framework and an app (#268): a class takes it as a defaulted
+constructor argument and asks, say, `refreshesOnly('@jobs-live')`, instead of reading the headers itself. A valid visit naming a region also refreshes the layout's other regions so navigation state
 follows the page. A visit naming only components gets exactly those components. Refresh, submit
 and action requests receive their requested targets. A refresh, submission or action whose
 component path the page no longer renders, below a region the layout places, gets that target with
