@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **An anchor-scoped signal patch lands** (#260): a fragment answer wrote a `SignalPatch` scoped
+  `@NAME` as `data-scope="@NAME"`, which Tessera refuses, since a fragment answer names a path. It now
+  writes the path the request named with that anchor, and leaves the patch out when the request named
+  none.
 - **gate:10 reads no stale metrics** (#256): PHPMD runs with a fresh home of its own each time, so
   PDepend's cache (`$HOME/.pdepend`, outside the project) can no longer replay another tree's metrics:
   Lotline's gate:10 had judged methods by their first drafts and hidden a real class length. A cold

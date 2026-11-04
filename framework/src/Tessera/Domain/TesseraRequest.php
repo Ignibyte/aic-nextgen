@@ -104,6 +104,25 @@ final readonly class TesseraRequest
     }
 
     /**
+     * @param string $anchor `@NAME`, an anchor a page names a component by (#204).
+     *
+     * @return string The path of the `Tessera-Targets` entry that carries the anchor (protocol 4.3), so a fragment
+     *                answer can scope a patch to it (#260); empty when no well-formed entry does.
+     */
+    public function anchorPath(string $anchor): string
+    {
+        foreach (explode(',', $this->targets) as $entry) {
+            $tokens = explode(' ', trim($entry));
+
+            if (self::names(trim($entry), $anchor) && preg_match(self::TARGET, $tokens[0]) === 1) {
+                return $tokens[0];
+            }
+        }
+
+        return '';
+    }
+
+    /**
      * @return bool Whether a component the page no longer renders is answered with mode `remove`: a refresh, a
      *              submission or an action may remove what it targeted (Tessera protocol 5.1, #247); a visit's
      *              missing target still gets the whole document.

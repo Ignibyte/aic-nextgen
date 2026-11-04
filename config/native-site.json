@@ -762,6 +762,15 @@
             "captures": false
         },
         {
+            "name": "tessera, the stock region, no list patch",
+            "method": "GET",
+            "path": "/stock",
+            "form": "",
+            "header": "Tessera-Request: visit\r\nTessera-Protocol: 2\r\nTessera-Layout: app-focus\r\nTessera-Targets: content",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "tessera, two regions",
             "method": "GET",
             "path": "/notes",

@@ -125,7 +125,7 @@ component.
 |---|---|
 | `TesseraEvents::patchElements()` | target, component, mode, id and last; emits tessera-patch-elements |
 | `TesseraEvents::patchSignals()` | scope, JSON object, only-if-missing, id and last; emits tessera-patch-signals |
-| `SignalPatch` | scope, JSON object and only-if-missing; a Page's fragment answer writes it (#253) |
+| `SignalPatch` | scope, JSON object and only-if-missing; a Page's fragment answer writes it (#253); a `@NAME` scope is written as the path the request named with that anchor, and left out when it named none (#260) |
 | `TesseraEvents::keepAlive()` | keep-alive comment, with the last flag |
 | `TesseraEvents::reconnect()` | a last comment that ends the connection but not the stream (#202) |
 | `EventStream::pausedWhileHidden()` | the stream answered `Tessera-Stream-Pause: hidden`: Tessera closes it while the page is hidden and reconnects with `Last-Event-ID` when visible (#259) |

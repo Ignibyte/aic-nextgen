@@ -125,6 +125,8 @@ final readonly class PageDocument implements PageResponse
     /**
      * @param TesseraRequest $tesseraRequest What the request asks of Tessera's server side.
      *
+     * @throws InvalidArgumentException When a path the request named for an anchor is not a target.
+     *
      * @return PageResponse Fragments for a Tessera visit or refresh whose targets all exist under this layout, else this document (#70).
      */
     public function answer(TesseraRequest $tesseraRequest): PageResponse
@@ -138,8 +140,40 @@ final readonly class PageDocument implements PageResponse
                 $this->layout,
                 $targets,
                 $tesseraRequest->removesGone(),
-                $this->signalPatches,
+                $this->scoped($tesseraRequest),
                 $this->prefetchable,
             );
+    }
+
+    /**
+     * @param TesseraRequest $tesseraRequest What the request asks of Tessera's server side.
+     *
+     * @throws InvalidArgumentException When a path the request named is not a target.
+     *
+     * @return list<SignalPatch> The page's patches as a fragment answer writes them (#260): one scoped `@NAME`
+     *                           rescoped to the path the request named with that anchor, and left out when it named
+     *                           none, since it would scope nothing the answer holds.
+     */
+    private function scoped(TesseraRequest $tesseraRequest): array
+    {
+        $scoped = [];
+
+        foreach ($this->signalPatches as $signalPatch) {
+            if (!$signalPatch->anchored()) {
+                $scoped[] = $signalPatch;
+
+                continue;
+            }
+
+            $path = $tesseraRequest->anchorPath($signalPatch->scope);
+
+            if ($path === '') {
+                continue;
+            }
+
+            $scoped[] = $signalPatch->scopedTo($path);
+        }
+
+        return $scoped;
     }
 }
