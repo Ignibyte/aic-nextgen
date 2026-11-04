@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **gate:10 reads no stale metrics** (#256): PHPMD runs with a fresh home of its own each time, so
+  PDepend's cache (`$HOME/.pdepend`, outside the project) can no longer replay another tree's metrics:
+  Lotline's gate:10 had judged methods by their first drafts and hidden a real class length. A cold
+  run costs about three seconds.
 - **Handler parts share their services** (#257): a module whose handlers split into parts builds
   each service two of its controllers take, and that is built from another service, once in a
   generated `<M>HandlerServices` (split again past PHPMD's coupling of 15), and each part calls it.

@@ -87,14 +87,7 @@ final readonly class GateSuite
         10 => [
             'PHPMD: every ruleset, at the limits in phpmd.xml.',
             'app',
-            [
-                'bin',
-                'phpmd',
-                '{classRoots}',
-                'text',
-                '{config}/phpmd.xml,{config}/phpmd-custom.xml',
-                '--strict',
-            ],
+            ['php', 'gate-phpmd.php'],
         ],
         11 => [
             'PHPCS: PSR-12 plus slevomat.',

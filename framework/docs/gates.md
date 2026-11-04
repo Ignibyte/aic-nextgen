@@ -129,7 +129,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 7 | Rector | PHP 8.5 idioms, dead code, type coverage, naming (dry run) | `vendor/bin/rector process` on the file, then read the change |
 | 8 | PHPStan | level 10 with the strict sets, 100% type coverage, cognitive complexity, dead code, AIC's own rules | type the code; split a method; remove what nothing calls |
 | 9 | phpat | the architecture rules: kinds, sealed responses, rendering, and no app class but the generated wiring depends on the raw `Database` | move the dependency or the class; read tables through the entity API, the database's own state through `DatabaseStatus` |
-| 10 | PHPMD | every ruleset: methods up to 30 lines, classes up to 300, 15 methods, coupling 15 | split the class or the method |
+| 10 | PHPMD | every ruleset: methods up to 30 lines, classes up to 300, 15 methods, coupling 15; each run with a fresh PDepend cache of its own (#256) | split the class or the method |
 | 11 | PHPCS | PSR-12 and slevomat, lines up to 140 | `vendor/bin/phpcbf` on the file (never on a template) |
 | 12 | Deptrac | the layer ladder in every namespace (see [systems.md](systems.md#the-layer-ladder)) | move the class to the right layer, or depend on a contract |
 | 13 | Psalm | full ordinary error level 1, then full taint analysis; unused code | type the value; validate input before it reaches a sink |
