@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
 use AIC\Database\Contracts\Database;
@@ -28,12 +29,14 @@ final readonly class ConsoleKernel
     private ConsoleContext $consoleContext;
 
     /**
-     * @param Database      $database      The database.
-     * @param MailTransport $mailTransport Sends mail.
-     * @param MailConfig    $mailConfig    The mail settings.
-     * @param ConsoleWiring $consoleWiring The modules' generated wiring.
-     * @param string        $root          The app's root directory, for its stored files (#213); empty for an app
-     *                                     whose `bin/aic` predates them.
+     * @param Database       $database      The database.
+     * @param MailTransport  $mailTransport Sends mail.
+     * @param MailConfig     $mailConfig    The mail settings.
+     * @param ConsoleWiring  $consoleWiring The modules' generated wiring.
+     * @param string         $root          The app's root directory, for its stored files (#213); empty for an app
+     *                                      whose `bin/aic` predates them.
+     * @param AppConfig|null $appConfig     The app's settings, for the pages a command or job keeps (#265); null for
+     *                                      an app whose `bin/aic` predates them.
      */
     public function __construct(
         private Database $database,
@@ -41,9 +44,10 @@ final readonly class ConsoleKernel
         private MailConfig $mailConfig,
         private ConsoleWiring $consoleWiring,
         string $root = '',
+        ?AppConfig $appConfig = null,
     ) {
         $plugins = new Plugins($consoleWiring instanceof PluginWiring ? $consoleWiring : null);
-        $this->consoleContext = new ConsoleContext($database, $mailTransport, $mailConfig, $plugins, $root);
+        $this->consoleContext = new ConsoleContext($database, $mailTransport, $mailConfig, $plugins, $root, $appConfig, $consoleWiring);
     }
 
     /**

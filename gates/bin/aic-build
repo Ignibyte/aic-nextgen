@@ -59,8 +59,8 @@ use Gates\Application\TemplateBuild;
 use Gates\Application\TemplateCompiler;
 use Gates\Application\TemplatesSource;
 use Gates\Application\TesseraBuild;
-use Gates\Application\ThemeHtmlSource;
 use Gates\Application\ThemeAssetInputs;
+use Gates\Application\ThemeHtmlSource;
 use Gates\Application\ThemeLayoutsSource;
 use Gates\Application\ThemePageSource;
 use Gates\Application\WebPresentationSource;
@@ -182,7 +182,14 @@ if (!$checking) {
     }
 }
 
-$consoleKernel = new ConsoleKernel(new PdoDatabase($databaseConfig), new SmtpTransport($mailConfig), $mailConfig, new ConsoleModules(), $root);
+$consoleKernel = new ConsoleKernel(
+    new PdoDatabase($databaseConfig),
+    new SmtpTransport($mailConfig),
+    $mailConfig,
+    new ConsoleModules(),
+    $root,
+    $appConfig,
+);
 try {
     $routes = $moduleBuild->routes($modules, new RouteCollector(new RoutePatternCompiler()))->table();
     $outputs = [

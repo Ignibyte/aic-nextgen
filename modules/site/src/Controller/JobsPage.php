@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Site\Controller;
 
 use AIC\Component\Domain\Heading;
+use AIC\Component\Domain\Link;
 use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
@@ -25,7 +26,8 @@ use function array_values;
 /**
  * GET /jobs: the schedules and their last runs (#47), the queue and the
  * failed record through AIC's queue records with a Discard button per failed
- * job (#262), and buttons that queue the demo job (#46). `bin/aic queue:work`
+ * job (#262), buttons that queue the demo job (#46) or keep a page, and a link
+ * to the kept page (#265). `bin/aic queue:work`
  * runs the jobs.
  */
 final readonly class JobsPage implements Page
@@ -70,6 +72,7 @@ final readonly class JobsPage implements Page
                 new Heading('Failed'),
                 new LineList('failed', array_values($failed), 'None.'),
                 ...$this->jobForms->forms($this->formTokens->guard($serverRequest), array_keys($failed)),
+                new Link('The kept page', '/kept-page'),
             ],
             200,
             'Jobs',

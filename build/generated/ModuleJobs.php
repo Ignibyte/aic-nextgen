@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Container\Exception\ContainerException;
 use AIC\Controller\Contracts\Job;
+use AIC\Module\Application\ConsoleContext;
+use LogicException;
 
 use function array_merge;
 
@@ -15,12 +18,23 @@ use function array_merge;
 final readonly class ModuleJobs
 {
     /**
+     * @param ConsoleContext $consoleContext The roots.
+     */
+    public function __construct(
+        private ConsoleContext $consoleContext,
+    ) {
+    }
+
+    /**
+     * @throws LogicException     When a called constructor or service fails.
+     * @throws ContainerException When a called constructor or service fails.
+     *
      * @return array<string, Job> The modules' jobs by name.
      */
     public function byName(): array
     {
         return array_merge(
-            (new SiteJobs())->byName(),
+            (new SiteJobs($this->consoleContext))->byName(),
             (new ScaffoldJobs())->byName(),
         );
     }

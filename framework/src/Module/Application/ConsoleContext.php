@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Config\Domain\AppConfig;
 use AIC\Container\Exception\ContainerException;
+use AIC\Controller\Application\PageDocuments;
 use AIC\Database\Contracts\Database;
 use AIC\Notification\Contracts\MailTransport;
 use AIC\Notification\Domain\MailConfig;
+use AIC\Storage\Application\PageFiles;
 use LogicException;
 
 /**
@@ -15,18 +18,21 @@ use LogicException;
  * commands and jobs from: the roots a console constructor may ask for. The
  * console reads no request, so it has no response writer or boot time, and it
  * is the only side that sends mail. Its root, which the stored files (#213)
- * are under, is what `bin/aic` passes the console kernel.
+ * are under, is what `bin/aic` passes the console kernel; with the app's
+ * config it also gives the theme's pages and the kept page files (#265).
  *
  * @api
  */
 final readonly class ConsoleContext
 {
     /**
-     * @param Database      $database      The database.
-     * @param MailTransport $mailTransport Sends mail.
-     * @param MailConfig    $mailConfig    The mail settings.
-     * @param Plugins       $plugins       The plugins, by type.
-     * @param string        $root          The app's root directory; empty when `bin/aic` names none.
+     * @param Database           $database      The database.
+     * @param MailTransport      $mailTransport Sends mail.
+     * @param MailConfig         $mailConfig    The mail settings.
+     * @param Plugins            $plugins       The plugins, by type.
+     * @param string             $root          The app's root directory; empty when `bin/aic` names none.
+     * @param AppConfig|null     $appConfig     The app's settings, for the pages a job keeps; null when `bin/aic` gives none.
+     * @param ConsoleWiring|null $consoleWiring The generated wiring, with the theme's presentation.
      */
     public function __construct(
         private Database $database,
@@ -34,6 +40,8 @@ final readonly class ConsoleContext
         private MailConfig $mailConfig,
         private Plugins $plugins,
         private string $root = '',
+        private ?AppConfig $appConfig = null,
+        private ?ConsoleWiring $consoleWiring = null,
     ) {
     }
 
@@ -74,6 +82,29 @@ final readonly class ConsoleContext
     }
 
     /**
+     * @throws LogicException     When `bin/aic` gave the console kernel no app config or root, or the compiled asset
+     *                            metadata is invalid.
+     * @throws ContainerException When the generated presentation declares no theme.
+     *
+     * @return PageDocuments A page's documents in the theme's layouts, for a job that keeps one (#265).
+     */
+    public function documents(): PageDocuments
+    {
+        return $this->pages()->documents();
+    }
+
+    /**
+     * @throws LogicException When `bin/aic` gave the console kernel no app config or root, or the compiled asset
+     *                        metadata is invalid.
+     *
+     * @return PageFiles Keeps rendered pages as private files (#265).
+     */
+    public function pageFiles(): PageFiles
+    {
+        return $this->pages()->pageFiles();
+    }
+
+    /**
      * @param string $type A plugin type.
      *
      * @throws ContainerException When a registered service cannot be resolved.
@@ -83,5 +114,22 @@ final readonly class ConsoleContext
     public function tagged(string $type): array
     {
         return $this->plugins->tagged($type);
+    }
+
+    /**
+     * @throws LogicException When `bin/aic` gave the console kernel no app config or root.
+     *
+     * @return ConsolePages The theme's pages.
+     */
+    private function pages(): ConsolePages
+    {
+        if ($this->appConfig !== null && $this->consoleWiring !== null && $this->root !== '') {
+            return new ConsolePages($this->consoleWiring, $this->appConfig, $this->root);
+        }
+
+        throw new LogicException(
+            'A command or job asks for a page, and bin/aic gives ConsoleKernel no AppConfig: pass it'
+                . " config/app.php's AppConfig after the root.",
+        );
     }
 }

@@ -7,7 +7,9 @@ namespace App\Generated;
 use AIC\Container\Exception\ContainerException;
 use AIC\Database\Application\DatabaseStatus;
 use AIC\Module\Application\HandlerContext;
+use AIC\Storage\Application\PrivateFiles;
 use App\Site\Controller\HealthApi;
+use App\Site\Controller\KeptPageDownload;
 use App\Site\Controller\ResourceDownload;
 use App\Site\Controller\StatusApi;
 use App\Site\Controller\TickEvents;
@@ -40,6 +42,7 @@ final readonly class SiteHandlers
 
         return [
             HealthApi::class => $this->handlerContext->api(new HealthApi($databaseStatus)),
+            KeptPageDownload::class => $this->handlerContext->stream(new KeptPageDownload(new PrivateFiles($this->handlerContext->root()))),
             ResourceDownload::class => $this->handlerContext->stream(
                 new ResourceDownload(new RequestedFile($this->handlerContext->root())),
             ),

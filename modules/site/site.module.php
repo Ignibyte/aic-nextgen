@@ -24,6 +24,7 @@ use App\Site\Controller\HealthApi;
 use App\Site\Controller\HomePage;
 use App\Site\Controller\JobsPage;
 use App\Site\Controller\JobsPost;
+use App\Site\Controller\KeptPageDownload;
 use App\Site\Controller\NotificationsPage;
 use App\Site\Controller\NotificationsPost;
 use App\Site\Controller\NotificationsReadPost;
@@ -32,6 +33,7 @@ use App\Site\Controller\StatusApi;
 use App\Site\Controller\TickEvents;
 use App\Site\Controller\TicksPage;
 use App\Site\Job\DemoJob;
+use App\Site\Job\KeptPageJob;
 use App\Site\Migration\CreateSubscribersTable;
 use App\Site\Migration\MakeSubscriberEmailUnique;
 use App\Site\Service\EnglishGreeter;
@@ -42,6 +44,7 @@ return (new ModuleManifest('site'))
     ->route(RouteMethod::Get, '/api/status', StatusApi::class)
     ->route(RouteMethod::Get, '/health', HealthApi::class)
     ->route(RouteMethod::Get, '/download/{file}', ResourceDownload::class)
+    ->route(RouteMethod::Get, '/kept-page', KeptPageDownload::class)
     ->route(RouteMethod::Get, '/events', TickEvents::class)
     ->route(RouteMethod::Get, '/ticks', TicksPage::class)
     ->route(RouteMethod::Get, '/', HomePage::class)
@@ -60,6 +63,7 @@ return (new ModuleManifest('site'))
     ->command('greet', Greet::class)
     ->command('notifications:forget', NotificationsForget::class)
     ->job('demo', DemoJob::class)
+    ->job('kept-page', KeptPageJob::class)
     ->schedule('demo-every-minute', 'demo', ['mode' => 'succeed'], '* * * * *')
     ->migration(CreateSubscribersTable::class)
     ->migration(MakeSubscriberEmailUnique::class);

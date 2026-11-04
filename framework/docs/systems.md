@@ -106,7 +106,11 @@ The development engine and its guard are described in [workflow.md](workflow.md)
   file beside its target and is renamed over it. A key (`AIC\Storage\Domain\StorageKey`) is
   `/`-joined segments of letters, digits, `.`, `_` and `-`, none starting with a dot. A page,
   block, command or job asks for either in its constructor; `bin/aic` passes `ConsoleKernel` the
-  app's root for the console's.
+  app's root for the console's. `AIC\Storage\Application\PageFiles` keeps a rendered page as a
+  private file (#265): `put(key, PageDocument)` has the document write itself through the response
+  writer, the one reader of rendered markup, and stores the body, so a job can keep a page in the
+  theme's layout for a Stream to send later. A kept page carries no CSRF token and no block a route
+  places, and its assets keep their canonical URLs, which resolve when the site serves it.
 
 ## 4. Components
 

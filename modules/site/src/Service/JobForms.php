@@ -10,7 +10,8 @@ use AIC\Component\Domain\GuardFields;
 
 /**
  * The jobs page's forms: a Discard per failed job (#262), then the buttons
- * that queue the demo job in each of its modes (#46).
+ * that queue the demo job in each of its modes (#46), and the one that keeps a
+ * page (#265).
  */
 final readonly class JobForms
 {
@@ -32,13 +33,14 @@ final readonly class JobForms
         $forms[] = self::queue($guardFields, 'succeed', 'Queue a job (retries once, then succeeds)');
         $forms[] = self::queue($guardFields, 'fail', 'Queue a failing job');
         $forms[] = self::queue($guardFields, 'broken', 'Queue a job that fails at once');
+        $forms[] = self::queue($guardFields, 'page', 'Keep a page');
 
         return $forms;
     }
 
     /**
      * @param GuardFields $guardFields The visitor's CSRF fields.
-     * @param string      $mode        The demo job's mode.
+     * @param string      $mode        The demo job's mode, or `page`.
      * @param string      $label       The button's text.
      *
      * @return Form The form that queues it.
