@@ -29,6 +29,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **An Api answer can carry an ETag and answer 304** (#269): `JsonResponse` and `XmlResponse` take
+  the request as an optional third argument. Given it, a 200 to a GET or HEAD carries a strong ETag of
+  the body's SHA-256 and `private, no-cache`, and an `If-None-Match` that matches it (the weak
+  comparison, `*` included) gets 304 with no body. Without it an answer is as before, `private,
+  no-store` with no validator. The fixture's `/stock.xml` and `/health` opt in.
 - **One reading of a request's Tessera headers** (#268): `AIC\Tessera\Application\TesseraRequests::read()`
   gives a request's `TesseraRequest`. The page handler, the protocol middleware, `TesseraProps` and
   the profiler read through it instead of four copies of the same call, and an app asks it what a

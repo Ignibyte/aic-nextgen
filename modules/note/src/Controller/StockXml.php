@@ -16,7 +16,8 @@ use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * GET /stock.xml (#233): every stock item the query matches as an XML feed,
- * the list `/stock.csv` downloads, for a site that reads listings.
+ * the list `/stock.csv` downloads, for a site that reads listings. It carries
+ * its ETag, so the site revalidates with If-None-Match and gets 304 (#269).
  */
 final readonly class StockXml implements Api
 {
@@ -41,6 +42,6 @@ final readonly class StockXml implements Api
     #[Override]
     public function api(ServerRequestInterface $serverRequest): ApiResponse
     {
-        return new XmlResponse($this->stockFeed->document($this->stockQueries->query($serverRequest)));
+        return new XmlResponse($this->stockFeed->document($this->stockQueries->query($serverRequest)), 200, $serverRequest);
     }
 }

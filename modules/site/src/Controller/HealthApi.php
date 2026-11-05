@@ -15,7 +15,8 @@ use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * GET /health: 200 when the app and its database answer, 503 when the
- * database does not, for a load balancer or a monitor (#49).
+ * database does not, for a load balancer or a monitor (#49). The 200 carries
+ * its ETag, and a monitor's matching If-None-Match gets 304 (#269).
  */
 final readonly class HealthApi implements Api
 {
@@ -43,6 +44,6 @@ final readonly class HealthApi implements Api
             return new JsonResponse(new HealthBody(false, $http), 503);
         }
 
-        return new JsonResponse(new HealthBody(true, $http));
+        return new JsonResponse(new HealthBody(true, $http), 200, $serverRequest);
     }
 }

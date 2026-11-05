@@ -138,36 +138,42 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
     }
 
     /**
-     * @param int              $status           The status.
-     * @param JsonSerializable $jsonSerializable The body to encode.
+     * @param int                         $status           The status.
+     * @param JsonSerializable            $jsonSerializable The body to encode.
+     * @param ServerRequestInterface|null $serverRequest    The request whose `If-None-Match` it answers (#269).
      *
      * @throws JsonException            When the body does not encode.
      * @throws InvalidArgumentException When a constructed value or argument is invalid.
      *
-     * @return ResponseInterface The JSON response.
+     * @return ResponseInterface The JSON response; given a request, a 200 to GET or HEAD tagged, or 304.
      */
     #[Override]
-    public function json(int $status, JsonSerializable $jsonSerializable): ResponseInterface
-    {
-        return $this->responseBuilder->create(
-            $status,
-            'application/json',
-            json_encode($jsonSerializable, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-        );
+    public function json(
+        int $status,
+        JsonSerializable $jsonSerializable,
+        ?ServerRequestInterface $serverRequest = null,
+    ): ResponseInterface {
+        $body = json_encode($jsonSerializable, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        return $this->conditional($this->responseBuilder->create($status, 'application/json', $body), $body, $serverRequest);
     }
 
     /**
-     * @param int    $status   The status.
-     * @param string $document An `XmlDocument`, serialized (#233).
+     * @param int                         $status        The status.
+     * @param string                      $document      An `XmlDocument`, serialized (#233).
+     * @param ServerRequestInterface|null $serverRequest The request whose `If-None-Match` it answers (#269).
      *
      * @throws InvalidArgumentException When a response field is invalid.
      *
-     * @return ResponseInterface The response, `application/xml; charset=utf-8`.
+     * @return ResponseInterface The response, `application/xml; charset=utf-8`; given a request, a 200 to GET or HEAD
+     *                           tagged, or 304.
      */
     #[Override]
-    public function xml(int $status, string $document): ResponseInterface
+    public function xml(int $status, string $document, ?ServerRequestInterface $serverRequest = null): ResponseInterface
     {
-        return $this->responseBuilder->create($status, 'application/xml; charset=utf-8', $document);
+        $response = $this->responseBuilder->create($status, 'application/xml; charset=utf-8', $document);
+
+        return $this->conditional($response, $document, $serverRequest);
     }
 
     /**
@@ -260,6 +266,25 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
     private function varied(ResponseInterface $response): ResponseInterface
     {
         return $this->responseBuilder->withHeader($response, 'Vary', TesseraRequest::VARY);
+    }
+
+    /**
+     * @param ResponseInterface           $response      An Api's answer.
+     * @param string                      $body          Its body, as sent.
+     * @param ServerRequestInterface|null $serverRequest The request it answers, when the answer opted in (#269).
+     *
+     * @throws InvalidArgumentException When a response field is invalid.
+     *
+     * @return ResponseInterface It tagged, or 304, when it opted in; as it was otherwise.
+     */
+    private function conditional(
+        ResponseInterface $response,
+        string $body,
+        ?ServerRequestInterface $serverRequest,
+    ): ResponseInterface {
+        return $serverRequest instanceof ServerRequestInterface
+            ? $this->fileResponses->tagged($response, $body, $serverRequest)
+            : $response;
     }
 
     /**

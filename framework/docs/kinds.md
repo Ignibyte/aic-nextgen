@@ -66,6 +66,15 @@ A JSON or an XML answer. SOAP is not one of them.
   under `modules/`. It is written by hand, not with `XMLWriter`, which would make libxml2 a native
   dependency of every app. The fixture's `/stock.xml` is the stock list as a feed.
 
+Either answer opts in to revalidation by taking the request it answers as its third argument,
+`new XmlResponse($document, 200, $serverRequest)` (#269). A 200 to a GET or HEAD then carries
+`ETag: "<SHA-256 of the body>"` and `Cache-Control: private, no-cache`, and a request whose
+`If-None-Match` matches that tag (the weak comparison, so a tag a proxy weakened still matches, and
+`*`) gets 304 with no body and the same two headers. Another status or method is written as
+without it. An answer that does not opt in stays `private, no-store` with no validator, so one that
+depends on the session is never revalidated by mistake. There is no `Last-Modified`: an answer made
+in memory has no modification time, so `If-Modified-Since` is not read.
+
 ### Stream
 
 An answer sent over time or in pieces:

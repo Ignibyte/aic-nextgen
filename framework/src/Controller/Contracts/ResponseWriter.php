@@ -79,21 +79,35 @@ interface ResponseWriter
     public function redirect(int $status, string $location): ResponseInterface;
 
     /**
-     * @param int              $status           The status.
-     * @param JsonSerializable $jsonSerializable The body to encode.
+     * @param int                         $status           The status.
+     * @param JsonSerializable            $jsonSerializable The body to encode.
+     * @param ServerRequestInterface|null $serverRequest    The request whose `If-None-Match` it answers (#269); null
+     *                                                      for an answer with no validator.
      *
-     * @return ResponseInterface The response.
+     * @return ResponseInterface The response; given a request, a 200 to GET or HEAD tagged, or 304 when it matches.
      */
-    public function json(int $status, JsonSerializable $jsonSerializable): ResponseInterface;
+    public function json(
+        int $status,
+        JsonSerializable $jsonSerializable,
+        ?ServerRequestInterface $serverRequest = null,
+    ): ResponseInterface;
 
     /**
-     * @param int    $status   The status.
-     * @param string $document An `XmlDocument`, serialized (#233). Only `XmlResponse` calls this: the response
-     *                         shapes are sealed in `AIC\Controller\Domain`, and no module is handed a writer.
+     * @param int                         $status        The status.
+     * @param string                      $document      An `XmlDocument`, serialized (#233). Only `XmlResponse` calls
+     *                                                   this: the response shapes are sealed in `AIC\Controller\Domain`,
+     *                                                   and no module is handed a writer.
+     * @param ServerRequestInterface|null $serverRequest The request whose `If-None-Match` it answers (#269); null for an
+     *                                                   answer with no validator.
      *
-     * @return ResponseInterface The response, `application/xml; charset=utf-8`.
+     * @return ResponseInterface The response, `application/xml; charset=utf-8`; given a request, a 200 to GET or HEAD
+     *                           tagged, or 304 when it matches.
      */
-    public function xml(int $status, string $document): ResponseInterface;
+    public function xml(
+        int $status,
+        string $document,
+        ?ServerRequestInterface $serverRequest = null,
+    ): ResponseInterface;
 
     /**
      * @param string                 $path          The file to send.
