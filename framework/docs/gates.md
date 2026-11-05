@@ -7,7 +7,7 @@ line, and the run ends with one `gate-summary:` line. One gate runs alone by its
 
 ## Where the gates come from
 
-The suite is the dev package `aic/gates`: every gate's code, its entry scripts, the runner, the
+The suite is the dev package `ignibyte/aic-gates`: every gate's code, its entry scripts, the runner, the
 build (`aic-build`) and each tool's base config. `vendor/bin/aic-gate --list` names every gate
 with its scope and description, and `vendor/bin/aic-gate 21` runs one, as `composer run gate:21`
 does. A tool's config in the project (`phpstan.neon`, `phpcs.xml.dist`, `deptrac.yaml`,
@@ -15,7 +15,7 @@ does. A tool's config in the project (`phpstan.neon`, `phpcs.xml.dist`, `deptrac
 a base reaches the project on `composer update`. Run every gate from the project's root, where
 composer runs scripts.
 
-An app requires `aic/gates` for development and runs `vendor/bin/aic-gate init` once: it writes
+An app requires `ignibyte/aic-gates` for development and runs `vendor/bin/aic-gate init` once: it writes
 the root configs, adds the ignore lines, and prints the lines composer.json carries (the
 scripts and the allowed plugins), which the app pastes in itself. gate:30 holds those files to
 the package's, so `init` again after `composer update` brings them back in step. gate:23 replays
@@ -94,7 +94,7 @@ second pass explicitly enables taint. Method exception and unused-code checks re
 the approved `restrictReturnTypes` setting is false because PHPStan level 10 holds return
 types. Its reason and the typed-startup/global-exception policy are recorded in the XML.
 
-The taint pass also follows a custom kind, `client_upload` (#199). aic/gates' stub
+The taint pass also follows a custom kind, `client_upload` (#199). ignibyte/aic-gates' stub
 `psalm-client-upload.phpstub`, loaded through `psalm-stubs.xml`, makes an upload's
 `getClientFilename()` and `getClientMediaType()` its sources. Every framework write an app
 calls is a sink: `Database`'s statements and parameters, `EntityStore` and `EntityChanges`
@@ -121,7 +121,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 |---|---|---|---|
 | 0 | composer audit | the installed packages against the advisory database | update the package |
 | 1 | composer-normalize | `composer.json` in canonical order | `composer normalize` |
-| 2 | require allow-list | runtime `require` holds only `php`, `ext-*`, `psr/*` and `aic/framework` | move a tool to `require-dev`; write the helper instead of requiring a framework |
+| 2 | require allow-list | runtime `require` holds only `php`, `ext-*`, `psr/*` and `ignibyte/aic-framework` | move a tool to `require-dev`; write the helper instead of requiring a framework |
 | 3 | require-checker | every symbol runtime code uses comes from a declared require | declare the extension or package |
 | 4 | composer-unused | no required package goes unused | drop the require |
 | 5 | no baselines | no baseline files, no ignored errors, no suppression levels | fix the finding the baseline hid |

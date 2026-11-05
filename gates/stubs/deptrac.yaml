@@ -1,7 +1,7 @@
-# gate:12 — Deptrac (aic/gates' stub, #130): the layers and the ruleset are the
+# gate:12 — Deptrac (ignibyte/aic-gates' stub, #130): the layers and the ruleset are the
 # package's base; this file names the app's paths.
 imports:
-  - vendor/aic/gates/config/deptrac.yaml
+  - vendor/ignibyte/aic-gates/config/deptrac.yaml
 
 deptrac:
   # Templates are checked by gate:25, not the class tools.

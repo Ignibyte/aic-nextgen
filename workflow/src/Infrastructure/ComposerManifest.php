@@ -22,7 +22,7 @@ use const JSON_THROW_ON_ERROR;
 
 /**
  * The project's composer.json, read and never written (#105): whether it
- * requires `aic/workflow` for development only, and where composer puts the
+ * requires `ignibyte/aic-workflow` for development only, and where composer puts the
  * packages.
  */
 final readonly class ComposerManifest
@@ -30,7 +30,7 @@ final readonly class ComposerManifest
     /**
      * The command that declares the workflow for development.
      */
-    private const string REQUIRE_DEV = 'composer require --dev aic/workflow:0.1.x-dev';
+    private const string REQUIRE_DEV = 'composer require --dev ignibyte/aic-workflow:0.1.x-dev';
 
     /**
      * @param string $root    The project's root.
@@ -43,18 +43,19 @@ final readonly class ComposerManifest
     }
 
     /**
-     * @return string What is wrong with its declaration of `aic/workflow`; empty when it is in `require-dev` alone.
+     * @return string What is wrong with its declaration of `ignibyte/aic-workflow`; empty when it is in `require-dev` alone.
      */
     public function problem(): string
     {
         $composer = $this->composer();
 
         return match (true) {
-            $this->holdsSource() => "this project holds aic/workflow's own source; init installs into an app that requires the package.",
+            $this->holdsSource() => "this project holds ignibyte/aic-workflow's own source; "
+                . 'init installs into an app that requires the package.',
             !$composer instanceof stdClass => 'composer.json is missing or not JSON; init reads its require-dev.',
-            $this->requires($composer, 'require') => 'composer.json requires aic/workflow at run time; it is a development tool: '
-                . 'composer remove aic/workflow, then ' . self::REQUIRE_DEV . '.',
-            !$this->requires($composer, 'require-dev') => 'composer.json does not require aic/workflow for development: run '
+            $this->requires($composer, 'require') => 'composer.json requires ignibyte/aic-workflow at run time; it is a development tool: '
+                . 'composer remove ignibyte/aic-workflow, then ' . self::REQUIRE_DEV . '.',
+            !$this->requires($composer, 'require-dev') => 'composer.json does not require ignibyte/aic-workflow for development: run '
                 . self::REQUIRE_DEV . '.',
             str_starts_with($this->vendorDir(), '/') || str_contains('/' . $this->vendorDir() . '/', '/../') => "composer.json's "
                 . 'config.vendor-dir is outside the project; the hooks name the guard inside it.',
@@ -93,13 +94,13 @@ final readonly class ComposerManifest
      * @param stdClass $composer composer.json.
      * @param string   $section  `require` or `require-dev`.
      *
-     * @return bool Whether the section names `aic/workflow`.
+     * @return bool Whether the section names `ignibyte/aic-workflow`.
      */
     private function requires(stdClass $composer, string $section): bool
     {
         $packages = [get_object_vars($composer)[$section] ?? null];
 
-        return $packages[0] instanceof stdClass && array_key_exists('aic/workflow', get_object_vars($packages[0]));
+        return $packages[0] instanceof stdClass && array_key_exists('ignibyte/aic-workflow', get_object_vars($packages[0]));
     }
 
     /**

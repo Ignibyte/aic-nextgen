@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Gates\Infrastructure\RectorSetup;
 
-// gate:7 — Rector, AIC's own config (#116): the settings are aic/gates' base;
+// gate:7 — Rector, AIC's own config (#116): the settings are ignibyte/aic-gates' base;
 // this file names AIC's paths.
 return (new RectorSetup())->configure(__DIR__, [
     'framework/src',

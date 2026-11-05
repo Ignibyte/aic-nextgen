@@ -30,7 +30,7 @@ it and say what breaks.
 
 | Repository | What it is |
 |---|---|
-| [Ignibyte/aic-nextgen](https://github.com/Ignibyte/aic-nextgen) (this one) | The framework (`framework/`, `aic/framework`), the gate suite (`gates/`, `aic/gates`), the agent workflow (`workflow/`, `aic/workflow`), and the fixture app at the root that the gates hold |
+| [Ignibyte/aic-nextgen](https://github.com/Ignibyte/aic-nextgen) (this one) | The framework (`framework/`, `ignibyte/aic-framework`), the gate suite (`gates/`, `ignibyte/aic-gates`), the agent workflow (`workflow/`, `ignibyte/aic-workflow`), and the fixture app at the root that the gates hold |
 | [Ignibyte/aic-demo](https://github.com/Ignibyte/aic-demo) | Lotline, the demo site. Start here to see an app built on AIC, with install steps |
 | [Ignibyte/tessera](https://github.com/Ignibyte/tessera) | The browser runtime |
 | [Ignibyte/aic_compiler](https://github.com/Ignibyte/aic_compiler) | The elephc fork |
@@ -47,13 +47,13 @@ compiled binary serves the app, and PHP serves the same app as the reference.
 
 **Architecture:** [framework/docs/README.md](framework/docs/README.md), the pages an app's agent
 reads before building on AIC (the kinds, the modules, the systems, the conventions, the gates).
-They ship in `aic/framework`, so an app finds them at `vendor/aic/framework/docs/`.
+They ship in `ignibyte/aic-framework`, so an app finds them at `vendor/ignibyte/aic-framework/docs/`.
 
 ## How the repository is laid out
 
 ```text
 aic-nextgen/
-├── framework/                  aic/framework, the package an app requires
+├── framework/                  ignibyte/aic-framework, the package an app requires
 │   ├── src/                    AIC\ … one namespace per system
 │   │   ├── Http/ Routing/ Controller/ Kernel/ Sapi/ Config/ Console/ Profiler/
 │   │   ├── Container/ Module/
@@ -92,16 +92,16 @@ aic-nextgen/
 │   └── surface.json            every route, command, job and schedule, with its kind
 ├── docs/wiki/                  the code wiki, written by the build
 ├── tests/browser/              Playwright looks the gates keep running
-├── gates/                      aic/gates: the 33 quality gates (dev only)
-├── workflow/                   aic/workflow: the agent workflow engine (dev only)
+├── gates/                      ignibyte/aic-gates: the 33 quality gates (dev only)
+├── workflow/                   ignibyte/aic-workflow: the agent workflow engine (dev only)
 ├── deploy/frankenphp/          a Caddyfile and container for running under FrankenPHP
 └── .ddev/                      the local stack: nginx and php-fpm, Postgres 17
 ```
 
 ### What each part is for
 
-- **`framework/`** is AIC itself, the `aic/framework` package. An app requires it and finds it in
-  `vendor/aic/framework/`. Each system has its own namespace under `src/`, and every namespace has
+- **`framework/`** is AIC itself, the `ignibyte/aic-framework` package. An app requires it and finds it in
+  `vendor/ignibyte/aic-framework/`. Each system has its own namespace under `src/`, and every namespace has
   the same layers:
   - `Contracts/`: interfaces and values other code may depend on;
   - `Domain/`: plain typed values and rules;
@@ -150,9 +150,9 @@ aic-nextgen/
   Never edit it by hand.
 
 - **`gates/`** and **`workflow/`** are development packages:
-  - `aic/gates` runs the quality suite (`composer run gate`; `vendor/bin/aic-gate --list` names
+  - `ignibyte/aic-gates` runs the quality suite (`composer run gate`; `vendor/bin/aic-gate --list` names
     each gate);
-  - `aic/workflow` is the engine an agent works tickets through (`bin/aic workflow:run`), with the
+  - `ignibyte/aic-workflow` is the engine an agent works tickets through (`bin/aic workflow:run`), with the
     code index and the inspect commands (`bin/aic route:list`, `code:search`, …).
 
   Neither ships with an app's runtime.
@@ -246,10 +246,10 @@ Conventional Commits.
 
 ## The workflow in an app
 
-An app that requires `aic/workflow` for development can select its client explicitly:
+An app that requires `ignibyte/aic-workflow` for development can select its client explicitly:
 
 ```bash
-composer require --dev aic/workflow:0.1.x-dev
+composer require --dev ignibyte/aic-workflow:0.1.x-dev
 bin/aic workflow:init --client=codex
 ```
 
@@ -279,7 +279,7 @@ to the app's URL, write a ticket and start it with `bin/aic workflow:run <number
 This repository holds the package's own source, so init refuses here. Its maintainer phases
 remain manual; installing an app pack does not retrofit hooks into this maintainer session.
 
-The gates come the same way: `composer require --dev aic/gates:0.1.x-dev`, then
+The gates come the same way: `composer require --dev ignibyte/aic-gates:0.1.x-dev`, then
 `vendor/bin/aic-gate init`, which writes the tools' root configs and prints the scripts and plugins
 for composer.json. Write gate:23's requests in `config/native-site.json`, then `composer run gate`
 runs every gate an app has (all but 22, 28, 29 and 31). This repository's own root configs are its

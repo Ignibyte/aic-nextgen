@@ -1,6 +1,6 @@
 # AIC workflow
 
-`aic/workflow` is a development package. It supplies the app's four-phase engine, code index,
+`ignibyte/aic-workflow` is a development package. It supplies the app's four-phase engine, code index,
 scaffolds, independent review and client guards. Runtime code does not depend on it.
 
 ## Install in an app
@@ -8,7 +8,7 @@ scaffolds, independent review and client guards. Runtime code does not depend on
 Require the package for development, then select the client explicitly:
 
 ```sh
-composer require --dev aic/workflow:0.1.x-dev
+composer require --dev ignibyte/aic-workflow:0.1.x-dev
 bin/aic workflow:init --client=codex
 ```
 
@@ -228,3 +228,9 @@ remove this client limit. See the [Codex hooks documentation](https://learn.chat
 The supported client is the local Codex CLI with the native hook and subagent capabilities.
 Verify another client or execution route before relying on equivalent coverage. A tool's name
 or a copied event alone is not evidence that a real callback ran.
+
+## Source
+
+The `ignibyte/aic-workflow` repository is a read-only split of `workflow/` in
+[Ignibyte/aic-nextgen](https://github.com/Ignibyte/aic-nextgen), made on each release tag.
+Issues and pull requests go there. MIT licensed.

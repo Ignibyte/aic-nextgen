@@ -63,4 +63,4 @@ out the older forms.
 Every seam between systems is a PSR interface: PSR-7 and PSR-17 for HTTP messages, PSR-15 for
 middleware and handlers, PSR-11 for the container. No bespoke equivalent of a PSR interface, and
 no framework code from outside AIC. gate:2 keeps runtime `require` to `php`, `ext-*`, `psr/*` and
-`aic/framework`.
+`ignibyte/aic-framework`.

@@ -4,6 +4,15 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Changed
+
+- **The packages are `ignibyte/aic-framework`, `ignibyte/aic-gates` and `ignibyte/aic-workflow`**
+  (#278): every require, path repository, built path (`vendor/ignibyte/aic-*`) and gate pattern
+  follows the new names. `bin/split-packages.sh` splits each package directory with `git subtree`,
+  and `.github/workflows/split.yml` pushes the splits to their read-only repositories on each `v*`
+  tag. Each package has a README, keywords, support links and a `0.1.x-dev` branch alias. An app
+  renames its requires and runs `composer update 'ignibyte/aic-*'`.
+
 ### Fixed
 
 - **The coverage catalog counts for nothing** (#273): #272 left `config/coverage.php` out of the

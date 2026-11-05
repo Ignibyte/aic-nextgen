@@ -4,5 +4,5 @@
     gate:13's taint pass follows into every framework write that declares it a sink.
 -->
 <stubs xmlns="https://getpsalm.org/schema/config">
-    <file name="vendor/aic/gates/config/psalm-client-upload.phpstub"/>
+    <file name="vendor/ignibyte/aic-gates/config/psalm-client-upload.phpstub"/>
 </stubs>

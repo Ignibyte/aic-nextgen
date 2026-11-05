@@ -6,7 +6,7 @@ declare(strict_types=1);
  * workflow/bin/aic-guard.php <root> <home> <verb> <autoload>: the guard's PHP
  * entry (#102), run by aic-guard.sh with the hook's payload on stdin. It
  * loads the autoloader the shim found: the project's, which the package is
- * installed in (vendor/aic/workflow, a symlink when composer took it from a
+ * installed in (vendor/ignibyte/aic-workflow, a symlink when composer took it from a
  * path repository, #105), or the repository's it is checked out in. It hands
  * the call to the guard and turns the verdict into the hook's answer: a
  * refusal on stderr and exit 2, a nudge as a systemMessage on stdout, exit 0

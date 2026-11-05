@@ -4,7 +4,7 @@
 # =============================================================================
 #
 # Blocks Stop when gitleaks finds a secret in the working tree (`--no-git`,
-# aic/gates' config/gitleaks.toml, #116), whenever files changed since the last commit. Runs in
+# ignibyte/aic-gates' config/gitleaks.toml, #116), whenever files changed since the last commit. Runs in
 # every session, pipeline or not. gate:17 scans the git history.
 #
 # The scanner: tools/gitleaks (pinned by vendor/bin/aic-gate tools), else gitleaks
@@ -64,7 +64,7 @@ if [ -z "$(printf '%s%s' "$CHANGED" "$UNTRACKED" | tr -d '[:space:]')" ]; then
     clean_pass_exit
 fi
 
-ARGS=(detect --config vendor/aic/gates/config/gitleaks.toml --no-git --redact --no-banner --exit-code 1)
+ARGS=(detect --config vendor/ignibyte/aic-gates/config/gitleaks.toml --no-git --redact --no-banner --exit-code 1)
 OUTPUT=""
 STATUS=0
 

@@ -24,7 +24,7 @@ once: a second on one render fails it (`DuplicateAnchor`). A gate:23 step may se
 refuses a path with a positional segment (`cN`, `Name.N`) in modules, themes and browser tests: it
 moves when a wrapper or an order changes. A region and a component's own key
 (`content/stock-list`) stays allowed; `TesseraProps::forTarget()` reads props by it. The root
-`.semgrepignore`, an aic/gates stub, lets the rule reach `tests/browser/`.
+`.semgrepignore`, an ignibyte/aic-gates stub, lets the rule reach `tests/browser/`.
 
 Protocol 2 adds the anchor to a target entry: Tessera sends `target [props] [@NAME]`, the anchor last
 whenever the component's element carries one, however it was targeted. So a module reads a

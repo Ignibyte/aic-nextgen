@@ -45,7 +45,7 @@ final readonly class CodeIndexer implements CodeIndex
     /**
      * The installed framework's sources, in an app.
      */
-    private const string FRAMEWORK = 'vendor/aic/framework/src';
+    private const string FRAMEWORK = 'vendor/ignibyte/aic-framework/src';
 
     /**
      * @param string             $root               The project's root.

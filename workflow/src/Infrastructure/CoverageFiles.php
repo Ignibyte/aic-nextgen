@@ -22,7 +22,7 @@ use function str_ends_with;
 /**
  * The files the coverage report reads besides the index, on disk (#232).
  * The framework is `framework/` in AIC's own repository and
- * `vendor/aic/framework/` in an app.
+ * `vendor/ignibyte/aic-framework/` in an app.
  */
 final readonly class CoverageFiles implements CoverageSources
 {
@@ -50,7 +50,7 @@ final readonly class CoverageFiles implements CoverageSources
             : false;
 
         return $markdown === false
-            ? throw new WorkflowRefusal("the framework's docs/tessera.md could not be read: is aic/framework installed?")
+            ? throw new WorkflowRefusal("the framework's docs/tessera.md could not be read: is ignibyte/aic-framework installed?")
             : $markdown;
     }
 
@@ -114,7 +114,7 @@ final readonly class CoverageFiles implements CoverageSources
     {
         return is_dir($this->root . '/framework/src')
             ? $this->root . '/framework'
-            : $this->root . '/vendor/aic/framework';
+            : $this->root . '/vendor/ignibyte/aic-framework';
     }
 
     /**

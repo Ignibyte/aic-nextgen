@@ -24,7 +24,7 @@ interface InstallHost
     public function runOpen(): bool;
 
     /**
-     * @return string What is wrong with composer.json's declaration of `aic/workflow`; empty when it is in `require-dev`.
+     * @return string What is wrong with composer.json's declaration of `ignibyte/aic-workflow`; empty when it is in `require-dev`.
      */
     public function composerProblem(): string;
 

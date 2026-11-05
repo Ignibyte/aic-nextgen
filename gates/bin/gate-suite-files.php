@@ -13,7 +13,7 @@ use Gates\Sniffs\SniffRegistration;
 
 require __DIR__ . '/project.php';
 
-// gate:30 (#130): the tools' root configs are aic/gates' stubs, and composer.json carries the suite's lines.
+// gate:30 (#130): the tools' root configs are ignibyte/aic-gates' stubs, and composer.json carries the suite's lines.
 $root = (new ProjectRoot())->path();
 $package = (new GatesPackage())->path();
 

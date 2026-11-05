@@ -57,7 +57,7 @@ $grants = new ReplaceStep(
     "\$grants = [new RawHtmlGrant('App\\\\Note\\\\Service\\\\NoteBadge', 1, 'probe')];",
 );
 $rule = new ReplaceStep(
-    'vendor/aic/workflow/rules/gate-suite.php',
+    'vendor/ignibyte/aic-workflow/rules/gate-suite.php',
     'gate-suite: the input is not an aic.house-rule/1 object.',
     'gate-suite: the input is not an aic.house-rule/1 object (probe).',
 );

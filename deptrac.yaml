@@ -1,7 +1,7 @@
 # gate:12 — Deptrac, AIC's own config (#116): the layers and the ruleset are
-# aic/gates' base; this file names AIC's paths.
+# ignibyte/aic-gates' base; this file names AIC's paths.
 imports:
-  - vendor/aic/gates/config/deptrac.yaml
+  - vendor/ignibyte/aic-gates/config/deptrac.yaml
 
 deptrac:
   # Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).

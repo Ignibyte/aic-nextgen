@@ -15,7 +15,7 @@ use function json_decode;
 
 /**
  * The project's profile and what its gates read (#130). AIC's own repository
- * holds `aic/gates` as source (`gates/composer.json` naming it), the test
+ * holds `ignibyte/aic-gates` as source (`gates/composer.json` naming it), the test
  * `workflow:init` refuses on (#105); every other project is an app. An app
  * cannot claim AIC's profile: that needs the gates' source in its tree, and
  * then that source is analysed too.
@@ -57,7 +57,7 @@ final readonly class ProjectProfile
         // Deployment recipes: FrankenPHP's Caddyfile and container (#222).
         'deploy/*',
         // The root's own files, by exact name, so a stray file at the root fails: the docs, the manifests, and
-        // the tools' stubs from aic/gates (#130). AGENTS.md holds the workflow's block (#105).
+        // the tools' stubs from ignibyte/aic-gates (#130). AGENTS.md holds the workflow's block (#105).
         'AGENTS.md',
         'captainhook.json',
         'CHANGELOG.md',
@@ -85,14 +85,16 @@ final readonly class ProjectProfile
      * What AIC's repository adds to an app's shell.
      */
     private const array AIC_SHELL = [
-        // aic/framework, in this repo; an app requires it as a package.
+        // ignibyte/aic-framework, in this repo; an app requires it as a package.
         'framework/*',
-        // aic/workflow, the dev-only workflow (#100), in this repo; an app requires it for development.
+        // ignibyte/aic-workflow, the dev-only workflow (#100), in this repo; an app requires it for development.
         'workflow/*',
-        // aic/gates, the gate suite, its entries, the build and the base configs (#116), in this repo.
+        // ignibyte/aic-gates, the gate suite, its entries, the build and the base configs (#116), in this repo.
         'gates/*',
-        // The ticket script.
+        // The ticket script and the package split (#278).
         'bin/*.sh',
+        // The release workflow that splits each package into its repository on a tag (#278).
+        '.github/workflows/split.yml',
         'CONSTITUTION.md',
     ];
 
@@ -115,14 +117,14 @@ final readonly class ProjectProfile
     /**
      * @param string $root The project's root.
      *
-     * @return GateProfile `Aic` when the tree holds aic/gates' own source; `App` otherwise.
+     * @return GateProfile `Aic` when the tree holds ignibyte/aic-gates' own source; `App` otherwise.
      */
     public function profile(string $root): GateProfile
     {
         $path = $root . '/gates/composer.json';
         $decoded = [is_file($path) ? json_decode((string) file_get_contents($path), true) : null];
 
-        return is_array($decoded[0]) && ($decoded[0]['name'] ?? null) === 'aic/gates'
+        return is_array($decoded[0]) && ($decoded[0]['name'] ?? null) === 'ignibyte/aic-gates'
             ? GateProfile::Aic
             : GateProfile::App;
     }
@@ -148,7 +150,7 @@ final readonly class ProjectProfile
                 ['modules', 'themes', BuildPaths::GENERATED],
                 ['modules', 'themes', BuildPaths::GENERATED],
                 ['App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
-                ['AIC\\' => 'vendor/aic/framework/src', 'App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
+                ['AIC\\' => 'vendor/ignibyte/aic-framework/src', 'App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
                 ['composer.json'],
                 ['.claude/hooks', 'bin'],
                 self::APP_SHELL,

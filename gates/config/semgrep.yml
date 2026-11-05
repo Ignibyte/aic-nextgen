@@ -230,7 +230,7 @@ rules:
         - "/workflow/pack/**"
     severity: ERROR
 
-  # The architecture docs ship in aic/framework (#107) and are read by an app's
+  # The architecture docs ship in ignibyte/aic-framework (#107) and are read by an app's
   # agent: they name no AIC process and cite no ticket an app cannot open.
   - id: aic-docs-app-only
     pattern-regex: '/pipeline:|docs/planning|CONSTITUTION\.md|bin/ticket\.sh|elephc-carry'

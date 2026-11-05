@@ -32,7 +32,7 @@ final readonly class ComposerUnusedGate
 
     /**
      * @param ProcessRunner $processRunner Seam wrapping `proc_open`.
-     * @param string        $package       aic/gates' directory: its base configs and elephc pins (#116).
+     * @param string        $package       ignibyte/aic-gates' directory: its base configs and elephc pins (#116).
      * @param PhpFileFinder $phpFileFinder Recursive `*.php` directory predicate.
      */
     public function __construct(

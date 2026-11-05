@@ -1,5 +1,5 @@
 imports:
-  - vendor/aic/gates/config/deptrac.yaml
+  - vendor/ignibyte/aic-gates/config/deptrac.yaml
 
 deptrac:
   paths:

@@ -2,7 +2,7 @@
 <ruleset name="App"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
-    <description>gate:11 (aic/gates' stub, #130): the rules are the package's base; this file names the app's files, its cache and one root namespace per module, which aic-gate init writes from the modules on disk.</description>
+    <description>gate:11 (ignibyte/aic-gates' stub, #130): the rules are the package's base; this file names the app's files, its cache and one root namespace per module, which aic-gate init writes from the modules on disk.</description>
 
     <arg name="basepath" value="."/>
     <arg name="cache" value=".phpcs-cache"/>
@@ -19,7 +19,7 @@
     <exclude-pattern>.rector-cache/*</exclude-pattern>
     <exclude-pattern>.psalm-cache/*</exclude-pattern>
 
-    <rule ref="./vendor/aic/gates/config/phpcs.xml"/>
+    <rule ref="./vendor/ignibyte/aic-gates/config/phpcs.xml"/>
 
     <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
         <properties>

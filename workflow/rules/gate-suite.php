@@ -7,14 +7,14 @@ declare(strict_types=1);
  * for the lines a new module needs.
  *
  * It reads its aic.house-rule/1 input on stdin and judges the changed paths
- * that configure or implement a gate. Any change under gates/ (aic/gates in
+ * that configure or implement a gate. Any change under gates/ (ignibyte/aic-gates in
  * this repo: the runner, the entries, the build, the code and the base configs,
  * #116), to a gate entry at the root, or to a tool's configuration breaks; in
  * phpcs.xml.dist only an added `<element key="modules/<m>/src" value="App\<M>"/>`
  * holds; in config/native-site.json, gate:23's steps, a removed or changed
  * line breaks and an added one holds, so a run may add its new route's step
  * (#130); in composer.json only the keys the suite owns are compared (the
- * scripts, captainhook's settings, the allowed plugins, the aic/gates
+ * scripts, captainhook's settings, the allowed plugins, the ignibyte/aic-gates
  * constraint), so a module's PSR-4 line and a dependency stay free (gates 0 to
  * 4 judge those). Exit 0 holds, 1 breaks (each reason a line), 4 when no such
  * path changed, 3 when the input cannot be read.
@@ -37,9 +37,9 @@ $fixed = [
     'phpstan.neon', 'phpstan-architecture.neon', 'psalm.xml', 'deptrac.yaml', 'pint.json', 'rector.php', 'captainhook.json',
 ];
 // composer.json's keys the suite owns, each a path into the decoded object (#116): its scripts, captainhook's
-// settings, the plugins it allows, and the aic/gates constraint.
+// settings, the plugins it allows, and the ignibyte/aic-gates constraint.
 $owned = [
-    ['scripts'], ['scripts-descriptions'], ['extra', 'captainhook'], ['config', 'allow-plugins'], ['require-dev', 'aic/gates'],
+    ['scripts'], ['scripts-descriptions'], ['extra', 'captainhook'], ['config', 'allow-plugins'], ['require-dev', 'ignibyte/aic-gates'],
 ];
 $at = static fn (mixed $value, string $key): mixed => is_array($value)
     ? $value[$key] ?? null

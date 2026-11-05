@@ -1,18 +1,18 @@
 {
     "name": "aic/app",
-    "description": "Absolute Insanity, AI (AIAI): AIC's fixture app, the site that holds aic/framework's gates (the demo is the demo-reference tag).",
+    "description": "Absolute Insanity, AI (AIAI): AIC's fixture app, the site that holds ignibyte/aic-framework's gates (the demo is the demo-reference tag).",
     "license": "MIT",
     "type": "project",
     "require": {
         "php": "^8.5",
-        "aic/framework": "0.1.x-dev",
+        "ignibyte/aic-framework": "0.1.x-dev",
         "psr/http-factory": "^1.1",
         "psr/http-message": "^2.0",
         "psr/http-server-handler": "^1.0"
     },
     "require-dev": {
-        "aic/gates": "0.1.x-dev",
-        "aic/workflow": "0.1.x-dev",
+        "ignibyte/aic-gates": "0.1.x-dev",
+        "ignibyte/aic-workflow": "0.1.x-dev",
         "roave/security-advisories": "dev-latest"
     },
     "repositories": [
@@ -22,7 +22,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "aic/framework": "0.1.x-dev"
+                    "ignibyte/aic-framework": "0.1.x-dev"
                 }
             }
         },
@@ -32,7 +32,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "aic/gates": "0.1.x-dev"
+                    "ignibyte/aic-gates": "0.1.x-dev"
                 }
             }
         },
@@ -42,7 +42,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "aic/workflow": "0.1.x-dev"
+                    "ignibyte/aic-workflow": "0.1.x-dev"
                 }
             }
         }
@@ -122,7 +122,7 @@
     },
     "scripts-descriptions": {
         "build": "Write the build-time outputs under build/: the generated wiring and escaped templates in build/generated/, build/surface.json, build/assets/ (the theme's stylesheets in aic.css, its other assets copied); and the code wiki in docs/wiki/.",
-        "gate": "Run every quality gate (aic/gates, vendor/bin/aic-gate) and print one gate-summary line; aic-gate --list names each, and composer run gate:N or aic-gate N runs one.",
+        "gate": "Run every quality gate (ignibyte/aic-gates, vendor/bin/aic-gate) and print one gate-summary line; aic-gate --list names each, and composer run gate:N or aic-gate N runs one.",
         "native:serve": "Build the compiled site and serve it on 127.0.0.1:8090 (or the given port) until interrupted."
     }
 }

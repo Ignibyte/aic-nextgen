@@ -1,8 +1,20 @@
 {
-    "name": "aic/framework",
+    "name": "ignibyte/aic-framework",
     "description": "Absolute Insanity, AI (AIAI): the framework, one namespace per system under AIC\\.",
     "license": "MIT",
     "type": "library",
+    "keywords": [
+        "framework",
+        "psr-15",
+        "native",
+        "elephc",
+        "server-rendered"
+    ],
+    "homepage": "https://github.com/Ignibyte/aic-nextgen",
+    "support": {
+        "issues": "https://github.com/Ignibyte/aic-nextgen/issues",
+        "source": "https://github.com/Ignibyte/aic-nextgen"
+    },
     "require": {
         "php": "^8.5",
         "ext-pdo": "*",
@@ -17,6 +29,11 @@
     "autoload": {
         "psr-4": {
             "AIC\\": "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
         }
     }
 }

@@ -5,7 +5,7 @@
 <!-- PHPStan level 10 holds return types; Chad approved restrictReturnTypes=false on 2026-10-22 (#131). -->
 <psalm
     restrictReturnTypes="false"
-    autoloader="vendor/aic/gates/config/psalm-autoload.php"
+    autoloader="vendor/ignibyte/aic-gates/config/psalm-autoload.php"
     errorLevel="1"
     findUnusedCode="true"
     findUnusedVariablesAndParams="true"
@@ -49,9 +49,9 @@
             <directory name=".psalm-cache"/>
         </ignoreFiles>
     </projectFiles>
-    <xi:include href="vendor/aic/gates/config/psalm-issue-handlers.xml"/>
-    <!-- The issue handlers and the forbidden functions are aic/gates' (#116). -->
-    <xi:include href="vendor/aic/gates/config/psalm-forbidden-functions.xml"/>
+    <xi:include href="vendor/ignibyte/aic-gates/config/psalm-issue-handlers.xml"/>
+    <!-- The issue handlers and the forbidden functions are ignibyte/aic-gates' (#116). -->
+    <xi:include href="vendor/ignibyte/aic-gates/config/psalm-forbidden-functions.xml"/>
     <!-- The client_upload taint sources (#199). -->
-    <xi:include href="vendor/aic/gates/config/psalm-stubs.xml"/>
+    <xi:include href="vendor/ignibyte/aic-gates/config/psalm-stubs.xml"/>
 </psalm>

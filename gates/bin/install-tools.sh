@@ -2,7 +2,7 @@
 #
 # Install the non-PHP gate tooling: gitleaks (pinned, into ./tools/, gate:17),
 # semgrep (gate:15) and shellcheck (gate:18). The PHP tools come from
-# aic/gates' require (#116). `vendor/bin/aic-gate tools` runs it in the project's
+# ignibyte/aic-gates' require (#116). `vendor/bin/aic-gate tools` runs it in the project's
 # root, as captainhook's post-merge hook does.
 #
 set -euo pipefail

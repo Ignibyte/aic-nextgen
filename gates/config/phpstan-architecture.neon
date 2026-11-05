@@ -1,4 +1,4 @@
-# gate:9's base config (aic/gates, #116): the phpat settings and the rule
+# gate:9's base config (ignibyte/aic-gates, #116): the phpat settings and the rule
 # classes, on top of gate:8's. phpat runs only the rule classes registered here
 # with the `phpat.test` tag; a rule class that is not listed never runs. A
 # project's phpstan-architecture.neon includes its phpstan.neon and this file.

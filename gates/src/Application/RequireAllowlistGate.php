@@ -40,20 +40,20 @@ final readonly class RequireAllowlistGate
      * Permitted runtime require-key patterns.
      */
     private const array ALLOWED_PATTERNS = [
-        '/^aic\\/framework$/',
+        '/^ignibyte\\/aic-framework$/',
         '/^psr\\//',
         '/^ext-/',
         '/^php$/',
     ];
 
     /**
-     * Patterns allowed in `workflow/composer.json` only (#106): `aic/workflow` is
+     * Patterns allowed in `workflow/composer.json` only (#106): `ignibyte/aic-workflow` is
      * dev-only and never runs in production, its code index parses PHP with
-     * php-parser, and its engine runs the gate suite of aic/gates (#116). The
+     * php-parser, and its engine runs the gate suite of ignibyte/aic-gates (#116). The
      * runtime allow-list above is unchanged.
      */
     private const array WORKFLOW_PATTERNS = [
-        '/^aic\\/gates$/',
+        '/^ignibyte\\/aic-gates$/',
         '/^nikic\\/php-parser$/',
     ];
 
@@ -213,7 +213,7 @@ final readonly class RequireAllowlistGate
     private function reportViolations(array $violations, mixed $stderr): void
     {
         fwrite($stderr, 'gate:2 — violation: composer require contains entries outside the allow-list.' . PHP_EOL);
-        fwrite($stderr, 'Allowed: aic/framework, psr/*, ext-*, php' . PHP_EOL . PHP_EOL);
+        fwrite($stderr, 'Allowed: ignibyte/aic-framework, psr/*, ext-*, php' . PHP_EOL . PHP_EOL);
 
         foreach ($violations as $violation) {
             fwrite($stderr, sprintf('  - %s%s', $violation, PHP_EOL));

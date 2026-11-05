@@ -63,13 +63,13 @@ final readonly class PackPlanner
     public function retired(string $path, ?string $disk, PackLock $packLock, bool $forced): InstallLine
     {
         return match (true) {
-            $disk === null => new InstallLine(InstallAction::Removed, $path, 'retired by aic/workflow; already gone'),
+            $disk === null => new InstallLine(InstallAction::Removed, $path, 'retired by ignibyte/aic-workflow; already gone'),
             $forced || $packLock->hash($path) === $this->hash($disk) => new InstallLine(
                 InstallAction::Removed,
                 $path,
-                'retired by aic/workflow',
+                'retired by ignibyte/aic-workflow',
             ),
-            default => new InstallLine(InstallAction::Kept, $path, 'retired by aic/workflow and edited since; delete it by hand'),
+            default => new InstallLine(InstallAction::Kept, $path, 'retired by ignibyte/aic-workflow and edited since; delete it by hand'),
         };
     }
 

@@ -62,7 +62,7 @@ if ($verb === 'field') {
 require getcwd() . '/vendor/autoload.php';
 
 $item = $argv[3] ?? '';
-$checklist = new SeekerChecklistFile((string) getcwd(), getcwd() . '/vendor/aic/workflow', 'vendor');
+$checklist = new SeekerChecklistFile((string) getcwd(), getcwd() . '/vendor/ignibyte/aic-workflow', 'vendor');
 
 try {
     $ledger = (new SeekerLedgerParser($checklist))->parse((string) file_get_contents($argv[2] ?? ''));

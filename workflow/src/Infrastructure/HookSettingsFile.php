@@ -224,7 +224,7 @@ final readonly class HookSettingsFile implements HookWiring
      */
     private function shipped(): stdClass
     {
-        $broken = "the package's pack/" . PackManifest::HOOKS . ' is missing or broken; reinstall aic/workflow.';
+        $broken = "the package's pack/" . PackManifest::HOOKS . ' is missing or broken; reinstall ignibyte/aic-workflow.';
 
         return $this->decode($this->packSource->bytes($this->packManifest->hooks()) ?? throw new WorkflowRefusal($broken), $broken);
     }

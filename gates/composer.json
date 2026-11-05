@@ -1,14 +1,25 @@
 {
-    "name": "aic/gates",
+    "name": "ignibyte/aic-gates",
     "description": "AIC's gate suite (#116): every gate, the build, the runner and the tools' base configs, for AIC and for an app on it. Dev-only.",
     "license": "MIT",
     "type": "library",
+    "keywords": [
+        "quality",
+        "static-analysis",
+        "gates",
+        "elephc"
+    ],
+    "homepage": "https://github.com/Ignibyte/aic-nextgen",
+    "support": {
+        "issues": "https://github.com/Ignibyte/aic-nextgen/issues",
+        "source": "https://github.com/Ignibyte/aic-nextgen"
+    },
     "require": {
         "php": "^8.5",
         "ext-dom": "*",
         "ext-libxml": "*",
         "ext-pdo": "*",
-        "aic/framework": "0.1.x-dev",
+        "ignibyte/aic-framework": "0.1.x-dev",
         "composer-runtime-api": "^2.2",
         "captainhook/captainhook": "^5.24",
         "captainhook/hook-installer": "^1.0",
@@ -47,5 +58,10 @@
     "bin": [
         "bin/aic-build",
         "bin/aic-gate"
-    ]
+    ],
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    }
 }

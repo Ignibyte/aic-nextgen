@@ -27,7 +27,7 @@ final readonly class ProjectRoot
         $root = getcwd();
 
         if ($root === false || !is_file($root . '/composer.json')) {
-            throw new RuntimeException("aic/gates runs in the project's root, where composer.json is.");
+            throw new RuntimeException("ignibyte/aic-gates runs in the project's root, where composer.json is.");
         }
 
         return $root;

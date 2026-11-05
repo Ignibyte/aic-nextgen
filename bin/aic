@@ -14,7 +14,7 @@ declare(strict_types=1);
  * below; the exit code is the command's. With no command, or an unknown one, it
  * lists the commands and exits 2. The database connection opens on the first
  * query, so a command that does not query runs without one. When the dev-only
- * workflow (aic/workflow, #100) is installed, its `workflow:*` commands join
+ * workflow (ignibyte/aic-workflow, #100) is installed, its `workflow:*` commands join
  * the list, rooted in the directory bin/aic runs in.
  */
 
