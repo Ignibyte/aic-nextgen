@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **A comment is no use of a Tessera name** (#272): `code:coverage` counted a name in any text of
+  an app's PHP files, so a docblock that mentioned `@get` was a use, and an app's own coverage
+  catalog would have used every name. PHP files and templates are read without their comments, and
+  `config/coverage.php`, the catalog, is not read for Tessera names.
 - **The coverage report knows all of Tessera's vocabulary** (#271): `code:coverage` left out the
   actions (`@get` to `@delete`), the runtime (`start`, `signals`, `visit`, `intercept`, `stop`),
   `data-ref` and the `tessera-start` and `tessera-debug` metas. They are rows of the vocabulary

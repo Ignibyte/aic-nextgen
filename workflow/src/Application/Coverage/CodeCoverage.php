@@ -40,11 +40,13 @@ final readonly class CodeCoverage
      * @param CoverageLookup    $coverageLookup    The index.
      * @param CoverageSources   $coverageSources   The files beside it.
      * @param TesseraVocabulary $tesseraVocabulary Reads the Tessera names.
+     * @param TesseraTexts      $tesseraTexts      The texts a Tessera name counts in.
      */
     public function __construct(
         private CoverageLookup $coverageLookup,
         private CoverageSources $coverageSources,
         private TesseraVocabulary $tesseraVocabulary = new TesseraVocabulary(),
+        private TesseraTexts $tesseraTexts = new TesseraTexts(),
     ) {
     }
 
@@ -122,12 +124,14 @@ final readonly class CodeCoverage
      *
      * @throws WorkflowRefusal When the Tessera page cannot be read.
      *
-     * @return list<CoverageSurface> Each Tessera name, with the app files that write it; a member of the script API
-     *                               (#271) only in a script, and never as rendered by AIC, whose code calls none.
+     * @return list<CoverageSurface> Each Tessera name, with the app files that write it outside a comment and the
+     *                               coverage catalog (#272); a member of the script API (#271) only in a script, and
+     *                               never as rendered by AIC, whose code calls none.
      */
     private function tessera(array $texts): array
     {
         $framework = $this->coverageSources->framework();
+        $texts = $this->tesseraTexts->read($texts);
         $page = $this->coverageSources->tesseraPage();
         $runtime = $this->tesseraVocabulary->runtime($page);
         $scripts = array_filter($texts, self::script(...), ARRAY_FILTER_USE_KEY);
