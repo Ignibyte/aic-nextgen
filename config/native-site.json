@@ -29,6 +29,24 @@
             "captures": false
         },
         {
+            "name": "health, unchanged",
+            "method": "GET",
+            "path": "/health",
+            "form": "",
+            "header": "If-None-Match: *",
+            "status": 304,
+            "captures": false
+        },
+        {
+            "name": "health, a stale tag",
+            "method": "GET",
+            "path": "/health",
+            "form": "",
+            "header": "If-None-Match: W/\"stale\"",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "download",
             "method": "GET",
             "path": "/download/hello.txt",
@@ -1281,6 +1299,24 @@
             "path": "/stock.xml?sku=GATE-184,GATE-184-U",
             "form": "",
             "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "stock feed, XML, unchanged",
+            "method": "GET",
+            "path": "/stock.xml?sku=GATE-184,GATE-184-U",
+            "form": "",
+            "header": "If-None-Match: *",
+            "status": 304,
+            "captures": false
+        },
+        {
+            "name": "stock feed, XML, a stale tag",
+            "method": "GET",
+            "path": "/stock.xml?sku=GATE-184,GATE-184-U",
+            "form": "",
+            "header": "If-None-Match: \"stale\"",
             "status": 200,
             "captures": false
         },

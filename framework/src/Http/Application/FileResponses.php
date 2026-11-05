@@ -6,6 +6,7 @@ namespace AIC\Http\Application;
 
 use AIC\Http\Domain\AssetConditions;
 use AIC\Http\Domain\ByteRange;
+use AIC\Http\Domain\EntityTags;
 use AIC\Http\Domain\HttpDate;
 use AIC\Http\Domain\RangeHeader;
 use AIC\Http\Domain\RangeKind;
@@ -19,6 +20,7 @@ use function dechex;
 use function file_get_contents;
 use function filemtime;
 use function filesize;
+use function hash;
 use function is_file;
 use function max;
 use function str_replace;
@@ -26,19 +28,55 @@ use function strlen;
 use function substr;
 use function time;
 
-/** Shared file output: whole files, existing single-byte ranges and named, validated downloads. */
+/** Shared file output: whole files, existing single-byte ranges, named, validated downloads and tagged answers (#269). */
 final readonly class FileResponses
 {
     /**
      * @param ResponseBuilder $responseBuilder Makes the file responses and sets their headers.
      * @param AssetConditions $assetConditions Answers a download's conditions, as an asset's (#196).
      * @param HttpDate        $httpDate        Writes `Last-Modified`.
+     * @param EntityTags      $entityTags      Matches an answer's `If-None-Match` (#269).
      */
     public function __construct(
         private ResponseBuilder $responseBuilder,
         private AssetConditions $assetConditions = new AssetConditions(),
         private HttpDate $httpDate = new HttpDate(),
+        private EntityTags $entityTags = new EntityTags(),
     ) {
+    }
+
+    /**
+     * An answer made in memory, validated by its body (#269): a 200 to a GET or HEAD gets the strong tag of the body's
+     * SHA-256 and `private, no-cache`, so a client revalidates it on each use, and a request whose `If-None-Match`
+     * matches that tag (the weak comparison, `*` included) gets 304 with no body and the same two headers. It has no
+     * modification time, so `If-Modified-Since` is not read.
+     *
+     * @param ResponseInterface      $response      The answer, as written.
+     * @param string                 $body          Its body.
+     * @param ServerRequestInterface $serverRequest The request it answers.
+     *
+     * @throws InvalidArgumentException When a response field is invalid.
+     *
+     * @return ResponseInterface It tagged, or the 304; as it was for another status or method.
+     */
+    public function tagged(
+        ResponseInterface $response,
+        string $body,
+        ServerRequestInterface $serverRequest,
+    ): ResponseInterface {
+        $method = $serverRequest->getMethod();
+
+        if ($response->getStatusCode() !== 200 || ($method !== 'GET' && $method !== 'HEAD')) {
+            return $response;
+        }
+
+        $etag = '"' . hash('sha256', $body) . '"';
+        $answer = $this->entityTags->matches($serverRequest->getHeaderLine('If-None-Match'), $etag, true)
+            ? $this->responseBuilder->create(304, $response->getHeaderLine('Content-Type'), '')
+            : $response;
+        $tagged = $this->responseBuilder->withHeader($answer, 'ETag', $etag);
+
+        return $this->responseBuilder->withHeader($tagged, 'Cache-Control', 'private, no-cache');
     }
 
     /**
