@@ -14,6 +14,7 @@ use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_slice;
+use function in_array;
 use function preg_match;
 use function preg_quote;
 use function sort;
@@ -24,6 +25,7 @@ use function strpos;
 use function substr;
 
 use const ARRAY_FILTER_USE_BOTH;
+use const ARRAY_FILTER_USE_KEY;
 
 /**
  * What of the framework an app uses (#232). A class-like is used by an app
@@ -120,16 +122,24 @@ final readonly class CodeCoverage
      *
      * @throws WorkflowRefusal When the Tessera page cannot be read.
      *
-     * @return list<CoverageSurface> Each Tessera name, with the app files that write it.
+     * @return list<CoverageSurface> Each Tessera name, with the app files that write it; a member of the script API
+     *                               (#271) only in a script, and never as rendered by AIC, whose code calls none.
      */
     private function tessera(array $texts): array
     {
         $framework = $this->coverageSources->framework();
+        $page = $this->coverageSources->tesseraPage();
+        $runtime = $this->tesseraVocabulary->runtime($page);
+        $scripts = array_filter($texts, self::script(...), ARRAY_FILTER_USE_KEY);
         $surfaces = [];
 
-        foreach ($this->tesseraVocabulary->names($this->coverageSources->tesseraPage()) as $name) {
-            $files = array_keys(array_filter($texts, static fn (string $text): bool => self::writes($text, $name)));
-            $rendered = self::writes($framework, $name);
+        foreach ($this->tesseraVocabulary->names($page) as $name) {
+            $member = in_array($name, $runtime, true);
+            $read = $member
+                ? $scripts
+                : $texts;
+            $files = array_keys(array_filter($read, static fn (string $text): bool => self::writes($text, $name)));
+            $rendered = !$member && self::writes($framework, $name);
             $surfaces[] = new CoverageSurface('tessera', $name, self::sorted(array_fill_keys($files, true)), $rendered);
         }
 
@@ -139,15 +149,15 @@ final readonly class CodeCoverage
     /**
      * @param array<string, string> $areas Each file's area.
      *
-     * @return array<string, string> The bytes of each of the app's PHP and template files, by path.
+     * @return array<string, string> The bytes of each of the app's PHP and template files, and of its theme's scripts
+     *                               (#271), by path.
      */
     private function texts(array $areas): array
     {
         $texts = [];
 
         foreach (array_keys($areas) as $path) {
-            $source = self::isApp($path, $areas) && (str_ends_with($path, '.php') || str_ends_with($path, '.phtml'));
-            $texts = $source
+            $texts = self::counted($path, $areas)
                 ? [...$texts, $path => $this->coverageSources->read($path)]
                 : $texts;
         }
@@ -246,6 +256,29 @@ final readonly class CodeCoverage
         $own = str_starts_with($area, 'module:') || str_starts_with($area, 'theme:') || $area === 'project';
 
         return $own && !str_starts_with($path, 'framework/') && !str_starts_with($path, 'vendor/');
+    }
+
+    /**
+     * @param string                $path  A file.
+     * @param array<string, string> $areas Each file's area.
+     *
+     * @return bool Whether coverage reads it: one of the app's PHP and template files, or a script of its theme (#271).
+     */
+    private static function counted(string $path, array $areas): bool
+    {
+        $script = self::script($path) && str_starts_with($areas[$path] ?? '', 'theme:');
+
+        return self::isApp($path, $areas) && (str_ends_with($path, '.php') || str_ends_with($path, '.phtml') || $script);
+    }
+
+    /**
+     * @param string $path A file.
+     *
+     * @return bool Whether it is a script: `.js`, `.mjs` or `.ts`.
+     */
+    private static function script(string $path): bool
+    {
+        return str_ends_with($path, '.js') || str_ends_with($path, '.mjs') || str_ends_with($path, '.ts');
     }
 
     /**

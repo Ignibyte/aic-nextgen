@@ -6,6 +6,10 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **The coverage report knows all of Tessera's vocabulary** (#271): `code:coverage` left out the
+  actions (`@get` to `@delete`), the runtime (`start`, `signals`, `visit`, `intercept`, `stop`),
+  `data-ref` and the `tessera-start` and `tessera-debug` metas. They are rows of the vocabulary
+  table now, a theme's scripts are read too, and a runtime member counts only in a script.
 - **The rendered check takes an XML Api answer** (#270): the workflow's check phase held every Api
   route to `application/json`, so an `XmlResponse` (#233) failed it. An Api route now passes with
   JSON or XML, and a route that answers neither is told both.

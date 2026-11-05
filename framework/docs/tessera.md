@@ -166,9 +166,10 @@ full response, or to its removal as above, never to an independent fragment temp
 ## Vocabulary
 
 What Tessera 0.4.3 reads from a page and what it raises, by name (Tessera's `docs/protocol.md`
-sections 3 and 7.2, `docs/design.md` and its README's events). `bin/aic code:coverage` counts each
-row in an app's PHP and template files, and shows the ones AIC's own code and templates write
-(#232). Keep the table in step when AIC pins another Tessera.
+sections 3 and 7.2, `docs/design.md` and its README's events and runtime). `bin/aic code:coverage`
+counts each row in an app's PHP and template files and its theme's scripts, and shows the ones
+AIC's own code and templates write (#232). A `runtime` row is a member of the script API, counted
+in a theme's scripts alone (#271). Keep the table in step when AIC pins another Tessera.
 
 | Name | Kind | What it is |
 |---|---|---|
@@ -203,9 +204,17 @@ row in an app's PHP and template files, and shows the ones AIC's own code and te
 | `data-loading` | attribute | a signal true while a request runs |
 | `data-ignore` | attribute | Tessera leaves the element's directives alone |
 | `data-ignore-morph` | attribute | a morph leaves the element as it is |
+| `data-ref` | attribute | declares a signal holding the element |
+| `@get` | action | a GET request from an expression |
+| `@post` | action | a POST request from an expression |
+| `@put` | action | a PUT request from an expression |
+| `@patch` | action | a PATCH request from an expression |
+| `@delete` | action | a DELETE request from an expression |
 | `tessera-layout` | meta | the layout a page was rendered with |
 | `tessera-csrf-token` | meta | the CSRF token sent on unsafe requests |
 | `tessera-csrf-header` | meta | the header that carries it |
+| `tessera-start` | meta | `manual` keeps an IIFE from starting itself |
+| `tessera-debug` | meta | `highlight` marks each patched element |
 | `tessera-patch-elements` | stream event | one fragment |
 | `tessera-patch-signals` | stream event | one signal patch |
 | `data-scope` | fragment answer | a signal patch's scope, written by AIC's fragment template (#253) |
@@ -216,3 +225,8 @@ row in an app's PHP and template files, and shows the ones AIC's own code and te
 | `tessera:indeterminate` | browser event | a write may have been saved |
 | `tessera:exchange` | browser event | an exchange settled (the profiler's toolbar reads it) |
 | `tessera:patched` | browser event | an element a patch changed |
+| `start` | runtime | starts Tessera on the document, with its `helpers` |
+| `signals` | runtime | the document's signal scope |
+| `visit` | runtime | visits a URL as a link click would |
+| `intercept` | runtime | adds an interceptor to every request |
+| `stop` | runtime | releases everything Tessera started |
