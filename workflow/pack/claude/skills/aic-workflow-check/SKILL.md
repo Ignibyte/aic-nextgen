@@ -10,8 +10,9 @@ last green verdict), then two of its own:
 
 - **Rendered.** The engine requests each GET route the spec declares from the site in
   `config/workflow.php` and holds it to the declared status (200 unless declared otherwise) and
-  its kind's content type. When the setting is empty, the row is `held` and the run waits on
-  the operator: the site and its setting are theirs. Tell them, and stop; your turn may end.
+  its kind's content type (a Page's HTML, an Api's JSON or XML). When the setting is empty,
+  the row is `held` and the run waits on the operator: the site and its setting are theirs.
+  Tell them, and stop; your turn may end.
   A route that answers 500 is a bug to fix in code; the row quotes the status.
 - **Browser.** When the spec names looks. Explore the page with the Playwright CLI
   (`npx playwright cli`), then write each look as a Playwright test at the path its item names:
