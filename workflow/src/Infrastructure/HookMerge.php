@@ -7,9 +7,14 @@ namespace AIC\Workflow\Infrastructure;
 use AIC\Workflow\Domain\RegexCaptures;
 use stdClass;
 
+use function array_filter;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
+use function array_values;
+use function count;
 use function get_object_vars;
+use function in_array;
 use function is_array;
 use function is_string;
 use function json_encode;
@@ -22,8 +27,9 @@ use const JSON_THROW_ON_ERROR;
  * hook is the guard's when its command names `aic-guard.sh` and ends with
  * the guard's verb. Absent, its group is appended to the event's list; there
  * with another command or matcher, it is replaced in place; the same, it is
- * left. Nothing else in the settings is touched, other hooks in a group
- * included.
+ * left. A guard hook whose event and verb the package no longer ships is
+ * retired (#284), with a group or event it leaves empty. Nothing else in the
+ * settings is touched, other hooks in a group included.
  */
 final readonly class HookMerge
 {
@@ -33,7 +39,8 @@ final readonly class HookMerge
      * @param stdClass $settings The project's settings, checked by ClaudeSettingsFile; changed in place.
      * @param stdClass $shipped  The package's `hooks.json`.
      *
-     * @return array{added: int, upgraded: int} How many of the guard's hooks were added and replaced.
+     * @return array{added: int, upgraded: int, retired: int} How many of the guard's hooks were added, replaced and
+     *                                                        removed.
      */
     public function merge(stdClass $settings, stdClass $shipped): array
     {
@@ -45,9 +52,10 @@ final readonly class HookMerge
             $tally = $this->event($hooks, $this->list($shippedHooks, $key), $key, $tally);
         }
 
-        $settings->hooks = $hooks;
+        $retired = $this->retire($hooks, $shippedHooks);
+        $settings->hooks = $retired['hooks'];
 
-        return ['added' => $tally['added'], 'upgraded' => $tally['upgraded']];
+        return ['added' => $tally['added'], 'upgraded' => $tally['upgraded'], 'retired' => $retired['retired']];
     }
 
     /**
@@ -90,6 +98,88 @@ final readonly class HookMerge
         }
 
         return $objects;
+    }
+
+    /**
+     * @param stdClass $hooks        The settings' hooks after the merge, each event a list of objects.
+     * @param stdClass $shippedHooks The package's hooks.
+     *
+     * @return array{hooks: stdClass, retired: int} The hooks without the guard's whose event and verb are no longer
+     *                                              shipped, an event left empty dropped; how many were removed.
+     */
+    private function retire(stdClass $hooks, stdClass $shippedHooks): array
+    {
+        $kept = new stdClass();
+        $retired = 0;
+
+        foreach ((new JsonReader($hooks, 'hooks'))->keys() as $event) {
+            $left = $this->retireEvent($this->list($hooks, $event), $this->verbs($this->list($shippedHooks, $event)));
+            $retired += $left['retired'];
+
+            if ($left['retired'] > 0 && $left['groups'] === []) {
+                continue;
+            }
+
+            $kept->{$event} = $left['groups'];
+        }
+
+        return ['hooks' => $kept, 'retired' => $retired];
+    }
+
+    /**
+     * @param list<stdClass> $groups An event's groups in the settings.
+     * @param list<string>   $verbs  The guard's verbs the package ships for the event.
+     *
+     * @return array{groups: list<stdClass>, retired: int} The groups left, one the removal emptied dropped; how many
+     *                                                     of the guard's hooks were removed.
+     */
+    private function retireEvent(array $groups, array $verbs): array
+    {
+        $retired = 0;
+        $left = [];
+
+        foreach ($groups as $group) {
+            $removed = $this->retireHooks($group, $verbs);
+            $retired += $removed;
+
+            if ($removed > 0 && $this->list($group, 'hooks') === []) {
+                continue;
+            }
+
+            $left[] = $group;
+        }
+
+        return ['groups' => $left, 'retired' => $retired];
+    }
+
+    /**
+     * @param stdClass     $group A group in the settings; its guard hooks for other verbs are removed in place.
+     * @param list<string> $verbs The guard's verbs the package ships for the group's event.
+     *
+     * @return int How many hooks were removed.
+     */
+    private function retireHooks(stdClass $group, array $verbs): int
+    {
+        $hooks = $this->list($group, 'hooks');
+        $left = array_values(array_filter($hooks, fn (stdClass $hook): bool => in_array($this->verb($hook), ['', ...$verbs], true)));
+
+        if (count($left) === count($hooks)) {
+            return 0;
+        }
+
+        $group->hooks = $left;
+
+        return count($hooks) - count($left);
+    }
+
+    /**
+     * @param list<stdClass> $groups The groups the package ships for an event.
+     *
+     * @return list<string> The guard's verb in each group's one hook.
+     */
+    private function verbs(array $groups): array
+    {
+        return array_map(fn (stdClass $group): string => $this->verb($this->list($group, 'hooks')[0] ?? new stdClass()), $groups);
     }
 
     /**
