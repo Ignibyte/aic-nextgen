@@ -6,6 +6,9 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **The coverage catalog counts for nothing** (#273): #272 left `config/coverage.php` out of the
+  Tessera names, but its `::class` names are code-index edges, so the catalog still used every
+  contract, response and atom. No edge, method or text of the file counts now.
 - **A comment is no use of a Tessera name** (#272): `code:coverage` counted a name in any text of
   an app's PHP files, so a docblock that mentioned `@get` was a use, and an app's own coverage
   catalog would have used every name. PHP files and templates are read without their comments, and

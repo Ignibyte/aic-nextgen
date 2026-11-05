@@ -37,6 +37,11 @@ use const ARRAY_FILTER_USE_KEY;
 final readonly class CodeCoverage
 {
     /**
+     * The app's coverage catalog (#272): no edge, method or text of it counts as a use (#273).
+     */
+    private const string CATALOG = 'config/coverage.php';
+
+    /**
      * @param CoverageLookup    $coverageLookup    The index.
      * @param CoverageSources   $coverageSources   The files beside it.
      * @param TesseraVocabulary $tesseraVocabulary Reads the Tessera names.
@@ -252,14 +257,15 @@ final readonly class CodeCoverage
      * @param string                $path  A file.
      * @param array<string, string> $areas Each file's area.
      *
-     * @return bool Whether it is the app's own: a module's, a theme's or the project's, outside the framework and `vendor/`.
+     * @return bool Whether it is the app's own: a module's, a theme's or the project's, outside the framework and `vendor/`,
+     *              and not the coverage catalog, which names every surface by design (#272, #273).
      */
     private static function isApp(string $path, array $areas): bool
     {
         $area = $areas[$path] ?? '';
         $own = str_starts_with($area, 'module:') || str_starts_with($area, 'theme:') || $area === 'project';
 
-        return $own && !str_starts_with($path, 'framework/') && !str_starts_with($path, 'vendor/');
+        return $own && !str_starts_with($path, 'framework/') && !str_starts_with($path, 'vendor/') && $path !== self::CATALOG;
     }
 
     /**
