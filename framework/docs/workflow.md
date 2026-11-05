@@ -88,7 +88,9 @@ or a call reaches it through a receiver whose class the declarations give: a typ
 property, a `new`, a static call, or a fluent chain followed through each method's declared return
 class. A call it cannot type does not count, so `unused` can miss a use but never invents one. A
 Tessera name counts in an app's PHP and template files and its theme's scripts, a member of the
-script API in those scripts alone (#271), and the report shows the ones AIC itself renders. It is a report: exit 0 whatever is unused. `--missing` lists only the unused, `--json`
+script API in those scripts alone (#271), and the report shows the ones AIC itself renders. A
+comment is no use, and `config/coverage.php`, where an app may keep a catalog that names every
+surface, is not read for Tessera names (#272). It is a report: exit 0 whatever is unused. `--missing` lists only the unused, `--json`
 answers the `aic.console/1` envelope.
 
 Make commands create authored files and edit the owning manifest through the same guard. They
