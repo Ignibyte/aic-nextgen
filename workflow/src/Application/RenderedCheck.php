@@ -15,6 +15,7 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 use Override;
 
 use function array_any;
+use function implode;
 use function rtrim;
 use function str_contains;
 use function str_starts_with;
@@ -22,7 +23,8 @@ use function str_starts_with;
 /**
  * The rendered check (#101): the engine requests each GET route the spec
  * declares from the site in `config/workflow.php` and holds it to the
- * declared status (200 unless declared) and its kind's content type, or, when
+ * declared status (200 unless declared) and its kind's content type (an Api's
+ * JSON or XML, #233, #270), or, when
  * the declared status is a redirect, to a Location (#176): the framework writes
  * every redirect as plain text, whatever the kind. A route
  * that does not answer, or cannot be requested, holds the phase too. Each
@@ -31,9 +33,9 @@ use function str_starts_with;
 final readonly class RenderedCheck implements PhaseCheck
 {
     /**
-     * Each kind's content type; a stream's is its own.
+     * Each kind's content types; a stream's is its own.
      */
-    private const array TYPES = ['Api' => 'application/json', 'Page' => 'text/html'];
+    private const array TYPES = ['Api' => ['application/json', 'application/xml'], 'Page' => ['text/html']];
 
     /**
      * Why routes cannot be requested: no site is set.
@@ -152,7 +154,7 @@ final readonly class RenderedCheck implements PhaseCheck
         }
 
         $renderedAnswer = $this->siteProbe->get(rtrim($this->site, '/') . $path);
-        $type = self::TYPES[$declaredEntry->kind] ?? '';
+        $types = self::TYPES[$declaredEntry->kind] ?? [];
 
         return match (true) {
             !$renderedAnswer instanceof RenderedAnswer => 'nothing answered at ' . $this->site . '.',
@@ -161,10 +163,22 @@ final readonly class RenderedCheck implements PhaseCheck
             self::redirect($declaredEntry->status) => $renderedAnswer->location === ''
                 ? 'answered ' . $renderedAnswer->status . ' without a Location.'
                 : '',
-            $type !== '' && !str_starts_with($renderedAnswer->contentType, $type) => 'answered ' . $renderedAnswer->contentType
-                . ', not ' . $type . '.',
+            !self::typed($renderedAnswer->contentType, $types) => 'answered ' . $renderedAnswer->contentType
+                . ', not ' . implode(' or ', $types) . '.',
             default => '',
         };
+    }
+
+    /**
+     * @param string       $contentType The answer's content type.
+     * @param list<string> $types       Its kind's content types; none for a kind held to no type.
+     *
+     * @return bool Whether the answer is one of them, or the kind names none.
+     */
+    private static function typed(string $contentType, array $types): bool
+    {
+        return $types === []
+            || array_any($types, static fn (string $type): bool => str_starts_with($contentType, $type));
     }
 
     /**

@@ -6,6 +6,9 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **The rendered check takes an XML Api answer** (#270): the workflow's check phase held every Api
+  route to `application/json`, so an `XmlResponse` (#233) failed it. An Api route now passes with
+  JSON or XML, and a route that answers neither is told both.
 - **gate:23 names the compiler's error** (#264): a site that does not compile printed the first 12
   lines of the compiler's output, and elephc prints its warnings first, so with a dozen warnings the
   error never showed. The error lines now come first, then at most 12 warnings and a count of the
