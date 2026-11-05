@@ -45,7 +45,7 @@ final readonly class GateSuite
             ['php', 'gate-normalize-all.php'],
         ],
         2 => [
-            'Runtime require allow-list: php, ext-*, psr/* and aic/framework only.',
+            'Runtime require allow-list: php, ext-*, psr/* and ignibyte/aic-framework only.',
             'app',
             ['php', 'gate-require-allowlist.php'],
         ],
@@ -188,7 +188,7 @@ final readonly class GateSuite
             ['php', 'gate-architecture-docs.php'],
         ],
         30 => [
-            "Suite files: the tools' root configs are aic/gates' stubs (phpcs.xml.dist with one root per module), and "
+            "Suite files: the tools' root configs are ignibyte/aic-gates' stubs (phpcs.xml.dist with one root per module), and "
                 . "composer.json carries the suite's scripts and plugins; generated custom tool registrations are fresh.",
             'app',
             ['php', 'gate-suite-files.php'],

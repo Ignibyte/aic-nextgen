@@ -119,7 +119,7 @@ final readonly class ContractCheck implements PhaseCheck
             : ['the spec is not written yet.'];
 
         return $gates === []
-            ? [...$problems, 'vendor/bin/aic-gate --numbers names no gate: require aic/gates for development (#116).']
+            ? [...$problems, 'vendor/bin/aic-gate --numbers names no gate: require ignibyte/aic-gates for development (#116).']
             : $problems;
     }
 }

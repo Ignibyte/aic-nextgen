@@ -1,8 +1,8 @@
-# gate:8 — PHPStan, AIC's own config (#116): the base in aic/gates holds every
+# gate:8 — PHPStan, AIC's own config (#116): the base in ignibyte/aic-gates holds every
 # setting and rule; this file names AIC's paths, its cache, its excludes, and
 # the two classes only gates/ extends.
 includes:
-    - vendor/aic/gates/config/phpstan.neon
+    - vendor/ignibyte/aic-gates/config/phpstan.neon
 
 parameters:
     # A cache of this repo's own: the default under the system temp directory is

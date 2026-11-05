@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * The workflow's settings (aic/workflow). The engine reads them at every run.
+ * The workflow's settings (ignibyte/aic-workflow). The engine reads them at every run.
  * bin/aic workflow:init wrote this file once and never writes it again: it is
  * the operator's, and the guard keeps the agent out of it.
  */
@@ -34,12 +34,12 @@ return new WorkflowSettings(
         new HouseRule(
             'gate-suite',
             'A run leaves the gate suite as it began, but for the lines a new module needs.',
-            '{vendor}/aic/workflow/rules/gate-suite.php',
+            '{vendor}/ignibyte/aic-workflow/rules/gate-suite.php',
         ),
         new HouseRule(
             'raw-html-grants',
             "A run adds no RawHtml grant and raises none: grants are the operator's.",
-            '{vendor}/aic/workflow/rules/raw-html-grants.php',
+            '{vendor}/ignibyte/aic-workflow/rules/raw-html-grants.php',
         ),
     ],
     // Agentic runs plan to complete without asking; Interactive waits for the operator to confirm each phase exit

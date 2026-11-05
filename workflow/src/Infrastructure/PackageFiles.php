@@ -16,7 +16,7 @@ use function is_string;
 use function strtr;
 
 /**
- * The pack as the package ships it (#105): `pack/` in `aic/workflow`, each
+ * The pack as the package ships it (#105): `pack/` in `ignibyte/aic-workflow`, each
  * file's `{vendor}` set to the project's vendor directory, so the hooks and
  * the settings name the package where composer put it.
  */

@@ -167,7 +167,7 @@ final readonly class PhpWall
     private function reaches(string $text): bool
     {
         return array_any(
-            ['autoload', 'AIC\\Workflow', 'AIC\\\\Workflow', 'vendor/aic/workflow', $this->package],
+            ['autoload', 'AIC\\Workflow', 'AIC\\\\Workflow', 'vendor/ignibyte/aic-workflow', $this->package],
             static fn (string $needle): bool => str_contains($text, $needle),
         ) || preg_match('#(^|[\\s\'"=])workflow/#', $text) === 1;
     }

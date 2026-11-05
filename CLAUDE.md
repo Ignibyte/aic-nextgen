@@ -11,7 +11,7 @@ pinned at main `e0778896`.
 
 **Read `docs/planning/handoff.md` first**, then `roadmap.md` (the standing rules, the five kinds,
 the ten systems, the milestones) and `plan.md` (the decisions and the port map from old wards).
-The architecture set an app's agent reads, shipped in `aic/framework`, is
+The architecture set an app's agent reads, shipped in `ignibyte/aic-framework`, is
 [framework/docs/README.md](framework/docs/README.md); gate:29 holds it to the code.
 
 ## Status
@@ -135,12 +135,12 @@ template writes children through a `RenderPass` (`child()` with markers, `region
 layout), and a Tessera fragment is the same tree rendered by its path. The build generates the
 lookup (`generated/ThemeTemplates` and its parts, #153), ending at the compiled
 framework atom lookup; a module component with no template is refused. #91, the agent workflow,
-runs as #100 to #106; #100: the run engine and its state, the dev-only `aic/workflow` package.
+runs as #100 to #106; #100: the run engine and its state, the dev-only `ignibyte/aic-workflow` package.
 #101: the engine runs the gates itself and keeps each verdict in `var/workflow/evidence.sqlite`
 beside the subject hash of the tree it judged. #102: the guard hook holds the agent to the open run.
 #104: house rules judge each run's change, frozen at begin; the probe sweep is #119.
 #106: the code index (`bin/aic code:index|tree|search|refs`); the plan check reading it is #118.
-#109 (part 1): the inspect commands, dev-only in `aic/workflow`: `bin/aic route:list`,
+#109 (part 1): the inspect commands, dev-only in `ignibyte/aic-workflow`: `bin/aic route:list`,
 `command:list`, `job:list`, `schedule:list`, `module:list`, `module:show <name>` and `kind:list`,
 answered from `build/surface.json` (now with each command's, job's and schedule's module, the
 modules' bindings, middleware, prefixes and factories, and a `kinds` table), text or `--json`
@@ -155,18 +155,18 @@ file (its area once the file is gone from the tree) and existing class (`code:re
 surface and the code index, held by gate:24, read live with `bin/aic code:wiki [<module>|<Class>]`;
 a module's notes go in `modules/<m>/README.md`. After any change under `modules/`, run
 `composer run build` and commit `docs/wiki/` with it. #125: the guard judges a write by where it
-really lands and refuses, at every lever, one outside the project (symlinked `vendor/aic/*`
+really lands and refuses, at every lever, one outside the project (symlinked `vendor/ignibyte/aic-*`
 included) or under `vendor/`; only `/dev/` is open outside.
 #105: `bin/aic workflow:init` installs the workflow in an app (`workflow/pack/`); it refuses here.
 #103: the seeker, an `aic-seeker` subagent that reads each run's change against the AIC checklist;
 #127 made it one advisory pass at code, on the diff plus one hop. #126 (part A): the root is a
 three-module fixture app; a module's handlers build in parts that fit (`HandlerParts`). #116 (part 1):
-the gate suite is the dev package `aic/gates`, run by `vendor/bin/aic-gate`. #130: the app side,
+the gate suite is the dev package `ignibyte/aic-gates`, run by `vendor/bin/aic-gate`. #130: the app side,
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
 layout (#157) and entity (#123); dev-only in
-`aic/workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
+`ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
 is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the twelve make lines.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
 cases (`workflow/probes/sweep/`) in throwaway apps made by `workflow/probes/scratch-app.sh`, the
@@ -200,7 +200,7 @@ Background work is a job; the HTTP server's processes are its workers.
 
 ## Layout (working decision, ticket #1)
 
-- One package, **`aic/framework`**, in `framework/`, namespace `AIC\` with one namespace per
+- One package, **`ignibyte/aic-framework`**, in `framework/`, namespace `AIC\` with one namespace per
   system (`AIC\Http`, `AIC\Routing`, `AIC\Entity`, ...). It reaches the root through a composer
   path repository and moves to its own repo when published.
 - The repo root is AIC's fixture app, `aic/app` (#126): four modules under `modules/`, three cut
@@ -233,7 +233,7 @@ Background work is a job; the HTTP server's processes are its workers.
   Deploy binary, catalog and public files together in an isolated release root and retain prior
   releases for old URLs; the build's current-set cleanup is not atomic in-place deployment.
   See [the asset contract](framework/docs/modules.md#assets). Gate:24 rejects stale outputs.
-- **`aic/workflow`** (#100), in `workflow/`, namespace `AIC\Workflow\`: the agent workflow's
+- **`ignibyte/aic-workflow`** (#100), in `workflow/`, namespace `AIC\Workflow\`: the agent workflow's
   engine, a second package that is dev-only (`require-dev`, a path repository like the
   framework's; Chad, 2026-10-22). `bin/aic` lists its commands when it is installed:
   `workflow:run <ticket>` (one phase per call, plan → code → check → complete),
@@ -281,7 +281,7 @@ Background work is a job; the HTTP server's processes are its workers.
     complete run `rules` and one `rule:<id>` each. AIC ships `gate-suite` and `raw-html-grants`
     in `workflow/rules/`; gate:28 runs their probes.
   - **The code index** (#106): php-parser (in `AIC\Workflow\Parsing\`, the only Deptrac layer
-    that reaches it) over every file git lists (and an app's `vendor/aic/framework/src`), plus the
+    that reaches it) over every file git lists (and an app's `vendor/ignibyte/aic-framework/src`), plus the
     build's surface (routes, commands, jobs, modules), in `var/index/code.sqlite`. A refresh
     re-parses only what changed, and every query refreshes first. `bin/aic code:index [--full]`,
     `code:tree [<module|System|path>]`, `code:search <text>` and `code:refs <name>` need no
@@ -400,7 +400,7 @@ or was split off, what to check by hand.
 `composer run gate` runs every gate on the host (no DDEV), about 15 seconds, and ends with one
 `gate-summary:` line, after one `gate-result: gate:N passed|deferred|failed` line per gate, which
 the workflow engine reads (#101). AIC's own tickets still run the suite in Phase 3. **No baselines. No suppressions. Source fixes only.** The runner
-(aic/gates' `gate-runner.sh`, #116) runs every gate of the suite (`vendor/bin/aic-gate --numbers`,
+(ignibyte/aic-gates' `gate-runner.sh`, #116) runs every gate of the suite (`vendor/bin/aic-gate --numbers`,
 from `Gates\Application\GateSuite`), each as `aic-gate N`, and keeps going after a failure, so one
 run names every failing gate. Each `gate:N` script in `composer.json` is the one-line alias
 `aic-gate N`, and `vendor/bin/aic-gate --list` names each gate with its scope. A gate that cannot run in full yet *defers* and
@@ -429,12 +429,12 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | | | 27 | raw html: every RawHtml use listed and held to its grant |
 | | | 28 | house rules: every shipped rule bites on its probe |
 | | | 29 | architecture docs: `framework/docs/` states what the code has |
-| | | 30 | suite files: the root configs are aic/gates' stubs, composer.json's suite lines as shipped |
+| | | 30 | suite files: the root configs are ignibyte/aic-gates' stubs, composer.json's suite lines as shipped |
 | | | 31 | make scaffold: `modules/scaffold/` is what the make lines make |
 | | | 32 | module markup: no HTML anywhere under `modules/` |
 
-- The gate code is the dev-only package `aic/gates` in `gates/` (#116; namespace `Gates\`,
-  outside `AIC\` and `App\`), required by path like `aic/workflow`; a phpat rule keeps runtime
+- The gate code is the dev-only package `ignibyte/aic-gates` in `gates/` (#116; namespace `Gates\`,
+  outside `AIC\` and `App\`), required by path like `ignibyte/aic-workflow`; a phpat rule keeps runtime
   code from depending on it. It holds the code (`src/`, `architecture/`), the entries, the build,
   the runner and the tool installer (`bin/`, every entry rooted at the working directory), the
   base configs (`config/`) and the elephc pins (`native/`). AIC's root `phpstan.neon`,
@@ -442,7 +442,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   include their bases and name AIC's paths; `pint.json` and `captainhook.json` stay whole at the
   root (CaptainHook resolves paths against its config's directory).
 - **Profiles** (#130): `ProjectProfile` decides `Aic` when `gates/composer.json` names
-  `aic/gates`, `App` otherwise, and gives `GateRoots` (class, source, runtime and site roots, the
+  `ignibyte/aic-gates`, `App` otherwise, and gives `GateRoots` (class, source, runtime and site roots, the
   manifests, the script folders, gate:26's shell). An app runs every gate but 22, 28 and 29;
   gate:21 probes its `modules/`, `themes/` and `build/generated/`, and gate:23 compiles them with the framework from
   `vendor/`. gate:23's steps are `config/native-site.json` (`aic.native-site/1`, one step a
@@ -453,7 +453,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   it refuses here. gate:30 (`SuiteFilesGate`) holds the stubs and composer.json's suite lines; in
   AIC it holds `pint.json`, `captainhook.json` and the `gate:N` aliases. In both profiles it also
   compares `config/phpcs-custom.xml` and `config/phpmd-custom.xml` inside the installed
-  `aic/gates` package with their writers. The AIC source build writes these two files; app builds leave the package alone.
+  `ignibyte/aic-gates` package with their writers. The AIC source build writes these two files; app builds leave the package alone.
 - The base NEON files include `phpstan-rules.php` and `phpstan-architecture-rules.php` in
   `gates/config/`. These PHP configs register the actual rule classes and constructor factories;
   PHPat services keep the `phpat.test` tag, and their attributed callables return every named rule.
@@ -471,7 +471,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   `target/release/elephc` there rather than copying it; native packages cache in
   `ELEPHC_NATIVE_CACHE`, by default `~/.cache/elephc-native`),
   run, and compared with host PHP. Work files land in `.native-gate/`
-  (gitignored); pcre2 and oniguruma are pinned in aic/gates' `native/elephc.{toml,lock}`. Everything
+  (gitignored); pcre2 and oniguruma are pinned in ignibyte/aic-gates' `native/elephc.{toml,lock}`. Everything
   outside those roots runs interpreted by design.
 - gate:25 (`gates/bin/gate-templates.php`, #96/#149/#153) audits template candidates under
   modules/, themes/ and the unsupported old templates/ root, and parses the theme's `.phtml`

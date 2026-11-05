@@ -1,8 +1,8 @@
-# gate:8 — PHPStan (aic/gates' stub, #130): the base holds every setting and
+# gate:8 — PHPStan (ignibyte/aic-gates' stub, #130): the base holds every setting and
 # rule; this file names the app's paths. aic-gate init writes it and gate:30
 # holds it to the package's bytes.
 includes:
-    - vendor/aic/gates/config/phpstan.neon
+    - vendor/ignibyte/aic-gates/config/phpstan.neon
 
 parameters:
     # The app's own cache: the default under the system temp directory is shared

@@ -135,7 +135,7 @@ final class CoreArchitectureTest
             ->shouldNot()
             ->dependOn()
             ->classes(Selector::inNamespace('AIC\\Workflow'))
-            ->because('aic/workflow is a dev-only package; the runtime must run without it.');
+            ->because('ignibyte/aic-workflow is a dev-only package; the runtime must run without it.');
     }
 
     /**

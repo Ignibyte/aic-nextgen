@@ -1,6 +1,6 @@
 # Systems
 
-The framework is one package, `aic/framework`, with one namespace per part under `AIC\`. The parts
+The framework is one package, `ignibyte/aic-framework`, with one namespace per part under `AIC\`. The parts
 group into ten systems. Each section below names its namespaces, what they do and the classes an
 app meets first.
 

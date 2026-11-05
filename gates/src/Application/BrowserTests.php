@@ -22,7 +22,7 @@ use function substr;
 use const PHP_BINARY;
 
 /**
- * An app's browser tests (#174): Playwright specs, run with aic/gates' one
+ * An app's browser tests (#174): Playwright specs, run with ignibyte/aic-gates' one
  * config from the app's root, at the pinned version. The tests an app keeps
  * live in `tests/browser/`; gate:23 runs them all, and `aic-gate browser`
  * runs the ones a look names.
@@ -48,7 +48,7 @@ final readonly class BrowserTests
 
     /**
      * @param ProcessRunner   $processRunner   Runs Playwright.
-     * @param string          $package         aic/gates' own root, where the config is.
+     * @param string          $package         ignibyte/aic-gates' own root, where the config is.
      * @param QuietFileReader $quietFileReader Reads the installed Playwright's version.
      */
     public function __construct(

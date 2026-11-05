@@ -33,7 +33,7 @@ final readonly class ProbeHookSteps implements ProbeStepRunner
     /**
      * The installed guard, relative to the app.
      */
-    private const string GUARD = 'vendor/aic/workflow/bin/aic-guard.sh';
+    private const string GUARD = 'vendor/ignibyte/aic-workflow/bin/aic-guard.sh';
 
     /**
      * @param ProbeShell  $probeShell  Runs in the app.

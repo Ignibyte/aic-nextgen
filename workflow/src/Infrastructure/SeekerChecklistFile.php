@@ -62,7 +62,9 @@ final readonly class SeekerChecklistFile implements SeekerChecklist
             : [];
 
         if ($items === []) {
-            throw new WorkflowRefusal('the seeker checklist (' . $this->path() . ') is missing or names no item; reinstall aic/workflow.');
+            throw new WorkflowRefusal(
+                'the seeker checklist (' . $this->path() . ') is missing or names no item; reinstall ignibyte/aic-workflow.',
+            );
         }
 
         return $items;
@@ -79,6 +81,6 @@ final readonly class SeekerChecklistFile implements SeekerChecklist
 
         return is_string($root) && is_string($package) && str_starts_with($package . '/', $root . '/')
             ? substr($package, strlen($root) + 1) . '/' . self::FILE
-            : $this->vendor . '/aic/workflow/' . self::FILE;
+            : $this->vendor . '/ignibyte/aic-workflow/' . self::FILE;
     }
 }

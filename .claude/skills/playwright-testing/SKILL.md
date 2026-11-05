@@ -13,11 +13,11 @@ Anything front-end facing is looked at with Playwright (Chad, 2026-10-26, #174).
 |---|---|
 | `npx playwright cli` (Playwright 1.62.1, `node_modules/` from `npm ci`) | explore a page from the terminal while writing the test |
 | `tests/browser/<name>.spec.ts` | the look: `import { expect, test } from '@playwright/test'`, `page.goto('/path')`, `expect` assertions |
-| `vendor/bin/aic-gate browser --base-url=https://aic-nextgen.ddev.site:8843 [<test>…]` | run looks against DDEV with aic/gates' config (`gates/browser/playwright.config.mjs`) |
+| `vendor/bin/aic-gate browser --base-url=https://aic-nextgen.ddev.site:8843 [<test>…]` | run looks against DDEV with ignibyte/aic-gates' config (`gates/browser/playwright.config.mjs`) |
 | `composer run gate:23` | run every kept test against the compiled site, signed in as the gate user (`AIC_GATE_LOGIN`, `AIC_GATE_PASSWORD`) |
 | Marley's Browser tab (`mcp__plugin_marley_marley__browser_*`) | when Chad watches |
 
-`package.json` and `package-lock.json` at the root are aic/gates' stubs (gate:30 holds them); `npm ci` installs Playwright, and the Chromium it drives is in `~/.cache/ms-playwright`. `.mcp.json` is owner-managed: never write it.
+`package.json` and `package-lock.json` at the root are ignibyte/aic-gates' stubs (gate:30 holds them); `npm ci` installs Playwright, and the Chromium it drives is in `~/.cache/ms-playwright`. `.mcp.json` is owner-managed: never write it.
 
 ## Where the app is
 

@@ -46,6 +46,8 @@ final readonly class IgnoreLine
     {
         $kept = rtrim((string) $text);
 
-        return ($kept === '' ? '' : $kept . "\n\n") . "# The workflow's runs, evidence and code index (aic/workflow)\n" . self::LINE . "\n";
+        $comment = "# The workflow's runs, evidence and code index (ignibyte/aic-workflow)\n";
+
+        return ($kept === '' ? '' : $kept . "\n\n") . $comment . self::LINE . "\n";
     }
 }

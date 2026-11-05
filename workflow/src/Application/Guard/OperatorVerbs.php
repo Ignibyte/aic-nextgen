@@ -139,7 +139,7 @@ final readonly class OperatorVerbs
     /**
      * @param Invocation $invocation A command.
      *
-     * @return bool Whether it is `composer install|update --no-dev` or `composer remove aic/workflow`.
+     * @return bool Whether it is `composer install|update --no-dev` or `composer remove ignibyte/aic-workflow`.
      */
     private function composer(Invocation $invocation): bool
     {
@@ -150,6 +150,6 @@ final readonly class OperatorVerbs
         $verb = $invocation->arguments()[0] ?? '';
 
         return (in_array($verb, ['install', 'update', 'i', 'u'], true) && in_array('--no-dev', $invocation->words, true))
-            || (in_array($verb, ['remove', 'rm'], true) && in_array('aic/workflow', $invocation->words, true));
+            || (in_array($verb, ['remove', 'rm'], true) && in_array('ignibyte/aic-workflow', $invocation->words, true));
     }
 }

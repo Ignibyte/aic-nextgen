@@ -55,7 +55,7 @@ another file, add its row to the manifest first; the run records it as declared 
 
 ## What never changes
 
-The gates and the tools' configuration (the root files aic/gates ships, which the operator restores
+The gates and the tools' configuration (the root files ignibyte/aic-gates ships, which the operator restores
 with `vendor/bin/aic-gate init` between runs), baselines and suppressions; and what the hook
 walls whatever the manifest says: `config/workflow.php`, `var/workflow/` (but the spec), `var/index/` (the code index),
 `.claude/settings.json`, `.codex/`, the installed `.agents/` skills, the workflow's skills, commands and lock in `.claude/`, `AGENTS.md` and

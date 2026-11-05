@@ -2,7 +2,7 @@
 <ruleset name="AIC"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
-    <description>AIC strict (gate:11), AIC's own ruleset (#116): the rules are aic/gates' base; this file names AIC's files, cache and root namespaces.</description>
+    <description>AIC strict (gate:11), AIC's own ruleset (#116): the rules are ignibyte/aic-gates' base; this file names AIC's files, cache and root namespaces.</description>
 
     <arg name="basepath" value="."/>
     <arg name="cache" value=".phpcs-cache"/>
@@ -28,7 +28,7 @@
     <exclude-pattern>.rector-cache/*</exclude-pattern>
     <exclude-pattern>.psalm-cache/*</exclude-pattern>
 
-    <rule ref="./vendor/aic/gates/config/phpcs.xml"/>
+    <rule ref="./vendor/ignibyte/aic-gates/config/phpcs.xml"/>
 
     <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
         <properties>

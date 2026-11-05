@@ -37,7 +37,7 @@ final readonly class CodexPackCheck
             }
         }
 
-        if (!is_file($this->root . '/' . $this->vendor . '/aic/workflow/bin/aic-codex-guard.sh')) {
+        if (!is_file($this->root . '/' . $this->vendor . '/ignibyte/aic-workflow/bin/aic-codex-guard.sh')) {
             throw new WorkflowRefusal('The installed native guard is missing. Restore the package.');
         }
 

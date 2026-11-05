@@ -1,4 +1,4 @@
-# gate:12's base config (aic/gates, #116): the layers and the ruleset, with no
+# gate:12's base config (ignibyte/aic-gates, #116): the layers and the ruleset, with no
 # project path. A project's deptrac.yaml imports it and names its paths.
 #
 # Deptrac: the layer ladder, per system, inside one package.

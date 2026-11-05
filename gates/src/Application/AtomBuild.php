@@ -131,10 +131,10 @@ final readonly class AtomBuild
         $expected = $this->root . '/framework/src/Component/Contracts/Component.php';
 
         if (
-            !is_array($package[0]) || ($package[0]['name'] ?? null) !== 'aic/framework'
+            !is_array($package[0]) || ($package[0]['name'] ?? null) !== 'ignibyte/aic-framework'
             || $file === false || $expected !== realpath($file)
         ) {
-            throw new InvalidArgumentException('Library compilation requires the actual local aic/framework source package.');
+            throw new InvalidArgumentException('Library compilation requires the actual local ignibyte/aic-framework source package.');
         }
     }
 

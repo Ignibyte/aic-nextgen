@@ -9,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "s=\"$CLAUDE_PROJECT_DIR/{vendor}/aic/workflow/bin/aic-guard.sh\"; test -x \"$s\" || { echo \"aic-guard is missing at $s, so the workflow refuses: the operator runs composer install, then bin/aic workflow:init\" >&2; exit 2; }; exec bash \"$s\" edit",
+            "command": "s=\"$CLAUDE_PROJECT_DIR/{vendor}/ignibyte/aic-workflow/bin/aic-guard.sh\"; test -x \"$s\" || { echo \"aic-guard is missing at $s, so the workflow refuses: the operator runs composer install, then bin/aic workflow:init\" >&2; exit 2; }; exec bash \"$s\" edit",
             "timeout": 30
           }
         ]
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "s=\"$CLAUDE_PROJECT_DIR/{vendor}/aic/workflow/bin/aic-guard.sh\"; test -x \"$s\" || { echo \"aic-guard is missing at $s, so the workflow refuses: the operator runs composer install, then bin/aic workflow:init\" >&2; exit 2; }; exec bash \"$s\" shell",
+            "command": "s=\"$CLAUDE_PROJECT_DIR/{vendor}/ignibyte/aic-workflow/bin/aic-guard.sh\"; test -x \"$s\" || { echo \"aic-guard is missing at $s, so the workflow refuses: the operator runs composer install, then bin/aic workflow:init\" >&2; exit 2; }; exec bash \"$s\" shell",
             "timeout": 30
           }
         ]
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "s=\"$CLAUDE_PROJECT_DIR/{vendor}/aic/workflow/bin/aic-guard.sh\"; test -x \"$s\" || { echo \"aic-guard is missing at $s, so the workflow refuses: the operator runs composer install, then bin/aic workflow:init\" >&2; exit 2; }; exec bash \"$s\" record",
+            "command": "s=\"$CLAUDE_PROJECT_DIR/{vendor}/ignibyte/aic-workflow/bin/aic-guard.sh\"; test -x \"$s\" || { echo \"aic-guard is missing at $s, so the workflow refuses: the operator runs composer install, then bin/aic workflow:init\" >&2; exit 2; }; exec bash \"$s\" record",
             "timeout": 30
           }
         ]
@@ -40,7 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "s=\"$CLAUDE_PROJECT_DIR/{vendor}/aic/workflow/bin/aic-guard.sh\"; test -x \"$s\" || { echo \"aic-guard is missing at $s, so the workflow refuses: the operator runs composer install, then bin/aic workflow:init\" >&2; exit 2; }; exec bash \"$s\" returned",
+            "command": "s=\"$CLAUDE_PROJECT_DIR/{vendor}/ignibyte/aic-workflow/bin/aic-guard.sh\"; test -x \"$s\" || { echo \"aic-guard is missing at $s, so the workflow refuses: the operator runs composer install, then bin/aic workflow:init\" >&2; exit 2; }; exec bash \"$s\" returned",
             "timeout": 30
           }
         ]
@@ -51,7 +51,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "s=\"$CLAUDE_PROJECT_DIR/{vendor}/aic/workflow/bin/aic-guard.sh\"; test -x \"$s\" || { p=$(cat); case \"$p\" in *'\"stop_hook_active\":true'*|*'\"stop_hook_active\": true'*) exit 0;; esac; echo \"aic-guard is missing at $s, so the workflow refuses: the operator runs composer install, then bin/aic workflow:init\" >&2; exit 2; }; exec bash \"$s\" stop",
+            "command": "s=\"$CLAUDE_PROJECT_DIR/{vendor}/ignibyte/aic-workflow/bin/aic-guard.sh\"; test -x \"$s\" || { p=$(cat); case \"$p\" in *'\"stop_hook_active\":true'*|*'\"stop_hook_active\": true'*) exit 0;; esac; echo \"aic-guard is missing at $s, so the workflow refuses: the operator runs composer install, then bin/aic workflow:init\" >&2; exit 2; }; exec bash \"$s\" stop",
             "timeout": 30
           }
         ]

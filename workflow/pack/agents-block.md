@@ -1,6 +1,6 @@
 ## Building this app: the AIC workflow
 
-This app is built through the AIC workflow (`aic/workflow`). Building means any change to the
+This app is built through the AIC workflow (`ignibyte/aic-workflow`). Building means any change to the
 app: its modules, config, templates, assets, or anything else a ticket asks for. A hook holds you
 to the workflow. With no run open you can write only in the ticket directory; during a run, only
 the run's spec and the paths its file manifest declares.
@@ -14,7 +14,7 @@ the run's spec and the paths its file manifest declares.
    a tool's configuration, never add a baseline, never suppress a finding: fix the code. One gate
    runs alone with `composer run gate:<N>`; upgrading the suite (`vendor/bin/aic-gate init`) is
    the operator's, between runs.
-4. Read `{vendor}/aic/framework/docs/README.md` before you plan, then the pages it lists for
+4. Read `{vendor}/ignibyte/aic-framework/docs/README.md` before you plan, then the pages it lists for
    the area the ticket touches: the kinds, the modules and their manifests, the systems, the
    conventions and the gates.
 5. Ask the code index before you name a class or a path: `bin/aic code:tree [<module>]`,

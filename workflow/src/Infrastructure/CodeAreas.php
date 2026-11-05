@@ -12,7 +12,7 @@ use function str_starts_with;
 /**
  * Which part of an AIC project a path belongs to (#106): a module, a
  * framework system (in this repository or installed under
- * `vendor/aic/framework`), the generated wiring, the workflow, the gates, or
+ * `vendor/ignibyte/aic-framework`), the generated wiring, the workflow, the gates, or
  * the project around them.
  */
 final readonly class CodeAreas
@@ -28,7 +28,7 @@ final readonly class CodeAreas
     public function area(string $path): string
     {
         $module = self::regexMatch('#^modules/([^/]+)/#', $path);
-        $system = self::regexMatch('#^(?:vendor/aic/)?framework/src/([^/]+)/#', $path);
+        $system = self::regexMatch('#^(?:vendor/ignibyte/aic-)?framework/src/([^/]+)/#', $path);
         $theme = self::regexMatch('#^themes/([^/]+)/#', $path);
         $area = self::regexMatch('#^(workflow|gates)/#', $path);
 

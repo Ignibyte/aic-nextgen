@@ -10,7 +10,7 @@ index 471478a..90d13b0 100644
 +
  ### Added
  
- - **The guard judges a write by where it really lands** (#125). Found in #118's proof, where an agent followed a symlinked `vendor/aic/*` into AIC's own repository. Every write the guard sees (an edit, an MCP tool's path, a shell redirect, `cp`, `tee`, `sed -i`) is resolved to its real path, through the deepest existing folder for a new file, and refused at every enforcement level, run or no run, when it lands outside the project or under `vendor/`. Only `/dev/` stays open, so `2>/dev/null` still works. Proved in a scratch app whose `vendor/aic/framework` links back to this repository.
+ - **The guard judges a write by where it really lands** (#125). Found in #118's proof, where an agent followed a symlinked `vendor/ignibyte/aic-*` into AIC's own repository. Every write the guard sees (an edit, an MCP tool's path, a shell redirect, `cp`, `tee`, `sed -i`) is resolved to its real path, through the deepest existing folder for a new file, and refused at every enforcement level, run or no run, when it lands outside the project or under `vendor/`. Only `/dev/` stays open, so `2>/dev/null` still works. Proved in a scratch app whose `vendor/ignibyte/aic-framework` links back to this repository.
 diff --git i/modules/note/src/Repository/NoteRepository.php w/modules/note/src/Repository/NoteRepository.php
 index 54f65a2..a44fcf0 100644
 --- i/modules/note/src/Repository/NoteRepository.php

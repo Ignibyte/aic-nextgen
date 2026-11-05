@@ -151,7 +151,7 @@ final readonly class InstallPreflight
     private function file(PackFile $packFile): void
     {
         if ($this->packSource->bytes($packFile) === null) {
-            throw new WorkflowRefusal('the package lacks pack/' . $packFile->source . '; reinstall aic/workflow.');
+            throw new WorkflowRefusal('the package lacks pack/' . $packFile->source . '; reinstall ignibyte/aic-workflow.');
         }
 
         $this->obstacle($packFile->destination);

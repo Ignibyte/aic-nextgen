@@ -4,7 +4,7 @@
 declare(strict_types=1);
 
 /*
- * aic-build (vendor/bin, from aic/gates since #116): write the build-time
+ * aic-build (vendor/bin, from ignibyte/aic-gates since #116): write the build-time
  * manifests (`composer run build`); with `--check`, compare them with the
  * committed files instead (gate:24). It runs in the project's root.
  *
@@ -268,7 +268,7 @@ exit(0);
 
 /**
  * The code wiki's pages (#108), and the pages under docs/wiki/ it would not write;
- * none when aic/workflow is not installed.
+ * none when ignibyte/aic-workflow is not installed.
  *
  * @param string       $root         The project's root.
  * @param BuildOutputs $buildOutputs Finds the orphans.
@@ -279,7 +279,7 @@ exit(0);
  */
 function wiki(string $root, BuildOutputs $buildOutputs): array
 {
-    // The wiki is the workflow's (#108); an app without aic/workflow has none (#116).
+    // The wiki is the workflow's (#108); an app without ignibyte/aic-workflow has none (#116).
     if (!class_exists(WikiKernel::class)) {
         return [[], []];
     }

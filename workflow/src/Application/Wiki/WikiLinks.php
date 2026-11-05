@@ -27,7 +27,7 @@ final readonly class WikiLinks
 
     /**
      * @param string                $docs    The architecture pages' folder, relative to the root: `framework/docs`, or
-     *                                       `vendor/aic/framework/docs` in an app.
+     *                                       `vendor/ignibyte/aic-framework/docs` in an app.
      * @param array<string, string> $kinds   Each kind with a heading in `kinds.md`, and its anchor.
      * @param array<string, string> $systems Each framework namespace, such as `Http`, and its section's anchor in `systems.md`.
      */

@@ -6,10 +6,10 @@ declare(strict_types=1);
  * The app builder's PHP (#119), run by scratch-app.sh in a new app:
  *
  * - `scratch-app.php strip <package-copy>`: the app's composer.json requires
- *   aic/workflow by path from the copy; PHPStan and Psalm read the package and the
+ *   ignibyte/aic-workflow by path from the copy; PHPStan and Psalm read the package and the
  *   sweep's scenarios from the copy (the framework methods only it calls, and
  *   the step values only the scenarios build, stay used); the other tool
- *   configs, and the AIC roots in aic/gates' ProjectProfile (#130), lose the
+ *   configs, and the AIC roots in ignibyte/aic-gates' ProjectProfile (#130), lose the
  *   package's own source and probes, which the app does not hold; and gate:28
  *   and gate:29 go from the suite and their aliases from composer.json, as
  *   they hold AIC's own rules and docs.
@@ -24,7 +24,7 @@ if (($argv[1] ?? '') !== 'strip' || ($argv[2] ?? '') === '') {
 $package = $argv[2];
 $own = '#workflow/(src|bin|rules|probes|composer\\.json)#';
 
-$readme = str_replace('(workflow/', '(vendor/aic/workflow/', (string) file_get_contents('README.md'));
+$readme = str_replace('(workflow/', '(vendor/ignibyte/aic-workflow/', (string) file_get_contents('README.md'));
 file_put_contents('README.md', $readme);
 
 $neon = (string) file_get_contents('phpstan.neon');

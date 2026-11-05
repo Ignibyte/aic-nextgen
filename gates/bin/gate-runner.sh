@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# gate-runner.sh (aic/gates, #116) — `composer run gate`: every gate, one summary
+# gate-runner.sh (ignibyte/aic-gates, #116) — `composer run gate`: every gate, one summary
 # =============================================================================
 #
 # Runs every gate of the suite (`aic-gate --numbers`), in numeric order, each

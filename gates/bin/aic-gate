@@ -4,7 +4,7 @@
 declare(strict_types=1);
 
 /*
- * vendor/bin/aic-gate (#116): the gate suite of aic/gates. With no argument it
+ * vendor/bin/aic-gate (#116): the gate suite of ignibyte/aic-gates. With no argument it
  * runs every gate and ends with one gate-summary line; `aic-gate <N>` runs one
  * gate; `--numbers` and `--list` name them; `init` writes an app's suite files
  * (#130); `tools` installs gitleaks, semgrep, shellcheck and the app's

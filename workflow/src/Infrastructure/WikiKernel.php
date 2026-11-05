@@ -106,7 +106,7 @@ final readonly class WikiKernel
     {
         $docs = is_file($this->root . '/framework/composer.json')
             ? 'framework/docs'
-            : 'vendor/aic/framework/docs';
+            : 'vendor/ignibyte/aic-framework/docs';
         $kinds = $this->read($docs . '/kinds.md');
         $systems = $this->read($docs . '/systems.md');
         $this->read($docs . '/README.md');

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Ignibyte/aic-nextgen/blob/main/workflow/schema/run-event.v1.json",
   "title": "AIC run event, version 1",
-  "description": "One line of a project's run-event log (var/workflow/events.jsonl), written by the aic/workflow engine after each state change it saves (#100). Additive only within version 1: a consumer ignores event types and keys it does not know, and renaming or removing one is aic.run-event/2. event_id is the dedup key; seq rises by one per log and is a reader's cursor, never an identity. Ported from droost-workflow's droost.run-event/1. Each type is one oneOf branch, its type a one-value enum and its payload's shape a $ref; fixed values are enums too, since the validator the repo uses (justinrainbow 6.13) ignores if/then and const (#124).",
+  "description": "One line of a project's run-event log (var/workflow/events.jsonl), written by the ignibyte/aic-workflow engine after each state change it saves (#100). Additive only within version 1: a consumer ignores event types and keys it does not know, and renaming or removing one is aic.run-event/2. event_id is the dedup key; seq rises by one per log and is a reader's cursor, never an identity. Ported from droost-workflow's droost.run-event/1. Each type is one oneOf branch, its type a one-value enum and its payload's shape a $ref; fixed values are enums too, since the validator the repo uses (justinrainbow 6.13) ignores if/then and const (#124).",
   "oneOf": [
     {
       "allOf": [

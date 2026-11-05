@@ -10,7 +10,7 @@ use function array_map;
  * The composer manifests the composer gates check: the root and the framework.
  *
  * The root `composer.json` is the demo app, `aic/app`; `framework/composer.json`
- * is `aic/framework`, path-installed into the root. Normalize (gate:1), the
+ * is `ignibyte/aic-framework`, path-installed into the root. Normalize (gate:1), the
  * require allow-list (gate:2) and the require-checker (gate:3) all read this
  * one list, so a third manifest is added in one place.
  */

@@ -13,7 +13,7 @@ rm -f .phpcs-cache && vendor/bin/phpstan clear-result-cache -q
 composer run gate > "$TMPDIR/gate.log" 2>&1     # Bash run_in_background; about 20 seconds
 ```
 
-The suite runs on the host (no DDEV, no database). Read the log once, after it finishes (CONSTITUTION.md §18.1). aic/gates' runner (`vendor/bin/aic-gate`) runs every gate even after a failure and ends with one line:
+The suite runs on the host (no DDEV, no database). Read the log once, after it finishes (CONSTITUTION.md §18.1). ignibyte/aic-gates' runner (`vendor/bin/aic-gate`) runs every gate even after a failure and ends with one line:
 
 - `gate-summary: N passed, D deferred (…). …` with no `failed` clause: green. Each deferral names its gate and reason.
 - `gate-summary: … K failed (gate:a,gate:b).`: red, and every failing gate is named.
@@ -38,7 +38,7 @@ Fix at the source, then run the whole suite again. Common shapes:
 | gate:15 semgrep | the AIC rules (no static state, no env outside config, …) | follow the rule |
 | gate:21 native | elephc rejects or miscompiles a runtime class | restructure the class; a real compiler defect is a carry |
 
-Composer installs need no `COMPOSER_ROOT_VERSION`: the path repository pins `aic/framework` at `0.1.x-dev`.
+Composer installs need no `COMPOSER_ROOT_VERSION`: the path repository pins `ignibyte/aic-framework` at `0.1.x-dev`.
 
 ## Step 3 — Browser re-check
 

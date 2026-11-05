@@ -47,7 +47,7 @@ final readonly class NativeCompileGate
 
     /**
      * @param NativeToolchain    $nativeToolchain    The compiler, its environment and the PHP oracle.
-     * @param string             $package            aic/gates' directory: its base configs and elephc pins (#116).
+     * @param string             $package            ignibyte/aic-gates' directory: its base configs and elephc pins (#116).
      * @param NativeProbe        $nativeProbe        Probes one runtime class.
      * @param RuntimeClassFinder $runtimeClassFinder Lists the runtime corpus.
      * @param ClosureBundler     $closureBundler     Collects a class's closure.
@@ -234,7 +234,7 @@ final readonly class NativeCompileGate
     {
         foreach (self::PACKAGE_FILES as $file) {
             if (!copy($this->package . '/native/' . $file, $workDir . '/' . $file)) {
-                throw new RuntimeException('gate:21 — cannot copy aic/gates native/' . $file);
+                throw new RuntimeException('gate:21 — cannot copy ignibyte/aic-gates native/' . $file);
             }
         }
     }

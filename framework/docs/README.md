@@ -9,7 +9,7 @@ same code runs under PHP: php-fpm or FrankenPHP, the runtime for production toda
 
 These pages describe AIC as it stands. They are written for the agent building an app on it: paths
 are the app's (`modules/<name>/`, `config/`, `build/generated/`), and framework code is named by its
-class (`AIC\Module\Contracts\ModuleManifest`), which sits under `vendor/aic/framework/src/`.
+class (`AIC\Module\Contracts\ModuleManifest`), which sits under `vendor/ignibyte/aic-framework/src/`.
 
 ## Reading order
 
@@ -39,8 +39,8 @@ Read the first three before you plan a change; the rest when the change touches 
 
 | What | Where an app sees it |
 |---|---|
-| Framework source | `vendor/aic/framework/src/`, namespace `AIC\` |
-| These pages | `vendor/aic/framework/docs/` |
+| Framework source | `vendor/ignibyte/aic-framework/src/`, namespace `AIC\` |
+| These pages | `vendor/ignibyte/aic-framework/docs/` |
 | The app's modules | `modules/<name>/`, namespace `App\<Name>\` |
 | The generated wiring | `build/generated/`, namespace `App\Generated\`, written by `composer run build` |
 | Every route and command with its kind | `build/surface.json`, written by the same build |

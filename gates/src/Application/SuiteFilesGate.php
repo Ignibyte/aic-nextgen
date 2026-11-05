@@ -18,7 +18,7 @@ use const STDERR;
 use const STDOUT;
 
 /**
- * gate:30 (#130): the suite's files are as aic/gates ships them. In an app,
+ * gate:30 (#130): the suite's files are as ignibyte/aic-gates ships them. In an app,
  * every tool's root config is the package's stub, byte for byte (phpcs.xml.dist
  * with one root per module), and composer.json carries the suite's scripts and
  * plugins; `vendor/bin/aic-gate init` restores the files. In AIC's own
@@ -111,7 +111,7 @@ final readonly class SuiteFilesGate
             $path = $root . '/' . $name;
             $state = match (true) {
                 !is_file($path) => ' is missing',
-                file_get_contents($path) !== $this->suiteStubs->expected($root, $name) => " is not aic/gates' stub",
+                file_get_contents($path) !== $this->suiteStubs->expected($root, $name) => " is not ignibyte/aic-gates' stub",
                 default => '',
             };
 
@@ -137,7 +137,7 @@ final readonly class SuiteFilesGate
                 continue;
             }
 
-            $findings[] = $path . ' is missing or stale; rebuild aic/gates from its source or reinstall the package.';
+            $findings[] = $path . ' is missing or stale; rebuild ignibyte/aic-gates from its source or reinstall the package.';
         }
 
         return $findings;

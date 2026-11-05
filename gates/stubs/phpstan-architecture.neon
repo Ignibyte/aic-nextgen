@@ -1,8 +1,8 @@
-# gate:9 — phpat (aic/gates' stub, #130), on top of gate:8's configuration: the
-# base registers aic/gates' architecture rules, which judge the app's classes.
+# gate:9 — phpat (ignibyte/aic-gates' stub, #130), on top of gate:8's configuration: the
+# base registers ignibyte/aic-gates' architecture rules, which judge the app's classes.
 includes:
     - phpstan.neon
-    - vendor/aic/gates/config/phpstan-architecture.neon
+    - vendor/ignibyte/aic-gates/config/phpstan-architecture.neon
 
 parameters:
     # Its own cache beside gate:8's.

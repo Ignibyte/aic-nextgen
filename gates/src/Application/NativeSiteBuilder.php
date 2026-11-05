@@ -29,7 +29,7 @@ final readonly class NativeSiteBuilder
 {
     /**
      * @param NativeToolchain    $nativeToolchain    The compiler.
-     * @param string             $package            aic/gates' directory: its base configs and elephc pins (#116).
+     * @param string             $package            ignibyte/aic-gates' directory: its base configs and elephc pins (#116).
      * @param RuntimeClassFinder $runtimeClassFinder Finds the runtime classes.
      * @param ComposerPsr4Loader $composerPsr4Loader Reads the PSR-4 map.
      * @param ClosureBundler     $closureBundler     Orders each class's closure.

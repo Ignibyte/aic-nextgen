@@ -67,7 +67,10 @@ final readonly class SuiteInit
     public function run(string $root, mixed $stdout = STDOUT, mixed $stderr = STDERR): int
     {
         if ($this->projectProfile->profile($root) === GateProfile::Aic) {
-            fwrite($stderr, 'aic-gate init — refused: this is aic/gates\' own repository, and its root files are its own.' . PHP_EOL);
+            fwrite(
+                $stderr,
+                'aic-gate init — refused: this is ignibyte/aic-gates\' own repository, and its root files are its own.' . PHP_EOL,
+            );
 
             return 2;
         }
@@ -109,7 +112,8 @@ final readonly class SuiteInit
         $head = $text === '' || str_ends_with($text, "\n")
             ? $text
             : $text . "\n";
-        file_put_contents($path, $head . "\n# aic/gates' work directories and tool caches (#130)\n" . implode("\n", $missing) . "\n");
+        $section = "\n# ignibyte/aic-gates' work directories and tool caches (#130)\n";
+        file_put_contents($path, $head . $section . implode("\n", $missing) . "\n");
         fwrite($stdout, 'aic-gate init — appended ' . implode(', ', $missing) . ' to .gitignore' . PHP_EOL);
     }
 }

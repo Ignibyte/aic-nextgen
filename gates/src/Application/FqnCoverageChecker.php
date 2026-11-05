@@ -27,7 +27,7 @@ use function str_starts_with;
  *   2. Allowlist hit — an exact FQN or a trailing-`\` namespace prefix entry.
  *   3. Manifest's own PSR-4 prefix hit (intra-package use).
  *   4. Declared-prefix hit. The app's `AIC\…` uses pass here, through its
- *      `aic/framework` require.
+ *      `ignibyte/aic-framework` require.
  *   5. A namespaced internal class whose actual extension is required also passes.
  *      Extension types are already loaded, so coverage never invokes user autoload.
  */

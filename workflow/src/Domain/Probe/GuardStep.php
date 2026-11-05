@@ -9,7 +9,7 @@ use Override;
 /**
  * One call of the installed guard in the app (#119): a hook payload, with
  * `{root}` standing for the app's directory, into
- * `vendor/aic/workflow/bin/aic-guard.sh <verb>`. It holds when the guard
+ * `vendor/ignibyte/aic-workflow/bin/aic-guard.sh <verb>`. It holds when the guard
  * exits as expected and its answer holds the text.
  */
 final readonly class GuardStep implements ProbeStep

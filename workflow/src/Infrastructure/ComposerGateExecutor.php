@@ -19,7 +19,7 @@ use function set_error_handler;
 use function trim;
 
 /**
- * The project's gate suite (#101): `composer run gate`, which aic/gates'
+ * The project's gate suite (#101): `composer run gate`, which ignibyte/aic-gates'
  * runner answers (#116), with the composer timeout off and the run's own
  * timeout from `config/workflow.php`; the gates' names come from
  * `vendor/bin/aic-gate --numbers`. `pgrep` finds a run already live in the
@@ -41,7 +41,7 @@ final readonly class ComposerGateExecutor implements GateExecutor
 
     /**
      * @return list<string> The suite's gates, `gate:N` by N, as `vendor/bin/aic-gate --numbers` names them (#116); none
-     *                      when aic/gates is not installed or does not answer.
+     *                      when ignibyte/aic-gates is not installed or does not answer.
      */
     #[Override]
     public function names(): array
@@ -61,7 +61,7 @@ final readonly class ComposerGateExecutor implements GateExecutor
     }
 
     /**
-     * @return bool Whether `pgrep` finds aic/gates' `gate-runner.sh` running in this project, from wherever the package
+     * @return bool Whether `pgrep` finds ignibyte/aic-gates' `gate-runner.sh` running in this project, from wherever the package
      *              is installed (#116); another project's (Lotline runs its own on the same machine) shares no cache with it.
      */
     #[Override]

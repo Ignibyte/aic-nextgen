@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="AIC base">
-    <description>gate:11's base ruleset (aic/gates, #116): PSR-12 plus the full Slevomat coding standard, with no project path. A project's phpcs.xml.dist refs it and names its files, its cache and its root namespaces.</description>
+    <description>gate:11's base ruleset (ignibyte/aic-gates, #116): PSR-12 plus the full Slevomat coding standard, with no project path. A project's phpcs.xml.dist refs it and names its files, its cache and its root namespaces.</description>
 
     <arg name="extensions" value="php"/>
     <arg name="colors"/>
@@ -142,7 +142,7 @@
     <!--
         No superglobals (CLAUDE.md conventions); semgrep's aic-no-superglobals
         is the gate:15 side. The SAPI boundary is the one place that reads
-        them: bootstrap/serve.php snapshots the request, and aic/gates'
+        them: bootstrap/serve.php snapshots the request, and ignibyte/aic-gates'
         bin/gate-*.php entry scripts read HOME for the tool lookup.
     -->
     <rule ref="SlevomatCodingStandard.Variables.DisallowSuperGlobalVariable">

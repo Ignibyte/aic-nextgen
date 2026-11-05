@@ -1,4 +1,4 @@
-# gate:8's base config (aic/gates, #116): PHPStan level 10 with bleeding edge,
+# gate:8's base config (ignibyte/aic-gates, #116): PHPStan level 10 with bleeding edge,
 # every setting and rule, and no project path. A project's phpstan.neon
 # includes it and names its own paths, cache and excludes; an allowIn names a
 # path by %currentWorkingDirectory%, the project's root.
@@ -6,7 +6,7 @@
 # phpstan-strict-rules, phpstan-deprecation-rules, phpat, shipmonk-rules,
 # shipmonk/dead-code-detector, ergebnis/phpstan-rules, spaze/phpstan-disallowed-calls,
 # tomasvotruba/cognitive-complexity and tomasvotruba/type-coverage load through
-# phpstan/extension-installer from aic/gates' require.
+# phpstan/extension-installer from ignibyte/aic-gates' require.
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
     - phpstan-rules.php

@@ -1,7 +1,7 @@
 ## Building this app: the AIC workflow
 
 Use the installed AIC workflow for every application change.
-Read `{vendor}/aic/framework/docs/README.md` before you plan.
+Read `{vendor}/ignibyte/aic-framework/docs/README.md` before you plan.
 Use the phase skills in `.agents/skills/aic-workflow-*`.
 Start with `$aic-workflow-start`.
 Run `bin/aic workflow:status` before changing a file.

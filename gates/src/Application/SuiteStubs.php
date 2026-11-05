@@ -21,7 +21,7 @@ use function ucwords;
 use const GLOB_ONLYDIR;
 
 /**
- * The root files an app takes from aic/gates (#130): each tool's stub, from the
+ * The root files an app takes from ignibyte/aic-gates (#130): each tool's stub, from the
  * package's `stubs/`, as the project should hold it. phpcs.xml.dist is the one
  * that varies: the stub, with one root namespace per module on disk and the
  * theme's two (#153), the lines the build prints, before the generated wiring's.
@@ -51,7 +51,7 @@ final readonly class SuiteStubs
     private const string GENERATED = '                <element key="' . BuildPaths::GENERATED . '" value="App\\Generated"/>';
 
     /**
-     * @param string $package aic/gates' directory.
+     * @param string $package ignibyte/aic-gates' directory.
      */
     public function __construct(
         private string $package,

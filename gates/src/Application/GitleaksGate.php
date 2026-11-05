@@ -24,7 +24,7 @@ final readonly class GitleaksGate
 {
     /**
      * @param ExternalTool $externalTool Locates and runs the tool binary.
-     * @param string       $package      aic/gates' directory: its base configs and elephc pins (#116).
+     * @param string       $package      ignibyte/aic-gates' directory: its base configs and elephc pins (#116).
      * @param string       $home         Resolved HOME-env value (read at the wrapper boundary, never inside the class).
      */
     public function __construct(

@@ -50,8 +50,8 @@ final class TemplateUsageProvider extends ReflectionBasedMemberUsageProvider
         BuildPaths::GENERATED . '/templates',
         'framework/src/Component/Application/Templates',
         'framework/templates/tessera',
-        'vendor/aic/framework/src/Component/Application/Templates',
-        'vendor/aic/framework/templates/tessera',
+        'vendor/ignibyte/aic-framework/src/Component/Application/Templates',
+        'vendor/ignibyte/aic-framework/templates/tessera',
     ];
 
     /**

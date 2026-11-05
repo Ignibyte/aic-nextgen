@@ -1,6 +1,6 @@
 # Workflow
 
-`aic/workflow` is a development package. It installs an app's agent instructions, skills, review
+`ignibyte/aic-workflow` is a development package. It installs an app's agent instructions, skills, review
 role and guards, then runs the app's work through a durable engine. Runtime framework classes do
 not depend on it. Read [conventions.md](conventions.md) and the relevant architecture pages before
 planning; use the app's generated `docs/wiki/` for its module inventory.

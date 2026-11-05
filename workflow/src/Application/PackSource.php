@@ -7,7 +7,7 @@ namespace AIC\Workflow\Application;
 use AIC\Workflow\Domain\PackFile;
 
 /**
- * The pack `aic/workflow` ships (#105): its rows and their bytes, as the
+ * The pack `ignibyte/aic-workflow` ships (#105): its rows and their bytes, as the
  * project's vendor directory makes them.
  */
 interface PackSource

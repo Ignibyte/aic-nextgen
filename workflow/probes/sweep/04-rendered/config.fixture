@@ -13,8 +13,8 @@ return new WorkflowSettings(
     enforcement: Enforcement::Hard,
     requireRun: Enforcement::Hard,
     houseRules: [
-        new HouseRule('gate-suite', 'A run leaves the gate suite as it began.', 'vendor/aic/workflow/rules/gate-suite.php'),
-        new HouseRule('raw-html-grants', 'A run adds no RawHtml grant.', 'vendor/aic/workflow/rules/raw-html-grants.php'),
+        new HouseRule('gate-suite', 'A run leaves the gate suite as it began.', 'vendor/ignibyte/aic-workflow/rules/gate-suite.php'),
+        new HouseRule('raw-html-grants', 'A run adds no RawHtml grant.', 'vendor/ignibyte/aic-workflow/rules/raw-html-grants.php'),
     ],
     mode: Mode::Agentic,
 );

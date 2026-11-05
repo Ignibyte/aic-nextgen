@@ -18,7 +18,7 @@ use function uksort;
  * Read from `vendor/composer/autoload_psr4.php`, which composer keeps current
  * as files are added (a classmap needs a dump). Longer prefixes win, so
  * `Gates\Architecture\` beats `Gates\`. Paths come back resolved, so the
- * `vendor/aic/framework` symlink leads to `framework/src`.
+ * `vendor/ignibyte/aic-framework` symlink leads to `framework/src`.
  */
 final readonly class Psr4Map
 {

@@ -19,7 +19,7 @@ use const JSON_THROW_ON_ERROR;
 use const JSON_UNESCAPED_SLASHES;
 
 /**
- * What composer.json carries for the suite (#130): the scripts as aic/gates
+ * What composer.json carries for the suite (#130): the scripts as ignibyte/aic-gates
  * ships them (`build`, `gate`, `native:serve`, and one `gate:N` alias per gate
  * the project runs, no other script named `gate…`) and the four plugins the
  * tools need, allowed. gate:30 checks them; `aic-gate init` prints them,

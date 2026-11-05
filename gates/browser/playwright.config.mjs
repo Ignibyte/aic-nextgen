@@ -1,4 +1,4 @@
-// aic/gates' one Playwright config (#174): every browser test an app keeps in
+// ignibyte/aic-gates' one Playwright config (#174): every browser test an app keeps in
 // tests/browser/ and every look a workflow run names runs with it, from the
 // app's root. gate:23 sets the base URL to the compiled site it serves;
 // `vendor/bin/aic-gate browser` sets it to the site a look is taken against.
@@ -10,7 +10,7 @@ import { resolve } from 'node:path';
 
 const env = process.env;
 
-// Playwright reads relative paths from this file's folder, inside aic/gates; the
+// Playwright reads relative paths from this file's folder, inside ignibyte/aic-gates; the
 // tests and their output belong to the app, whose root is the working directory.
 const root = process.cwd();
 

@@ -1,12 +1,12 @@
 # gate:9 — phpat architecture rules, AIC's own config (#116), on top of the
-# gate:8 configuration. The base in aic/gates registers the rule classes.
+# gate:8 configuration. The base in ignibyte/aic-gates registers the rule classes.
 # gates/architecture is analysed here, not in phpstan.neon: only this config
 # registers the rule classes, so only here does the dead-code detector see
 # their methods as used. Every gate:8 rule still applies to them through the
 # include.
 includes:
     - phpstan.neon
-    - vendor/aic/gates/config/phpstan-architecture.neon
+    - vendor/ignibyte/aic-gates/config/phpstan-architecture.neon
 
 parameters:
     # Its own cache beside gate:8's (#74): the two configs analyse different paths.
