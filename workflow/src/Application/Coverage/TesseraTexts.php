@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Coverage;
 
-use function array_diff_key;
 use function is_string;
 use function str_ends_with;
 use function token_get_all;
@@ -14,26 +13,21 @@ use const T_DOC_COMMENT;
 
 /**
  * The app's texts as the coverage report reads them for Tessera names (#272): a PHP file or a template without its
- * comments, since a docblock that mentions a name is no use of it, and none of `config/coverage.php`, the app's
- * coverage catalog, which names every surface by design. A script is read as it is.
+ * comments, since a docblock that mentions a name is no use of it. A script is read as it is. The app's coverage
+ * catalog never reaches it: `CodeCoverage` reads no part of `config/coverage.php` (#273).
  */
 final readonly class TesseraTexts
 {
     /**
-     * The app's coverage catalog.
-     */
-    private const string CATALOG = 'config/coverage.php';
-
-    /**
      * @param array<string, string> $texts The app's files' bytes, by path.
      *
-     * @return array<string, string> The ones a Tessera name counts in, PHP and templates without their comments.
+     * @return array<string, string> Them as a Tessera name counts in them, PHP and templates without their comments.
      */
     public function read(array $texts): array
     {
         $read = [];
 
-        foreach (array_diff_key($texts, [self::CATALOG => true]) as $path => $text) {
+        foreach ($texts as $path => $text) {
             $read[$path] = self::uncommented($path, $text);
         }
 
