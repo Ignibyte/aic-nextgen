@@ -96,11 +96,11 @@ final readonly class HookSettingsFile implements HookWiring
             $this->projectFiles->write($this->packManifest->settings(), $this->encode($settings, $text));
         }
 
-        $why = "the guard's hooks: " . $tally['added'] . ' added, ' . $tally['upgraded'] . ' upgraded'
+        $why = "the guard's hooks: " . $tally['added'] . ' added, ' . $tally['upgraded'] . ' upgraded, ' . $tally['retired'] . ' retired'
             . ($text === null ? '' : '; the content is kept, the layout re-indented');
 
         return [
-            $tally['added'] + $tally['upgraded'] === 0
+            $tally['added'] + $tally['upgraded'] + $tally['retired'] === 0
                 ? new InstallLine(InstallAction::Current, $this->packManifest->settings(), "the guard's hooks are wired")
                 : new InstallLine(InstallAction::Wrote, $this->packManifest->settings(), $why),
             ...$capLines,

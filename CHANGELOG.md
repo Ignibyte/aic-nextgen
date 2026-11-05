@@ -15,6 +15,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **`workflow:init` retires a guard hook the pack no longer ships** (#284): the merge into
+  `.claude/settings.json` (and `.codex/hooks.json`) added and replaced the guard's hooks but kept
+  one the pack had dropped, so an app installed before #169 still ran `returned` on `PostToolUse`,
+  and after the package rename that hook named a guard path that no longer exists and failed
+  closed. A guard hook whose event and verb the pack does not ship is removed now, with a group or
+  event it leaves empty; other hooks are untouched, and the install line counts it as retired.
 - **The coverage catalog counts for nothing** (#273): #272 left `config/coverage.php` out of the
   Tessera names, but its `::class` names are code-index edges, so the catalog still used every
   contract, response and atom. No edge, method or text of the file counts now.
