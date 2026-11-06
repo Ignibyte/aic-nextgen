@@ -60,6 +60,12 @@
         "bin/aic-gate"
     ],
     "extra": {
+        "aic-scaffold": {
+            "engine": [
+                "bin/aic-gate",
+                "init"
+            ]
+        },
         "branch-alias": {
             "dev-main": "0.1.x-dev"
         }

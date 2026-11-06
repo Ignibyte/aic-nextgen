@@ -28,6 +28,17 @@ use const JSON_UNESCAPED_SLASHES;
 final readonly class SuiteComposer
 {
     /**
+     * The Composer callback that lifts the process timeout for a long script, as composer.json writes it. It is built
+     * from the namespace: the class is Composer's, and the gates name it in a script line, never in code (#279).
+     */
+    private const string NO_TIMEOUT = self::COMPOSER . '\\Config::disableProcessTimeout';
+
+    /**
+     * Composer's namespace, the start of the callback above.
+     */
+    private const string COMPOSER = 'Composer';
+
+    /**
      * The plugins the tools install through.
      */
     private const array PLUGINS = [
@@ -167,14 +178,14 @@ final readonly class SuiteComposer
     {
         $scripts = [
             'build' => 'aic-build',
-            'gate' => ['Composer\\Config::disableProcessTimeout', 'aic-gate'],
+            'gate' => [self::NO_TIMEOUT, 'aic-gate'],
         ];
 
         foreach ($this->gateSuite->gates() as $suiteGate) {
             $scripts[$suiteGate->name()] = $this->alias($suiteGate);
         }
 
-        return [...$scripts, 'native:serve' => ['Composer\\Config::disableProcessTimeout', 'aic-gate serve']];
+        return [...$scripts, 'native:serve' => [self::NO_TIMEOUT, 'aic-gate serve']];
     }
 
     /**

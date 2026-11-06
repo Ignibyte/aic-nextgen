@@ -32,6 +32,46 @@
         }
     },
     "extra": {
+        "aic-scaffold": {
+            "file-mapping": {
+                ".gitignore": {
+                    "mode": "append",
+                    "path": "scaffold/gitignore"
+                },
+                "bin/aic": {
+                    "mode": "replace",
+                    "path": "scaffold/bin/aic"
+                },
+                "bootstrap/serve.php": {
+                    "mode": "replace",
+                    "path": "scaffold/bootstrap/serve.php"
+                },
+                "config/app.php": {
+                    "mode": "add-once",
+                    "path": "scaffold/config/app.php"
+                },
+                "config/database.php": {
+                    "mode": "add-once",
+                    "path": "scaffold/config/database.php"
+                },
+                "config/mail.php": {
+                    "mode": "add-once",
+                    "path": "scaffold/config/mail.php"
+                },
+                "config/profiler.php": {
+                    "mode": "add-once",
+                    "path": "scaffold/config/profiler.php"
+                },
+                "config/secret.php": {
+                    "mode": "add-once",
+                    "path": "scaffold/config/secret.php"
+                },
+                "public/index.php": {
+                    "mode": "replace",
+                    "path": "scaffold/public/index.php"
+                }
+            }
+        },
         "branch-alias": {
             "dev-main": "0.1.x-dev"
         }

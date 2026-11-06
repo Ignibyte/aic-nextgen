@@ -1,0 +1,84 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+ * bin/aic: the console entry point (`bin/aic <command> [arguments]`).
+ *
+ * It reads config/database.php, config/mail.php and config/app.php (for the
+ * pages a job keeps, #265), wires the console kernel
+ * (AIC\Module\Application\ConsoleKernel) over the generated wiring
+ * (App\Generated\ConsoleModules, #93) and runs the command line through the
+ * console. Output goes to STDOUT, a line at a time, through the CommandWriter
+ * below; the exit code is the command's. With no command, or an unknown one, it
+ * lists the commands and exits 2. The database connection opens on the first
+ * query, so a command that does not query runs without one. When the dev-only
+ * workflow (ignibyte/aic-workflow, #100) is installed, its `workflow:*` commands join
+ * the list, rooted in the directory bin/aic runs in.
+ */
+
+use AIC\Config\Domain\AppConfig;
+use AIC\Console\Application\Console;
+use AIC\Controller\Contracts\CommandWriter;
+use AIC\Database\Domain\DatabaseConfig;
+use AIC\Database\Infrastructure\PdoDatabase;
+use AIC\Module\Application\ConsoleKernel;
+use AIC\Notification\Domain\MailConfig;
+use AIC\Notification\Infrastructure\SmtpTransport;
+use AIC\Workflow\Infrastructure\WorkflowKernel;
+use App\Generated\ConsoleModules;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+try {
+    $databaseConfig = require __DIR__ . '/../config/database.php';
+
+    if (!$databaseConfig instanceof DatabaseConfig) {
+        throw new RuntimeException('config/database.php must return an ' . DatabaseConfig::class . '.');
+    }
+
+    $mailConfig = require __DIR__ . '/../config/mail.php';
+
+    if (!$mailConfig instanceof MailConfig) {
+        throw new RuntimeException('config/mail.php must return an ' . MailConfig::class . '.');
+    }
+
+    $appConfig = require __DIR__ . '/../config/app.php';
+
+    if (!$appConfig instanceof AppConfig) {
+        throw new RuntimeException('config/app.php must return an ' . AppConfig::class . '.');
+    }
+
+    $consoleKernel = new ConsoleKernel(
+        new PdoDatabase($databaseConfig),
+        new SmtpTransport($mailConfig),
+        $mailConfig,
+        new ConsoleModules(),
+        dirname(__DIR__),
+        $appConfig,
+    );
+    $commands = $consoleKernel->commands();
+
+    if (class_exists(WorkflowKernel::class)) {
+        $commands = [...$commands, ...(new WorkflowKernel((string) getcwd()))->commands()];
+        ksort($commands);
+    }
+
+    $console = new Console($commands);
+
+    exit($console->run($argv ?? [], new class () implements CommandWriter {
+        /**
+         * @param string $text One line, without its line break.
+         */
+        #[Override]
+        public function line(string $text): void
+        {
+            fwrite(\STDOUT, $text . "\n");
+        }
+    }));
+} catch (Throwable $failure) {
+    fwrite(\STDERR, 'AIC could not start: ' . $failure->getMessage() . "\n");
+
+    exit(1);
+}

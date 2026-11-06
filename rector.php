@@ -20,4 +20,5 @@ return (new RectorSetup())->configure(__DIR__, [
     'workflow/bin',
     'workflow/rules',
     'workflow/probes/sweep',
+    'scaffold/src',
 ]);

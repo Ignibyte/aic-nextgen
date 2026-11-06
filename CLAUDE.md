@@ -322,6 +322,13 @@ Background work is a job; the HTTP server's processes are its workers.
     run approved shells at the project root without interactive child input. Client startup
     failures can fail open; [workflow/README.md](workflow/README.md) states the coverage and limits.
     These app hooks do not enforce this maintainer checkout's manual phases.
+- **`ignibyte/aic-scaffold`** (#279), in `scaffold/`, namespace `AIC\Scaffold\`: a Composer plugin
+  (dev-only here, a plain require for an app) that writes, on every install and update, the root
+  files installed `ignibyte/aic-*` packages declare in `extra.aic-scaffold` (`replace`, `add-once`,
+  `append`), then runs each package's engine (the gates' `aic-gate init`; AIC's root opts it out).
+  The framework's files are `framework/scaffold/`: edit `public/index.php`, `bootstrap/serve.php`,
+  `bin/aic` and the config starters there, never only at the root. gate:2 admits
+  `composer-plugin-api` for its manifest alone; a phpat rule keeps runtime code off it.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 - **Modules** (#90, #92, #93): `modules/<name>/<name>.module.php` returns a fluent
   `AIC\Module\Contracts\ModuleManifest`, naming only what the module has:

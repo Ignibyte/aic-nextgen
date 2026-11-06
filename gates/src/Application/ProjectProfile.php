@@ -91,6 +91,8 @@ final readonly class ProjectProfile
         'workflow/*',
         // ignibyte/aic-gates, the gate suite, its entries, the build and the base configs (#116), in this repo.
         'gates/*',
+        // ignibyte/aic-scaffold, the Composer plugin that writes an app's root files (#279), in this repo.
+        'scaffold/*',
         // The ticket script and the package split (#278).
         'bin/*.sh',
         // The release workflow that splits each package into its repository on a tag (#278).
@@ -112,6 +114,22 @@ final readonly class ProjectProfile
         'workflow/src',
         'workflow/rules',
         'workflow/probes/sweep',
+        'scaffold/src',
+    ];
+
+    /**
+     * The source folders phpcpd (gate:14) reads in AIC's own repository: the class roots but the workflow's rules and
+     * probe scenarios.
+     */
+    private const array AIC_SOURCE_ROOTS = [
+        'framework/src',
+        'modules',
+        'themes',
+        BuildPaths::GENERATED,
+        'gates/src',
+        'gates/architecture',
+        'workflow/src',
+        'scaffold/src',
     ];
 
     /**
@@ -139,10 +157,10 @@ final readonly class ProjectProfile
         return $this->profile($root) === GateProfile::Aic
             ? new GateRoots(
                 self::AIC_CLASS_ROOTS,
-                ['framework/src', 'modules', 'themes', BuildPaths::GENERATED, 'gates/src', 'gates/architecture', 'workflow/src'],
+                self::AIC_SOURCE_ROOTS,
                 ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
                 ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
-                ['composer.json', 'framework/composer.json', 'workflow/composer.json'],
+                ['composer.json', 'framework/composer.json', 'workflow/composer.json', 'scaffold/composer.json'],
                 ['.claude/hooks', 'bin', 'gates/bin', 'workflow/bin', 'workflow/probes'],
                 [...self::APP_SHELL, ...self::AIC_SHELL],
             )

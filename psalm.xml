@@ -51,6 +51,7 @@
         <directory name="workflow/bin"/>
         <directory name="workflow/rules"/>
         <directory name="workflow/probes/sweep"/>
+        <directory name="scaffold/src"/>
         <ignoreFiles>
             <directory name="vendor"/>
             <directory name=".rector-cache"/>

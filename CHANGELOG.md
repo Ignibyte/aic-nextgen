@@ -4,6 +4,19 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Added
+
+- **`ignibyte/aic-scaffold` writes an app's root files** (#279): a Composer plugin in `scaffold/`
+  that, on every install and update, writes the files installed `ignibyte/aic-*` packages declare
+  in `extra.aic-scaffold`, by mode (`replace` when the source changes, `add-once` when missing,
+  `append` for lines the file lacks), then runs each package's engine. The framework declares
+  `public/index.php`, `bootstrap/serve.php` and `bin/aic`, five `config/*.php` starters and its
+  `.gitignore` lines, from `framework/scaffold/`; the gates declare `aic-gate init`. The root's
+  `extra.aic-scaffold` opts a file or an engine out with `false` or points a file at its own copy.
+  A file claimed twice, an unknown mode or key, a missing source or a path leaving the root stops
+  the install before anything is written. gate:2 admits `composer-plugin-api` for the plugin's
+  manifest and gate:3 backs it with Composer's namespace; `bin/split-packages.sh` splits it.
+
 ### Changed
 
 - **The packages are `ignibyte/aic-framework`, `ignibyte/aic-gates` and `ignibyte/aic-workflow`**

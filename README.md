@@ -30,7 +30,7 @@ it and say what breaks.
 
 | Repository | What it is |
 |---|---|
-| [Ignibyte/aic-nextgen](https://github.com/Ignibyte/aic-nextgen) (this one) | The framework (`framework/`, `ignibyte/aic-framework`), the gate suite (`gates/`, `ignibyte/aic-gates`), the agent workflow (`workflow/`, `ignibyte/aic-workflow`), and the fixture app at the root that the gates hold |
+| [Ignibyte/aic-nextgen](https://github.com/Ignibyte/aic-nextgen) (this one) | The framework (`framework/`, `ignibyte/aic-framework`), the gate suite (`gates/`, `ignibyte/aic-gates`), the agent workflow (`workflow/`, `ignibyte/aic-workflow`), the Composer plugin that writes an app's root files (`scaffold/`, `ignibyte/aic-scaffold`), and the fixture app at the root that the gates hold |
 | [Ignibyte/aic-demo](https://github.com/Ignibyte/aic-demo) | Lotline, the demo site. Start here to see an app built on AIC, with install steps |
 | [Ignibyte/tessera](https://github.com/Ignibyte/tessera) | The browser runtime |
 | [Ignibyte/aic_compiler](https://github.com/Ignibyte/aic_compiler) | The elephc fork |
@@ -94,6 +94,7 @@ aic-nextgen/
 ├── tests/browser/              Playwright looks the gates keep running
 ├── gates/                      ignibyte/aic-gates: the 33 quality gates (dev only)
 ├── workflow/                   ignibyte/aic-workflow: the agent workflow engine (dev only)
+├── scaffold/                   ignibyte/aic-scaffold: the Composer plugin that writes an app's root files
 ├── deploy/frankenphp/          a Caddyfile and container for running under FrankenPHP
 └── .ddev/                      the local stack: nginx and php-fpm, Postgres 17
 ```
@@ -156,6 +157,13 @@ aic-nextgen/
     code index and the inspect commands (`bin/aic route:list`, `code:search`, …).
 
   Neither ships with an app's runtime.
+
+- **`scaffold/`** is `ignibyte/aic-scaffold`, a Composer plugin. On every install and update it
+  writes the root files the installed `ignibyte/aic-*` packages declare in `extra.aic-scaffold`:
+  the framework's `public/index.php`, `bootstrap/serve.php` and `bin/aic` (rewritten when they
+  change), five `config/*.php` starters (written once) and its `.gitignore` lines (appended), and
+  then it runs the gates' `aic-gate init`. The framework's copies live in `framework/scaffold/`;
+  edit them there. `scaffold/README.md` has the declaration format and the root's overrides.
 
 - **`tests/browser/`** holds Playwright looks at pages, kept as regression checks: gate:23 runs
   them against the compiled site. AIC writes no other tests; its checks are the gates.

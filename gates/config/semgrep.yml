@@ -14,6 +14,8 @@ rules:
     paths:
       exclude:
         - "/config/**"
+        # The framework's config starters, which an app gets as config/ (#279).
+        - "/framework/scaffold/config/**"
         - "/bin/**"
         - "/gates/bin/**"
     message: "env() is forbidden outside config/ (CLAUDE.md conventions): inject the resolved value."
@@ -25,6 +27,8 @@ rules:
     paths:
       exclude:
         - "/config/**"
+        # The framework's config starters, which an app gets as config/ (#279).
+        - "/framework/scaffold/config/**"
         - "/bin/**"
         - "/gates/bin/**"
     message: "getenv() is forbidden: read the environment in config/, never in business logic."
@@ -67,6 +71,7 @@ rules:
         - "/bin/**"
         - "/gates/bin/**"
         - "/bootstrap/serve.php"
+        - "/framework/scaffold/bootstrap/serve.php"
     message: "PHP superglobal forbidden: only the SAPI entry point (bootstrap/serve.php) reads them."
     languages: [generic]
     severity: ERROR
@@ -276,6 +281,7 @@ rules:
     paths:
       exclude:
         - "/bootstrap/serve.php"
+        - "/framework/scaffold/bootstrap/serve.php"
     message: "The profiler is built only in bootstrap/serve.php, behind config/profiler.php (#229)."
     languages: [php]
     severity: ERROR

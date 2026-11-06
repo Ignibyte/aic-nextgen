@@ -58,6 +58,15 @@ final readonly class RequireAllowlistGate
     ];
 
     /**
+     * Patterns allowed in `scaffold/composer.json` only (#279): `ignibyte/aic-scaffold` is a
+     * Composer plugin, run by Composer at install time and never at run time, and
+     * `composer-plugin-api` is the platform package Composer provides to its plugins.
+     */
+    private const array SCAFFOLD_PATTERNS = [
+        '/^composer-plugin-api$/',
+    ];
+
+    /**
      * @param ProjectManifests $projectManifests The manifests the gate checks.
      */
     public function __construct(
@@ -142,12 +151,14 @@ final readonly class RequireAllowlistGate
      * @param string $manifest A manifest's path.
      * @param string $package  A package it requires.
      *
-     * @return bool Whether the allow-list admits it: the runtime list for every manifest, the workflow's for its own (#106).
+     * @return bool Whether the allow-list admits it: the runtime list for every manifest, the workflow's and the
+     *              scaffold's for their own (#106, #279).
      */
     private function permitted(string $manifest, string $package): bool
     {
         return $this->isAllowed($package)
-            || (str_ends_with($manifest, '/workflow/composer.json') && $this->matches($package, self::WORKFLOW_PATTERNS));
+            || (str_ends_with($manifest, '/workflow/composer.json') && $this->matches($package, self::WORKFLOW_PATTERNS))
+            || (str_ends_with($manifest, '/scaffold/composer.json') && $this->matches($package, self::SCAFFOLD_PATTERNS));
     }
 
     /**

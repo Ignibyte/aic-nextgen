@@ -51,7 +51,7 @@ if ! is_pipeline_session "$TRANSCRIPT_PATH"; then
 fi
 
 # Templates are checked by gate:25, not the class tools (Chad, 2026-10-21, #96).
-SCAN_PATHS=('framework/src/*.php' 'modules/*.php' 'themes/*.php' 'generated/*.php' 'gates/*.php' 'workflow/*.php' 'public/*.php' 'bin/*.php')
+SCAN_PATHS=('framework/src/*.php' 'modules/*.php' 'themes/*.php' 'generated/*.php' 'gates/*.php' 'workflow/*.php' 'scaffold/*.php' 'public/*.php' 'bin/*.php')
 git_capture CHANGED enforce-sast.sh git diff --name-only --diff-filter=ACM HEAD -- "${SCAN_PATHS[@]}"
 git_capture UNTRACKED enforce-sast.sh git ls-files --others --exclude-standard -- "${SCAN_PATHS[@]}"
 git_capture COMPOSER_CHANGED enforce-sast.sh git diff --name-only HEAD -- composer.json
@@ -72,7 +72,7 @@ if [ ${#PHP_FILES[@]} -gt 0 ]; then
     PHPMD_FILES=()
     for file in "${PHP_FILES[@]}"; do
         case "$file" in
-            framework/src/*|modules/*|generated/*|gates/*|workflow/*) PHPMD_FILES+=("$file") ;;
+            framework/src/*|modules/*|generated/*|gates/*|workflow/*|scaffold/*) PHPMD_FILES+=("$file") ;;
         esac
     done
     if [ -x vendor/bin/phpmd ] && [ ${#PHPMD_FILES[@]} -gt 0 ]; then

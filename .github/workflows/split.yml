@@ -1,6 +1,7 @@
 # Splits each AIC package into its read-only repository when a release tag is pushed (#278).
-# Packagist reads a composer.json at a repository's root, so ignibyte/aic-framework, -gates and
-# -workflow each get one: Ignibyte/aic-framework, Ignibyte/aic-gates, Ignibyte/aic-workflow.
+# Packagist reads a composer.json at a repository's root, so ignibyte/aic-framework, -gates,
+# -scaffold (#279) and -workflow each get one: Ignibyte/aic-framework, Ignibyte/aic-gates,
+# Ignibyte/aic-scaffold, Ignibyte/aic-workflow.
 # Those repositories take no pull requests; changes land here. AIC_SPLIT_TOKEN is a repository
 # secret that may push to them.
 name: split
