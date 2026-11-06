@@ -1,0 +1,9 @@
+# The elephc release AIC's gates install in an app (`vendor/bin/aic-gate tools`, #281).
+# It is the tarball the fork's aic-release.yml publishes, pinned by its SHA-256 for each
+# target. Two kinds of line:
+#
+#   release <tag>                  the fork's release tag, aic-v<elephc version>-<n>
+#   <rust target> <sha256>         the SHA-256 of elephc-<tag>-<target>.tar.gz
+#
+# A target with no line here is told to build the fork from source. Moving the pin is
+# an AIC change: run AIC's gates with the new release first, then change these lines.

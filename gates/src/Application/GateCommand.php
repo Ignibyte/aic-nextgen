@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use Gates\Domain\GateProfile;
 use Gates\Domain\SuiteGate;
 
 use function ctype_digit;
@@ -27,7 +28,8 @@ use const STDOUT;
  * runner; `<N>` one gate, its output streamed and its exit code returned;
  * `--numbers` the `gate:N` names the runner reads, one a line; `--list` each
  * with its scope and description; `init` an app's suite files (#130); `tools`
- * the external tools' installer; `serve [port]` the compiled site on
+ * the external tools' installer, told the profile (an app's also gets the
+ * pinned compiler, #281); `serve [port]` the compiled site on
  * 127.0.0.1; `browser [--base-url=<url>] [<spec>…]` the browser tests against a
  * site (#174). Everything runs in the project's root.
  */
@@ -40,14 +42,16 @@ final readonly class GateCommand
         . ' | browser [--base-url=<url>] [<spec>…]]';
 
     /**
-     * @param GateSuite $gateSuite The suite.
-     * @param SuiteInit $suiteInit Restores an app's suite files (#130).
-     * @param string    $root      The project's root.
-     * @param string    $package   This package's directory.
+     * @param GateSuite   $gateSuite   The suite.
+     * @param SuiteInit   $suiteInit   Restores an app's suite files (#130).
+     * @param GateProfile $gateProfile Whose project this is.
+     * @param string      $root        The project's root.
+     * @param string      $package     This package's directory.
      */
     public function __construct(
         private GateSuite $gateSuite,
         private SuiteInit $suiteInit,
+        private GateProfile $gateProfile,
         private string $root,
         private string $package,
     ) {
@@ -67,7 +71,7 @@ final readonly class GateCommand
             $arguments === ['--numbers'] => $this->print(false),
             $arguments === ['--list'] => $this->print(true),
             $arguments === ['init'] => $this->suiteInit->run($this->root),
-            $arguments === ['tools'] => $this->stream(['bash', $this->package . '/bin/install-tools.sh']),
+            $arguments === ['tools'] => $this->stream(['bash', $this->package . '/bin/install-tools.sh', $this->gateProfile->value]),
             in_array($first, ['serve', 'browser'], true) => $this->stream([PHP_BINARY, $this->nativeSite(), ...$arguments]),
             ctype_digit($first) && $arguments === [$first] => $this->gate((int) $first),
             default => $this->refuse(self::USAGE),

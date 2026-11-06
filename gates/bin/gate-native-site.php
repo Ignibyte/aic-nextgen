@@ -29,8 +29,8 @@ require __DIR__ . '/project.php';
  * gate:23 — the native site; with `serve [port]`, `composer run native:serve`;
  * with `browser [--base-url=<url>] [<spec>…]`, `vendor/bin/aic-gate browser` (#174).
  *
- * The environment is read here, at the boundary: the compiler is ELEPHC_BIN or
- * the first elephc on PATH, it gets gate:21's caches, and the database
+ * The environment is read here, at the boundary: the compiler is ELEPHC_BIN,
+ * tools/elephc or the first elephc on PATH, it gets gate:21's caches, and the database
  * is the PG* environment or DDEV's published port. Serve mode builds the
  * compiled site and runs it on 127.0.0.1 (port 8090 by default) until
  * interrupted, for a browser.
@@ -38,7 +38,7 @@ require __DIR__ . '/project.php';
 $root = (new ProjectRoot())->path();
 $env = getenv();
 $elephcLocation = new ElephcLocation();
-$elephc = $elephcLocation->compiler($env);
+$elephc = $elephcLocation->compiler($env, $root);
 $env['ELEPHC_NATIVE_CACHE'] = $elephcLocation->nativeCache($env);
 $env['XDG_CACHE_HOME'] = $root . '/.native-gate/.cache';
 

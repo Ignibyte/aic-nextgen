@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 #
 # Install the non-PHP gate tooling: gitleaks (pinned, into ./tools/, gate:17),
-# semgrep (gate:15) and shellcheck (gate:18). The PHP tools come from
-# ignibyte/aic-gates' require (#116). `vendor/bin/aic-gate tools` runs it in the project's
-# root, as captainhook's post-merge hook does.
+# semgrep (gate:15), shellcheck (gate:18), the app's Playwright (#174) and, in an
+# app, AIC's pinned elephc release (gates 21 and 23, #281). The PHP tools come from
+# ignibyte/aic-gates' require (#116). `vendor/bin/aic-gate tools` runs it in the
+# project's root, as captainhook's post-merge hook does, and passes the profile
+# (`app` or `aic`) as its one argument.
 #
 set -euo pipefail
 
 ROOT="$(pwd)"
+PROFILE="${1:-app}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ELEPHC_PIN="$SCRIPT_DIR/../native/elephc-release"
 TOOLS_DIR="$ROOT/tools"
 mkdir -p "$TOOLS_DIR"
 
@@ -108,10 +113,80 @@ install_playwright() {
     "$ROOT/node_modules/.bin/playwright" install chromium
 }
 
+sha256_of() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$1" | awk '{print $1}'
+    else
+        shasum -a 256 "$1" | awk '{print $1}'
+    fi
+}
+
+install_elephc() {
+    # AIC's own repository proves the fork's main, built from source, on PATH or
+    # through ELEPHC_BIN; only an app takes the pinned release.
+    if [[ "$PROFILE" == "aic" ]]; then
+        echo "elephc: AIC's own repository runs the fork built from source; no release installed."
+        return
+    fi
+    local target
+    case "$(uname -s)-$(uname -m)" in
+        Linux-x86_64)  target="x86_64-unknown-linux-gnu" ;;
+        Linux-aarch64) target="aarch64-unknown-linux-gnu" ;;
+        Darwin-arm64)  target="aarch64-apple-darwin" ;;
+        *)             target="$(uname -s)-$(uname -m)" ;;
+    esac
+    local tag sha
+    tag="$(awk '$1 == "release" { print $2 }' "$ELEPHC_PIN")"
+    sha="$(awk -v target="$target" '$1 == target { print $2 }' "$ELEPHC_PIN")"
+    if [[ -z "$tag" || -z "$sha" ]]; then
+        echo "elephc: AIC pins no compiler release for $target. Build the fork from source"
+        echo "(vendor/ignibyte/aic-framework/docs/native.md) and put it on PATH or in ELEPHC_BIN."
+        return
+    fi
+    local version="${tag#aic-v}"
+    version="${version%-*}"
+    local cache="${XDG_CACHE_HOME:-$HOME/.cache}/aic-elephc/$tag/$target"
+    local tarball="elephc-$tag-$target.tar.gz"
+    if [[ ! -x "$cache/elephc" || "$(cat "$cache/.sha256" 2>/dev/null || true)" != "$sha" ]]; then
+        local base="${AIC_ELEPHC_MIRROR:-https://github.com/Ignibyte/aic_compiler/releases/download}"
+        local download
+        download="$(mktemp -d)"
+        echo "Downloading elephc $tag ($target) from $base ..."
+        if ! curl -fSL --retry 3 -o "$download/$tarball" "$base/$tag/$tarball"; then
+            rm -rf "$download"
+            echo "ERROR: could not download $base/$tag/$tarball." >&2
+            return 1
+        fi
+        local actual
+        actual="$(sha256_of "$download/$tarball")"
+        if [[ "$actual" != "$sha" ]]; then
+            rm -rf "$download"
+            echo "ERROR: $tarball has SHA-256 $actual; AIC pins $sha. Nothing was installed." >&2
+            return 1
+        fi
+        rm -rf "$cache.partial"
+        mkdir -p "$cache.partial"
+        tar -xzf "$download/$tarball" -C "$cache.partial"
+        rm -rf "$download"
+        printf '%s\n' "$sha" > "$cache.partial/.sha256"
+        rm -rf "$cache"
+        mv "$cache.partial" "$cache"
+    fi
+    local reported
+    reported="$("$cache/elephc" --version)"
+    if [[ "$reported" != "elephc $version" ]]; then
+        echo "ERROR: $cache/elephc reports '$reported', not 'elephc $version'." >&2
+        return 1
+    fi
+    ln -sfn "$cache/elephc" "$TOOLS_DIR/elephc"
+    echo "elephc $tag ($target) installed: tools/elephc -> $cache/elephc"
+}
+
 install_gitleaks
 install_semgrep
 install_shellcheck
 install_playwright
+install_elephc
 
 echo
 echo "Done. Tools are at:"

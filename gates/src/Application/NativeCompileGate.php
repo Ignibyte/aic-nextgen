@@ -90,7 +90,8 @@ final readonly class NativeCompileGate
 
         if (!$this->nativeToolchain->isAvailable()) {
             $compiler = $this->nativeToolchain->compilerPath();
-            fwrite($stderr, sprintf('gate:21 — elephc not found at %s (set ELEPHC_BIN).%s', $compiler, PHP_EOL));
+            $template = 'gate:21 — elephc not found at %s (run vendor/bin/aic-gate tools, or set ELEPHC_BIN).%s';
+            fwrite($stderr, sprintf($template, $compiler, PHP_EOL));
 
             return 1;
         }

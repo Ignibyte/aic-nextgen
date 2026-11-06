@@ -12,27 +12,31 @@ use const PATH_SEPARATOR;
 
 /**
  * Where the native gates find elephc and its native-package cache (#222):
- * `ELEPHC_BIN`, else the first `elephc` on `PATH`; `ELEPHC_NATIVE_CACHE`,
- * else `~/.cache/elephc-native`. A compiler found on `PATH` is resolved
- * through its links, so the bridge archives beside the real binary stay part
- * of gate:21's cache identity.
+ * `ELEPHC_BIN`; else `tools/elephc`, the pinned release `aic-gate tools`
+ * links there (#281), so an upstream elephc on `PATH` never wins over it;
+ * else the first `elephc` on `PATH`. `ELEPHC_NATIVE_CACHE`, else
+ * `~/.cache/elephc-native`. A compiler found by a link is resolved through it,
+ * so the bridge archives beside the real binary stay part of gate:21's cache
+ * identity.
  */
 final readonly class ElephcLocation
 {
     /**
-     * @param array<string, string> $env The process environment.
+     * @param array<string, string> $env  The process environment.
+     * @param string                $root The project's root.
      *
      * @return string The compiler to run; the bare name `elephc` when none is found.
      */
-    public function compiler(array $env): string
+    public function compiler(array $env, string $root): string
     {
         $configured = $env['ELEPHC_BIN'] ?? '';
+        $installed = $root . '/tools/elephc';
 
-        if ($configured !== '') {
-            return $configured;
-        }
-
-        return $this->onPath($env['PATH'] ?? '');
+        return match (true) {
+            $configured !== '' => $configured,
+            is_executable($installed) => $this->resolved($installed),
+            default => $this->onPath($env['PATH'] ?? ''),
+        };
     }
 
     /**

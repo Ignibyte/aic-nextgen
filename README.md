@@ -212,7 +212,8 @@ DDEV's default router ports. `ddev exec bin/aic migrate` creates the tables. To 
 FrankenPHP instead, see [framework/docs/deploy.md](framework/docs/deploy.md) and
 `deploy/frankenphp/`.
 
-The compiled site needs AIC's elephc fork: `ELEPHC_BIN`, or the first `elephc` on `PATH`. Its
+The compiled site needs AIC's elephc fork: `ELEPHC_BIN`, then `tools/elephc` (an app's `aic-gate
+tools` installs the pinned release there), then the first `elephc` on `PATH`. Its
 native packages (pcre2, oniguruma) are cached in `ELEPHC_NATIVE_CACHE`, by default
 `~/.cache/elephc-native`:
 
@@ -239,7 +240,7 @@ production a reverse proxy (Caddy, nginx) may map `/assets/` to `build/assets/` 
 ## Quality gates
 
 ```bash
-vendor/bin/aic-gate tools   # once: gitleaks (pinned, into tools/), semgrep, shellcheck
+vendor/bin/aic-gate tools   # once: gitleaks (pinned, into tools/), semgrep, shellcheck; in an app, elephc
 composer run gate           # every gate, on the host; ends with one gate-summary line
 composer run gate:8         # one gate alone (gate:0 to gate:32)
 composer run gate:21        # the native gate: every runtime class through elephc
