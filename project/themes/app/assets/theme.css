@@ -1,0 +1,42 @@
+/* The app theme's stylesheet. Every .css file in assets/ joins aic.css in path order. */
+:root {
+    color-scheme: light dark;
+    --ink: #1d232a;
+    --paper: #f7f5f0;
+    --accent: #b4441b;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ink: #ece9e2;
+        --paper: #16191d;
+        --accent: #f08a5d;
+    }
+}
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 1rem/1.6 system-ui, sans-serif;
+}
+
+.page {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 4rem 1rem;
+}
+
+.welcome h1 {
+    margin: 0 0 1rem;
+    font-size: 2.5rem;
+    line-height: 1.1;
+}
+
+.welcome a {
+    color: var(--accent);
+}
+
+code {
+    font-size: 0.9em;
+}

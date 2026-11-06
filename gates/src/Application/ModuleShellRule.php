@@ -18,6 +18,8 @@ use function implode;
 use function preg_match;
 use function sprintf;
 use function str_starts_with;
+use function strlen;
+use function substr;
 
 /**
  * R5 of gate:26 (#94): the app's code lives in `modules/`; outside it sits only
@@ -26,6 +28,8 @@ use function str_starts_with;
  * namespace to its `src/` (or the generated wiring to `generated/`, or the
  * theme's two to its folders, #153), and no PHP file outside `modules/`,
  * `generated/` and the theme's component and layout folders declares an `App\` class.
+ * A template app's tree in AIC's repository (`project/`, #280) is read by the
+ * same placement rules, from its own folder.
  */
 final readonly class ModuleShellRule implements ModuleRule
 {
@@ -49,9 +53,10 @@ final readonly class ModuleShellRule implements ModuleRule
     {
         $violations = [];
         $shell = $this->projectProfile->roots($moduleTree->root)->shell;
+        $trees = $this->projectProfile->templateTrees($moduleTree->root);
 
         foreach ($moduleTree->paths as $path) {
-            $violation = $this->pathViolation($path, $moduleTree->declared($path), $shell);
+            $violation = $this->pathViolation($path, $moduleTree->declared($path), $shell, $trees);
 
             if (!($violation instanceof BoundaryViolation)) {
                 continue;
@@ -67,13 +72,14 @@ final readonly class ModuleShellRule implements ModuleRule
      * @param string       $path  A path git lists.
      * @param string|null  $class The class the file declares, if any.
      * @param list<string> $shell What may sit outside `modules/`, as `fnmatch` patterns.
+     * @param list<string> $trees The folders that hold a template app's tree, read by the same rules.
      *
      * @return BoundaryViolation|null The breach, if the path outside `modules/` and `generated/` declares an `App\`
      *                                class or falls outside the shell.
      */
-    private function pathViolation(string $path, ?string $class, array $shell): ?BoundaryViolation
+    private function pathViolation(string $path, ?string $class, array $shell, array $trees): ?BoundaryViolation
     {
-        if ($this->appPlace($path, $class)) {
+        if ($this->appPlace($this->inTree($path, $trees), $class)) {
             return null;
         }
 
@@ -92,6 +98,23 @@ final readonly class ModuleShellRule implements ModuleRule
                     . ' a layout in themes/<theme>/layouts/).',
                 $path,
             ));
+    }
+
+    /**
+     * @param string       $path  A path git lists.
+     * @param list<string> $trees The folders that hold a template app's tree.
+     *
+     * @return string The path as its own app sees it: relative to the template tree that holds it, else unchanged.
+     */
+    private function inTree(string $path, array $trees): string
+    {
+        foreach ($trees as $tree) {
+            if (str_starts_with($path, $tree)) {
+                return substr($path, strlen($tree));
+            }
+        }
+
+        return $path;
     }
 
     /**

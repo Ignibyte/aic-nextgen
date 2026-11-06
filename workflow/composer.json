@@ -19,8 +19,8 @@
         "ext-pdo": "*",
         "ext-pdo_sqlite": "*",
         "ext-posix": "*",
-        "ignibyte/aic-framework": "0.1.x-dev",
-        "ignibyte/aic-gates": "0.1.x-dev",
+        "ignibyte/aic-framework": "^0.1",
+        "ignibyte/aic-gates": "^0.1",
         "nikic/php-parser": "^5.9",
         "psr/clock": "^1.0"
     },

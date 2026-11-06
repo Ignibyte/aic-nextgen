@@ -24,13 +24,15 @@ it and say what breaks.
   compiled binary, and more. There are no baselines and no suppressions.
 - **The browser side** is [Tessera](https://github.com/Ignibyte/tessera): server HTML morphed into
   the page by region and component, over responses and Server-Sent Events.
-- **Not on Packagist yet.** Apps require `aic/*` from a checkout of this repository by path.
+- **Start an app** with `composer create-project ignibyte/aic-project my-app` once the packages
+  are on Packagist; until then aic-demo requires them from a checkout of this repository by path.
+  [project/README.md](project/README.md) walks a created app from install to a compiled site.
 
 ## The repositories
 
 | Repository | What it is |
 |---|---|
-| [Ignibyte/aic-nextgen](https://github.com/Ignibyte/aic-nextgen) (this one) | The framework (`framework/`, `ignibyte/aic-framework`), the gate suite (`gates/`, `ignibyte/aic-gates`), the agent workflow (`workflow/`, `ignibyte/aic-workflow`), the Composer plugin that writes an app's root files (`scaffold/`, `ignibyte/aic-scaffold`), and the fixture app at the root that the gates hold |
+| [Ignibyte/aic-nextgen](https://github.com/Ignibyte/aic-nextgen) (this one) | The framework (`framework/`, `ignibyte/aic-framework`), the gate suite (`gates/`, `ignibyte/aic-gates`), the agent workflow (`workflow/`, `ignibyte/aic-workflow`), the Composer plugin that writes an app's root files (`scaffold/`, `ignibyte/aic-scaffold`), the template `composer create-project` copies (`project/`, `ignibyte/aic-project`), and the fixture app at the root that the gates hold |
 | [Ignibyte/aic-demo](https://github.com/Ignibyte/aic-demo) | Lotline, the demo site. Start here to see an app built on AIC, with install steps |
 | [Ignibyte/tessera](https://github.com/Ignibyte/tessera) | The browser runtime |
 | [Ignibyte/aic_compiler](https://github.com/Ignibyte/aic_compiler) | The elephc fork |
@@ -95,6 +97,7 @@ aic-nextgen/
 ├── gates/                      ignibyte/aic-gates: the 33 quality gates (dev only)
 ├── workflow/                   ignibyte/aic-workflow: the agent workflow engine (dev only)
 ├── scaffold/                   ignibyte/aic-scaffold: the Composer plugin that writes an app's root files
+├── project/                    ignibyte/aic-project: the template a new app starts from
 ├── deploy/frankenphp/          a Caddyfile and container for running under FrankenPHP
 └── .ddev/                      the local stack: nginx and php-fpm, Postgres 17
 ```
@@ -164,6 +167,12 @@ aic-nextgen/
   change), five `config/*.php` starters (written once) and its `.gitignore` lines (appended), and
   then it runs the gates' `aic-gate init`. The framework's copies live in `framework/scaffold/`;
   edit them there. `scaffold/README.md` has the declaration format and the root's overrides.
+
+- **`project/`** is `ignibyte/aic-project`, what `composer create-project` copies: an app's
+  `composer.json`, one `site` module (a home page, `/health`, `db:ping`), the `app` theme,
+  `config/native-site.json`, DDEV's config and a README. The rest of an app's root files are
+  written on install by their owners. AIC's gates read its classes as another app's: gate:26 holds
+  `project/modules/` and `project/themes/` to the same placement rules as the root's.
 
 - **`tests/browser/`** holds Playwright looks at pages, kept as regression checks: gate:23 runs
   them against the compiled site. AIC writes no other tests; its checks are the gates.

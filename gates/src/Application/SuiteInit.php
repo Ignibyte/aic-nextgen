@@ -35,6 +35,7 @@ final readonly class SuiteInit
      * The suite's work directories and the tools' caches, as .gitignore lines.
      */
     private const array IGNORES = [
+        '/.deptrac.cache',
         '/.native-gate/',
         '/.native-site/',
         '/.phpcs-cache',
