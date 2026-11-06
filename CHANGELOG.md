@@ -4,6 +4,31 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+## 0.1.0 — 2026-11-06
+
+The first release. AIC is a PHP 8.5 framework for server-rendered sites, built for coding
+agents to write apps in under strict gates. The whole app also compiles to a native binary with
+AIC's fork of elephc.
+
+What it holds:
+
+- **Five packages**, all `ignibyte/aic-*`: `aic-framework` (the runtime), `aic-gates` (33
+  gates; an app runs 29), `aic-workflow` (the gated agent workflow, dev-only), `aic-scaffold`
+  (the Composer plugin that writes an app's root files) and `aic-project`, the template
+  `composer create-project ignibyte/aic-project my-app` copies.
+- **The app shape**: modules with manifests, five entry kinds (Page, Api, Stream, Command,
+  Job), wiring generated at build time, a theme that owns every line of markup, Postgres 17
+  through `AIC\Database`, `AIC\Entity` and migrations, sessions, forms with CSRF, auth, a job
+  queue, schedules, notifications, stored files, and Tessera for the browser side.
+- **Two runtimes held to one answer**: plain PHP for production, and the compiled site, which
+  gate:21 and gate:23 compare with PHP class by class and request by request. `aic-gate tools`
+  installs the pinned compiler release on Linux x86_64.
+
+What it does not have yet: WebSockets (#32). The compiled runtime is experimental; run PHP in
+production ([framework/docs/deploy.md](framework/docs/deploy.md)). Compiler releases are built for
+Linux x86_64 only; elsewhere the fork builds from source.
+
+
 ### Added
 
 - **`aic-gate tools` installs the compiler** (#281): in an app it downloads the fork release that
@@ -12,8 +37,8 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
   `elephc --version` and links `tools/elephc`. gate:21, gate:23 and `aic-gate serve` look for
   `ELEPHC_BIN`, then `tools/elephc`, then `PATH`, and their not-found line names the tools step;
   `aic-gate init` ignores `/tools/elephc`. The fork gains `aic-release.yml`, which builds and
-  publishes the Linux x86_64 tarball on an `aic-v<version>-<n>` tag. The pin holds no release
-  yet: the first tag is #282's.
+  publishes the Linux x86_64 tarball on an `aic-v<version>-<n>` tag. The gates pin the first,
+  `aic-v0.27.7-1` (#282).
 - **`composer create-project ignibyte/aic-project` gives a working app** (#280): the template in
   `project/` holds an app's `composer.json`, a `site` module (a home page, `/health`, `db:ping`),
   the `app` theme, `config/native-site.json`, DDEV's config and a README that walks from install
@@ -34,6 +59,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **The gate tools are pinned like the PHP ones** (#282): `aic-gate tools` installs semgrep
+  1.156.0 into a virtualenv per host and shellcheck 0.11.0 from its release binary, the versions
+  AIC's gates run, both reached from `tools/`, which gates 15 and 18 now search first. It needs no
+  `pip --user` (current Debian and Ubuntu refuse it) and no `sudo`. `aic-gate init` ignores
+  `/tools/` whole. project/README.md names what the tools step needs: `xz`, Python's `venv`,
+  Node.js and npm.
+
 - **The gates pin their tools exactly** (#280): the 21 tools that read or rewrite code are pinned
   in `ignibyte/aic-gates` to the versions AIC runs, so an app no longer resolves newer releases
   that judge differently (Rector 2.8.4 failed generated code that 2.7.0 passes). The packages now
@@ -47,6 +79,9 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
   renames its requires and runs `composer update 'ignibyte/aic-*'`.
 
 ### Fixed
+
+- **gate:18 fails without shellcheck** (#282): outside CI a missing binary printed "skipping"
+  and passed. A created app's first gate run in a clean container counted it as a pass.
 
 - **`workflow:init` installs into an app whose package is under `vendor/`** (#280): it called any
   copy of `ignibyte/aic-workflow` inside the project its own source and refused, so every install

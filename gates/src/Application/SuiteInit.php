@@ -43,8 +43,7 @@ final readonly class SuiteInit
         '/.psalm-cache/',
         '/.rector-cache/',
         '/node_modules/',
-        '/tools/elephc',
-        '/tools/gitleaks',
+        '/tools/',
     ];
 
     /**

@@ -1,6 +1,6 @@
 {
     "name": "ignibyte/aic-gates",
-    "description": "AIC's gate suite (#116): every gate, the build, the runner and the tools' base configs, for AIC and for an app on it. Dev-only.",
+    "description": "AIC's gate suite: every gate, the build, the runner and the tools' base configs, for AIC and for an app on it. Dev-only.",
     "license": "MIT",
     "type": "library",
     "keywords": [

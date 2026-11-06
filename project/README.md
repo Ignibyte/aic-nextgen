@@ -19,7 +19,11 @@ The framework's own docs are in `vendor/ignibyte/aic-framework/docs/`, starting 
 - On Linux x86_64, `aic-gate tools` installs AIC's compiler, its fork of elephc. Anywhere else,
   build [Ignibyte/aic_compiler](https://github.com/Ignibyte/aic_compiler) from source and put
   `elephc` on `PATH` or name it in `ELEPHC_BIN`.
-- `curl`, which the build uses to fetch the Tessera release that `config/app.php` pins.
+- `curl` and `xz`: the build fetches the Tessera release that `config/app.php` pins, and
+  `aic-gate tools` downloads the pinned gate tools.
+- Python 3 with its `venv` module (`python3-venv` on Debian and Ubuntu), for semgrep.
+- Node.js 20 or later with npm, for the browser tests' Playwright. Chromium's own libraries
+  come from `npx playwright install-deps chromium`, run once as root.
 
 ## From create-project to a compiled site
 
@@ -56,7 +60,8 @@ vendor/bin/aic-gate tools
 composer run gate       # every gate; it ends with one gate-summary line
 ```
 
-`aic-gate tools` installs gitleaks, semgrep and shellcheck, which three gates run. It also
+`aic-gate tools` installs gitleaks, semgrep and shellcheck, which three gates run, at the
+versions AIC's own gates run, and Playwright for the browser tests. It also
 installs the compiler release the gates pin, checked by its SHA-256, and links it at
 `tools/elephc`. `composer run gate` compiles the site, serves it beside PHP and compares each step in `config/native-site.json`.
 Its last line reads `gate-summary: 29 passed, 0 deferred. Full coverage.`

@@ -10,6 +10,7 @@ use GlobIterator;
 
 use function count;
 use function fwrite;
+use function is_executable;
 use function mb_trim;
 use function sprintf;
 use function str_replace;
@@ -22,20 +23,18 @@ use const STDOUT;
  * Gate #18 — `shellcheck` lint over `.claude/hooks/` and `bin/` shell scripts.
  *
  * Severity threshold is `warning` because shellcheck `info`-level findings
- * are predominantly stylistic. Auto-skips with a clear message when the
- * tool is not on PATH AND the run is not in CI; in CI the gate hard-fails
- * on missing shellcheck.
+ * are predominantly stylistic. The binary is `tools/shellcheck`, the version
+ * `aic-gate tools` pins, else the first on PATH; with neither the gate fails,
+ * since a skipped lint is not a pass.
  */
 final readonly class ShellcheckGate
 {
     /**
      * @param ProcessRunner  $processRunner  Seam wrapping `proc_open`.
-     * @param bool           $isCi           Resolved CI flag (true when running under a CI runner) — passed at the wrapper boundary.
      * @param ProjectProfile $projectProfile The script folders, by the project's profile (#130).
      */
     public function __construct(
         private ProcessRunner $processRunner,
-        private bool $isCi = false,
         private ProjectProfile $projectProfile = new ProjectProfile(),
     ) {
     }
@@ -50,10 +49,12 @@ final readonly class ShellcheckGate
      */
     public function run(string $root, mixed $stdout = STDOUT, mixed $stderr = STDERR): int
     {
-        $shellcheck = $this->resolveShellcheck();
+        $shellcheck = $this->resolveShellcheck($root);
 
         if ($shellcheck === '') {
-            return $this->handleMissingTool($stdout, $stderr);
+            fwrite($stderr, 'gate:18 — shellcheck not found. Install via: vendor/bin/aic-gate tools' . PHP_EOL);
+
+            return 1;
         }
 
         $scripts = $this->collectScripts($root);
@@ -78,10 +79,18 @@ final readonly class ShellcheckGate
     }
 
     /**
-     * Locate `shellcheck` on PATH; return empty string when missing.
+     * Locate `shellcheck`: the pinned `tools/shellcheck`, else the first on PATH.
+     *
+     * @param string $root Repo-root absolute path.
+     *
+     * @return string The binary's path; empty when there is none.
      */
-    private function resolveShellcheck(): string
+    private function resolveShellcheck(string $root): string
     {
+        if (is_executable($root . '/tools/shellcheck')) {
+            return $root . '/tools/shellcheck';
+        }
+
         $processResult = $this->processRunner->run(['/bin/sh', '-c', 'command -v shellcheck']);
 
         return mb_trim($processResult->stdout);
@@ -142,31 +151,6 @@ final readonly class ShellcheckGate
         }
 
         return $failures;
-    }
-
-    /**
-     * Decide what to do when shellcheck is not on PATH.
-     *
-     * @param resource $stdout Stream the local-skip notice is written to.
-     * @param resource $stderr Stream the CI-fail notice is written to.
-     */
-    private function handleMissingTool(mixed $stdout, mixed $stderr): int
-    {
-        if ($this->isCi) {
-            fwrite($stderr, sprintf(
-                'gate:18 — shellcheck not found in CI. Install via `bash bin/install-tools.sh`.%s',
-                PHP_EOL,
-            ));
-
-            return 1;
-        }
-
-        fwrite($stdout, sprintf(
-            'gate:18 — shellcheck not found locally; skipping. Run `bash bin/install-tools.sh` to install.%s',
-            PHP_EOL,
-        ));
-
-        return 0;
     }
 
     /**

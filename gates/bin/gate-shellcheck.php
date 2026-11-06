@@ -10,6 +10,4 @@ require __DIR__ . '/project.php';
 
 $root = (new ProjectRoot())->path();
 
-$isCi = (string) getenv('CI') !== '' || (string) getenv('GITHUB_ACTIONS') !== '';
-
-exit((new ShellcheckGate(new SystemProcessRunner(), $isCi))->run($root));
+exit((new ShellcheckGate(new SystemProcessRunner()))->run($root));

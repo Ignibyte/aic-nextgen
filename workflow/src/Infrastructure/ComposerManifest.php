@@ -30,7 +30,7 @@ final readonly class ComposerManifest
     /**
      * The command that declares the workflow for development.
      */
-    private const string REQUIRE_DEV = 'composer require --dev ignibyte/aic-workflow:0.1.x-dev';
+    private const string REQUIRE_DEV = 'composer require --dev "ignibyte/aic-workflow:^0.1"';
 
     /**
      * @param string $root    The project's root.

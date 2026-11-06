@@ -7,3 +7,5 @@
 #
 # A target with no line here is told to build the fork from source. Moving the pin is
 # an AIC change: run AIC's gates with the new release first, then change these lines.
+release aic-v0.27.7-1
+x86_64-unknown-linux-gnu cbd031cefede58fbbea6dc03d967167164db2b0c3c5c8c9139a5870b9f4d2fb6
