@@ -7,14 +7,15 @@ declare(strict_types=1);
  * vendor/bin/aic-gate (#116): the gate suite of ignibyte/aic-gates. With no argument it
  * runs every gate and ends with one gate-summary line; `aic-gate <N>` runs one
  * gate; `--numbers` and `--list` name them; `init` writes an app's suite files
- * (#130); `tools` installs gitleaks, semgrep, shellcheck and the app's
- * Playwright; `serve [port]` serves the compiled site; `browser [--base-url=<url>]
+ * (#130); `tools` installs gitleaks, semgrep, shellcheck, the app's
+ * Playwright and, in an app, the pinned elephc (#281); `serve [port]` serves the compiled site; `browser [--base-url=<url>]
  * [<spec>…]` runs browser tests against a site (#174). Run it in the
  * project's root, as composer's scripts do.
  */
 
 use Gates\Application\GateCommand;
 use Gates\Application\GateSuite;
+use Gates\Application\ProjectProfile;
 use Gates\Application\SuiteComposer;
 use Gates\Application\SuiteInit;
 use Gates\Application\SuiteStubs;
@@ -29,4 +30,6 @@ $package = (new GatesPackage())->path();
 $gateSuite = new GateSuite($root, $package);
 $suiteInit = new SuiteInit(new SuiteStubs($package), new SuiteComposer($gateSuite));
 
-exit((new GateCommand($gateSuite, $suiteInit, $root, $package))->run(array_slice($argv ?? [], 1)));
+$gateProfile = (new ProjectProfile())->profile($root);
+
+exit((new GateCommand($gateSuite, $suiteInit, $gateProfile, $root, $package))->run(array_slice($argv ?? [], 1)));

@@ -37,6 +37,11 @@ final readonly class NativeSiteGate
         . ' (bin/aic db:ping), and every route opens a Postgres session (#41).';
 
     /**
+     * The failure line when no compiler is found, its path in place of `%s`.
+     */
+    private const string NO_COMPILER = 'gate:23 — elephc not found at %s (run vendor/bin/aic-gate tools, or set ELEPHC_BIN).';
+
+    /**
      * @param NativeToolchain        $nativeToolchain        The compiler and host PHP.
      * @param NativeSiteBuilder      $nativeSiteBuilder      Builds the compiled site.
      * @param NativeSiteSites        $nativeSiteSites        Starts and stops the two sites.
@@ -79,7 +84,7 @@ final readonly class NativeSiteGate
         mixed $stderr = STDERR,
     ): int {
         if (!$this->nativeToolchain->isAvailable()) {
-            fwrite($stderr, 'gate:23 — elephc not found at ' . $this->nativeToolchain->compilerPath() . ' (set ELEPHC_BIN).' . PHP_EOL);
+            fwrite($stderr, sprintf(self::NO_COMPILER, $this->nativeToolchain->compilerPath()) . PHP_EOL);
 
             return 1;
         }

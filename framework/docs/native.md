@@ -18,6 +18,31 @@ catalog before application factories, sessions and database work. Deploy binary,
 files from the same release root; retain previous release roots for clients with older URLs.
 See [modules.md](modules.md#assets) for asset publication and cache policy.
 
+## The compiler
+
+AIC compiles with its fork of elephc, [Ignibyte/aic_compiler](https://github.com/Ignibyte/aic_compiler),
+not upstream elephc: the fork carries fixes AIC's code needs. `ignibyte/aic-gates` pins one fork
+release by SHA-256 in `native/elephc-release`, and `vendor/bin/aic-gate tools` installs it:
+
+- it downloads the release tarball for the host, the binary and its bridge archives;
+- it refuses a tarball whose SHA-256 is not the pinned one;
+- it unpacks it once per host into `~/.cache/aic-elephc/<tag>/<target>/` (under
+  `XDG_CACHE_HOME` when that is set), where every app on the host shares it;
+- it links `tools/elephc` to it.
+
+Set `AIC_ELEPHC_MIRROR` to download from another base URL laid out as `<base>/<tag>/<tarball>`.
+The pinned SHA-256 still has to match. When the gates move the pin, the next `tools` run (the
+post-merge hook runs it) installs the new release.
+
+gate:21, gate:23 and `composer run native:serve` run `ELEPHC_BIN` when it is set, then
+`tools/elephc`, then the first `elephc` on `PATH`. The compiler links with the host's assembler, linker
+and C toolchain, and on first use the gates build the native packages they pin (PCRE2, Oniguruma)
+into `ELEPHC_NATIVE_CACHE`, `~/.cache/elephc-native` by default.
+
+Releases are built for Linux x86_64. On any other host, build the fork from source (its
+`FORK.md`, "Build"), then put the binary on `PATH` or name it in `ELEPHC_BIN`, keeping it in
+`target/release/` beside the bridge archives the build writes there.
+
 ## Write code with concrete types
 
 These are source conventions used by the framework, not a list of compiler features guaranteed for

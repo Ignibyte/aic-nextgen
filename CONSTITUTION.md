@@ -12,7 +12,7 @@ Best-practice code is the only acceptable output.
 - **Source fixes only.** Never a baseline entry, never a suppression annotation, never a lowered threshold or a config carve-out written to make a finding disappear.
 - A failing gate is a real defect. If a tool produces a false positive, refactor the code into a shape the tool understands; do not silence the tool.
 - A gate that cannot run in full yet *defers* and says why; the summary names every deferral, and a deferral is not coverage.
-- The suite judges with the tool versions its verdicts were proven on. `ignibyte/aic-gates` pins every tool that reads or rewrites code to the exact version AIC's root runs; a tool bump is an AIC change, gated here before the pin moves (#280).
+- The suite judges with the tool versions its verdicts were proven on. `ignibyte/aic-gates` pins every tool that reads or rewrites code to the exact version AIC's root runs; a tool bump is an AIC change, gated here before the pin moves (#280). The compiler is one of those tools: an app's gates run the fork release `native/elephc-release` pins by SHA-256, which `aic-gate tools` installs, while AIC itself runs the fork's `main` from source (#281).
 
 The gates (ignibyte/aic-gates' runner, behind `composer run gate`, runs every gate of `Gates\Application\GateSuite` and reports every failure in one run; each `gate:N` script is the alias `aic-gate N`, #116):
 
@@ -161,6 +161,7 @@ This Constitution is amended by editing this file through the four phases (`/pip
 
 ### Amendment log
 
+- **2026-11-06 — the pinned compiler (#281).** §0's tool-version bullet names the compiler. An app made from local splits, with a locally built fork tarball pinned and no other elephc reachable, read `29 passed, 0 deferred` with gates 21 and 23 on `tools/elephc`; a wrong SHA-256 installed nothing (33 gates green, 247 probes passed).
 - **2026-11-06 — exact tool pins (#280).** §0 gains the tool-version bullet, and §2 names the project template. A created app had resolved Rector 2.8.4, which failed generated code that AIC passes on 2.7.0; with the 21 tools pinned, a created app read `29 passed, 0 deferred` before and after `workflow:init`. gate:26 refused a planted `project/src/Stray.php` and held the template's own classes (33 gates green).
 - **2026-10-26 — Tessera's full system (#173).** §0 row 23 compares `Tessera-*`, `Vary` and `Cache-Control` as well as bodies; every HTML response carries a strict Content-Security-Policy. The header comparison was seen to name a planted difference; the kept Tessera tests fail with JavaScript off and on an inline script under the policy. Final quality: 33 gates passed, none deferred.
 - **2026-10-26 — browser tests (#174).** §7 and §17, rows 23 and 30. Chad: "we would want playwright cli tests to ensure the behavior works as intended"; anything front-end facing is looked at with Playwright and the bot or human keeps the test or not. Browser tests are the one regression test AIC ships. gate:23 runs kept tests on the compiled site (seen to fail on a planted wrong label and without Playwright); the workflow's plan, check and complete rows were seen to refuse and pass in sweep scenario 12-browser (34 expectations). Final quality: 33 gates passed, none deferred.

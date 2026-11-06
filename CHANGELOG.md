@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **`aic-gate tools` installs the compiler** (#281): in an app it downloads the fork release that
+  `gates/native/elephc-release` pins (from Ignibyte/aic_compiler, or `AIC_ELEPHC_MIRROR`), refuses
+  a tarball whose SHA-256 differs, unpacks it once per host under `~/.cache/aic-elephc/`, checks
+  `elephc --version` and links `tools/elephc`. gate:21, gate:23 and `aic-gate serve` look for
+  `ELEPHC_BIN`, then `tools/elephc`, then `PATH`, and their not-found line names the tools step;
+  `aic-gate init` ignores `/tools/elephc`. The fork gains `aic-release.yml`, which builds and
+  publishes the Linux x86_64 tarball on an `aic-v<version>-<n>` tag. The pin holds no release
+  yet: the first tag is #282's.
 - **`composer create-project ignibyte/aic-project` gives a working app** (#280): the template in
   `project/` holds an app's `composer.json`, a `site` module (a home page, `/health`, `db:ping`),
   the `app` theme, `config/native-site.json`, DDEV's config and a README that walks from install

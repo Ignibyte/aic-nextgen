@@ -14,8 +14,11 @@ The framework's own docs are in `vendor/ignibyte/aic-framework/docs/`, starting 
 - PHP 8.5 CLI with `pdo_pgsql`, and Composer 2.
 - Postgres 17. DDEV gives you one (`.ddev/config.yaml`), and any other Postgres works through
   the `PG*` variables.
-- The elephc compiler, AIC's fork ([Ignibyte/aic_compiler](https://github.com/Ignibyte/aic_compiler)),
-  as `elephc` on `PATH` or named by `ELEPHC_BIN`. The native gates and `native:serve` use it.
+- A C toolchain (an assembler, a linker and `cc`; `build-essential` on Debian and Ubuntu), with
+  the bzip2 and zlib development libraries. The compiler links the site with them.
+- On Linux x86_64, `aic-gate tools` installs AIC's compiler, its fork of elephc. Anywhere else,
+  build [Ignibyte/aic_compiler](https://github.com/Ignibyte/aic_compiler) from source and put
+  `elephc` on `PATH` or name it in `ELEPHC_BIN`.
 - `curl`, which the build uses to fetch the Tessera release that `config/app.php` pins.
 
 ## From create-project to a compiled site
@@ -53,8 +56,9 @@ vendor/bin/aic-gate tools
 composer run gate       # every gate; it ends with one gate-summary line
 ```
 
-`aic-gate tools` installs gitleaks, semgrep and shellcheck, which three gates run. `composer run gate`
-compiles the site, serves it beside PHP and compares each step in `config/native-site.json`.
+`aic-gate tools` installs gitleaks, semgrep and shellcheck, which three gates run. It also
+installs the compiler release the gates pin, checked by its SHA-256, and links it at
+`tools/elephc`. `composer run gate` compiles the site, serves it beside PHP and compares each step in `config/native-site.json`.
 Its last line reads `gate-summary: 29 passed, 0 deferred. Full coverage.`
 
 Serve the compiled site:

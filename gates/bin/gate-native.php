@@ -15,7 +15,7 @@ require __DIR__ . '/project.php';
 
 /*
  * gate:21 — the native gate. The environment is read here, at the boundary:
- * the compiler is ELEPHC_BIN or the first elephc on PATH, AIC_NATIVE_JOBS caps how
+ * the compiler is ELEPHC_BIN, tools/elephc or the first elephc on PATH, AIC_NATIVE_JOBS caps how
  * many probes run at once (8 by default; each runs under nice -n 10), and the
  * child processes get the full environment plus a run-local runtime cache and
  * the shared native-package cache.
@@ -23,7 +23,7 @@ require __DIR__ . '/project.php';
 $root = (new ProjectRoot())->path();
 $env = getenv();
 $elephcLocation = new ElephcLocation();
-$elephc = $elephcLocation->compiler($env);
+$elephc = $elephcLocation->compiler($env, $root);
 $env['ELEPHC_NATIVE_CACHE'] = $elephcLocation->nativeCache($env);
 $env['XDG_CACHE_HOME'] = $root . '/.native-gate/.cache';
 

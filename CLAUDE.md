@@ -484,8 +484,8 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 - A new gate or rule is done only when it has been seen to fail on a planted violation.
 - Before a final run: `rm -f .phpcs-cache` (a stale cache passes PHPCS falsely).
 - gate:21 probes each class under `framework/src`, `modules`, `themes` and `build/generated` on its own: its class-graph closure,
-  compiled with `ELEPHC_BIN` or the first `elephc` on `PATH` (#222; link the fork's in-place
-  `target/release/elephc` there rather than copying it; native packages cache in
+  compiled with `ELEPHC_BIN`, then `tools/elephc`, then the first `elephc` on `PATH` (#222, #281;
+  here link the fork's in-place `target/release/elephc` on `PATH` rather than copying it; native packages cache in
   `ELEPHC_NATIVE_CACHE`, by default `~/.cache/elephc-native`),
   run, and compared with host PHP. Work files land in `.native-gate/`
   (gitignored); pcre2 and oniguruma are pinned in ignibyte/aic-gates' `native/elephc.{toml,lock}`. Everything
@@ -548,7 +548,11 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   (`.native-gate/cache.txt`); a change reprobes only the classes whose closure holds it. Probes
   run 8 at a time under `nice -n 10`; `AIC_NATIVE_JOBS` sets the cap. A cold run takes under a
   minute, an unchanged tree under a second.
-- `vendor/bin/aic-gate tools` installs gitleaks (pinned, into `tools/`), semgrep and shellcheck;
+- `vendor/bin/aic-gate tools` installs gitleaks (pinned, into `tools/`), semgrep and shellcheck,
+  and in an app the compiler (#281): the fork release `gates/native/elephc-release` pins by
+  SHA-256, unpacked once per host under `~/.cache/aic-elephc/<tag>/<target>/` and linked as
+  `tools/elephc` (`AIC_ELEPHC_MIRROR` overrides the download base). AIC's profile installs none:
+  AIC runs the fork's `main` from source. Linux x86_64 only; elsewhere the fork builds from source;
   `composer install` installs the git hooks (captainhook, conventional-commit subjects).
 
 ## Code conventions (binding)
@@ -594,6 +598,8 @@ Every file:
   as a whole, before building (#110).
 - Edit `composer.json` with targeted edits, never a JSON dump and rewrite (it reindents and
   escapes unicode).
-- The elephc compiler is AIC's fork, checked out beside this repo as `../elephc` (carry workflow in its `FORK.md`). Run its binary
+- The elephc compiler is AIC's fork, checked out beside this repo as `../elephc` (carry workflow in its `FORK.md`).
+  Its releases (`aic-v<version>-<n>` tags, `.github/workflows/aic-release.yml`) are what apps install;
+  the fork has GitHub Actions disabled, so none has run yet (#282). Run its binary
   in place, one cargo command at a time, never kill a running cargo, and never run `cargo fmt`
   there: it reformats the whole repo.
