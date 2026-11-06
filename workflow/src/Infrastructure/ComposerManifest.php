@@ -79,15 +79,21 @@ final readonly class ComposerManifest
     }
 
     /**
-     * @return bool Whether the package's source lies inside the project, as in the repository that develops it: where
-     *              init refuses and the probe sweep runs (#119).
+     * @return bool Whether the package's source lies inside the project and outside its vendor-dir, as in the repository
+     *              that develops it: where init refuses and the probe sweep runs (#119). An app's installed copy is
+     *              under its vendor-dir (#280).
      */
     public function holdsSource(): bool
     {
         $root = realpath($this->root);
         $package = realpath($this->package);
 
-        return is_string($root) && is_string($package) && str_starts_with($package . '/', $root . '/');
+        if (!is_string($root) || !is_string($package)) {
+            return false;
+        }
+
+        return str_starts_with($package . '/', $root . '/')
+            && !str_starts_with($package . '/', $root . '/' . $this->vendorDir() . '/');
     }
 
     /**

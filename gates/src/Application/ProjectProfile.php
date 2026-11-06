@@ -93,12 +93,20 @@ final readonly class ProjectProfile
         'gates/*',
         // ignibyte/aic-scaffold, the Composer plugin that writes an app's root files (#279), in this repo.
         'scaffold/*',
+        // ignibyte/aic-project, the create-project template (#280): an app's starting tree, judged in the app it makes.
+        'project/*',
         // The ticket script and the package split (#278).
         'bin/*.sh',
         // The release workflow that splits each package into its repository on a tag (#278).
         '.github/workflows/split.yml',
         'CONSTITUTION.md',
     ];
+
+    /**
+     * The folders in AIC's repository that hold an app's tree of their own, judged where it runs, in the app it
+     * makes: the create-project template (#280). gate:26 reads their paths from the folder, by the app's rules.
+     */
+    private const array AIC_TEMPLATE_TREES = ['project/'];
 
     /**
      * The class tools' folders in AIC's own repository: the runtime, the gates, and the workflow with its rules and the
@@ -145,6 +153,18 @@ final readonly class ProjectProfile
         return is_array($decoded[0]) && ($decoded[0]['name'] ?? null) === 'ignibyte/aic-gates'
             ? GateProfile::Aic
             : GateProfile::App;
+    }
+
+    /**
+     * @param string $root The project's root.
+     *
+     * @return list<string> The folders, each ending in `/`, that hold another app's tree; none in an app.
+     */
+    public function templateTrees(string $root): array
+    {
+        return $this->profile($root) === GateProfile::Aic
+            ? self::AIC_TEMPLATE_TREES
+            : [];
     }
 
     /**

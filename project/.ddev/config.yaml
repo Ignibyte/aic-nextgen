@@ -1,0 +1,15 @@
+# DDEV runs the interpreted reference and Postgres: nginx-fpm serves
+# public/index.php, the site gate:23 compares the compiled one with. The
+# project's name is its folder's. Set AIC_APP_SECRET in the ignored
+# .ddev/config.local.yaml, as the README shows.
+type: php
+docroot: public
+php_version: "8.5"
+database:
+    type: postgres
+    version: "17"
+performance_mode: none
+composer_version: "2"
+corepack_enable: false
+xdebug_enabled: false
+use_dns_when_possible: true

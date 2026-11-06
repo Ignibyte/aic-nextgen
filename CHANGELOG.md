@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **`composer create-project ignibyte/aic-project` gives a working app** (#280): the template in
+  `project/` holds an app's `composer.json`, a `site` module (a home page, `/health`, `db:ping`),
+  the `app` theme, `config/native-site.json`, DDEV's config and a README that walks from install
+  to a compiled site and the agent workflow. The other root files come from their owners on
+  install. A created app builds, migrates an empty database and passes `29 passed, 0 deferred`
+  before and after `workflow:init`. `bin/split-packages.sh` splits it as the fifth package, and
+  the scaffold package gains its LICENSE.
 - **`ignibyte/aic-scaffold` writes an app's root files** (#279): a Composer plugin in `scaffold/`
   that, on every install and update, writes the files installed `ignibyte/aic-*` packages declare
   in `extra.aic-scaffold`, by mode (`replace` when the source changes, `add-once` when missing,
@@ -19,6 +26,11 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Changed
 
+- **The gates pin their tools exactly** (#280): the 21 tools that read or rewrite code are pinned
+  in `ignibyte/aic-gates` to the versions AIC runs, so an app no longer resolves newer releases
+  that judge differently (Rector 2.8.4 failed generated code that 2.7.0 passes). The packages now
+  require each other at `^0.1`, which a stable app resolves to the tagged release.
+
 - **The packages are `ignibyte/aic-framework`, `ignibyte/aic-gates` and `ignibyte/aic-workflow`**
   (#278): every require, path repository, built path (`vendor/ignibyte/aic-*`) and gate pattern
   follows the new names. `bin/split-packages.sh` splits each package directory with `git subtree`,
@@ -27,6 +39,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
   renames its requires and runs `composer update 'ignibyte/aic-*'`.
 
 ### Fixed
+
+- **`workflow:init` installs into an app whose package is under `vendor/`** (#280): it called any
+  copy of `ignibyte/aic-workflow` inside the project its own source and refused, so every install
+  from Packagist would have been refused. Only a copy outside the vendor-dir counts now.
+- **`aic-gate init` ignores `.deptrac.cache`** (#280), as it did every other tool cache; gate:26
+  refused the untracked cache in a new app.
+- **gate:26 reads `project/` as an app's tree** (#280): its classes are placed by the same rules
+  as the root's modules and themes, relative to the folder.
 
 - **`workflow:init` retires a guard hook the pack no longer ships** (#284): the merge into
   `.claude/settings.json` (and `.codex/hooks.json`) added and replaced the guard's hooks but kept

@@ -323,12 +323,19 @@ Background work is a job; the HTTP server's processes are its workers.
     failures can fail open; [workflow/README.md](workflow/README.md) states the coverage and limits.
     These app hooks do not enforce this maintainer checkout's manual phases.
 - **`ignibyte/aic-scaffold`** (#279), in `scaffold/`, namespace `AIC\Scaffold\`: a Composer plugin
-  (dev-only here, a plain require for an app) that writes, on every install and update, the root
+  (dev-only, here and in an app, #280) that writes, on every install and update, the root
   files installed `ignibyte/aic-*` packages declare in `extra.aic-scaffold` (`replace`, `add-once`,
   `append`), then runs each package's engine (the gates' `aic-gate init`; AIC's root opts it out).
   The framework's files are `framework/scaffold/`: edit `public/index.php`, `bootstrap/serve.php`,
   `bin/aic` and the config starters there, never only at the root. gate:2 admits
   `composer-plugin-api` for its manifest alone; a phpat rule keeps runtime code off it.
+- **`ignibyte/aic-project`** (#280), in `project/`: the template `composer create-project` copies
+  (an app's `composer.json`, the `site` module, the `app` theme, `config/native-site.json`, DDEV's
+  config, a README), split like the other packages. Everything else at an app's root is written on
+  install by its owner, so the template never carries a copy. A created app's first gate run is
+  `29 passed, 0 deferred`. The template's classes are not AIC's: they sit outside every class root,
+  and gate:26 reads `project/` through `ProjectProfile::templateTrees()`, judging each path relative
+  to the folder. The packages require each other at `^0.1`.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
 - **Modules** (#90, #92, #93): `modules/<name>/<name>.module.php` returns a fluent
   `AIC\Module\Contracts\ModuleManifest`, naming only what the module has:
@@ -450,10 +457,13 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   root (CaptainHook resolves paths against its config's directory).
 - **Profiles** (#130): `ProjectProfile` decides `Aic` when `gates/composer.json` names
   `ignibyte/aic-gates`, `App` otherwise, and gives `GateRoots` (class, source, runtime and site roots, the
-  manifests, the script folders, gate:26's shell). An app runs every gate but 22, 28 and 29;
+  manifests, the script folders, gate:26's shell). An app runs every gate but 22, 28, 29 and 31;
   gate:21 probes its `modules/`, `themes/` and `build/generated/`, and gate:23 compiles them with the framework from
   `vendor/`. gate:23's steps are `config/native-site.json` (`aic.native-site/1`, one step a
   line; with none the gate defers; `profiled` steps run again with `AIC_PROFILER=1`, #234).
+- **Tool pins** (#280): `gates/composer.json` pins every tool that reads or rewrites code (21
+  packages) to the exact version AIC's root runs, so an app judges with the versions the verdicts
+  were proven on. A tool bump is an AIC change: update the root, run the gate, move the pin.
 - **An app's suite files** (#130): `gates/stubs/` holds the eight root files an app keeps.
   `vendor/bin/aic-gate init` writes each that is missing or differs (`phpcs.xml.dist` with one
   root per module), appends the ignore lines, prints composer.json's lines and never writes it;

@@ -1,0 +1,97 @@
+{
+    "name": "ignibyte/aic-project",
+    "description": "Start an AIC app: composer create-project ignibyte/aic-project my-app gives a module, a theme, the gate suite and the agent workflow, ready to build and serve compiled.",
+    "license": "MIT",
+    "type": "project",
+    "keywords": [
+        "aic",
+        "framework",
+        "project",
+        "template",
+        "elephc"
+    ],
+    "homepage": "https://github.com/Ignibyte/aic-nextgen",
+    "support": {
+        "issues": "https://github.com/Ignibyte/aic-nextgen/issues",
+        "source": "https://github.com/Ignibyte/aic-nextgen"
+    },
+    "require": {
+        "php": "^8.5",
+        "ignibyte/aic-framework": "^0.1",
+        "psr/http-message": "^2.0",
+        "psr/http-server-handler": "^1.0"
+    },
+    "require-dev": {
+        "ignibyte/aic-gates": "^0.1",
+        "ignibyte/aic-scaffold": "^0.1",
+        "ignibyte/aic-workflow": "^0.1",
+        "roave/security-advisories": "dev-latest"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "App\\Generated\\": "build/generated/",
+            "App\\Site\\": "modules/site/src/",
+            "App\\Theme\\Components\\": "themes/app/src/Components/",
+            "App\\Theme\\Layouts\\": "themes/app/src/Layouts/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "captainhook/hook-installer": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "ergebnis/composer-normalize": true,
+            "ignibyte/aic-scaffold": true,
+            "phpstan/extension-installer": true
+        },
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "extra": {
+        "captainhook": {
+            "only-enabled": true
+        }
+    },
+    "scripts": {
+        "build": "aic-build",
+        "gate": [
+            "Composer\\Config::disableProcessTimeout",
+            "aic-gate"
+        ],
+        "gate:0": "aic-gate 0",
+        "gate:1": "aic-gate 1",
+        "gate:10": "aic-gate 10",
+        "gate:11": "aic-gate 11",
+        "gate:12": "aic-gate 12",
+        "gate:13": "aic-gate 13",
+        "gate:14": "aic-gate 14",
+        "gate:15": "aic-gate 15",
+        "gate:16": "aic-gate 16",
+        "gate:17": "aic-gate 17",
+        "gate:18": "aic-gate 18",
+        "gate:19": "aic-gate 19",
+        "gate:2": "aic-gate 2",
+        "gate:20": "aic-gate 20",
+        "gate:21": "aic-gate 21",
+        "gate:23": "aic-gate 23",
+        "gate:24": "aic-gate 24",
+        "gate:25": "aic-gate 25",
+        "gate:26": "aic-gate 26",
+        "gate:27": "aic-gate 27",
+        "gate:3": "aic-gate 3",
+        "gate:30": "aic-gate 30",
+        "gate:32": "aic-gate 32",
+        "gate:4": "aic-gate 4",
+        "gate:5": "aic-gate 5",
+        "gate:6": "aic-gate 6",
+        "gate:7": "aic-gate 7",
+        "gate:8": "aic-gate 8",
+        "gate:9": "aic-gate 9",
+        "native:serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "aic-gate serve"
+        ]
+    }
+}
