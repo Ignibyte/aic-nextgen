@@ -15,7 +15,8 @@ use const STDOUT;
 /**
  * Gate #15 — Semgrep custom AIC ruleset.
  *
- * Resolves a `semgrep` binary (`~/.local/bin/semgrep` then PATH fallback) and
+ * Resolves a `semgrep` binary (`tools/semgrep`, the version `aic-gate tools` pins, then
+ * `~/.local/bin/semgrep`, then PATH) and
  * invokes it via the {@see ProcessRunner} seam against the project's
  * `semgrep.yml`. Fails loudly when the binary is missing.
  */
@@ -64,7 +65,7 @@ final readonly class SemgrepGate
      */
     public function run(string $root, mixed $stdout = STDOUT, mixed $stderr = STDERR): int
     {
-        $bin = $this->externalTool->locate('semgrep', [$this->home . '/.local/bin/semgrep']);
+        $bin = $this->externalTool->locate('semgrep', [$root . '/tools/semgrep', $this->home . '/.local/bin/semgrep']);
 
         if (!is_string($bin)) {
             fwrite($stderr, $this->renderMissingBinary());
@@ -110,7 +111,7 @@ final readonly class SemgrepGate
     private function renderMissingBinary(): string
     {
         return sprintf(
-            'gate:15 — semgrep binary not found.%sInstall via: pip install --user semgrep==1.95.0%s',
+            'gate:15 — semgrep binary not found.%sInstall via: vendor/bin/aic-gate tools%s',
             PHP_EOL,
             PHP_EOL,
         );

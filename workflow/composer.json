@@ -1,6 +1,6 @@
 {
     "name": "ignibyte/aic-workflow",
-    "description": "AIC's gated agent workflow (#91): a run per ticket through plan, code, check and complete. Ported from droost-workflow by its author and relicensed MIT. Dev-only.",
+    "description": "AIC's gated agent workflow: a run per ticket through plan, code, check and complete. Ported from droost-workflow by its author and relicensed MIT. Dev-only.",
     "license": "MIT",
     "type": "library",
     "keywords": [

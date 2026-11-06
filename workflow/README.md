@@ -8,7 +8,7 @@ scaffolds, independent review and client guards. Runtime code does not depend on
 Require the package for development, then select the client explicitly:
 
 ```sh
-composer require --dev ignibyte/aic-workflow:0.1.x-dev
+composer require --dev "ignibyte/aic-workflow:^0.1"
 bin/aic workflow:init --client=codex
 ```
 

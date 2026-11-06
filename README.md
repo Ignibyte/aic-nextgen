@@ -24,8 +24,7 @@ it and say what breaks.
   compiled binary, and more. There are no baselines and no suppressions.
 - **The browser side** is [Tessera](https://github.com/Ignibyte/tessera): server HTML morphed into
   the page by region and component, over responses and Server-Sent Events.
-- **Start an app** with `composer create-project ignibyte/aic-project my-app` once the packages
-  are on Packagist; until then aic-demo requires them from a checkout of this repository by path.
+- **Start an app** with `composer create-project ignibyte/aic-project my-app`.
   [project/README.md](project/README.md) walks a created app from install to a compiled site.
 
 ## The repositories
@@ -267,7 +266,7 @@ Conventional Commits.
 An app that requires `ignibyte/aic-workflow` for development can select its client explicitly:
 
 ```bash
-composer require --dev ignibyte/aic-workflow:0.1.x-dev
+composer require --dev "ignibyte/aic-workflow:^0.1"
 bin/aic workflow:init --client=codex
 ```
 
@@ -297,7 +296,7 @@ to the app's URL, write a ticket and start it with `bin/aic workflow:run <number
 This repository holds the package's own source, so init refuses here. Its maintainer phases
 remain manual; installing an app pack does not retrofit hooks into this maintainer session.
 
-The gates come the same way: `composer require --dev ignibyte/aic-gates:0.1.x-dev`, then
+The gates come the same way: `composer require --dev "ignibyte/aic-gates:^0.1"`, then
 `vendor/bin/aic-gate init`, which writes the tools' root configs and prints the scripts and plugins
 for composer.json. Write gate:23's requests in `config/native-site.json`, then `composer run gate`
 runs every gate an app has (all but 22, 28, 29 and 31). This repository's own root configs are its

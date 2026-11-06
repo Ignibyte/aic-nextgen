@@ -45,7 +45,7 @@ core.*
 !.gitkeep
 
 # pinned external binaries
-/tools/gitleaks
+/tools/
 
 # native gate work directory (gate:21)
 /.native-gate/

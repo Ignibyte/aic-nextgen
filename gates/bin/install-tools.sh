@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Install the non-PHP gate tooling: gitleaks (pinned, into ./tools/, gate:17),
+# Install the non-PHP gate tooling at the versions AIC pins, into or linked from ./tools/:
+# gitleaks (gate:17),
 # semgrep (gate:15), shellcheck (gate:18), the app's Playwright (#174) and, in an
 # app, AIC's pinned elephc release (gates 21 and 23, #281). The PHP tools come from
 # ignibyte/aic-gates' require (#116). `vendor/bin/aic-gate tools` runs it in the
@@ -17,7 +18,8 @@ TOOLS_DIR="$ROOT/tools"
 mkdir -p "$TOOLS_DIR"
 
 GITLEAKS_VERSION="${GITLEAKS_VERSION:-8.30.1}"
-SEMGREP_VERSION="${SEMGREP_VERSION:-1.95.0}"
+SEMGREP_VERSION="${SEMGREP_VERSION:-1.156.0}"
+SHELLCHECK_VERSION="${SHELLCHECK_VERSION:-0.11.0}"
 
 case "$(uname -m)" in
     x86_64)  ARCH_GITLEAKS="x64" ;;
@@ -48,53 +50,42 @@ install_gitleaks() {
 }
 
 install_semgrep() {
-    if command -v semgrep >/dev/null 2>&1; then
-        echo "semgrep already on PATH: $(command -v semgrep) ($(semgrep --version 2>/dev/null | awk 'NR == 1'))"
-        return
+    # Pinned to the version AIC's verdicts run on (#280's rule), in a virtualenv of its own per
+    # host (pip --user is refused on current Debian and Ubuntu, PEP 668), linked as tools/semgrep.
+    local venv="${XDG_CACHE_HOME:-$HOME/.cache}/aic-tools/semgrep-$SEMGREP_VERSION"
+    if [[ "$("$venv/bin/semgrep" --version 2>/dev/null | tail -n 1)" != "$SEMGREP_VERSION" ]]; then
+        # A missing python3 or venv is a hard fail: a warning would only surface later,
+        # as gate:15's binary-not-found error, far from the real cause.
+        if ! command -v python3 >/dev/null 2>&1 || ! python3 -m venv --help >/dev/null 2>&1; then
+            echo "ERROR: python3 with its venv module is required to install semgrep $SEMGREP_VERSION." >&2
+            echo "Install them (python3 and python3-venv on Debian and Ubuntu) and re-run." >&2
+            return 1
+        fi
+        echo "Installing semgrep $SEMGREP_VERSION into $venv ..."
+        rm -rf "$venv"
+        python3 -m venv "$venv"
+        "$venv/bin/python" -m pip install --quiet --disable-pip-version-check "semgrep==$SEMGREP_VERSION"
     fi
-    # A missing python3 is a hard fail: a warning would only surface later,
-    # as gate:15's binary-not-found error, far from the real cause.
-    if ! command -v python3 >/dev/null 2>&1; then
-        echo "ERROR: python3 not found — required to install semgrep $SEMGREP_VERSION." >&2
-        echo "Install python3 (e.g. apt install python3 python3-pip) and re-run." >&2
-        return 1
-    fi
-    if ! command -v pip3 >/dev/null 2>&1 && ! python3 -m pip --version >/dev/null 2>&1; then
-        echo "ERROR: pip is not available under python3." >&2
-        echo "Install python3-pip (e.g. apt install python3-pip) and re-run." >&2
-        return 1
-    fi
-    echo "Installing semgrep $SEMGREP_VERSION via pip --user ..."
-    python3 -m pip install --user --upgrade "semgrep==$SEMGREP_VERSION"
+    ln -sfn "$venv/bin/semgrep" "$TOOLS_DIR/semgrep"
+    echo "semgrep $SEMGREP_VERSION installed: tools/semgrep -> $venv/bin/semgrep"
 }
 
 install_shellcheck() {
-    if command -v shellcheck >/dev/null 2>&1; then
-        echo "shellcheck already on PATH: $(command -v shellcheck) ($(shellcheck --version 2>/dev/null | grep -E '^version:' | awk '{print $2}'))"
+    # Pinned like semgrep, from the release binaries, into tools/: no package manager or root.
+    if [[ "$("$TOOLS_DIR/shellcheck" --version 2>/dev/null | awk '$1 == "version:" { print $2 }')" == "$SHELLCHECK_VERSION" ]]; then
+        echo "shellcheck $SHELLCHECK_VERSION already installed."
         return
     fi
-    # The shellcheck binary is shipped by every major distro and Homebrew.
-    # We do not pin a specific version because the 0.x line is stable and
-    # our gate (gate:18) asserts against -S warning, not against any
-    # version-specific check ID.
-    if command -v pacman >/dev/null 2>&1; then
-        echo "Installing shellcheck via pacman ..."
-        sudo pacman -S --needed --noconfirm shellcheck
-        return
-    fi
-    if command -v apt-get >/dev/null 2>&1; then
-        echo "Installing shellcheck via apt-get ..."
-        sudo apt-get install -y shellcheck
-        return
-    fi
-    if command -v brew >/dev/null 2>&1; then
-        echo "Installing shellcheck via brew ..."
-        brew install shellcheck
-        return
-    fi
-    echo "ERROR: shellcheck not found and no supported package manager (pacman / apt-get / brew)." >&2
-    echo "Install shellcheck manually from https://www.shellcheck.net/" >&2
-    return 1
+    local arch
+    case "$(uname -m)" in
+        arm64) arch="aarch64" ;;
+        *)     arch="$(uname -m)" ;;
+    esac
+    local name="shellcheck-v$SHELLCHECK_VERSION"
+    local url="https://github.com/koalaman/shellcheck/releases/download/v$SHELLCHECK_VERSION/$name.$OS.$arch.tar.xz"
+    echo "Installing shellcheck $SHELLCHECK_VERSION ($OS/$arch) ..."
+    curl -fsSL "$url" | tar -xJ -C "$TOOLS_DIR" --strip-components=1 "$name/shellcheck"
+    chmod +x "$TOOLS_DIR/shellcheck"
 }
 
 install_playwright() {
@@ -191,4 +182,3 @@ install_elephc
 echo
 echo "Done. Tools are at:"
 ls -1 "$TOOLS_DIR"
-command -v semgrep || true

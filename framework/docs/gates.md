@@ -50,6 +50,11 @@ script, so a Tessera pin bump changes `config/app.php` and no step. A name the c
 refuses the script. The extra header may hold several
 lines joined by `\r\n` (`Range: bytes=0-4\r\nIf-Range: \"x\"`).
 
+Gates 15, 17 and 18 run semgrep, gitleaks and shellcheck. `vendor/bin/aic-gate tools` installs
+each at the version AIC's own gates run, into `tools/` or linked from there (semgrep lives in a
+virtualenv per host under `~/.cache/aic-tools/`), and each gate looks in `tools/` first. A gate
+whose tool is missing fails; it never passes by skipping (#282).
+
 Browser tests (#174) are Playwright specs in `tests/browser/`. `init` writes the root
 `package.json` and `package-lock.json` that pin Playwright 1.62.1 and ignores `/node_modules/`;
 `vendor/bin/aic-gate tools` runs `npm ci` and installs Chromium. gate:23 runs every kept test
