@@ -9,6 +9,7 @@ WORKDIR /app
 COPY composer.json ./
 COPY framework framework
 COPY gates gates
+COPY scaffold scaffold
 COPY workflow workflow
 RUN composer install --no-dev --no-scripts --no-interaction --optimize-autoloader
 

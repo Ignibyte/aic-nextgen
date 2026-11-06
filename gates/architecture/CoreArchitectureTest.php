@@ -34,6 +34,7 @@ final class CoreArchitectureTest
             'testNothingDependsOnSwoole' => $this->testNothingDependsOnSwoole(),
             'testRuntimeDoesNotDependOnGates' => $this->testRuntimeDoesNotDependOnGates(),
             'testRuntimeDoesNotDependOnModuleContracts' => $this->testRuntimeDoesNotDependOnModuleContracts(),
+            'testRuntimeDoesNotDependOnTheScaffold' => $this->testRuntimeDoesNotDependOnTheScaffold(),
             'testRuntimeDoesNotDependOnTheWorkflow' => $this->testRuntimeDoesNotDependOnTheWorkflow(),
             'testTheWorkflowUsesOnlyTheCommandKind' => $this->testTheWorkflowUsesOnlyTheCommandKind(),
         ];
@@ -136,6 +137,26 @@ final class CoreArchitectureTest
             ->dependOn()
             ->classes(Selector::inNamespace('AIC\\Workflow'))
             ->because('ignibyte/aic-workflow is a dev-only package; the runtime must run without it.');
+    }
+
+    /**
+     * The scaffold plugin runs at Composer time only (#279): no other AIC class
+     * and no app class depends on `AIC\Scaffold\`, so nothing of it is loaded
+     * while the site serves.
+     *
+     * @return Rule The rule.
+     */
+    private function testRuntimeDoesNotDependOnTheScaffold(): Rule
+    {
+        return PHPat::rule()
+            ->classes(
+                Selector::AllOf(Selector::inNamespace('AIC'), Selector::Not(Selector::inNamespace('AIC\\Scaffold'))),
+                Selector::inNamespace('App'),
+            )
+            ->shouldNot()
+            ->dependOn()
+            ->classes(Selector::inNamespace('AIC\\Scaffold'))
+            ->because('ignibyte/aic-scaffold is a Composer plugin; it runs at install time, never while the site serves.');
     }
 
     /**

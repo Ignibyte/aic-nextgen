@@ -84,8 +84,12 @@
         <exclude name="LongVariable"/>
         <exclude name="BooleanGetMethodName"/>
     </rule>
-    <!-- ShortVariable exceptions: classic loop indices (i, j, k, v, e) and `id`. -->
-    <rule ref="rulesets/naming.xml/ShortVariable"><properties><property name="exceptions" value="id,e,i,j,k,v"/></properties></rule>
+    <!--
+        ShortVariable exceptions: classic loop indices (i, j, k, v, e), `id`, and `io`, the name Composer's
+        PluginInterface gives its IOInterface parameter: Psalm's ParamNameMismatch holds an implementing method to
+        it, and Rector names an IOInterface variable after it (#279).
+    -->
+    <rule ref="rulesets/naming.xml/ShortVariable"><properties><property name="exceptions" value="id,io,e,i,j,k,v"/></properties></rule>
     <!--
         LongVariable at 36, old AIC's value: Rector's naming rules
         (CatchExceptionNameMatchingTypeRector, RenameVariableToMatchNewTypeRector)

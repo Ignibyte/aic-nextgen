@@ -22,6 +22,7 @@
     <file>workflow/bin</file>
     <file>workflow/rules</file>
     <file>workflow/probes/sweep</file>
+    <file>scaffold/src</file>
 
     <exclude-pattern>vendor/*</exclude-pattern>
     <exclude-pattern>storage/*</exclude-pattern>
@@ -35,6 +36,7 @@
             <property name="rootNamespaces" type="array">
                 <element key="framework/src" value="AIC"/>
                 <element key="workflow/src" value="AIC\Workflow"/>
+                <element key="scaffold/src" value="AIC\Scaffold"/>
                 <element key="modules/account/src" value="App\Account"/>
                 <element key="modules/note/src" value="App\Note"/>
                 <element key="modules/scaffold/src" value="App\Scaffold"/>

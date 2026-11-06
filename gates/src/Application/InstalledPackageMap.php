@@ -29,10 +29,21 @@ use const PHP_EOL;
  * `psr/http-message` and `psr/http-factory` both register
  * `Psr\Http\Message\`).
  *
+ * A platform package Composer provides is in no `installed.json` entry, yet
+ * it backs the namespace it is the API of: `composer-plugin-api` owns
+ * `Composer\`, for a Composer plugin's manifest (#279).
+ *
  * @phpstan-type InstalledPackage array{name?: string, autoload?: array{psr-4?: array<string, string|list<string>>}}
  */
 final readonly class InstalledPackageMap
 {
+    /**
+     * Each platform package that backs a namespace, and its prefixes.
+     */
+    private const array PLATFORM_PREFIXES = [
+        'composer-plugin-api' => ['Composer\\'],
+    ];
+
     /**
      * Build the prefix → owners map for `$root`. Returns `null` when
      * `installed.json` is missing or unreadable.
@@ -88,6 +99,10 @@ final readonly class InstalledPackageMap
 
         $packages = $decoded['packages'] ?? [];
         $map = [];
+
+        foreach (self::PLATFORM_PREFIXES as $platform => $prefixes) {
+            $map = $this->mergePrefixes($map, $platform, $prefixes);
+        }
 
         foreach ($packages as $package) {
             $map = $this->indexPackage($map, $package);

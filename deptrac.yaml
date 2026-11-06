@@ -15,3 +15,4 @@ deptrac:
     - ./gates/src
     - ./gates/architecture
     - ./workflow/src
+    - ./scaffold/src

@@ -19,7 +19,7 @@ The gates (ignibyte/aic-gates' runner, behind `composer run gate`, runs every ga
 |---|---|---|
 | 0 | composer audit | the installed packages against the advisory database; abandoned packages reported |
 | 1 | composer-normalize | the root and framework manifests in canonical order |
-| 2 | runtime require allow-list | `require` holds only `php`, `ext-*`, `psr/*` and `ignibyte/aic-framework`; `require-dev` is unrestricted |
+| 2 | runtime require allow-list | `require` holds only `php`, `ext-*`, `psr/*` and `ignibyte/aic-framework`, and the scaffold plugin's manifest may add `composer-plugin-api` (#279); `require-dev` is unrestricted |
 | 3 | require-checker | every symbol runtime code uses is backed by a declared require |
 | 4 | composer-unused | no required package goes unused |
 | 5 | no baselines, no suppressions | no baseline files, no `ignoreErrors`, no psalm `suppress`/`info` levels |
@@ -63,7 +63,7 @@ Every cross-system seam uses a PSR interface: PSR-4 (autoloading), PSR-7 (HTTP m
 
 ## §2  One package, our own implementation
 
-AIC is one runtime package, `ignibyte/aic-framework`, in `framework/` with a namespace per system (`AIC\Http`, `AIC\Routing`, …), pulled into the fixture app at the repo root (three modules since #126; the demo is the `demo-reference` tag). A second package, `ignibyte/aic-workflow` in `workflow/` (namespace `AIC\Workflow\`), is dev-only: the agent workflow's engine, required under `require-dev`, never by runtime code (two phpat rules hold both directions), and run interpreted rather than compiled. We may study any MIT- or BSD-licensed code to learn its patterns; we **never** depend on framework code from outside AIC (HTTP, routing, container, events, middleware, any Laravel or Symfony component). Composer dependencies are allowed for PSR interface packages, for the gate tooling (`require-dev`), and for orthogonal helpers nobody rewrites (`roave/security-advisories`). gate:2 holds the runtime `require` to that.
+AIC is one runtime package, `ignibyte/aic-framework`, in `framework/` with a namespace per system (`AIC\Http`, `AIC\Routing`, …), pulled into the fixture app at the repo root (three modules since #126; the demo is the `demo-reference` tag). A second package, `ignibyte/aic-workflow` in `workflow/` (namespace `AIC\Workflow\`), is dev-only: the agent workflow's engine, required under `require-dev`, never by runtime code (two phpat rules hold both directions), and run interpreted rather than compiled. A third, `ignibyte/aic-scaffold` in `scaffold/` (namespace `AIC\Scaffold\`, #279), is the Composer plugin that writes an app's root files at install time; it runs only under Composer, and a phpat rule keeps runtime code off it. We may study any MIT- or BSD-licensed code to learn its patterns; we **never** depend on framework code from outside AIC (HTTP, routing, container, events, middleware, any Laravel or Symfony component). Composer dependencies are allowed for PSR interface packages, for the gate tooling (`require-dev`), and for orthogonal helpers nobody rewrites (`roave/security-advisories`). gate:2 holds the runtime `require` to that.
 
 ---
 

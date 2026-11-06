@@ -20,5 +20,6 @@ while read -r package directory; do
 done <<'PACKAGES'
 ignibyte/aic-framework framework
 ignibyte/aic-gates gates
+ignibyte/aic-scaffold scaffold
 ignibyte/aic-workflow workflow
 PACKAGES

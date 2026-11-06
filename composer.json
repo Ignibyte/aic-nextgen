@@ -11,7 +11,9 @@
         "psr/http-server-handler": "^1.0"
     },
     "require-dev": {
+        "composer/composer": "^2.10",
         "ignibyte/aic-gates": "0.1.x-dev",
+        "ignibyte/aic-scaffold": "0.1.x-dev",
         "ignibyte/aic-workflow": "0.1.x-dev",
         "roave/security-advisories": "dev-latest"
     },
@@ -33,6 +35,16 @@
                 "symlink": true,
                 "versions": {
                     "ignibyte/aic-gates": "0.1.x-dev"
+                }
+            }
+        },
+        {
+            "type": "path",
+            "url": "scaffold",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "ignibyte/aic-scaffold": "0.1.x-dev"
                 }
             }
         },
@@ -65,6 +77,7 @@
             "captainhook/hook-installer": true,
             "dealerdirect/phpcodesniffer-composer-installer": true,
             "ergebnis/composer-normalize": true,
+            "ignibyte/aic-scaffold": true,
             "phpstan/extension-installer": true
         },
         "optimize-autoloader": true,
@@ -72,6 +85,11 @@
         "sort-packages": true
     },
     "extra": {
+        "aic-scaffold": {
+            "engines": {
+                "ignibyte/aic-gates": false
+            }
+        },
         "captainhook": {
             "only-enabled": true
         }

@@ -58,6 +58,7 @@ WORKDIR /app
 COPY composer.json ./
 COPY framework framework
 COPY gates gates
+COPY scaffold scaffold
 COPY workflow workflow
 RUN composer install --no-dev --no-scripts --no-interaction --optimize-autoloader
 
@@ -73,8 +74,8 @@ RUN composer dump-autoload --no-dev --optimize --no-scripts
 COPY deploy/frankenphp/Caddyfile /etc/frankenphp/Caddyfile
 ```
 
-An app that requires `aic/*` from Packagist or a VCS repository copies its own root instead of the
-three package folders. Build from a clean checkout, so no local `vendor/` or cache goes in:
+An app that requires `ignibyte/aic-*` from Packagist or a VCS repository copies its own root instead of
+the four package folders. Build from a clean checkout, so no local `vendor/` or cache goes in:
 
 ```bash
 docker build -f deploy/frankenphp/Dockerfile -t my-app .
