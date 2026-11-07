@@ -1,5 +1,10 @@
 # AIC workflow
 
+[![Latest version](https://img.shields.io/packagist/v/ignibyte/aic-workflow)](https://packagist.org/packages/ignibyte/aic-workflow)
+[![PHP](https://img.shields.io/packagist/dependency-v/ignibyte/aic-workflow/php)](https://packagist.org/packages/ignibyte/aic-workflow)
+[![License](https://img.shields.io/packagist/l/ignibyte/aic-workflow)](LICENSE)
+[![Downloads](https://img.shields.io/packagist/dt/ignibyte/aic-workflow)](https://packagist.org/packages/ignibyte/aic-workflow/stats)
+
 `ignibyte/aic-workflow` is a development package. It supplies the app's four-phase engine, code index,
 scaffolds, independent review and client guards. Runtime code does not depend on it.
 
