@@ -55,6 +55,7 @@
         }
     },
     "scripts": {
+        "post-root-package-install": "git init --quiet",
         "build": "aic-build",
         "gate": [
             "Composer\\Config::disableProcessTimeout",

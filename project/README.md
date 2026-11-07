@@ -30,14 +30,13 @@ The framework's own docs are in `vendor/ignibyte/aic-framework/docs/`, starting 
 ```sh
 composer create-project ignibyte/aic-project my-app
 cd my-app
-git init
-composer install
 ```
 
-The first install writes the app's root files. `ignibyte/aic-scaffold` copies the framework's
+create-project makes `my-app` a git repository before it installs anything: the gates read the
+files git lists, and the hook installer adds the commit hooks only inside a repository. The
+install writes the app's root files. `ignibyte/aic-scaffold` copies the framework's
 `public/index.php`, `bootstrap/serve.php`, `bin/aic`, five `config/*.php` starters and its
-`.gitignore` lines. Then `aic-gate init` writes the tools' configs. The gates read the files
-git lists, and the second install, run inside the new repository, adds the commit hooks.
+`.gitignore` lines. Then `aic-gate init` writes the tools' configs.
 Every later `composer install` or `update` keeps the framework's entry files current and
 leaves your config files alone.
 
