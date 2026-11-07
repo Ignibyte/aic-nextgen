@@ -4,6 +4,20 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+## 0.1.1 — 2026-11-06
+
+### Fixed
+
+- **`composer create-project` works from a release archive** (#287). GitHub and Packagist serve
+  `ignibyte/aic-project` as a zip, so the new app had no `.git` when its packages installed, and
+  captainhook/hook-installer stopped create-project with "git directory not found". The template
+  now runs `git init` in `post-root-package-install`, before anything installs, and the README
+  drops its separate `git init` and second `composer install`. `ignibyte/aic-scaffold`'s plugin
+  runs at priority 10, ahead of the hook installer, so the `captainhook.json` that `aic-gate init`
+  writes exists when the installer looks for it: the first install already installs the hooks.
+  0.1.0's rehearsal served the packages from local git, which Composer clones, so the app had a
+  `.git` and the defect stayed hidden; the release check now serves each split as a zip.
+
 ## 0.1.0 — 2026-11-06
 
 The first release. AIC is a PHP 8.5 framework for server-rendered sites, built for coding
