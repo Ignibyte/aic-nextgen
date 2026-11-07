@@ -1,5 +1,10 @@
 # AIC
 
+[![Latest version](https://img.shields.io/packagist/v/ignibyte/aic-framework)](https://packagist.org/packages/ignibyte/aic-framework)
+[![PHP](https://img.shields.io/packagist/dependency-v/ignibyte/aic-framework/php)](https://packagist.org/packages/ignibyte/aic-framework)
+[![License](https://img.shields.io/packagist/l/ignibyte/aic-framework)](LICENSE)
+[![Downloads](https://img.shields.io/packagist/dt/ignibyte/aic-framework)](https://packagist.org/packages/ignibyte/aic-framework/stats)
+
 AIC is a PHP 8.5 framework for server-rendered sites. It is built for coding agents to write apps
 in, under strict gates, and built so the whole app can also compile to a native binary with
 [elephc](https://github.com/illegalstudio/elephc). It is a working framework: Lotline, a car
@@ -35,6 +40,18 @@ it and say what breaks.
 | [Ignibyte/aic-demo](https://github.com/Ignibyte/aic-demo) | Lotline, the demo site. Start here to see an app built on AIC, with install steps |
 | [Ignibyte/tessera](https://github.com/Ignibyte/tessera) | The browser runtime |
 | [Ignibyte/aic_compiler](https://github.com/Ignibyte/aic_compiler) | The elephc fork |
+
+## The packages
+
+Each is a read-only split of its folder here, published on [Packagist](https://packagist.org/packages/ignibyte/) on every release tag.
+
+| Package | Version | What it is |
+|---|---|---|
+| [`ignibyte/aic-framework`](https://packagist.org/packages/ignibyte/aic-framework) ([repo](https://github.com/Ignibyte/aic-framework)) | [![ignibyte/aic-framework](https://img.shields.io/packagist/v/ignibyte/aic-framework)](https://packagist.org/packages/ignibyte/aic-framework) | the runtime; an app's `require` |
+| [`ignibyte/aic-gates`](https://packagist.org/packages/ignibyte/aic-gates) ([repo](https://github.com/Ignibyte/aic-gates)) | [![ignibyte/aic-gates](https://img.shields.io/packagist/v/ignibyte/aic-gates)](https://packagist.org/packages/ignibyte/aic-gates) | the gate suite (`vendor/bin/aic-gate`); `require-dev` |
+| [`ignibyte/aic-workflow`](https://packagist.org/packages/ignibyte/aic-workflow) ([repo](https://github.com/Ignibyte/aic-workflow)) | [![ignibyte/aic-workflow](https://img.shields.io/packagist/v/ignibyte/aic-workflow)](https://packagist.org/packages/ignibyte/aic-workflow) | the agent workflow engine; `require-dev` |
+| [`ignibyte/aic-scaffold`](https://packagist.org/packages/ignibyte/aic-scaffold) ([repo](https://github.com/Ignibyte/aic-scaffold)) | [![ignibyte/aic-scaffold](https://img.shields.io/packagist/v/ignibyte/aic-scaffold)](https://packagist.org/packages/ignibyte/aic-scaffold) | the Composer plugin that writes an app's root files; `require-dev` |
+| [`ignibyte/aic-project`](https://packagist.org/packages/ignibyte/aic-project) ([repo](https://github.com/Ignibyte/aic-project)) | [![ignibyte/aic-project](https://img.shields.io/packagist/v/ignibyte/aic-project)](https://packagist.org/packages/ignibyte/aic-project) | the template `composer create-project` copies |
 
 ## This repository
 
