@@ -4,6 +4,18 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ## Unreleased
 
+### Added
+
+- **App scaffolds: an app makes its own make kinds** (#298). A folder `scaffolds/<kind>/` holds
+  `<kind>.scaffold.php`, which returns an `AIC\Workflow\Domain\Scaffold\ScaffoldManifest` (a
+  description, `notFor` lines, typed arguments, files, manifest edits and probe values), beside
+  `*.tpl` templates that hold only `{placeholder|filter}` text, with no loops or conditions.
+  `bin/aic make <kind> <module> <Name> [--<arg>=…]` checks the whole scaffold, fills it and writes
+  through the run the built-in makes use, so collisions, the guard's wall, the rollback and
+  `code.made` are the same; the same line always gives the same bytes. `bin/aic make:catalog
+  [--json]` lists every built-in and app kind. AIC's root carries `scaffolds/poller/` as the
+  fixture, and gate:26 admits `scaffolds/` in an app's shell.
+
 ## 0.1.1 — 2026-11-06
 
 ### Fixed

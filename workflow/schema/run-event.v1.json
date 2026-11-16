@@ -582,7 +582,7 @@
       }
     },
     "code.made": {
-      "description": "A bin/aic make:* command wrote files while a run was open (#122): the make, what it made, the phase, and each file it wrote with the hash of its bytes, the manifest last.",
+      "description": "A bin/aic make:* command or bin/aic make <kind> (#298) wrote files while a run was open (#122): the make, what it made, the phase, and each file it wrote with the hash of its bytes, the manifest last.",
       "type": "object",
       "required": [
         "command",
@@ -593,14 +593,18 @@
       "properties": {
         "command": {
           "enum": [
+            "make",
             "make:api",
             "make:block",
             "make:command",
             "make:component",
+            "make:entity",
             "make:job",
+            "make:layout",
             "make:migration",
             "make:module",
-            "make:page"
+            "make:page",
+            "make:theme"
           ]
         },
         "target": {

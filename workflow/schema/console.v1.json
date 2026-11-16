@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Ignibyte/aic-nextgen/blob/main/workflow/schema/console.v1.json",
   "title": "AIC console answer, version 1",
-  "description": "What a bin/aic inspect command (#109), make command (#122) or code:coverage (#232) prints with --json: one envelope on one line, keys in order. data is the command's answer, shaped per command in $defs; notes holds what the answer noted (a stale surface, a lookup not recorded, the guard's nudge, a code.made record); an error envelope replaces data with error and exit. Additive only within version 1.",
+  "description": "What a bin/aic inspect command (#109), make command (#122, #298) or code:coverage (#232) prints with --json: one envelope on one line, keys in order. data is the command's answer, shaped per command in $defs; notes holds what the answer noted (a stale surface, a lookup not recorded, the guard's nudge, a code.made record); an error envelope replaces data with error and exit. Additive only within version 1.",
   "oneOf": [
     {
       "$ref": "#/$defs/answer:route:list"
@@ -27,6 +27,9 @@
     },
     {
       "$ref": "#/$defs/answer:make"
+    },
+    {
+      "$ref": "#/$defs/answer:make:catalog"
     },
     {
       "$ref": "#/$defs/answer:code:coverage"
@@ -989,6 +992,7 @@
       "properties": {
         "command": {
           "enum": [
+            "make",
             "make:api",
             "make:block",
             "make:command",
@@ -1034,6 +1038,151 @@
         },
         "data": {
           "$ref": "#/$defs/code:coverage"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "enum": [
+            "aic.console/1"
+          ]
+        }
+      }
+    },
+    "make:catalog": {
+      "type": "object",
+      "description": "bin/aic make:catalog (#298): every kind, the built-in makes then the app scaffolds, and each app scaffold that does not load with its refusal.",
+      "required": [
+        "broken",
+        "kinds"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "broken": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "error",
+              "kind"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "error": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "kinds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "args",
+              "description",
+              "files",
+              "from",
+              "kind",
+              "not_for",
+              "source",
+              "usage"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "choices",
+                    "default",
+                    "name",
+                    "type"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "choices": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "default": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "pascal",
+                        "kebab",
+                        "cron",
+                        "choice",
+                        "int"
+                      ]
+                    }
+                  }
+                }
+              },
+              "description": {
+                "type": "string"
+              },
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "from": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "not_for": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "source": {
+                "type": "string"
+              },
+              "usage": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "answer:make:catalog": {
+      "type": "object",
+      "required": [
+        "command",
+        "data",
+        "schema"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "enum": [
+            "make:catalog"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/make:catalog"
         },
         "notes": {
           "type": "array",
