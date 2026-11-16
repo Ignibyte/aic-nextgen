@@ -18,17 +18,21 @@ use function sort;
 use const GLOB_ONLYDIR;
 
 /**
- * The app's scaffolds on disk (#298): each folder under `scaffolds/` holding
- * its `<kind>.scaffold.php`, which returns a `ScaffoldManifest` the way
- * `config/workflow.php` returns the settings, and the templates beside it.
+ * Scaffolds on disk (#298): each folder under one `scaffolds/` (the app's, or
+ * the workflow package's since #301) holding its `<kind>.scaffold.php`, which
+ * returns a `ScaffoldManifest` the way `config/workflow.php` returns the
+ * settings, and the templates beside it. A folder without a manifest, such as
+ * a built-in make's templates, is no kind.
  */
 final readonly class LocalScaffolds implements ScaffoldSource
 {
     /**
-     * @param string $root The project's root.
+     * @param string $folder The `scaffolds/` folder, absolute.
+     * @param string $shown  How a refusal names it, such as `scaffolds` or `the workflow package's scaffolds`.
      */
     public function __construct(
-        private string $root,
+        private string $folder,
+        private string $shown = 'scaffolds',
     ) {
     }
 
@@ -38,7 +42,7 @@ final readonly class LocalScaffolds implements ScaffoldSource
     #[Override]
     public function kinds(): array
     {
-        $folders = glob($this->root . '/scaffolds/*', GLOB_ONLYDIR);
+        $folders = glob($this->folder . '/*', GLOB_ONLYDIR);
         $kinds = [];
 
         foreach ($folders === false ? [] : $folders as $folder) {
@@ -64,8 +68,8 @@ final readonly class LocalScaffolds implements ScaffoldSource
     #[Override]
     public function manifest(string $kind): ScaffoldManifest
     {
-        $relative = 'scaffolds/' . $kind . '/' . $kind . '.scaffold.php';
-        $path = $this->root . '/' . $relative;
+        $relative = $this->shown . '/' . $kind . '/' . $kind . '.scaffold.php';
+        $path = $this->folder . '/' . $kind . '/' . $kind . '.scaffold.php';
 
         if (!is_file($path)) {
             throw new WorkflowRefusal('there is no scaffold ' . $kind . ' (no ' . $relative . '); bin/aic make:catalog lists the kinds.');
@@ -81,6 +85,17 @@ final readonly class LocalScaffolds implements ScaffoldSource
     }
 
     /**
+     * @param string $kind A kind.
+     *
+     * @return string Its folder as shown, such as `scaffolds/poller/`.
+     */
+    #[Override]
+    public function folder(string $kind): string
+    {
+        return $this->shown . '/' . $kind . '/';
+    }
+
+    /**
      * @param string $kind     A kind.
      * @param string $template A template's file name, already held to the template rule by the loader.
      *
@@ -89,7 +104,7 @@ final readonly class LocalScaffolds implements ScaffoldSource
     #[Override]
     public function template(string $kind, string $template): ?string
     {
-        $path = $this->root . '/scaffolds/' . $kind . '/' . $template;
+        $path = $this->folder . '/' . $kind . '/' . $template;
         $text = is_file($path)
             ? file_get_contents($path)
             : false;

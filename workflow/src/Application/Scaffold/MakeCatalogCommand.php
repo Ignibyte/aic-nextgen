@@ -139,7 +139,7 @@ final readonly class MakeCatalogCommand implements Command
 
         return new CatalogKind(
             $scaffoldManifest->kind,
-            'scaffolds/' . $scaffoldManifest->kind . '/',
+            $loadedScaffold->folder,
             $scaffoldManifest->description,
             'bin/aic ' . MakeKindCommand::usage($loadedScaffold)->line,
             $scaffoldManifest->from,
@@ -164,7 +164,7 @@ final readonly class MakeCatalogCommand implements Command
         }
 
         foreach ($broken as $row) {
-            $lines[] = $row['kind'] . ' (scaffolds/' . $row['kind'] . '/) does not load: ' . $row['error'];
+            $lines[] = $row['kind'] . ' does not load: ' . $row['error'];
         }
 
         return $lines;

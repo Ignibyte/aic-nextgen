@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Make\Source;
 
-use function strtr;
+use AIC\Workflow\Application\Make\MakeTemplates;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
  * An API (`make:api`): its body as JSON (#122).
@@ -12,39 +13,12 @@ use function strtr;
 final readonly class ApiSource
 {
     /**
-     * The file, each `{name}` standing for the value of the parameter it names.
+     * @param MakeTemplates $makeTemplates The built-in templates (#301).
      */
-    private const string TEMPLATE = <<<'PHP'
-        <?php
-
-        declare(strict_types=1);
-
-        namespace {namespace}\Controller;
-
-        use AIC\Controller\Contracts\Api;
-        use AIC\Controller\Contracts\ApiResponse;
-        use AIC\Controller\Domain\JsonResponse;
-        use {namespace}\Service\{body};
-        use Override;
-        use Psr\Http\Message\ServerRequestInterface;
-
-        /**
-         * GET {path}, made by bin/aic make:api (#122): {body} as JSON.
-         */
-        final readonly class {class} implements Api
-        {
-            /**
-             * @param ServerRequestInterface $serverRequest The request.
-             *
-             * @return ApiResponse The body.
-             */
-            #[Override]
-            public function api(ServerRequestInterface $serverRequest): ApiResponse
-            {
-                return new JsonResponse(new {body}('{module}'));
-            }
-        }
-        PHP;
+    public function __construct(
+        private MakeTemplates $makeTemplates = new MakeTemplates(),
+    ) {
+    }
 
     /**
      * @param string $namespace The module's namespace.
@@ -53,16 +27,18 @@ final readonly class ApiSource
      * @param string $body      Its body's class.
      * @param string $module    The module.
      *
+     * @throws WorkflowRefusal When its template is missing.
+     *
      * @return string The file's bytes.
      */
     public function source(string $namespace, string $class, string $path, string $body, string $module): string
     {
-        return strtr(self::TEMPLATE, [
-            '{body}' => $body,
-            '{class}' => $class,
-            '{module}' => $module,
-            '{namespace}' => $namespace,
-            '{path}' => $path,
-        ]) . "\n";
+        return $this->makeTemplates->render('api', 'api.php.tpl', [
+            'body' => $body,
+            'class' => $class,
+            'module' => $module,
+            'namespace' => $namespace,
+            'path' => $path,
+        ]);
     }
 }

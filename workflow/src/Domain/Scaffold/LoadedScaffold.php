@@ -13,10 +13,12 @@ final readonly class LoadedScaffold
     /**
      * @param ScaffoldManifest      $scaffoldManifest The manifest.
      * @param array<string, string> $templates        Each template's text, by its file name.
+     * @param string                $folder           Its folder as shown, such as `scaffolds/poller/` (#301).
      */
     public function __construct(
         public ScaffoldManifest $scaffoldManifest,
         public array $templates,
+        public string $folder = '',
     ) {
     }
 

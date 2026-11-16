@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Make\Source;
 
-use function strtr;
+use AIC\Workflow\Application\Make\MakeTemplates;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
  * A component (`make:component`, and a page's own view): one promoted `title` (#122).
@@ -12,40 +13,23 @@ use function strtr;
 final readonly class ComponentSource
 {
     /**
-     * The file, each `{name}` standing for the value of the parameter it names.
+     * @param MakeTemplates $makeTemplates The built-in templates (#301).
      */
-    private const string TEMPLATE = <<<'PHP'
-        <?php
-
-        declare(strict_types=1);
-
-        namespace App\Theme\Components\{class};
-
-        use AIC\Component\Contracts\Component;
-
-        /**
-         * {class}, made by bin/aic {made}: its title, shown by its template.
-         */
-        final readonly class {class} implements Component
-        {
-            /**
-             * @param string $title What it shows.
-             */
-            public function __construct(
-                public string $title,
-            ) {
-            }
-        }
-        PHP;
+    public function __construct(
+        private MakeTemplates $makeTemplates = new MakeTemplates(),
+    ) {
+    }
 
     /**
      * @param string $class The class.
      * @param string $made  The make that made it, such as `make:component (#122)`.
      *
+     * @throws WorkflowRefusal When its template is missing.
+     *
      * @return string The file's bytes.
      */
     public function source(string $class, string $made): string
     {
-        return strtr(self::TEMPLATE, ['{class}' => $class, '{made}' => $made]) . "\n";
+        return $this->makeTemplates->render('component', 'component.php.tpl', ['class' => $class, 'made' => $made]);
     }
 }

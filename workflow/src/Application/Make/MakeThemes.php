@@ -6,6 +6,7 @@ namespace AIC\Workflow\Application\Make;
 
 use AIC\Workflow\Application\Make\Source\ThemeSource;
 use AIC\Workflow\Domain\Make\MadeFile;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 /** Plan every authored file for one first-theme make before any write occurs. */
 final readonly class MakeThemes
@@ -17,6 +18,8 @@ final readonly class MakeThemes
 
     /**
      * @param string $name The theme's folder name.
+     *
+     * @throws WorkflowRefusal When a built-in template is missing (#301).
      *
      * @return list<MadeFile> The theme's four files.
      */

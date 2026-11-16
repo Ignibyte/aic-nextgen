@@ -153,6 +153,25 @@ built-in makes: the planner's collision checks, the guard's wall, the rollback a
 scaffold with its usage, the files it writes and its `notFor` lines. A scaffold that does not load
 is listed with its refusal.
 
+### Built-in templates and AIC's own kinds
+
+Every built-in make writes its text from a template in the package's `scaffolds/<kind>/` (#301), in
+the same grammar, filled by the same engine. The built-ins stay `make:<kind>` commands with their
+own lines; a folder without a manifest is templates only, never a kind for `make`. What a built-in
+computes stays PHP, as an engine step a template cannot express:
+
+- `make:entity`: the fields (`--fields`) become properties, parameters, columns and reads.
+- `make:migration` and `make:entity`: the version from the clock (`--version` overrides it).
+- `make:page`: the component (`--component`) or its own view, the layout (`--layout`), or a POST
+  (`--post`).
+- `make:block`: the region, weight and prefix, and the sentence that names where it shows.
+- `make:module`: the `->requires()` chain; every make: the manifest edit.
+
+A folder in the package's `scaffolds/` that holds a manifest is one of AIC's own kinds: `make` and
+`make:catalog` find it beside the app's, and an app kind of the same name is refused. AIC takes a
+scaffold into core only when many apps would use it (Chad, 2026-11-08); promotion copies the app's
+folder into the package unchanged, with its kind contract once #295 lands.
+
 ## Measure what the app uses
 
 `bin/aic code:coverage` (#232) lists every framework surface an app can use (contracts, the kinds'

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Make\Source;
 
-use function strtr;
+use AIC\Workflow\Application\Make\MakeTemplates;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
  * An API's body (`make:api`): the module that answers (#122).
@@ -12,51 +13,24 @@ use function strtr;
 final readonly class ApiBodySource
 {
     /**
-     * The file, each `{name}` standing for the value of the parameter it names.
+     * @param MakeTemplates $makeTemplates The built-in templates (#301).
      */
-    private const string TEMPLATE = <<<'PHP'
-        <?php
-
-        declare(strict_types=1);
-
-        namespace {namespace}\Service;
-
-        use JsonSerializable;
-        use Override;
-
-        /**
-         * The body of {api}, made by bin/aic make:api (#122).
-         */
-        final readonly class {class} implements JsonSerializable
-        {
-            /**
-             * @param string $module The module that answers.
-             */
-            public function __construct(
-                private string $module,
-            ) {
-            }
-
-            /**
-             * @return array<string, string> The JSON object.
-             */
-            #[Override]
-            public function jsonSerialize(): array
-            {
-                return ['module' => $this->module];
-            }
-        }
-        PHP;
+    public function __construct(
+        private MakeTemplates $makeTemplates = new MakeTemplates(),
+    ) {
+    }
 
     /**
      * @param string $namespace The module's namespace.
      * @param string $class     The body.
      * @param string $api       The API it is the body of.
      *
+     * @throws WorkflowRefusal When its template is missing.
+     *
      * @return string The file's bytes.
      */
     public function source(string $namespace, string $class, string $api): string
     {
-        return strtr(self::TEMPLATE, ['{namespace}' => $namespace, '{class}' => $class, '{api}' => $api]) . "\n";
+        return $this->makeTemplates->render('api', 'body.php.tpl', ['namespace' => $namespace, 'class' => $class, 'api' => $api]);
     }
 }

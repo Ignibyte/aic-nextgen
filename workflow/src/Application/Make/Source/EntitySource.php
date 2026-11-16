@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Make\Source;
 
+use AIC\Workflow\Application\Make\MakeTemplates;
 use AIC\Workflow\Domain\Make\EntityField;
 use AIC\Workflow\Domain\Make\EntityPlan;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function implode;
 use function max;
 use function str_pad;
 use function str_replace;
 use function strlen;
-use function strtr;
 
 /**
  * The entity `make:entity` writes (#123): one readonly property per field, and its row as one line for its list.
@@ -20,38 +21,17 @@ use function strtr;
 final readonly class EntitySource
 {
     /**
-     * The file, each `{name}` standing for the value of the parameter it names.
+     * @param MakeTemplates $makeTemplates The built-in templates (#301).
      */
-    private const string TEMPLATE = <<<'PHP'
-        <?php
-
-        declare(strict_types=1);
-
-        namespace {namespace}\Entity;
-
-        /**
-         * One `{table}` row, made by bin/aic make:entity (#123).
-         */
-        final readonly class {class}
-        {
-            /**
-        {params}     */
-            public function __construct(
-        {properties}    ) {
-            }
-
-            /**
-             * @return string The row in one line, for its list.
-             */
-            public function line(): string
-            {
-                return {line};
-            }
-        }
-        PHP;
+    public function __construct(
+        private MakeTemplates $makeTemplates = new MakeTemplates(),
+    ) {
+    }
 
     /**
      * @param EntityPlan $entityPlan The entity.
+     *
+     * @throws WorkflowRefusal When its template is missing.
      *
      * @return string The file's bytes.
      */
@@ -59,14 +39,14 @@ final readonly class EntitySource
     {
         [$params, $properties, $parts] = $this->members($entityPlan->fields);
 
-        return strtr(self::TEMPLATE, [
-            '{class}' => $entityPlan->class,
-            '{line}' => implode("\n            . ", $parts),
-            '{namespace}' => $entityPlan->namespace,
-            '{params}' => $params,
-            '{properties}' => $properties,
-            '{table}' => $entityPlan->table,
-        ]) . "\n";
+        return $this->makeTemplates->render('entity', 'entity.php.tpl', [
+            'class' => $entityPlan->class,
+            'line' => implode("\n            . ", $parts),
+            'namespace' => $entityPlan->namespace,
+            'params' => $params,
+            'properties' => $properties,
+            'table' => $entityPlan->table,
+        ]);
     }
 
     /**

@@ -28,6 +28,15 @@ interface ScaffoldSource
     public function manifest(string $kind): ScaffoldManifest;
 
     /**
+     * @param string $kind A kind.
+     *
+     * @throws WorkflowRefusal When the kind is in two places at once (#301).
+     *
+     * @return string Its folder as a refusal and the catalog name it, such as `scaffolds/poller/`.
+     */
+    public function folder(string $kind): string;
+
+    /**
      * @param string $kind     A kind.
      * @param string $template A template's file name in its folder.
      *

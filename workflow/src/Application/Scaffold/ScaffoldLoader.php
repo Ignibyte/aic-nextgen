@@ -61,10 +61,11 @@ final readonly class ScaffoldLoader
      */
     public function load(string $kind): LoadedScaffold
     {
-        $where = 'scaffolds/' . $kind . '/' . $kind . '.scaffold.php';
-        $scaffoldManifest = $this->manifest($kind, $where);
+        $scaffoldManifest = $this->manifest($kind);
+        $folder = $this->scaffoldSource->folder($kind);
+        $where = $folder . $kind . '.scaffold.php';
         $known = $this->scaffoldChecks->args($where, $scaffoldManifest);
-        $templates = $this->files($where, $scaffoldManifest, $known);
+        $templates = $this->files($folder, $scaffoldManifest, $known);
 
         foreach ($scaffoldManifest->edits as $edit) {
             $this->scaffoldEdits->check($where, $edit);
@@ -76,19 +77,18 @@ final readonly class ScaffoldLoader
 
         $this->scaffoldChecks->probe($where, $scaffoldManifest);
 
-        return new LoadedScaffold($scaffoldManifest, $templates);
+        return new LoadedScaffold($scaffoldManifest, $templates, $folder);
     }
 
     /**
-     * @param string $kind  A kind.
-     * @param string $where Its manifest's path.
+     * @param string $kind A kind.
      *
      * @throws WorkflowRefusal When the kind breaks the rule or is a built-in's, or the manifest is missing, names another
      *                         kind or describes nothing.
      *
      * @return ScaffoldManifest Its manifest.
      */
-    private function manifest(string $kind, string $where): ScaffoldManifest
+    private function manifest(string $kind): ScaffoldManifest
     {
         if (preg_match('/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/', $kind) !== 1) {
             throw new WorkflowRefusal('make takes a kind first, lower case words joined by -; bin/aic make:catalog lists them.');
@@ -99,6 +99,7 @@ final readonly class ScaffoldLoader
         }
 
         $scaffoldManifest = $this->scaffoldSource->manifest($kind);
+        $where = $this->scaffoldSource->folder($kind) . $kind . '.scaffold.php';
 
         return match (true) {
             $scaffoldManifest->kind !== $kind => throw new WorkflowRefusal(
@@ -112,7 +113,7 @@ final readonly class ScaffoldLoader
     }
 
     /**
-     * @param string           $where            The manifest's path, for the refusal.
+     * @param string           $folder           The scaffold's folder as shown, for the refusal.
      * @param ScaffoldManifest $scaffoldManifest The manifest.
      * @param list<string>     $known            The placeholders it may use.
      *
@@ -120,8 +121,9 @@ final readonly class ScaffoldLoader
      *
      * @return array<string, string> Each template's text, by file name.
      */
-    private function files(string $where, ScaffoldManifest $scaffoldManifest, array $known): array
+    private function files(string $folder, ScaffoldManifest $scaffoldManifest, array $known): array
     {
+        $where = $folder . $scaffoldManifest->kind . '.scaffold.php';
         $paths = array_map(static fn (ScaffoldFile $scaffoldFile): string => $scaffoldFile->path, $scaffoldManifest->files);
 
         if ($paths === [] || count(array_unique($paths)) !== count($paths)) {
@@ -131,14 +133,14 @@ final readonly class ScaffoldLoader
         $templates = [];
 
         foreach ($scaffoldManifest->files as $file) {
-            $templates[$file->template] = $this->file($where, $scaffoldManifest->kind, $file, $known);
+            $templates[$file->template] = $this->file($folder, $scaffoldManifest->kind, $file, $known);
         }
 
         return $templates;
     }
 
     /**
-     * @param string       $where        The manifest's path, for the refusal.
+     * @param string       $folder       The scaffold's folder as shown, for the refusal.
      * @param string       $kind         The kind.
      * @param ScaffoldFile $scaffoldFile A file it writes.
      * @param list<string> $known        The placeholders it may use.
@@ -148,8 +150,10 @@ final readonly class ScaffoldLoader
      *
      * @return string The template's text.
      */
-    private function file(string $where, string $kind, ScaffoldFile $scaffoldFile, array $known): string
+    private function file(string $folder, string $kind, ScaffoldFile $scaffoldFile, array $known): string
     {
+        $where = $folder . $kind . '.scaffold.php';
+
         if (preg_match('#^(?!/)(?!.*(^|/)\\.\\.?(/|$))[A-Za-z0-9_.{}|/-]+$#', $scaffoldFile->path) !== 1) {
             throw new WorkflowRefusal($where . ': the path ' . $scaffoldFile->path . ' must stay inside the module folder.');
         }
@@ -161,7 +165,7 @@ final readonly class ScaffoldLoader
             $where . ' names ' . $scaffoldFile->template . ', which is not a *.tpl file in its folder.',
         );
         $this->scaffoldChecks->known($where . ': ' . $scaffoldFile->path, $scaffoldFile->path, $known);
-        $this->scaffoldChecks->known('scaffolds/' . $kind . '/' . $scaffoldFile->template, $text, $known);
+        $this->scaffoldChecks->known($folder . $scaffoldFile->template, $text, $known);
 
         return $text;
     }
