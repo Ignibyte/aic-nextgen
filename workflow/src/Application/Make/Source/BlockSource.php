@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Make\Source;
 
-use function strtr;
+use AIC\Workflow\Application\Make\MakeTemplates;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
  * A block (`make:block`): one paragraph where its placement says (#122).
@@ -12,48 +13,12 @@ use function strtr;
 final readonly class BlockSource
 {
     /**
-     * The file, each `{name}` standing for the value of the parameter it names.
+     * @param MakeTemplates $makeTemplates The built-in templates (#301).
      */
-    private const string TEMPLATE = <<<'PHP'
-        <?php
-
-        declare(strict_types=1);
-
-        namespace {namespace}\Block;
-
-        use AIC\Block\Contracts\Block;
-        use AIC\Block\Contracts\Placement;
-        use AIC\Component\Contracts\Component;
-        use AIC\Component\Domain\Paragraph;
-        use Override;
-        use Psr\Http\Message\ServerRequestInterface;
-
-        /**
-         * {class}, made by bin/aic make:block (#122): a line in `{region}`, weight {weight}, {where}.
-         */
-        final readonly class {class} implements Block
-        {
-            /**
-             * @return Placement Where it shows.
-             */
-            #[Override]
-            public function placement(): Placement
-            {
-                return new Placement('{region}', {weight}, '{prefix}');
-            }
-
-            /**
-             * @param ServerRequestInterface $serverRequest The page's request.
-             *
-             * @return Component Its line.
-             */
-            #[Override]
-            public function component(ServerRequestInterface $serverRequest): Component
-            {
-                return new Paragraph('{title}', '{id}');
-            }
-        }
-        PHP;
+    public function __construct(
+        private MakeTemplates $makeTemplates = new MakeTemplates(),
+    ) {
+    }
 
     /**
      * @param string $namespace The module's namespace.
@@ -63,6 +28,8 @@ final readonly class BlockSource
      * @param string $prefix    Its route prefix; empty for every page.
      * @param string $title     Its line.
      * @param string $id        Its paragraph's id.
+     *
+     * @throws WorkflowRefusal When its template is missing.
      *
      * @return string The file's bytes.
      */
@@ -75,15 +42,15 @@ final readonly class BlockSource
         string $title,
         string $id,
     ): string {
-        return strtr(self::TEMPLATE, [
-            '{class}' => $class,
-            '{id}' => $id,
-            '{namespace}' => $namespace,
-            '{prefix}' => $prefix,
-            '{region}' => $region,
-            '{title}' => $title,
-            '{weight}' => $weight,
-            '{where}' => $prefix === '' ? 'on every page' : 'under `' . $prefix . '`',
-        ]) . "\n";
+        return $this->makeTemplates->render('block', 'block.php.tpl', [
+            'class' => $class,
+            'id' => $id,
+            'namespace' => $namespace,
+            'prefix' => $prefix,
+            'region' => $region,
+            'title' => $title,
+            'weight' => $weight,
+            'where' => $prefix === '' ? 'on every page' : 'under `' . $prefix . '`',
+        ]);
     }
 }

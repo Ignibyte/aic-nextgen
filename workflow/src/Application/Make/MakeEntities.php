@@ -10,6 +10,7 @@ use AIC\Workflow\Application\Make\Source\MigrationSource;
 use AIC\Workflow\Application\Make\Source\RepositorySource;
 use AIC\Workflow\Domain\Make\EntityPlan;
 use AIC\Workflow\Domain\Make\MadeFile;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
  * The four files of one `make:entity` (#123), all in the module: the entity, its repository, its migration and its
@@ -34,6 +35,8 @@ final readonly class MakeEntities
     /**
      * @param EntityPlan $entityPlan The entity.
      *
+     * @throws WorkflowRefusal When a built-in template is missing (#301).
+     *
      * @return list<MadeFile> The entity, the repository, the migration and the list page.
      */
     public function files(EntityPlan $entityPlan): array
@@ -51,6 +54,8 @@ final readonly class MakeEntities
 
     /**
      * @param EntityPlan $entityPlan The entity.
+     *
+     * @throws WorkflowRefusal When a built-in template is missing (#301).
      *
      * @return string Its migration: the table with a column per field.
      */

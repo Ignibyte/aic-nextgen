@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Make\Source;
 
-use function strtr;
+use AIC\Workflow\Application\Make\MakeTemplates;
+use AIC\Workflow\Exception\WorkflowRefusal;
 
 /**
  * A component's declared `*.phtml`: its typing line and one paragraph of its title (#148).
@@ -12,21 +13,23 @@ use function strtr;
 final readonly class ComponentTemplateSource
 {
     /**
-     * The file, each `{name}` standing for the value of the parameter it names.
+     * @param MakeTemplates $makeTemplates The built-in templates (#301).
      */
-    private const string TEMPLATE = <<<'PHP'
-        <?php /** @var \App\Theme\Components\{class}\{class} ${variable} */ ?>
-        <p><?= ${variable}->title ?></p>
-        PHP;
+    public function __construct(
+        private MakeTemplates $makeTemplates = new MakeTemplates(),
+    ) {
+    }
 
     /**
      * @param string $class    The component.
      * @param string $variable The variable its typing line names.
      *
+     * @throws WorkflowRefusal When its template is missing.
+     *
      * @return string The file's bytes.
      */
     public function source(string $class, string $variable): string
     {
-        return strtr(self::TEMPLATE, ['{class}' => $class, '{variable}' => $variable]) . "\n";
+        return $this->makeTemplates->render('component', 'component.phtml.tpl', ['class' => $class, 'variable' => $variable]);
     }
 }

@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **AIC's own kinds and the built-in templates on the scaffold format** (#301). Every built-in make
+  writes its text from a `*.tpl` file in the workflow package's `scaffolds/<kind>/`, filled by
+  #298's engine; what a make computes (entity fields, migration versions, a page's component and
+  layout, the manifest edits) stays PHP. The bytes the makes write are unchanged. A folder there
+  with a manifest is one of AIC's kinds, found by `make` and `make:catalog` beside the app's, so an
+  app scaffold moves into AIC by a folder copy; an app kind of the same name is refused.
+
 - **App scaffolds: an app makes its own make kinds** (#298). A folder `scaffolds/<kind>/` holds
   `<kind>.scaffold.php`, which returns an `AIC\Workflow\Domain\Scaffold\ScaffoldManifest` (a
   description, `notFor` lines, typed arguments, files, manifest edits and probe values), beside

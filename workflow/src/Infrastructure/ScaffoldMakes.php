@@ -17,10 +17,15 @@ use AIC\Workflow\Application\Scaffold\ScaffoldRecipe;
 /**
  * The app scaffolds' commands (#298), composed apart so `MakeKernel` stays
  * under PHPMD's coupling cap: `make`, through the run every make shares,
- * and `make:catalog`.
+ * and `make:catalog`, over AIC's kinds and the app's (#301).
  */
 final readonly class ScaffoldMakes
 {
+    /**
+     * The workflow package's own kinds and the built-in makes' templates (#301).
+     */
+    private const string PACKAGE_SCAFFOLDS = __DIR__ . '/../../scaffolds';
+
     /**
      * @param string        $root          The project's root.
      * @param ProjectFiles  $projectFiles  The files the make reads and writes.
@@ -40,7 +45,11 @@ final readonly class ScaffoldMakes
      */
     public function commands(MakeRun $makeRun): array
     {
-        $scaffoldLoader = new ScaffoldLoader(new LocalScaffolds($this->root));
+        $layeredScaffolds = new LayeredScaffolds(
+            new LocalScaffolds(self::PACKAGE_SCAFFOLDS, "the workflow package's scaffolds"),
+            new LocalScaffolds($this->root . '/scaffolds'),
+        );
+        $scaffoldLoader = new ScaffoldLoader($layeredScaffolds);
         $makeReport = new MakeReport($this->projectFiles);
         $scaffoldRecipe = new ScaffoldRecipe(new ParsedManifests($this->projectFiles), $this->moduleFolders);
 
