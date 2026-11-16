@@ -168,6 +168,9 @@ operator's `workflow:answer`, the stall rule, the shell's read forms, the php wa
 layout (#157) and entity (#123); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
 is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the twelve make lines.
+#298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
+`{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
+listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
 cases (`workflow/probes/sweep/`) in throwaway apps made by `workflow/probes/scratch-app.sh`, the
 builder the seeker probe shares; it ends `probe-summary: P passed, F failed, N not run.`, exits 0

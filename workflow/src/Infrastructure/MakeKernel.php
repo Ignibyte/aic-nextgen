@@ -17,7 +17,8 @@ use AIC\Workflow\Application\ProjectFiles;
  * The make commands (#122), dev-only like the rest of the workflow:
  * `make:module`, `make:page`, `make:api`, `make:component`, `make:block`,
  * `make:command`, `make:job`, `make:migration`, `make:theme`, `make:layout` and `make:entity`, each writing files that
- * pass every gate and editing its module's manifest. `CodeKernel` merges them;
+ * pass every gate and editing its module's manifest, then `make <kind>` and `make:catalog` for the app's own
+ * scaffolds (#298). `CodeKernel` merges them;
  * gate:31 builds them over its in-memory files.
  */
 final readonly class MakeKernel
@@ -43,7 +44,7 @@ final readonly class MakeKernel
     }
 
     /**
-     * @return array<string, Command> The nine commands, by name.
+     * @return array<string, Command> The make commands, by name.
      */
     public function commands(): array
     {
@@ -64,6 +65,7 @@ final readonly class MakeKernel
             'make:page' => $themeMakes->page($makeRun),
             'make:theme' => $themeMakes->theme($makeRun),
             ...$makeParts->migrations($makeRun),
+            ...(new ScaffoldMakes($this->root, $projectFiles, $moduleFolders))->commands($makeRun),
         ];
     }
 }

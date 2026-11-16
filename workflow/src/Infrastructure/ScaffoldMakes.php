@@ -1,0 +1,52 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AIC\Workflow\Infrastructure;
+
+use AIC\Controller\Contracts\Command;
+use AIC\Workflow\Application\Make\MakeReport;
+use AIC\Workflow\Application\Make\MakeRun;
+use AIC\Workflow\Application\Make\ModuleFolders;
+use AIC\Workflow\Application\ProjectFiles;
+use AIC\Workflow\Application\Scaffold\MakeCatalogCommand;
+use AIC\Workflow\Application\Scaffold\MakeKindCommand;
+use AIC\Workflow\Application\Scaffold\ScaffoldLoader;
+use AIC\Workflow\Application\Scaffold\ScaffoldRecipe;
+
+/**
+ * The app scaffolds' commands (#298), composed apart so `MakeKernel` stays
+ * under PHPMD's coupling cap: `make`, through the run every make shares,
+ * and `make:catalog`.
+ */
+final readonly class ScaffoldMakes
+{
+    /**
+     * @param string        $root          The project's root.
+     * @param ProjectFiles  $projectFiles  The files the make reads and writes.
+     * @param ModuleFolders $moduleFolders The modules there.
+     */
+    public function __construct(
+        private string $root,
+        private ProjectFiles $projectFiles,
+        private ModuleFolders $moduleFolders,
+    ) {
+    }
+
+    /**
+     * @param MakeRun $makeRun The run every make goes through.
+     *
+     * @return array<string, Command> `make` and `make:catalog`.
+     */
+    public function commands(MakeRun $makeRun): array
+    {
+        $scaffoldLoader = new ScaffoldLoader(new LocalScaffolds($this->root));
+        $makeReport = new MakeReport($this->projectFiles);
+        $scaffoldRecipe = new ScaffoldRecipe(new ParsedManifests($this->projectFiles), $this->moduleFolders);
+
+        return [
+            'make' => new MakeKindCommand($makeRun, $makeReport, $scaffoldLoader, $scaffoldRecipe),
+            'make:catalog' => new MakeCatalogCommand($scaffoldLoader, $makeReport),
+        ];
+    }
+}

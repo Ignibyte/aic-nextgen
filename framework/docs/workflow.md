@@ -98,6 +98,14 @@ record what was made. Declare the exact resulting paths in the open run first, r
 keep generated outputs with the authored change. [modules.md](modules.md#generate-theme-files)
 covers component, page and theme generation.
 
+Pick a kind from `make:catalog [--json]` (#298): the built-in makes, then the app's own kinds, each
+with its usage, the files it writes and when not to use it. An app kind is a folder
+`scaffolds/<kind>/`: `<kind>.scaffold.php` returns a `ScaffoldManifest` (its description, typed
+arguments, files, manifest edits and probe values) beside `*.tpl` templates that hold only
+`{placeholder|filter}` text. `make <kind> <module> <Name> [--<arg>=…]` fills them through the same run
+as the built-ins, and the same line always writes the same bytes. The workflow package's README
+states the grammar and every check.
+
 ## Command inventory
 
 These are the actual development command registrations, checked against the package. The workflow
@@ -115,8 +123,10 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::command:list` | inspect console commands |
 | `Command::job:list` | inspect jobs |
 | `Command::kind:list` | inspect kinds |
+| `Command::make` | make one of the app's own kinds from `scaffolds/<kind>/` (#298) |
 | `Command::make:api` | scaffold an Api |
 | `Command::make:block` | scaffold a Block |
+| `Command::make:catalog` | list every kind, built-in and the app's (#298) |
 | `Command::make:command` | scaffold a Command |
 | `Command::make:component` | scaffold declared Component data and template |
 | `Command::make:entity` | scaffold an entity, its repository, migration and list page |

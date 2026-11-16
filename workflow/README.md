@@ -109,6 +109,50 @@ there is no special exemption for theme or template sources. The engine records 
 The build owns everything under `build/` and the wiki. No generated file is
 written by a make. Run `composer run build` after generation.
 
+## App scaffolds
+
+An app adds its own make kinds as data (#298). A scaffold is a folder `scaffolds/<kind>/`:
+`<kind>.scaffold.php` returns an `AIC\Workflow\Domain\Scaffold\ScaffoldManifest`, and `*.tpl`
+templates sit beside it. AIC's root carries `scaffolds/poller/` as the fixture:
+
+```php
+return (new ScaffoldManifest('poller'))
+    ->describe('A scheduled job that asks one service for what changed in an upstream system.')
+    ->notFor('A one-off import someone runs by hand: use make:command.')
+    ->from('job')
+    ->arg('every', ArgType::Cron, '*/5 * * * *')
+    ->file('src/Job/{name}Poll.php', 'job.php.tpl')
+    ->file('src/Service/{name}Poller.php', 'service.php.tpl')
+    ->job('{name|kebab}-poll', 'Job\\{name}Poll')
+    ->schedule('{name|kebab}-poll', '{name|kebab}-poll', '{every}')
+    ->probe(['name' => 'Probe']);
+```
+
+`bin/aic make poller site StockPrices --every='*/2 * * * *'` writes both classes under
+`modules/site/` and adds the job and its schedule to the manifest, through the same run as the
+built-in makes: the planner's collision checks, the guard's wall, the rollback and `code.made`.
+`--dry-run` prints the files; the same kind and values always give the same bytes.
+
+- **Arguments.** The module and the StudlyCaps `name` are positional; every other argument is
+  `--<arg>=<value>`, typed by `ArgType`: `Pascal`, `Kebab`, `Cron`, `Choice` (with its choices) or
+  `Int`. There is no path type, and no type admits a quote or a backslash. An argument without a
+  default is required.
+- **Templates.** Text with `{placeholder}` and `{placeholder|filter}` and nothing else: no loops,
+  no conditions. The placeholders are `name`, `module`, `namespace` and the arguments; the filters
+  are `camel`, `kebab`, `pascal`, `snake` and `upper`; `{{` writes a literal `{` (a route's
+  `/notes/{{id}`). Path patterns and manifest values use the same grammar.
+- **Manifest edits.** `route('Get'|'Post', <path>, <Class>)`, `job`, `schedule` (an empty
+  payload), `command`, `block`, `migration`, `export` and `requires`, with classes relative to the
+  module's namespace (`Job\{name}Poll`). A `requires` the manifest has already is skipped.
+- **Load checks.** A scaffold is checked whole before anything is written: its kind (lower case
+  joined by `-`, not a built-in's), its description, each argument, each path (inside the module
+  folder, never twice), each template (present), every placeholder and filter, each edit's shape,
+  and the probe values (the name and every argument without a default).
+
+`bin/aic make:catalog [--json]` lists every kind from one list: the built-in makes, then each app
+scaffold with its usage, the files it writes and its `notFor` lines. A scaffold that does not load
+is listed with its refusal.
+
 ## Measure what the app uses
 
 `bin/aic code:coverage` (#232) lists every framework surface an app can use (contracts, the kinds'

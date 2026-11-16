@@ -52,6 +52,8 @@ final readonly class ProjectProfile
         'tickets/*',
         // The browser tests the app keeps, Playwright specs (#174).
         'tests/browser/*',
+        // The app's own make kinds: each manifest and its templates, read by bin/aic make (#298).
+        'scaffolds/*',
         // DDEV, the interpreted reference and Postgres.
         '.ddev/*',
         // Deployment recipes: FrankenPHP's Caddyfile and container (#222).
