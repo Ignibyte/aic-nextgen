@@ -43,6 +43,8 @@ another file, add its row to the manifest first; the run records it as declared 
   lines; when no kind fits, ask with `workflow:ask` rather than hand-writing a new shape. If the
   operator answers `scaffold <kind>`, run `bin/aic make:scaffold <kind> --from=<nearest kind>`, declare
   the folder's files, and edit them until `make:catalog` lists the kind without a refusal.
+  A make records each file it creates in `.aic/made.jsonl` (#302): never write that file, and
+  commit it with the change.
 - **Themes and templates.** `make:component <Class>` writes the component and its template into
   the theme and edits no manifest. A default `make:page` writes its own view there too;
   `make:page --component=<Class>` reuses a theme component. `make:theme <name>` writes

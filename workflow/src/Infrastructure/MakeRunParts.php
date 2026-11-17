@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Infrastructure;
 
+use AIC\Workflow\Application\Make\MadeProvenance;
 use AIC\Workflow\Application\Make\MakeRecorder;
 use AIC\Workflow\Application\Make\MakeScope;
 use AIC\Workflow\Application\UtcTime;
@@ -17,7 +18,7 @@ use function is_file;
 /**
  * The make commands' side of the open run (#122): the guard's edit wall on
  * each target, asked only when the project has `config/workflow.php`, with
- * its ledger, and the recorder of `code.made`.
+ * its ledger, and the recorder of `code.made` and the made ledger (#302).
  */
 final readonly class MakeRunParts
 {
@@ -51,13 +52,15 @@ final readonly class MakeRunParts
     }
 
     /**
-     * @return MakeRecorder Appends `code.made` while a run is open.
+     * @return MakeRecorder Appends `code.made` and the made ledger's rows while a run is open.
      */
     public function recorder(): MakeRecorder
     {
         $eventLogFile = new EventLogFile($this->root, new UtcTime(new SystemClock()), new LocalHost($this->root));
 
-        return new MakeRecorder(new RunStateFile($this->root), $eventLogFile);
+        $madeProvenance = new MadeProvenance([$this->root . '/scaffolds', $this->package . '/scaffolds']);
+
+        return new MakeRecorder(new RunStateFile($this->root), $eventLogFile, new MadeLedgerFile($this->root), $madeProvenance);
     }
 
     /**

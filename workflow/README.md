@@ -172,6 +172,35 @@ until the agent describes it. The agent declares the folder's files in the spec 
   operator approves a scaffold run for its kind. Before a first run completes nothing is frozen,
   and the row says so.
 
+### The made ledger
+
+A file a make creates in a run keeps its provenance in git (#302). Beside `code.made`, the make
+appends a row per created file to `.aic/made.jsonl`: `path`, `kind` (the built-in's name, the app
+kind's, or `scaffold`), `scaffold` (`sha256:` over the kind's template folder, the app's first, then
+the package's; for make:scaffold the `--from` kind's), `content` (the `xxh128:` hash `code.made`
+carries) and `run`. An edited manifest is not a made file. A make with no run open writes no row.
+
+- **The wall.** The guard refuses every write under `.aic/`, at every lever; the declaration audit
+  leaves the ledger out, as an engine write.
+- **The `made` row.** At code, check and complete, the ledger must begin with the lines it had at
+  the run's base (it only grows: a removed file keeps its row), and the lines after them must be
+  exactly the rows this run's `code.made` events give. A hand-written row, or a made row taken out,
+  holds the run.
+- **`scaffold-only`**, a house rule AIC ships and an app opts into: every `.php` and `.phtml` file
+  the run adds under `modules/` or `themes/` has a row. Edits to a made file stay free. It is not a
+  default while most module kinds have no make (#295):
+
+```php
+new HouseRule(
+    'scaffold-only',
+    'Every class and template a run adds was made by a scaffold.',
+    '{vendor}/ignibyte/aic-workflow/rules/scaffold-only.php',
+),
+```
+
+`bin/aic code:coverage --made [--json]` reports, per module and theme, the files git lists, how
+many a scaffold made and how many of those are unchanged since.
+
 ### Built-in templates and AIC's own kinds
 
 Every built-in make writes its text from a template in the package's `scaffolds/<kind>/` (#301), in
@@ -196,7 +225,8 @@ folder into the package unchanged, with its kind contract once #295 lands.
 `bin/aic code:coverage` (#232) lists every framework surface an app can use (contracts, the kinds'
 responses, the manifest, Schema and `EntityQuery` methods, the catalog atoms, the Tessera
 vocabulary) with the app files that use each, or `unused`. `--missing` lists only the unused;
-`--json` answers the `aic.console/1` envelope. It reads the code index, refreshed first, and exits
+`--json` answers the `aic.console/1` envelope; `--made` reports the made ledger instead (#302). It
+reads the code index, refreshed first, and exits
 0 whatever is unused: it is a report, not a gate. What counts as a use is in
 [the workflow docs](../framework/docs/workflow.md#code-index-and-scaffolds).
 

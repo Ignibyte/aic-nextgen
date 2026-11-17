@@ -22,7 +22,7 @@ use function substr;
  * (#102): the run's state but its spec, the opt-in, the hook wiring, the
  * workflow package itself, the pack `workflow:init` installed and its lock
  * (#105), the app's scaffolds but the kinds the open run approved (#299),
- * and Claude Code's own global settings and plugins. A path counts as
+ * the made ledger (#302), and Claude Code's own global settings and plugins. A path counts as
  * spelled and as landed. Reading is never refused.
  */
 final readonly class ProtectedPaths
@@ -170,6 +170,7 @@ final readonly class ProtectedPaths
         $entries = [
             $this->package => "the workflow package is the operator's: it changes in its own repository.",
             $this->root . '/.agents' => "Installed agent instructions are the operator's.",
+            $this->root . '/.aic' => '.aic/ holds the made ledger: only a bin/aic make writes it, while a run is open (#302).',
             $this->root . '/.claude/settings.json' => "the hook wiring is the operator's.",
             $this->root . '/.claude/settings.local.json' => "the hook wiring is the operator's.",
             $this->root . '/.codex' => "Codex control files are the operator's.",

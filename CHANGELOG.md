@@ -6,6 +6,15 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The made ledger: which files a scaffold made, committed** (#302). Every make in an open run
+  appends a row per created file to `.aic/made.jsonl` (path, kind, the scaffold folder's sha256,
+  the content hash, the run), and `code.made` now carries the kind, the scaffold and which files
+  were created. The guard walls `.aic/`; a `made` row at code, check and complete holds a ledger
+  that is not its base followed by this run's rows. The opt-in house rule `scaffold-only` asks that
+  every `.php` and `.phtml` file a run adds under `modules/` or `themes/` has a row.
+  `bin/aic code:coverage --made` reports files, made and unchanged per module and theme.
+  `workflow:probe` gains `15-made`.
+
 - **gate:33, app scaffolds** (#300). Every kind under `scaffolds/`, the app's and the workflow
   package's, passes a census: it loads, its `from()` names a kind, every file in its folder is
   named, every placeholder is filled. Each census rule must fire on a planted fixture first, so an

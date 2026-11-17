@@ -1,0 +1,12 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Site\Service;
+
+/**
+ * Written by hand.
+ */
+final readonly class Clock
+{
+}

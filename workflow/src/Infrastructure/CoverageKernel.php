@@ -8,10 +8,11 @@ use AIC\Controller\Contracts\Command;
 use AIC\Workflow\Application\CodeCoverageCommand;
 use AIC\Workflow\Application\CodeIndex;
 use AIC\Workflow\Application\Coverage\CodeCoverage;
+use AIC\Workflow\Application\Coverage\MadeCoverage;
 
 /**
  * The coverage report's composition (#232): `code:coverage` over the
- * project's index and files.
+ * project's index and files, and the made ledger (#302).
  */
 final readonly class CoverageKernel
 {
@@ -31,7 +32,9 @@ final readonly class CoverageKernel
     public function command(CodeIndex $codeIndex): Command
     {
         $coverageIndexQueries = new CoverageIndexQueries(new CodeIndexRows($this->root));
+        $coverageFiles = new CoverageFiles($this->root);
+        $madeCoverage = new MadeCoverage($coverageIndexQueries, $coverageFiles, new MadeLedgerFile($this->root));
 
-        return new CodeCoverageCommand($codeIndex, new CodeCoverage($coverageIndexQueries, new CoverageFiles($this->root)));
+        return new CodeCoverageCommand($codeIndex, new CodeCoverage($coverageIndexQueries, $coverageFiles), $madeCoverage);
     }
 }
