@@ -71,6 +71,12 @@ gate:23 runs once the gate user is made, before any step: the fixture grants tha
 (`"role:assign gate gate-auditor"`) (#304). Their exits are not judged; the steps that need
 them are.
 
+gate:23 also serves a stub upstream beside the two sites (#305): PHP's built-in server over
+ignibyte/aic-gates' `bin/gate-native-site-stub.php`, with four workers, on a free port both sites
+know as `AIC_UPSTREAM_STUB` (and `AIC_UPSTREAM_STUB_TOKEN`, `stub-token`). It answers `/echo`,
+`/status/201`, `/status/503` and a `/slow` that takes half a second, so an app's steps can call an
+upstream with fixed answers.
+
 `config/native-site.json` may also hold `profiled`, steps written as `steps` are (#234). After the
 plain pass and its browser run, gate:23 restarts both sites from the same build with
 `AIC_PROFILER=1`, sends each profiled step to each, and compares the answers as before, with the

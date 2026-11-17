@@ -28,7 +28,9 @@ use const PHP_BINARY;
  * port (`ddev describe -j`), otherwise 127.0.0.1:5432. It counts as reachable
  * when the app's own `bin/aic db:ping` answers with that environment: an open
  * port is not enough, since another Postgres on the host accepts connections
- * and refuses the app. The ports are free local ports, asked of the kernel.
+ * and refuses the app. The ports are free local ports, asked of the kernel:
+ * one for each site and one for the stub upstream (#305), which both sites
+ * reach through AIC_UPSTREAM_STUB with the token `stub-token`.
  */
 final readonly class LocalNativeSiteSetup
 {
@@ -69,7 +71,11 @@ final readonly class LocalNativeSiteSetup
 
         $reachable = $this->answers($root, $env);
 
-        return new NativeSiteSetup($env, $database, $reachable, self::freePort(), self::freePort(), $this->maxBodyBytes($root));
+        $stubPort = self::freePort();
+        $env['AIC_UPSTREAM_STUB'] = 'http://127.0.0.1:' . $stubPort;
+        $env['AIC_UPSTREAM_STUB_TOKEN'] = 'stub-token';
+
+        return new NativeSiteSetup($env, $database, $reachable, self::freePort(), self::freePort(), $this->maxBodyBytes($root), $stubPort);
     }
 
     /**

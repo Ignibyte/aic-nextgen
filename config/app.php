@@ -15,10 +15,24 @@ declare(strict_types=1);
  *
  * The request body cap (#196): a larger body answers 413 before the session.
  * The fixture keeps it small, so gate:23 can send a body over it.
+ *
+ * The upstreams (#305): each API the app calls, by name, its URL and token
+ * from the environment. `stub` is gate:23's local stub server, which the gate
+ * names in AIC_UPSTREAM_STUB; elsewhere nothing answers there.
  */
 
 use AIC\Config\Domain\AppConfig;
+use AIC\HttpClient\Domain\Upstream;
+use AIC\HttpClient\Domain\Upstreams;
 use AIC\Tessera\Domain\TesseraRelease;
+
+$setting = static function (string $name, string $default): string {
+    $value = getenv($name);
+
+    return is_string($value) && $value !== ''
+        ? $value
+        : $default;
+};
 
 return new AppConfig(
     name: 'AIC nextgen',
@@ -28,4 +42,7 @@ return new AppConfig(
     ]),
     theme: 'app',
     maxBodyBytes: 16_384,
+    upstreams: new Upstreams([
+        'stub' => new Upstream($setting('AIC_UPSTREAM_STUB', 'http://127.0.0.1:8095'), $setting('AIC_UPSTREAM_STUB_TOKEN', '')),
+    ]),
 );

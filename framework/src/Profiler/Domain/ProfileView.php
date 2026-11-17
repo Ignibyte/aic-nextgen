@@ -14,8 +14,7 @@ final readonly class ProfileView
      * @param string                $handler       The handler's class.
      * @param string                $user          The signed-in user's id.
      * @param ProfileTimes          $profileTimes  Where its time went.
-     * @param list<StatementRecord> $statements    Its statements, in order.
-     * @param list<ComponentRecord> $components    Its templates, in the order each finished.
+     * @param ProfileRecords        $records       Its statements, templates and calls (#305), each in order.
      * @param array<string, string> $tessera       Its Tessera request headers.
      * @param array<string, string> $answer        Its answer's listed headers.
      * @param RequestDetail         $requestDetail Its header and field names, and a Tessera answer's markup.
@@ -27,8 +26,7 @@ final readonly class ProfileView
         public string $handler,
         public string $user,
         public ProfileTimes $profileTimes,
-        public array $statements,
-        public array $components,
+        public ProfileRecords $records,
         public array $tessera,
         public array $answer,
         public RequestDetail $requestDetail,

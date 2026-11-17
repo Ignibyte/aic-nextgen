@@ -34,6 +34,7 @@ serves both sites with the profiler on, compares the profiles each step recorded
 | `user` | the signed-in user's id; empty for a visitor |
 | `microseconds` | `total`, `middleware` (before the handler), `handler` (its render included) and `render` |
 | `statements` | each statement in order: its `sql` with `?` placeholders, `microseconds` and `rows`; `BEGIN`, `COMMIT` and `ROLLBACK` for a transaction |
+| `calls` | each call to an upstream, single or pooled, in order: its `method`, `url`, `status` (0 when it got no answer) and `microseconds` (#305) |
 | `components` | each template the Renderer ran, in the order each finished: its Tessera `path`, its `component` class and `microseconds`; an atom shares its component's path |
 | `tessera` | the request's `Tessera-Request`, `Tessera-Protocol`, `Tessera-Targets`, `Tessera-Layout` and `Tessera-Write-Id` |
 | `answer` | the response's `Content-Type`, `Tessera-Protocol`, `Tessera-Location` and `Tessera-Full-Visit` |
@@ -61,7 +62,8 @@ involved and any app has the pages. They take GET and HEAD only.
   (`?kind=Page`) are answered in place by Tessera, and the table polls every five seconds.
 - `/_profiler/{id}` shows one, in tabs answered in place (`?tab=`): Request (kind, handler, user,
   query, header and field names), Timeline (an SVG bar of middleware, handler, render and the rest),
-  Database (each statement, a repeated one marked), Templates (each template rendered with its path)
+  Database (each statement, a repeated one marked), Outbound (each call to an upstream, one with no
+  answer or a 5xx marked), Templates (each template rendered with its path)
   and Tessera (the headers asked and answered, the answer's size against the newest whole page for
   the path, and a fragment answer's markup, escaped). A link leads to the same browser's previous
   request.
@@ -105,7 +107,7 @@ or `.aic-toolbar`, so it never restyles an app's own atoms.
 
 ## The seams
 
-Three observers, none set by default, carry the request to the profile:
+Four observers, none set by default, carry the request to the profile:
 
 - `AIC\Kernel\Contracts\RequestObserver`, told by `AIC\Module\Application\DynamicApplication` when a
   request starts and what it answered; it may add a header.
@@ -114,5 +116,8 @@ Three observers, none set by default, carry the request to the profile:
 - `AIC\Component\Contracts\RenderObserver`, told by `AIC\Component\Application\ObservedTemplates`
   each template's time and by `AIC\Component\Application\Renderer` each whole render's; asked by
   `Renderer::document()` what a whole page gains (#231).
+
+- `AIC\HttpClient\Contracts\OutboundObserver`, told by `AIC\HttpClient\Application\ObservedClient`
+  and `ObservedPool` each call to an upstream once it is answered or has failed (#305).
 
 Times come from `AIC\Kernel\Domain\Monotonic`, a monotonic clock in microseconds.

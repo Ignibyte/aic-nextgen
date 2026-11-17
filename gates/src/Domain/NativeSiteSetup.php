@@ -34,6 +34,7 @@ final readonly class NativeSiteSetup
      * @param int                   $phpPort      The interpreted site's port.
      * @param int                   $nativePort   The compiled site's port.
      * @param int                   $maxBodyBytes The app's request body cap, `AppConfig::$maxBodyBytes`.
+     * @param int                   $stubPort     The stub upstream's port (#305); 0 for none.
      */
     public function __construct(
         public array $env,
@@ -42,6 +43,7 @@ final readonly class NativeSiteSetup
         public int $phpPort,
         public int $nativePort,
         public int $maxBodyBytes,
+        public int $stubPort = 0,
     ) {
     }
 

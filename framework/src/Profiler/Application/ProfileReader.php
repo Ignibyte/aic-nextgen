@@ -8,6 +8,7 @@ use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
 use AIC\Profiler\Domain\ProfileFilter;
+use AIC\Profiler\Domain\ProfileRecords;
 use AIC\Profiler\Domain\ProfileRow;
 use AIC\Profiler\Domain\ProfileTimes;
 use AIC\Profiler\Domain\ProfileView;
@@ -126,13 +127,28 @@ final readonly class ProfileReader
             $own->string('handler'),
             $own->string('user_id'),
             $profileTimes,
-            $this->profileParts->statements($this->database, $id),
-            $this->profileParts->components($this->database, $id),
+            $this->records($id),
             $this->profileParts->texts($this->database, $id, 'tessera'),
             $this->profileParts->texts($this->database, $id, 'answer'),
             $this->detail($id, $profileRow->kind, $own),
             $this->profileParts->previous($this->database, $id),
             $this->profileParts->fullBytes($this->database, $profileRow->path),
+        );
+    }
+
+    /**
+     * @param string $id The profile's id.
+     *
+     * @throws QueryException When the table cannot be read.
+     *
+     * @return ProfileRecords Its statements, templates and calls, each in order.
+     */
+    private function records(string $id): ProfileRecords
+    {
+        return new ProfileRecords(
+            $this->profileParts->statements($this->database, $id),
+            $this->profileParts->components($this->database, $id),
+            $this->profileParts->calls($this->database, $id),
         );
     }
 

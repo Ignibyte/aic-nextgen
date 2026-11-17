@@ -15,7 +15,6 @@ use AIC\Database\Contracts\Database;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Http\Contracts\PublicAssets;
-use AIC\Schedule\Domain\Schedule;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -25,8 +24,8 @@ use Psr\Http\Server\RequestHandlerInterface;
  *
  * The roots are what the app kernel holds and the build cannot make: the app's
  * settings, the database, the envelope codec, the response builder, the plugins
- * by type, the modules' schedules and protected prefixes, the boot time and the
- * app's root. Which of them a given set of modules uses depends on the modules,
+ * by type, and behind `roots()` the modules' schedules and protected prefixes,
+ * the boot time, the app's root and the outbound client (#305). Which of them a given set of modules uses depends on the modules,
  * so every member is framework API.
  *
  * @api
@@ -127,35 +126,22 @@ final readonly class HandlerContext
     }
 
     /**
-     * @return list<Schedule> Every module's schedules.
+     * @return AppRoots The modules' schedules and protected prefixes, the boot time, the app's root and the
+     *                  outbound client (#305), which the generated wiring reaches by path.
      */
-    public function schedules(): array
+    public function roots(): AppRoots
     {
-        return $this->webRoots->schedules;
-    }
+        $webRoots = $this->webRoots;
 
-    /**
-     * @return list<string> Every module's protected path prefixes.
-     */
-    public function protectedPrefixes(): array
-    {
-        return $this->webRoots->protectedPrefixes;
-    }
+        $webWiring = $webRoots->webWiring;
 
-    /**
-     * @return string When the app booted to serve this request.
-     */
-    public function bootedAt(): string
-    {
-        return $this->webRoots->bootedAt;
-    }
-
-    /**
-     * @return string The app's root directory.
-     */
-    public function root(): string
-    {
-        return $this->webRoots->root;
+        return new AppRoots(
+            $webWiring->schedules(),
+            $webWiring->protectedPrefixes(),
+            $webRoots->bootedAt,
+            $webRoots->root,
+            $webRoots->outbound,
+        );
     }
 
     /** @return PublicAssets The compiled public catalog available to layout and component composition. */

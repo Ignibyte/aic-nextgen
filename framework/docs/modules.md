@@ -58,7 +58,9 @@ ordinary code with literal class names.
 A manifest declares no presentation: components, layouts and assets live in the theme (see
 [The theme](#the-theme)). Everything else a class needs comes through its constructor. A constructor asks for what it uses
 by type; the generated wiring passes it. There is no container lookup in app code and no `new`
-of a service.
+of a service. What the framework itself gives (the roots) includes, on both sides, the outbound
+client, pool, PSR-17 request and stream factories and `Upstreams` (#305; see
+[http-client.md](http-client.md)).
 
 ### What the build writes
 

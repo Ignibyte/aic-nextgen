@@ -10,23 +10,23 @@ use AIC\Database\Contracts\Database;
 use AIC\Form\Application\EnvelopeCodec;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Http\Contracts\PublicAssets;
-use AIC\Schedule\Domain\Schedule;
+use AIC\HttpClient\Application\Outbound;
 
 /** Typed roots exposed to generated web wiring, without the HTTP wrapper dependencies. */
 final readonly class WebRoots
 {
     /**
-     * @param AppConfig        $appConfig         The application settings.
-     * @param Database         $database          The lazy application database.
-     * @param EnvelopeCodec    $envelopeCodec     Seals and opens form values.
-     * @param ResponseBuilder  $responseBuilder   Makes middleware responses.
-     * @param Plugins          $plugins           The composed modules' plugins.
-     * @param PublicAssets     $publicAssets      The compiled public asset catalog.
-     * @param PageLayouts|null $pageLayouts       The selected compiled theme, when explicitly declared.
-     * @param list<Schedule>   $schedules         The modules' schedules.
-     * @param list<string>     $protectedPrefixes Their protected path prefixes.
-     * @param string           $bootedAt          The request's boot time.
-     * @param string           $root              The application root directory.
+     * @param AppConfig        $appConfig       The application settings.
+     * @param Database         $database        The lazy application database.
+     * @param EnvelopeCodec    $envelopeCodec   Seals and opens form values.
+     * @param ResponseBuilder  $responseBuilder Makes middleware responses.
+     * @param Plugins          $plugins         The composed modules' plugins.
+     * @param PublicAssets     $publicAssets    The compiled public asset catalog.
+     * @param PageLayouts|null $pageLayouts     The selected compiled theme, when explicitly declared.
+     * @param WebWiring        $webWiring       The modules' wiring, which names their schedules and protected prefixes.
+     * @param string           $bootedAt        The request's boot time.
+     * @param string           $root            The application root directory.
+     * @param Outbound         $outbound        The client, pool and upstreams for outbound calls (#305).
      */
     public function __construct(
         public AppConfig $appConfig,
@@ -36,10 +36,10 @@ final readonly class WebRoots
         public Plugins $plugins,
         public PublicAssets $publicAssets,
         public ?PageLayouts $pageLayouts,
-        public array $schedules,
-        public array $protectedPrefixes,
+        public WebWiring $webWiring,
         public string $bootedAt,
         public string $root,
+        public Outbound $outbound,
     ) {
     }
 }

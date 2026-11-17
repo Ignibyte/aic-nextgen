@@ -7,6 +7,10 @@ namespace App\Generated;
 use AIC\Module\Application\HandlerContext;
 use AIC\Notification\Application\Inbox;
 use App\Site\Controller\NotificationsReadPost;
+use App\Site\Controller\UpstreamApi;
+use App\Site\Service\Upstream\SiteClients;
+use App\Site\Service\Upstream\StubCalls;
+use App\Site\Service\Upstream\StubClient;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -28,10 +32,25 @@ final readonly class SiteHandlersPart4
      */
     public function byId(): array
     {
+        $stubClient = new StubClient(
+            $this->handlerContext->roots()->outbound()->client(),
+            $this->handlerContext->roots()->outbound()->requests(),
+            $this->handlerContext->roots()->outbound()->upstreams(),
+        );
+        $siteClients = new SiteClients($this->handlerContext->roots()->outbound()->client());
+        $stubCalls = new StubCalls(
+            $stubClient,
+            $this->handlerContext->roots()->outbound()->pool(),
+            $this->handlerContext->roots()->outbound()->requests(),
+            $this->handlerContext->roots()->outbound()->upstreams(),
+            $siteClients->retrying(),
+        );
+
         return [
             NotificationsReadPost::class => $this->handlerContext->page(
                 new NotificationsReadPost(new Inbox($this->handlerContext->database())),
             ),
+            UpstreamApi::class => $this->handlerContext->api(new UpstreamApi($stubCalls)),
         ];
     }
 }

@@ -165,9 +165,9 @@ the gate suite is the dev package `ignibyte/aic-gates`, run by `vendor/bin/aic-g
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
-layout (#157) and entity (#123); dev-only in
+layout (#157), entity (#123), policy (#304) and client (#305); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the thirteen make lines (`make:policy`, #304).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the fourteen make lines (`make:client`, #305).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
@@ -178,6 +178,9 @@ there with a manifest is one of AIC's own kinds (promotion is a folder copy), an
 #304: `AIC\Access`: `->permission()`, a route's `needs:` (checked by `PermissionGate` around the generated handler),
 roles in Postgres (`bin/aic role:*`), a `Policy` per entity in `src/Policy/` (gate:8 `aic.policyShape`), `make:policy`;
 a route under a protected prefix must say what it needs. gate:31 now runs 13 make lines.
+#305: `AIC\HttpClient`: `CurlClient` (PSR-18 over ext-curl), `CurlPool` (`curl_multi`), `RetryingClient` (explicit),
+upstreams in `AppConfig::$upstreams`, roots through `outbound()` (console) and `roots()->outbound()` (web), the profiler's
+Outbound tab, `make:client`; curl is in the native pins; gate:23 serves a stub upstream. gate:31 runs 14 make lines.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Profiler\Domain;
 
+use AIC\HttpClient\Contracts\OutboundCall;
+
 use function implode;
 use function json_encode;
 
@@ -22,25 +24,24 @@ final readonly class ProfileJson
     private const int FLAGS = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE;
 
     /**
-     * @param RequestFacts          $requestFacts The request and its answer.
-     * @param ProfileTimes          $profileTimes Where its time went.
-     * @param list<StatementRecord> $statements   Its statements, in order.
-     * @param list<ComponentRecord> $components   Its templates, in the order each finished.
+     * @param RequestFacts   $requestFacts   The request and its answer.
+     * @param ProfileTimes   $profileTimes   Where its time went.
+     * @param ProfileRecords $profileRecords Its statements, templates and calls (#305), each in order.
      *
      * @return string The profile.
      */
     public function encode(
         RequestFacts $requestFacts,
         ProfileTimes $profileTimes,
-        array $statements,
-        array $components,
+        ProfileRecords $profileRecords,
     ): string {
         return $this->object([
             'answer' => $this->texts($requestFacts->answer),
             'body' => $this->text($requestFacts->detail->body),
             'browser' => $this->text($requestFacts->detail->browser),
             'bytes' => (string) $requestFacts->bytes,
-            'components' => $this->components($components),
+            'calls' => $this->calls($profileRecords->calls),
+            'components' => $this->components($profileRecords->components),
             'fields' => $this->names($requestFacts->detail->fields),
             'handler' => $this->text($requestFacts->handler),
             'headers' => $this->names($requestFacts->detail->headers),
@@ -49,7 +50,7 @@ final readonly class ProfileJson
             'microseconds' => $this->times($profileTimes),
             'path' => $this->text($requestFacts->path),
             'query' => $this->text($requestFacts->query),
-            'statements' => $this->statements($statements),
+            'statements' => $this->statements($profileRecords->statements),
             'status' => (string) $requestFacts->status,
             'tessera' => $this->texts($requestFacts->tessera),
             'user' => $this->text($requestFacts->user),
@@ -85,6 +86,27 @@ final readonly class ProfileJson
                 'microseconds' => (string) $statement->microseconds,
                 'rows' => (string) $statement->rows,
                 'sql' => $this->text($statement->sql),
+            ]);
+        }
+
+        return '[' . implode(',', $items) . ']';
+    }
+
+    /**
+     * @param list<OutboundCall> $calls The calls to upstreams.
+     *
+     * @return string Them as a JSON array.
+     */
+    private function calls(array $calls): string
+    {
+        $items = [];
+
+        foreach ($calls as $call) {
+            $items[] = $this->object([
+                'method' => $this->text($call->method),
+                'microseconds' => (string) $call->microseconds,
+                'status' => (string) $call->status,
+                'url' => $this->text($call->url),
             ]);
         }
 

@@ -6,6 +6,19 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Outbound HTTP: a PSR-18 client over curl, with a pool** (#305). `AIC\HttpClient`:
+  `CurlClient` sends one request, `CurlPool` many at once over `curl_multi` (named requests, a time
+  limit each, one failure leaving the rest), and `RetryingClient` retries a network failure or a
+  listed status with backoff, only when a module wraps a client in it. Any status is a response;
+  redirects are not followed. `AppConfig::$upstreams` names each upstream API with its URL and token.
+  Module constructors take `ClientInterface`, `RequestPool`, the PSR-17 request and stream factories
+  and `Upstreams` as roots on both sides. The profiler records each call (an Outbound tab), and
+  `bin/aic make:client <module> <Name>` writes a typed client and its reply value. curl 8.21 (with
+  OpenSSL) joins the native pins. gate:23 serves a stub upstream (`AIC_UPSTREAM_STUB`) beside the
+  two sites. `AIC\Http\Domain\Request` and `RequestFactory` are new. **For generated wiring:**
+  `HandlerContext`'s `bootedAt()`, `root()`, `schedules()` and `protectedPrefixes()` moved behind
+  `roots()`; rebuild (`composer run build`).
+
 - **Authorization: permissions, roles and policies** (#304). `AIC\Access`: a module declares
   `->permission('notes.delete-pinned', '…')`; a route says `needs: '<permission>'` or
   `needs: 'signed-in'`, checked before its controller (403 otherwise); roles live in Postgres

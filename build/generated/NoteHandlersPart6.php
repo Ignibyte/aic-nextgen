@@ -43,7 +43,7 @@ final readonly class NoteHandlersPart6
         $noteHandlerServices = new NoteHandlerServices($this->handlerContext);
         $entityStore = new EntityStore($this->handlerContext->database());
         $stockQueries = new StockQueries();
-        $stockExport = new StockExport($noteHandlerServices->stockRepository(), $this->handlerContext->root());
+        $stockExport = new StockExport($noteHandlerServices->stockRepository(), $this->handlerContext->roots()->root());
 
         return [
             StockCsv::class => $this->handlerContext->stream(new StockCsv($stockQueries, $stockExport)),

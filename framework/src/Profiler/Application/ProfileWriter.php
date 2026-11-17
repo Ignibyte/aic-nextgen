@@ -6,11 +6,10 @@ namespace AIC\Profiler\Application;
 
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
-use AIC\Profiler\Domain\ComponentRecord;
 use AIC\Profiler\Domain\ProfileJson;
+use AIC\Profiler\Domain\ProfileRecords;
 use AIC\Profiler\Domain\ProfileTimes;
 use AIC\Profiler\Domain\RequestFacts;
-use AIC\Profiler\Domain\StatementRecord;
 
 use function bin2hex;
 use function random_bytes;
@@ -46,11 +45,10 @@ final readonly class ProfileWriter
     }
 
     /**
-     * @param string                $id           The profile's id, from newId().
-     * @param RequestFacts          $requestFacts The request and its answer.
-     * @param ProfileTimes          $profileTimes Where its time went.
-     * @param list<StatementRecord> $statements   Its statements.
-     * @param list<ComponentRecord> $components   Its templates.
+     * @param string         $id             The profile's id, from newId().
+     * @param RequestFacts   $requestFacts   The request and its answer.
+     * @param ProfileTimes   $profileTimes   Where its time went.
+     * @param ProfileRecords $profileRecords Its statements, templates and calls.
      *
      * @return string The new profile's id; empty when it could not be kept.
      */
@@ -58,11 +56,10 @@ final readonly class ProfileWriter
         string $id,
         RequestFacts $requestFacts,
         ProfileTimes $profileTimes,
-        array $statements,
-        array $components,
+        ProfileRecords $profileRecords,
     ): string {
         try {
-            $profile = $this->profileJson->encode($requestFacts, $profileTimes, $statements, $components);
+            $profile = $this->profileJson->encode($requestFacts, $profileTimes, $profileRecords);
             $this->insert($id, $requestFacts, $profileTimes, $profile);
             $this->database->execute(self::PRUNE, []);
         } catch (QueryException) {

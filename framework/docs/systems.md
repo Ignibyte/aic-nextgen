@@ -6,7 +6,7 @@ app meets first.
 
 | System | Namespaces |
 |---|---|
-| 1. HTTP, routing and the kinds | Http, Routing, Controller, Kernel, Sapi, Config, Console, Profiler |
+| 1. HTTP, routing and the kinds | Http, HttpClient, Routing, Controller, Kernel, Sapi, Config, Console, Profiler |
 | 2. Wiring and modules | Container, Module |
 | 3. Data | Database, Schema, Entity |
 | 4. Components | Component |
@@ -25,6 +25,12 @@ app meets first.
   Responses default to `private, no-store`. Public assets have immutable fingerprint URLs,
   revalidated compatibility aliases and ordered conditional/range responses over verified
   bytes and same-handle metadata. Public errors and server-sent events retain `no-store`.
+- `AIC\HttpClient`: calls to upstream APIs (#305). `AIC\HttpClient\Application\CurlClient` is a
+  PSR-18 client over ext-curl and `CurlPool` sends many requests at once over `curl_multi`, each with
+  its own time limit (`AIC\HttpClient\Contracts\RequestPool`); any status is a response, redirects
+  are not followed, and nothing retries unless wrapped in `RetryingClient`. `config/app.php` names
+  the upstreams (`AppConfig::$upstreams`). Module constructors take the client, the pool, the PSR-17
+  factories and `Upstreams` as roots on both sides. See [http-client.md](http-client.md).
 - `AIC\Sapi`: turns one server request into a PSR-7 request, uploads included, and emits the
   response. `AIC\Sapi\Infrastructure\SapiRequestExtractor` is the one place superglobals are read.
 - `AIC\Kernel`: `AIC\Kernel\Application\Kernel` takes a request across that boundary and hands it
@@ -39,10 +45,10 @@ app meets first.
 - `AIC\Console`: `AIC\Console\Application\Console` runs `bin/aic <name>`; a missing or unknown
   name prints the usage and exits 2.
 - `AIC\Profiler`: with `AIC_PROFILER=1`, `AIC\Profiler\Application\Profile` records each dynamic
-  request (its handler, its times, each statement's SQL, each template, its Tessera exchange) in
+  request (its handler, its times, each statement's SQL, each template, each outbound call, its Tessera exchange) in
   `aic_profiles` and names it in `X-AIC-Profile` (#229). It plugs into three seams with no
-  observer by default: `AIC\Kernel\Contracts\RequestObserver`, `AIC\Routing\Contracts\RouteObserver`
-  and `AIC\Component\Contracts\RenderObserver`. See [profiler.md](profiler.md).
+  observer by default: `AIC\Kernel\Contracts\RequestObserver`, `AIC\Routing\Contracts\RouteObserver`,
+  `AIC\Component\Contracts\RenderObserver` and `AIC\HttpClient\Contracts\OutboundObserver`. See [profiler.md](profiler.md).
 
 See [native.md](native.md) for the compiled server and PHP comparison.
 

@@ -99,10 +99,10 @@ final readonly class HandlerContexts
             $plugins,
             $webPresentation->publicAssets,
             $webPresentation->pageLayouts,
-            $webWiring->schedules(),
-            $webWiring->protectedPrefixes(),
+            $webWiring,
             $this->bootedAt,
             $this->root,
+            $this->requestObservers->outbound($this->appConfig->upstreams),
         );
     }
 }
