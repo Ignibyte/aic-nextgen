@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Domain;
 
+use AIC\Access\Contracts\Policy;
 use AIC\Block\Contracts\Block;
 use AIC\Component\Contracts\Component;
 use AIC\Controller\Contracts\Api;
@@ -61,6 +62,7 @@ final readonly class ClassKinds
         'Middleware',
         'Migration',
         'Notification',
+        'Policy',
         'Repository',
         'Service',
     ];
@@ -79,6 +81,7 @@ final readonly class ClassKinds
         Migration::class => ['Migration', 'Migration'],
         Notification::class => ['Notification', 'Notification'],
         Page::class => ['Page', 'Controller'],
+        Policy::class => ['Policy', 'Policy'],
         Stream::class => ['Stream', 'Controller'],
     ];
 

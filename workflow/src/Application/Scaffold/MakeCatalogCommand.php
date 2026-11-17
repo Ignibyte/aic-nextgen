@@ -54,6 +54,7 @@ final readonly class MakeCatalogCommand implements Command
         'make:migration' => ['make:migration <module> <Class> <table>', 'a migration creating one table'],
         'make:module' => ['make:module <module> [--requires=a,b]', 'a module with its manifest'],
         'make:page' => ['make:page <module> <Class> <path> [--component=<C>] [--layout=<name>] [--post]', 'a page at a route'],
+        'make:policy' => ['make:policy <module> <Entity>', "an entity's policy and the permission its create action asks"],
         'make:theme' => ['make:theme <name>', 'a theme'],
     ];
 

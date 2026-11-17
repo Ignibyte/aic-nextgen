@@ -15,7 +15,8 @@ namespace AIC\Module\Contracts;
  *         ->block(FaqNoteBlock::class);
  *
  * Each declaration is a `ModuleDeclaration`: a route, a binding, a plugin, a
- * command, a job, a schedule, a middleware, or a bare name by its section.
+ * command, a job, a schedule, a middleware, a permission (#304), or a bare
+ * name by its section.
  * `aic-build` reads every manifest and generates the wiring under
  * `generated/`; nothing reads a manifest at run time, so the app compiles
  * natively. Manifests build it; nothing in the framework does, so all of it is
@@ -49,12 +50,26 @@ final readonly class ModuleManifest
      * @param RouteMethod  $routeMethod GET or POST.
      * @param string       $path        The path pattern (`/faq`, `/notes/{id:int}`).
      * @param class-string $handler     The Page, Api or Stream that answers it.
+     * @param string       $needs       A permission a module declares, or `signed-in`, checked before the handler (#304);
+     *                                  empty when anyone may open it. A route under a protected prefix must say.
      *
      * @return self The manifest with the route.
      */
-    public function route(RouteMethod $routeMethod, string $path, string $handler): self
+    public function route(RouteMethod $routeMethod, string $path, string $handler, string $needs = ''): self
     {
-        return $this->with(new ModuleRoute($routeMethod, $path, $handler));
+        return $this->with(new ModuleRoute($routeMethod, $path, $handler, $needs));
+    }
+
+    /**
+     * @param string $name        A permission, lower-case words joined by `-`, in two or more parts joined by `.`
+     *                            (`notes.delete-pinned`).
+     * @param string $description What it allows, for whoever grants it.
+     *
+     * @return self The manifest with the permission (#304).
+     */
+    public function permission(string $name, string $description): self
+    {
+        return $this->with(new ModulePermission($name, $description));
     }
 
     /**

@@ -7,7 +7,8 @@ namespace AIC\Module\Contracts;
 /**
  * One route a module declares: its method, its path pattern and the controller
  * that answers it. The controller's kind (Page, Api or Stream) is read from its
- * class at build time, never declared a second time (#26).
+ * class at build time, never declared a second time (#26). A route may need
+ * a permission, or any signed-in user (#304).
  */
 final readonly class ModuleRoute implements ModuleDeclaration
 {
@@ -15,11 +16,13 @@ final readonly class ModuleRoute implements ModuleDeclaration
      * @param RouteMethod  $method  GET or POST.
      * @param string       $path    The path pattern, as `RouteCollector` takes it (`/faq`, `/notes/{id:int}`).
      * @param class-string $handler The controller class, in the module's own namespace.
+     * @param string       $needs   A declared permission, `signed-in`, or empty when anyone may open it.
      */
     public function __construct(
         public RouteMethod $method,
         public string $path,
         public string $handler,
+        public string $needs = '',
     ) {
     }
 }

@@ -68,6 +68,17 @@ final readonly class MakeCalls
     }
 
     /**
+     * @param string $name        The permission.
+     * @param string $description What it allows.
+     *
+     * @return ManifestCall `->permission('<name>', '<description>')` (#304).
+     */
+    public function permission(string $name, string $description): ManifestCall
+    {
+        return new ManifestCall("->permission('" . $name . "', '" . $description . "')", []);
+    }
+
+    /**
      * @param ManifestCall $first  A call.
      * @param ManifestCall $second The call after it.
      *

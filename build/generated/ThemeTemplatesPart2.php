@@ -8,10 +8,10 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
+use App\Theme\Components\LineList\LineList;
 use App\Theme\Components\NoteCard\NoteCard;
 use App\Theme\Components\NoteList\NoteList;
 use App\Theme\Components\Panel\Panel;
-use App\Theme\Components\ScaffoldAboutView\ScaffoldAboutView;
 use Override;
 
 /**
@@ -40,12 +40,28 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
+            $component instanceof LineList => $this->renderLineList($component, $renderPass),
             $component instanceof NoteCard => $this->renderNoteCard($component, $renderPass),
             $component instanceof NoteList => $this->renderNoteList($component, $renderPass),
             $component instanceof Panel => $this->renderPanel($component, $renderPass),
-            $component instanceof ScaffoldAboutView => $this->renderScaffoldAboutView($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param LineList   $lineList   The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/LineList/line-list.phtml.
+     */
+    private function renderLineList(LineList $lineList, RenderPass $renderPass): string
+    {
+        $renderPass->open($lineList);
+        require __DIR__ . '/templates/themes/app/components/LineList/line-list.phtml';
+
+        return $renderPass->close();
     }
 
     /**
@@ -92,22 +108,6 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
     {
         $renderPass->open($panel);
         require __DIR__ . '/templates/themes/app/components/Panel/panel.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param ScaffoldAboutView $scaffoldAboutView The component; its template reads it.
-     * @param RenderPass        $renderPass        The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml.
-     */
-    private function renderScaffoldAboutView(ScaffoldAboutView $scaffoldAboutView, RenderPass $renderPass): string
-    {
-        $renderPass->open($scaffoldAboutView);
-        require __DIR__ . '/templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml';
 
         return $renderPass->close();
     }

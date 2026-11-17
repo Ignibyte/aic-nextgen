@@ -66,6 +66,11 @@ look runs the app's console itself, as `tests/browser/jobs.spec.ts` runs the que
 `vendor/bin/aic-gate browser [--base-url=<url>] [<spec>…]` runs tests against any site with the
 same config, `gates/browser/playwright.config.mjs`; a workflow run takes its looks with it.
 
+`config/native-site.json` may hold `console`, a list of `bin/aic` lines (split on their spaces)
+gate:23 runs once the gate user is made, before any step: the fixture grants that user a role there
+(`"role:assign gate gate-auditor"`) (#304). Their exits are not judged; the steps that need
+them are.
+
 `config/native-site.json` may also hold `profiled`, steps written as `steps` are (#234). After the
 plain pass and its browser run, gate:23 restarts both sites from the same build with
 `AIC_PROFILER=1`, sends each profiled step to each, and compares the answers as before, with the

@@ -8,12 +8,15 @@ use Gates\Domain\NativeSiteStep;
 use InvalidArgumentException;
 use stdClass;
 
+use function array_filter;
 use function array_is_list;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function array_values;
 use function explode;
 use function get_object_vars;
+use function in_array;
 use function is_array;
 use function is_bool;
 use function is_int;
@@ -76,6 +79,28 @@ final readonly class NativeSiteScript
     public function profiled(string $root): array
     {
         return $this->listed($root, 'profiled');
+    }
+
+    /**
+     * @param string $root The project's root.
+     *
+     * @throws InvalidArgumentException When the script is malformed, or its `console` is not a list of non-empty strings.
+     *
+     * @return list<list<string>> The `bin/aic` lines gate:23 runs once the gate user is made (#304), such as a role grant
+     *                            for that user, each split on its spaces; none when the script names none.
+     */
+    public function console(string $root): array
+    {
+        $lines = [get_object_vars($this->script($root))['console'] ?? []];
+        $strings = is_array($lines[0]) && array_is_list($lines[0])
+            ? array_values(array_filter($lines[0], is_string(...)))
+            : null;
+
+        if ($strings === null || $strings !== $lines[0] || in_array('', $strings, true)) {
+            throw new InvalidArgumentException(self::PATH . ' holds no list of bin/aic lines at console.');
+        }
+
+        return array_map(static fn (string $line): array => explode(' ', $line), $strings);
     }
 
     /**

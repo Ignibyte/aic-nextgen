@@ -5,6 +5,7 @@
             "kind": "Api",
             "method": "GET",
             "module": "site",
+            "needs": "",
             "path": "/api/status"
         },
         {
@@ -12,6 +13,7 @@
             "kind": "Api",
             "method": "GET",
             "module": "site",
+            "needs": "",
             "path": "/health"
         },
         {
@@ -19,6 +21,7 @@
             "kind": "Stream",
             "method": "GET",
             "module": "site",
+            "needs": "",
             "path": "/download/{file}"
         },
         {
@@ -26,6 +29,7 @@
             "kind": "Stream",
             "method": "GET",
             "module": "site",
+            "needs": "",
             "path": "/kept-page"
         },
         {
@@ -33,6 +37,7 @@
             "kind": "Stream",
             "method": "GET",
             "module": "site",
+            "needs": "",
             "path": "/events"
         },
         {
@@ -40,6 +45,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "site",
+            "needs": "",
             "path": "/ticks"
         },
         {
@@ -47,6 +53,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "site",
+            "needs": "",
             "path": "/"
         },
         {
@@ -54,6 +61,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "site",
+            "needs": "",
             "path": "/hello/{name}"
         },
         {
@@ -61,6 +69,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "site",
+            "needs": "",
             "path": "/hello"
         },
         {
@@ -68,6 +77,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "site",
+            "needs": "",
             "path": "/jobs"
         },
         {
@@ -75,6 +85,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "site",
+            "needs": "",
             "path": "/jobs"
         },
         {
@@ -82,6 +93,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "site",
+            "needs": "",
             "path": "/notifications"
         },
         {
@@ -89,6 +101,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "site",
+            "needs": "",
             "path": "/notifications"
         },
         {
@@ -96,6 +109,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "site",
+            "needs": "",
             "path": "/notifications/read"
         },
         {
@@ -103,6 +117,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "account",
+            "needs": "",
             "path": "/login"
         },
         {
@@ -110,6 +125,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "account",
+            "needs": "",
             "path": "/login"
         },
         {
@@ -117,6 +133,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "account",
+            "needs": "",
             "path": "/logout"
         },
         {
@@ -124,6 +141,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "account",
+            "needs": "signed-in",
             "path": "/account"
         },
         {
@@ -131,6 +149,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "account",
+            "needs": "",
             "path": "/visits"
         },
         {
@@ -138,6 +157,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "account",
+            "needs": "",
             "path": "/visits/forget"
         },
         {
@@ -145,6 +165,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "account",
+            "needs": "",
             "path": "/uploads"
         },
         {
@@ -152,6 +173,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "account",
+            "needs": "",
             "path": "/uploads"
         },
         {
@@ -159,13 +181,23 @@
             "kind": "Stream",
             "method": "GET",
             "module": "account",
+            "needs": "",
             "path": "/uploads/latest"
+        },
+        {
+            "handler": "App\\Account\\Controller\\AuditPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "account",
+            "needs": "account.audit",
+            "path": "/audit"
         },
         {
             "handler": "App\\Note\\Controller\\NoteListPage",
             "kind": "Page",
             "method": "GET",
             "module": "note",
+            "needs": "",
             "path": "/notes"
         },
         {
@@ -173,6 +205,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "note",
+            "needs": "",
             "path": "/notes"
         },
         {
@@ -180,6 +213,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "note",
+            "needs": "",
             "path": "/notes/{id:int}"
         },
         {
@@ -187,6 +221,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "note",
+            "needs": "",
             "path": "/notes/{id:int}"
         },
         {
@@ -194,6 +229,7 @@
             "kind": "Page",
             "method": "PUT",
             "module": "note",
+            "needs": "",
             "path": "/notes/{id:int}"
         },
         {
@@ -201,6 +237,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "note",
+            "needs": "",
             "path": "/notes/{id:int}/delete"
         },
         {
@@ -208,6 +245,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "note",
+            "needs": "",
             "path": "/stock"
         },
         {
@@ -215,6 +253,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "note",
+            "needs": "",
             "path": "/stock"
         },
         {
@@ -222,6 +261,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "note",
+            "needs": "",
             "path": "/notes/tags"
         },
         {
@@ -229,6 +269,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "note",
+            "needs": "",
             "path": "/notes/tags"
         },
         {
@@ -236,6 +277,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "note",
+            "needs": "",
             "path": "/stock/days"
         },
         {
@@ -243,6 +285,7 @@
             "kind": "Stream",
             "method": "GET",
             "module": "note",
+            "needs": "",
             "path": "/stock.csv"
         },
         {
@@ -250,6 +293,7 @@
             "kind": "Api",
             "method": "GET",
             "module": "note",
+            "needs": "",
             "path": "/stock.xml"
         },
         {
@@ -257,6 +301,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "scaffold",
+            "needs": "",
             "path": "/scaffold"
         },
         {
@@ -264,6 +309,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "scaffold",
+            "needs": "",
             "path": "/scaffold/about"
         },
         {
@@ -271,6 +317,7 @@
             "kind": "Page",
             "method": "POST",
             "module": "scaffold",
+            "needs": "",
             "path": "/scaffold"
         },
         {
@@ -278,6 +325,7 @@
             "kind": "Api",
             "method": "GET",
             "module": "scaffold",
+            "needs": "",
             "path": "/api/scaffold"
         },
         {
@@ -285,6 +333,7 @@
             "kind": "Page",
             "method": "GET",
             "module": "scaffold",
+            "needs": "",
             "path": "/scaffold-tasks"
         }
     ],
@@ -336,6 +385,30 @@
             "kind": "Command",
             "module": "framework",
             "name": "queue:work"
+        },
+        {
+            "class": "AIC\\Access\\Application\\RoleCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "role:assign"
+        },
+        {
+            "class": "AIC\\Access\\Application\\RoleCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "role:grant"
+        },
+        {
+            "class": "AIC\\Access\\Application\\RoleCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "role:revoke"
+        },
+        {
+            "class": "AIC\\Access\\Application\\RoleCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "role:unassign"
         },
         {
             "class": "App\\Scaffold\\Command\\ScaffoldHello",
@@ -412,6 +485,7 @@
             ],
             "name": "site",
             "namespace": "App\\Site\\",
+            "permissions": [],
             "plugins": [
                 {
                     "class": "App\\Site\\Service\\EnglishGreeter",
@@ -454,6 +528,12 @@
             ],
             "name": "account",
             "namespace": "App\\Account\\",
+            "permissions": [
+                {
+                    "description": "Read the account audit page.",
+                    "name": "account.audit"
+                }
+            ],
             "plugins": [],
             "prefixes": [
                 "/account"
@@ -482,6 +562,12 @@
             ],
             "name": "note",
             "namespace": "App\\Note\\",
+            "permissions": [
+                {
+                    "description": "Delete a pinned note, one whose title starts with \"Pinned:\".",
+                    "name": "notes.delete-pinned"
+                }
+            ],
             "plugins": [],
             "prefixes": [],
             "requires": [
@@ -502,6 +588,12 @@
             ],
             "name": "scaffold",
             "namespace": "App\\Scaffold\\",
+            "permissions": [
+                {
+                    "description": "Create a scaffold task.",
+                    "name": "scaffold.scaffold-task.create"
+                }
+            ],
             "plugins": [],
             "prefixes": [],
             "requires": [
@@ -545,6 +637,11 @@
             }
         ],
         "components": [
+            {
+                "component": "App\\Theme\\Components\\AuditView\\AuditView",
+                "generated": "build/generated/templates/themes/app/components/AuditView/audit-view.phtml",
+                "source": "themes/app/components/AuditView/audit-view.phtml"
+            },
             {
                 "component": "App\\Theme\\Components\\GreetingStatus\\GreetingStatus",
                 "generated": "build/generated/templates/themes/app/components/GreetingStatus/greeting-status.phtml",
@@ -741,6 +838,14 @@
             "entry": false,
             "folder": "Notification",
             "kind": "Notification",
+            "method": "",
+            "response": ""
+        },
+        {
+            "contract": "AIC\\Access\\Contracts\\Policy",
+            "entry": false,
+            "folder": "Policy",
+            "kind": "Policy",
             "method": "",
             "response": ""
         },

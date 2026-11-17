@@ -11,6 +11,7 @@ use AIC\Module\Contracts\ModuleEntry;
 use AIC\Module\Contracts\ModuleJob;
 use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\ModuleMiddleware;
+use AIC\Module\Contracts\ModulePermission;
 use AIC\Module\Contracts\ModuleRoute;
 use AIC\Module\Contracts\ModuleSchedule;
 use AIC\Module\Contracts\PluginTag;
@@ -30,6 +31,7 @@ final readonly class ManifestDeclarations
         ModuleEntry::class,
         ModuleJob::class,
         ModuleMiddleware::class,
+        ModulePermission::class,
         ModuleRoute::class,
         ModuleSchedule::class,
         PluginTag::class,

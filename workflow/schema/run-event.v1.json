@@ -604,6 +604,7 @@
             "make:migration",
             "make:module",
             "make:page",
+            "make:policy",
             "make:scaffold",
             "make:theme"
           ]

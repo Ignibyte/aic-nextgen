@@ -1,5 +1,9 @@
 {
     "schema": "aic.native-site/1",
+    "console": [
+        "role:grant gate-auditor account.audit",
+        "role:assign gate gate-auditor"
+    ],
     "steps": [
         {
             "name": "greeting",
@@ -681,6 +685,51 @@
             "captures": false
         },
         {
+            "name": "note create, pinned",
+            "method": "POST",
+            "path": "/notes",
+            "form": "title=Pinned%3A+Gate&body=x&aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": true
+        },
+        {
+            "name": "note show, pinned",
+            "method": "GET",
+            "path": "{note}",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "note delete, pinned, refused by its policy",
+            "method": "POST",
+            "path": "{note}/delete",
+            "form": "aic_csrf={csrf}&aic_envelope={envelope}",
+            "header": "",
+            "status": 403,
+            "captures": false
+        },
+        {
+            "name": "note unpin",
+            "method": "POST",
+            "path": "{note}",
+            "form": "title=Gate+unpinned&body=x&aic_csrf={csrf}&aic_envelope={envelope}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "note delete, unpinned",
+            "method": "POST",
+            "path": "{note}/delete",
+            "form": "aic_csrf={csrf}&aic_envelope={envelope}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
             "name": "note list, its first note kept",
             "method": "GET",
             "path": "/notes",
@@ -763,6 +812,15 @@
             "captures": false
         },
         {
+            "name": "audit, anonymous",
+            "method": "GET",
+            "path": "/audit",
+            "form": "",
+            "header": "",
+            "status": 403,
+            "captures": false
+        },
+        {
             "name": "login page",
             "method": "GET",
             "path": "/login?next=%2Faccount",
@@ -793,6 +851,15 @@
             "name": "account",
             "method": "GET",
             "path": "/account",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "audit, with account.audit",
+            "method": "GET",
+            "path": "/audit",
             "form": "",
             "header": "",
             "status": 200,

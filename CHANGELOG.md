@@ -6,6 +6,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Authorization: permissions, roles and policies** (#304). `AIC\Access`: a module declares
+  `->permission('notes.delete-pinned', '…')`; a route says `needs: '<permission>'` or
+  `needs: 'signed-in'`, checked before its controller (403 otherwise); roles live in Postgres
+  (`aic_role_permissions`, `aic_user_roles`), changed by `bin/aic role:grant|role:revoke|role:assign|role:unassign`.
+  A module's `Policy` in `src/Policy/` answers a `Decision` per action, `(Actor): Decision` or
+  `(Actor, Subject): Decision` (gate:8, `aic.policyShape`); a controller asks it through `Actors`.
+  `bin/aic make:policy <module> <Entity>` writes one with its permission. `build/surface.json` gives
+  each route's need and each module's permissions. gate:23's script may hold `console` lines run
+  after the gate user is made. **Breaking for apps:** the build now refuses a route under a
+  protected prefix that does not say what it needs; add `needs: 'signed-in'` to keep its behaviour.
+
 - **The made ledger: which files a scaffold made, committed** (#302). Every make in an open run
   appends a row per created file to `.aic/made.jsonl` (path, kind, the scaffold folder's sha256,
   the content hash, the run), and `code.made` now carries the kind, the scaffold and which files

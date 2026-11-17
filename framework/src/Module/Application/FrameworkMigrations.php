@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Access\Domain\CreateAccessTables;
 use AIC\Auth\Domain\EnablePgcrypto;
 use AIC\Notification\Domain\AddNotificationInbox;
 use AIC\Notification\Domain\CreateNotificationsTable;
@@ -34,6 +35,7 @@ final readonly class FrameworkMigrations
             new CreateTesseraWritesTable(),
             new AddNotificationInbox(),
             new CreateProfilesTable(),
+            new CreateAccessTables(),
         ];
     }
 }

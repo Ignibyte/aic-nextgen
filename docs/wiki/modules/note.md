@@ -143,6 +143,12 @@ none
 | `App\Note\Migration\CreateStockItemsTable` | [modules/note/src/Migration/CreateStockItemsTable.php](../../../modules/note/src/Migration/CreateStockItemsTable.php) |
 | `App\Note\Migration\IndexNotesByCreation` | [modules/note/src/Migration/IndexNotesByCreation.php](../../../modules/note/src/Migration/IndexNotesByCreation.php) |
 
+### `src/Policy/`
+
+| Class | File |
+| --- | --- |
+| `App\Note\Policy\NotePolicy` | [modules/note/src/Policy/NotePolicy.php](../../../modules/note/src/Policy/NotePolicy.php) |
+
 ### `src/Repository/`
 
 | Class | File |
@@ -171,6 +177,7 @@ none
 
 ### Framework systems
 
+- [AIC\Access](../../../framework/docs/systems.md#9-auth)
 - [AIC\Block](../../../framework/docs/systems.md#6-blocks)
 - [AIC\Component](../../../framework/docs/systems.md#4-components)
 - [AIC\Controller](../../../framework/docs/systems.md#1-http-routing-and-the-kinds)

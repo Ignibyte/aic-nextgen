@@ -47,6 +47,7 @@ final readonly class AccountHandlers
         return [
             AccountPage::class => $this->handlerContext->page(
                 new AccountPage($this->handlerContext->documents(), $accountHandlerServices->authenticator()),
+                'signed-in',
             ),
             LoginPage::class => $this->handlerContext->page(new LoginPage($this->handlerContext->documents(), $loginForm)),
             LoginPost::class => $this->handlerContext->page(

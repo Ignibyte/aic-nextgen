@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
-use AIC\Entity\Application\EntityStore;
+use AIC\Form\Application\PostedFields;
 use AIC\Module\Application\HandlerContext;
-use App\Note\Controller\StockCsv;
-use App\Note\Controller\StockDaysPage;
-use App\Note\Controller\StockXml;
-use App\Note\Form\StockQueries;
-use App\Note\Repository\StockReportRepository;
-use App\Note\Service\StockExport;
-use App\Note\Service\StockFeed;
-use App\Note\Service\StockReportDay;
+use App\Note\Controller\NoteTagPost;
+use App\Note\Controller\NoteTagsPage;
+use App\Note\Service\NoteTagForms;
+use App\Note\Service\NoteViews;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -33,30 +29,29 @@ final readonly class NoteHandlersPart5
     }
 
     /**
-     * @throws ContainerException       When a called constructor or service fails.
      * @throws InvalidArgumentException When a called constructor or service fails.
+     * @throws ContainerException       When a called constructor or service fails.
      *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array
     {
         $noteHandlerServices = new NoteHandlerServices($this->handlerContext);
-        $entityStore = new EntityStore($this->handlerContext->database());
-        $stockQueries = new StockQueries();
-        $stockExport = new StockExport($noteHandlerServices->stockRepository(), $this->handlerContext->root());
+        $noteTagForms = new NoteTagForms();
+        $noteViews = new NoteViews($this->handlerContext->documents());
 
         return [
-            StockCsv::class => $this->handlerContext->stream(new StockCsv($stockQueries, $stockExport)),
-            StockDaysPage::class => $this->handlerContext->page(
-                new StockDaysPage(
-                    $this->handlerContext->documents(),
-                    $noteHandlerServices->stockRepository(),
-                    new StockReportRepository($entityStore),
-                    new StockReportDay(),
+            NoteTagPost::class => $this->handlerContext->page(
+                new NoteTagPost(
+                    $noteHandlerServices->noteRepository(),
+                    $noteHandlerServices->noteTagRepository(),
+                    $noteTagForms,
+                    $noteViews,
+                    new PostedFields(),
                 ),
             ),
-            StockXml::class => $this->handlerContext->api(
-                new StockXml($stockQueries, new StockFeed($noteHandlerServices->stockRepository())),
+            NoteTagsPage::class => $this->handlerContext->page(
+                new NoteTagsPage($noteHandlerServices->noteTagRepository(), $noteTagForms, $noteViews),
             ),
         ];
     }

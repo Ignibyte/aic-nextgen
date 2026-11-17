@@ -112,15 +112,32 @@ final readonly class NativeSiteGate
      * @param string   $root   Repo-root absolute path.
      * @param resource $stderr Stream a bad script is reported to.
      *
-     * @return list<NativeSiteStep> The script's steps; none when it is malformed, which is reported.
+     * @return list<NativeSiteStep> The script's steps; none when it, its console lines included, is malformed, which is
+     *                              reported.
      */
     private function steps(string $root, mixed $stderr): array
     {
         try {
+            $this->nativeSiteScript->console($root);
+
             return $this->nativeSiteScript->steps($root);
         } catch (InvalidArgumentException $invalidArgumentException) {
             fwrite($stderr, 'gate:23 — ' . $invalidArgumentException->getMessage() . PHP_EOL);
 
+            return [];
+        }
+    }
+
+    /**
+     * @param string $root Repo-root absolute path.
+     *
+     * @return list<list<string>> The script's console lines (#304); `steps()` reported a malformed list already, so none.
+     */
+    private function console(string $root): array
+    {
+        try {
+            return $this->nativeSiteScript->console($root);
+        } catch (InvalidArgumentException) {
             return [];
         }
     }
@@ -181,7 +198,7 @@ final readonly class NativeSiteGate
             return 1;
         }
 
-        $password = $this->gateUser->create($root, $nativeSiteSetup->env);
+        $password = $this->gateUser->create($root, $nativeSiteSetup->env, $this->console($root));
         $answers = $this->nativeSiteComparer->both($nativeSiteSetup, $steps, $password, $root, $nativeSiteSetup->env);
         $nativeOrigin = 'http://127.0.0.1:' . $nativeSiteSetup->nativePort;
         $browser = $this->nativeSiteBrowser->findings($root, $nativeOrigin, $nativeSiteSetup->env, $password);

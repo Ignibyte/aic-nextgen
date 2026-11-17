@@ -5,7 +5,9 @@ declare(strict_types=1);
 /*
  * The note module's manifest (#93; stock's pages and table joined it in #126):
  * CRUD on notes, their tips block, the stock page, its report, its CSV
- * export (#209) and XML feed (#233), and the notes and stock tables. The build reads it; nothing reads it at run time.
+ * export (#209) and XML feed (#233), the notes and stock tables, and the
+ * permission to delete a pinned note (#304). The build reads it; nothing
+ * reads it at run time.
  */
 
 use AIC\Module\Contracts\ModuleManifest;
@@ -57,4 +59,5 @@ return (new ModuleManifest('note'))
     ->migration(AddStockCost::class)
     ->migration(ConvertStockCost::class)
     ->migration(AddStockQuantity::class)
-    ->migration(CreateStockDaysView::class);
+    ->migration(CreateStockDaysView::class)
+    ->permission('notes.delete-pinned', 'Delete a pinned note, one whose title starts with "Pinned:".');

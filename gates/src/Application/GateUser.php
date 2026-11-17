@@ -12,7 +12,8 @@ use function random_bytes;
 /**
  * The user gate:23 signs in as (#9): `gate`, given a fresh random password
  * on each run through the app's own `bin/aic user:add`, so no password lives
- * in a file.
+ * in a file; then the script's console lines run, such as a role for that
+ * user (#304). Their exits are not judged: the steps that need them are.
  */
 final readonly class GateUser
 {
@@ -32,15 +33,20 @@ final readonly class GateUser
     }
 
     /**
-     * @param string                $root The app's root.
-     * @param array<string, string> $env  The environment the sites run with.
+     * @param string                $root    The app's root.
+     * @param array<string, string> $env     The environment the sites run with.
+     * @param list<list<string>>    $console The script's console lines, each `bin/aic`'s arguments.
      *
      * @return string The password it was given; empty when the console failed.
      */
-    public function create(string $root, array $env): string
+    public function create(string $root, array $env, array $console = []): string
     {
         $password = bin2hex(random_bytes(16));
         $processResult = $this->processRunner->run([$this->php, $root . '/bin/aic', 'user:add', self::LOGIN, $password], $root, $env);
+
+        foreach ($console as $line) {
+            $this->processRunner->run([$this->php, $root . '/bin/aic', ...$line], $root, $env);
+        }
 
         return $processResult->exitCode === 0
             ? $password

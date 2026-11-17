@@ -7,6 +7,7 @@ namespace App\Generated;
 use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
 use AIC\Session\Application\RequestSession;
+use App\Account\Controller\AuditPage;
 use App\Account\Controller\UploadDownload;
 use App\Account\Controller\UploadsPage;
 use App\Account\Controller\UploadsPost;
@@ -40,6 +41,7 @@ final readonly class AccountHandlersPart2
         $uploadForm = new UploadForm();
 
         return [
+            AuditPage::class => $this->handlerContext->page(new AuditPage($this->handlerContext->documents()), 'account.audit'),
             UploadDownload::class => $this->handlerContext->stream(new UploadDownload($accountHandlerServices->keptUploads())),
             UploadsPage::class => $this->handlerContext->page(
                 new UploadsPage($this->handlerContext->documents(), $requestSession, $uploadForm),

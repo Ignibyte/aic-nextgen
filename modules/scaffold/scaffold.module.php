@@ -31,4 +31,5 @@ return (new ModuleManifest('scaffold'))
     ->job('scaffold-hello', ScaffoldHelloJob::class)
     ->migration(CreateScaffoldItemsTable::class)
     ->route(RouteMethod::Get, '/scaffold-tasks', ScaffoldTaskListPage::class)
-    ->migration(CreateScaffoldTasksTable::class);
+    ->migration(CreateScaffoldTasksTable::class)
+    ->permission('scaffold.scaffold-task.create', 'Create a scaffold task.');
