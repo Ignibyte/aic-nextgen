@@ -24,7 +24,7 @@ it and say what breaks.
   `composer run build` writes the wiring as plain PHP under `build/generated/`. Every entry point is
   one of five kinds (Page, Api, Stream, Command, Job). Markup lives only in the theme's `.phtml`
   templates, never in a PHP class.
-- **Gates, not reviews.** 33 gates hold every change: PHPStan level 10, Psalm with taint analysis,
+- **Gates, not reviews.** 34 gates hold every change: PHPStan level 10, Psalm with taint analysis,
   Deptrac, PHPMD, a native compile of every class, a whole-site comparison of PHP against the
   compiled binary, and more. There are no baselines and no suppressions.
 - **The browser side** is [Tessera](https://github.com/Ignibyte/tessera): server HTML morphed into
@@ -258,7 +258,7 @@ production a reverse proxy (Caddy, nginx) may map `/assets/` to `build/assets/` 
 ```bash
 vendor/bin/aic-gate tools   # once: gitleaks (pinned, into tools/), semgrep, shellcheck; in an app, elephc
 composer run gate           # every gate, on the host; ends with one gate-summary line
-composer run gate:8         # one gate alone (gate:0 to gate:32)
+composer run gate:8         # one gate alone (gate:0 to gate:33)
 composer run gate:21        # the native gate: every runtime class through elephc
 ```
 

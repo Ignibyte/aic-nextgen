@@ -63,7 +63,7 @@ composer run gate       # every gate; it ends with one gate-summary line
 versions AIC's own gates run, and Playwright for the browser tests. It also
 installs the compiler release the gates pin, checked by its SHA-256, and links it at
 `tools/elephc`. `composer run gate` compiles the site, serves it beside PHP and compares each step in `config/native-site.json`.
-Its last line reads `gate-summary: 29 passed, 0 deferred. Full coverage.`
+Its last line reads `gate-summary: 30 passed, 0 deferred. Full coverage.`
 
 Serve the compiled site:
 

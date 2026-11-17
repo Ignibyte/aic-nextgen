@@ -340,7 +340,7 @@ Background work is a job; the HTTP server's processes are its workers.
   (an app's `composer.json`, the `site` module, the `app` theme, `config/native-site.json`, DDEV's
   config, a README), split like the other packages. Everything else at an app's root is written on
   install by its owner, so the template never carries a copy. A created app's first gate run is
-  `29 passed, 0 deferred`. The template's classes are not AIC's: they sit outside every class root,
+  `30 passed, 0 deferred` (#300). The template's classes are not AIC's: they sit outside every class root,
   and gate:26 reads `project/` through `ProjectProfile::templateTrees()`, judging each path relative
   to the folder. The packages require each other at `^0.1`.
 - No `aic/ward-*` packages, no metapackage, no ward manifests.
@@ -453,6 +453,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | | | 30 | suite files: the root configs are ignibyte/aic-gates' stubs, composer.json's suite lines as shipped |
 | | | 31 | make scaffold: `modules/scaffold/` is what the make lines make |
 | | | 32 | module markup: no HTML anywhere under `modules/` |
+| | | 33 | app scaffolds: each kind passes a census and, made in a copy, the module-code gates |
 
 - The gate code is the dev-only package `ignibyte/aic-gates` in `gates/` (#116; namespace `Gates\`,
   outside `AIC\` and `App\`), required by path like `ignibyte/aic-workflow`; a phpat rule keeps runtime
