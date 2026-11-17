@@ -60,4 +60,26 @@ interface ColumnTypes
      * @return ColumnType True or false.
      */
     public function boolean(): ColumnType;
+
+    /**
+     * @return ColumnType A UUID (#307).
+     */
+    public function uuid(): ColumnType;
+
+    /**
+     * @return ColumnType A UUID key the database generates for each row that names none (#307).
+     */
+    public function uuidKey(): ColumnType;
+
+    /**
+     * @return ColumnType A JSON document, stored parsed (#307).
+     */
+    public function jsonb(): ColumnType;
+
+    /**
+     * @param list<string> $choices The values it may hold, each 1 to 63 letters, digits, `_`, `.`, `:` or `-`.
+     *
+     * @return ColumnType Text that is one of them, checked by the database (#307).
+     */
+    public function choice(array $choices): ColumnType;
 }

@@ -167,7 +167,7 @@ operator's `workflow:answer`, the stall rule, the shell's read forms, the php wa
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
 layout (#157), entity (#123), policy (#304) and client (#305); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the fourteen make lines (`make:client`, #305).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the fifteen make lines (a uuid entity, #307).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
@@ -181,6 +181,9 @@ a route under a protected prefix must say what it needs. gate:31 now runs 13 mak
 #305: `AIC\HttpClient`: `CurlClient` (PSR-18 over ext-curl), `CurlPool` (`curl_multi`), `RetryingClient` (explicit),
 upstreams in `AppConfig::$upstreams`, roots through `outbound()` (console) and `roots()->outbound()` (web), the profiler's
 Outbound tab, `make:client`; curl is in the native pins; gate:23 serves a stub upstream. gate:31 runs 14 make lines.
+#307: entity uuid keys (`keyType: FieldType::Uuid`, `insertUuid()`), field types `Uuid`, `Json`, `Choice`, `Timestamp`
+checked as strings by `FieldFormats`, `Row::dateTime()`, Schema `types()->uuid()|uuidKey()|jsonb()|choice()` with
+`TableBuilder::column()`, `make:entity --key=uuid`; gate:31 runs 15 make lines.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted

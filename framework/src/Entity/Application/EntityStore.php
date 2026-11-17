@@ -8,6 +8,8 @@ use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
 use AIC\Entity\Domain\EntityType;
+use AIC\Entity\Domain\FieldFormats;
+use AIC\Entity\Domain\FieldType;
 use Closure;
 use InvalidArgumentException;
 use Throwable;
@@ -51,7 +53,8 @@ final readonly class EntityStore
      * @param EntityType                          $entityType The entity type.
      * @param array<string, string|int|bool|null> $values     The writable fields' values.
      *
-     * @throws InvalidArgumentException When a value names a field that is not writable, or does not fit it.
+     * @throws InvalidArgumentException When the type is keyed by uuid, or a value names a field that is not writable,
+     *                                  or does not fit it.
      * @throws QueryException           When the insert fails.
      *
      * @return int The new row's key.
@@ -60,9 +63,32 @@ final readonly class EntityStore
      */
     public function insert(EntityType $entityType, array $values): int
     {
+        self::keyedBy($entityType, FieldType::Integer, 'insertUuid()');
         $entityValues = new EntityValues($entityType, $values);
 
         return $this->database->fetchOne($this->insertSql($entityType, $entityValues, ''), $entityValues->params())->int($entityType->key);
+    }
+
+    /**
+     * @param EntityType                          $entityType A uuid-keyed entity type (#307).
+     * @param array<string, string|int|bool|null> $values     The writable fields' values.
+     *
+     * @throws InvalidArgumentException When the type is keyed by an integer, or a value names a field that is not
+     *                                  writable, or does not fit it.
+     * @throws QueryException           When the insert fails.
+     *
+     * @return string The new row's key, the uuid the database made.
+     *
+     * @psalm-taint-sink client_upload $values
+     */
+    public function insertUuid(EntityType $entityType, array $values): string
+    {
+        self::keyedBy($entityType, FieldType::Uuid, 'insert()');
+        $entityValues = new EntityValues($entityType, $values);
+
+        $sql = $this->insertSql($entityType, $entityValues, '');
+
+        return $this->database->fetchOne($sql, $entityValues->params())->string($entityType->key);
     }
 
     /**
@@ -77,6 +103,7 @@ final readonly class EntityStore
      */
     public function insertIfAbsent(EntityType $entityType, array $values, string $unique): ?int
     {
+        self::keyedBy($entityType, FieldType::Integer, 'upsert()');
         $entityValues = new EntityValues($entityType, $values);
         $sql = $this->insertSql($entityType, $entityValues, ' ON CONFLICT (' . self::unique($entityValues, $unique) . ') DO NOTHING');
         $row = $this->database->fetchAll($sql, $entityValues->params())->first();
@@ -115,17 +142,20 @@ final readonly class EntityStore
 
     /**
      * @param EntityType                          $entityType The entity type.
-     * @param int                                 $key        The row's key.
+     * @param int|string                          $key        The row's key: an int, or a uuid for a uuid-keyed type (#307).
      * @param array<string, string|int|bool|null> $values     The writable fields to change.
      *
-     * @throws InvalidArgumentException When there is nothing to change, or a value does not fit its field.
+     * @throws InvalidArgumentException When the key is not of the type's key type, there is nothing to change, or a
+     *                                  value does not fit its field.
      * @throws EntityNotFoundException  When no row has the key.
      * @throws QueryException           When the update fails.
      *
      * @psalm-taint-sink client_upload $values
      */
-    public function update(EntityType $entityType, int $key, array $values): void
+    public function update(EntityType $entityType, int|string $key, array $values): void
     {
+        self::checkKey($entityType, $key);
+
         if ($this->query($entityType)->where($entityType->key, $key)->changes()->update($values) === 0) {
             throw new EntityNotFoundException('No ' . $entityType->table . ' row has that key.');
         }
@@ -133,16 +163,16 @@ final readonly class EntityStore
 
     /**
      * @param EntityType $entityType The entity type.
-     * @param int        $key        The row's key.
+     * @param int|string $key        The row's key: an int, or a uuid for a uuid-keyed type (#307).
      *
-     * @throws EntityNotFoundException When no row has the key.
+     * @throws EntityNotFoundException When no row has the key, or it is not of the type's key type.
      * @throws QueryException          When the delete fails.
      */
-    public function delete(EntityType $entityType, int $key): void
+    public function delete(EntityType $entityType, int|string $key): void
     {
         $sql = 'DELETE FROM ' . $entityType->table . ' WHERE ' . $entityType->key . ' = ?';
 
-        if ($this->database->execute($sql, [$key]) === 0) {
+        if (!(new FieldFormats())->key($entityType->keyType, $key) || $this->database->execute($sql, [$key]) === 0) {
             throw new EntityNotFoundException('No ' . $entityType->table . ' row has that key.');
         }
     }
@@ -210,5 +240,32 @@ final readonly class EntityStore
     private static function marks(int $count, string $mark): array
     {
         return array_fill(0, $count, $mark);
+    }
+
+    /**
+     * @param EntityType $entityType The entity type.
+     * @param FieldType  $fieldType  The key type the method writes.
+     * @param string     $instead    The method for the other key type.
+     *
+     * @throws InvalidArgumentException When the entity type is keyed otherwise.
+     */
+    private static function keyedBy(EntityType $entityType, FieldType $fieldType, string $instead): void
+    {
+        if ($entityType->keyType !== $fieldType) {
+            throw new InvalidArgumentException('The ' . $entityType->table . ' entity is keyed otherwise: write it with ' . $instead . '.');
+        }
+    }
+
+    /**
+     * @param EntityType $entityType The entity type.
+     * @param int|string $key        A key for it.
+     *
+     * @throws InvalidArgumentException When the key is not of the type's key type.
+     */
+    private static function checkKey(EntityType $entityType, int|string $key): void
+    {
+        if (!(new FieldFormats())->key($entityType->keyType, $key)) {
+            throw new InvalidArgumentException('That is not a key of the ' . $entityType->table . ' entity.');
+        }
     }
 }

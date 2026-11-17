@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace AIC\Database\Contracts;
 
+use DateTimeImmutable;
+use Throwable;
+
 use function array_key_exists;
 use function is_bool;
 use function is_int;
 use function is_string;
+use function preg_match;
 
 /**
  * One result row, its values narrowed to scalars or null when it was read. A
  * `date` reads as a `YYYY-MM-DD` string and a `numeric` as its decimal string,
- * under PHP and natively alike.
+ * under PHP and natively alike; a `timestamptz` reads as its text, or through
+ * `dateTime()` as a `DateTimeImmutable` (#307).
  */
 final readonly class Row
 {
@@ -118,5 +123,52 @@ final readonly class Row
         return $this->values[$column] === null
             ? null
             : $this->int($column);
+    }
+
+    /**
+     * @param string $column A `timestamptz` column's name.
+     *
+     * @throws QueryException When the column is missing, null or not a point in time.
+     *
+     * @return DateTimeImmutable Its value, in the offset the database gave (#307), as the compiled site reads it too
+     *                           while the session's zone is UTC, Postgres's default.
+     */
+    public function dateTime(string $column): DateTimeImmutable
+    {
+        return $this->dateTimeOrNull($column) ?? throw new QueryException('The row has no point in time in column ' . $column . '.');
+    }
+
+    /**
+     * @param string $column A nullable `timestamptz` column's name.
+     *
+     * @throws QueryException When the column is missing, or holds text that is not a point in time.
+     *
+     * @return DateTimeImmutable|null Its value; null when it is null.
+     */
+    public function dateTimeOrNull(string $column): ?DateTimeImmutable
+    {
+        $text = $this->stringOrNull($column);
+
+        if ($text === null) {
+            return null;
+        }
+
+        try {
+            return new DateTimeImmutable(self::fullOffset($text));
+        } catch (Throwable $throwable) {
+            throw new QueryException("The row's column " . $column . ' is not a point in time.', 0, $throwable);
+        }
+    }
+
+    /**
+     * @param string $text A timestamptz as Postgres writes it, `2026-11-17 08:30:00+00`.
+     *
+     * @return string It with a whole-hour offset written out, `+00:00`, the form the compiled site parses.
+     */
+    private static function fullOffset(string $text): string
+    {
+        return preg_match('/[+-]\\d{2}$/', $text) === 1
+            ? $text . ':00'
+            : $text;
     }
 }

@@ -17,6 +17,8 @@ use App\Note\Command\StockSample;
 use App\Note\Controller\NoteCreatePost;
 use App\Note\Controller\NoteDeletePost;
 use App\Note\Controller\NoteListPage;
+use App\Note\Controller\NoteMarkListPage;
+use App\Note\Controller\NoteMarkRoundTripApi;
 use App\Note\Controller\NoteShowPage;
 use App\Note\Controller\NoteTagPost;
 use App\Note\Controller\NoteTagsPage;
@@ -29,6 +31,7 @@ use App\Note\Controller\StockXml;
 use App\Note\Migration\AddStockCost;
 use App\Note\Migration\AddStockQuantity;
 use App\Note\Migration\ConvertStockCost;
+use App\Note\Migration\CreateNoteMarksTable;
 use App\Note\Migration\CreateNotesTable;
 use App\Note\Migration\CreateNoteTagsTable;
 use App\Note\Migration\CreateStockDaysView;
@@ -60,4 +63,7 @@ return (new ModuleManifest('note'))
     ->migration(ConvertStockCost::class)
     ->migration(AddStockQuantity::class)
     ->migration(CreateStockDaysView::class)
-    ->permission('notes.delete-pinned', 'Delete a pinned note, one whose title starts with "Pinned:".');
+    ->permission('notes.delete-pinned', 'Delete a pinned note, one whose title starts with "Pinned:".')
+    ->route(RouteMethod::Get, '/note-marks', NoteMarkListPage::class)
+    ->migration(CreateNoteMarksTable::class)
+    ->route(RouteMethod::Get, '/note-marks/round-trip', NoteMarkRoundTripApi::class);

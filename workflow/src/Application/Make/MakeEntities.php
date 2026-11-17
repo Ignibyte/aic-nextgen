@@ -74,6 +74,7 @@ final readonly class MakeEntities
             $entityPlan->version,
             $columns,
             'make:entity (#123) for ' . $entityPlan->class,
+            $entityPlan->uuidKey ? "->column('id', \$schema->types()->uuidKey())" : "->identity('id')",
         );
     }
 }

@@ -8,6 +8,7 @@ use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
+use App\Scaffold\Controller\ScaffoldEventListPage;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPost;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
@@ -32,6 +33,7 @@ final readonly class ScaffoldRoutes
             ->get('/scaffold/about', ScaffoldAboutPage::class)
             ->post('/scaffold', ScaffoldPost::class)
             ->get('/api/scaffold', ScaffoldApi::class)
-            ->get('/scaffold-tasks', ScaffoldTaskListPage::class);
+            ->get('/scaffold-tasks', ScaffoldTaskListPage::class)
+            ->get('/scaffold-events', ScaffoldEventListPage::class);
     }
 }

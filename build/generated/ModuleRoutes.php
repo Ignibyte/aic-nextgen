@@ -26,6 +26,7 @@ final readonly class ModuleRoutes
         $routeCollector = (new SiteRoutesPart2())->add($routeCollector);
         $routeCollector = (new AccountRoutes())->add($routeCollector);
         $routeCollector = (new NoteRoutes())->add($routeCollector);
+        $routeCollector = (new NoteRoutesPart2())->add($routeCollector);
 
         return (new ScaffoldRoutes())->add($routeCollector);
     }

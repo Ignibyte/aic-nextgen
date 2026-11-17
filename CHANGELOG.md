@@ -6,6 +6,16 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Entity keys and field types: uuid, json, choice and timestamps** (#307). An `EntityType` may be
+  keyed by uuid (`keyType: FieldType::Uuid`, `EntityStore::insertUuid()`, `update`/`delete` by
+  `int|string`), and fields gain `Uuid`, `Json`, `Choice` (a closed list, checked by the database)
+  and `Timestamp`. Values stay strings, checked by type in `AIC\Entity\Domain\FieldFormats`;
+  `Row::dateTime()` reads a timestamp as a `DateTimeImmutable`. Schema gains `types()->uuid()`,
+  `uuidKey()`, `jsonb()` and `choice(list)`, added with `TableBuilder::column()`. `make:entity` takes
+  `--key=uuid` and the types `uuid`, `json`, `timestamp` and `choice(a|b)`. **Stricter for apps:**
+  a `Date` value must be `YYYY-MM-DD` and a `Numeric` a plain decimal; `delete()` on a key of the
+  wrong type answers not found.
+
 - **Outbound HTTP: a PSR-18 client over curl, with a pool** (#305). `AIC\HttpClient`:
   `CurlClient` sends one request, `CurlPool` many at once over `curl_multi` (named requests, a time
   limit each, one failure leaving the rest), and `RetryingClient` retries a network failure or a

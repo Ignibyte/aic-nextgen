@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Schema\Application;
 
+use AIC\Schema\Contracts\ColumnType;
 use AIC\Schema\Contracts\ColumnTypes;
 use AIC\Schema\Contracts\OnDelete;
 use AIC\Schema\Contracts\TableBuilder;
@@ -167,6 +168,22 @@ final readonly class TableDraft implements TableBuilder
     public function boolean(string $name): self
     {
         $this->tableParts->add(new Column(new Identifier($name), $this->columnTypes->boolean(), false));
+
+        return $this;
+    }
+
+    /**
+     * @param string     $name       The column.
+     * @param ColumnType $columnType Its type, from `Schema::types()` (#307).
+     *
+     * @throws InvalidArgumentException When the name is not an identifier.
+     *
+     * @return self The builder.
+     */
+    #[Override]
+    public function column(string $name, ColumnType $columnType): self
+    {
+        $this->tableParts->add(new Column(new Identifier($name), $columnType, false));
 
         return $this;
     }

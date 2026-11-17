@@ -29,7 +29,7 @@ final readonly class {class} implements Migration
     public function describe(Schema $schema): void
     {
         $schema->create('{table}')
-            ->identity('id'){columns}
+            {key}{columns}
             ->timestampTz('created_at')
             ->primary(['id']);
     }

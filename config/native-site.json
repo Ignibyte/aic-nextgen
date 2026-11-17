@@ -60,6 +60,33 @@
             "captures": false
         },
         {
+            "name": "note marks, a uuid-keyed entity written, read, changed and deleted",
+            "method": "GET",
+            "path": "/note-marks/round-trip",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "note marks, the list",
+            "method": "GET",
+            "path": "/note-marks",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "scaffold events, the uuid entity's list",
+            "method": "GET",
+            "path": "/scaffold-events",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "download",
             "method": "GET",
             "path": "/download/hello.txt",

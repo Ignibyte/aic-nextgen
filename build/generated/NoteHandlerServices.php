@@ -9,6 +9,7 @@ use AIC\Module\Application\HandlerContext;
 use App\Note\Entity\NoteTypes;
 use App\Note\Form\NoteEnvelope;
 use App\Note\Form\NoteForms;
+use App\Note\Repository\NoteMarkRepository;
 use App\Note\Repository\NoteRepository;
 use App\Note\Repository\NoteTagRepository;
 use App\Note\Repository\StockRepository;
@@ -64,5 +65,13 @@ final readonly class NoteHandlerServices
     public function noteTagRepository(): NoteTagRepository
     {
         return new NoteTagRepository(new EntityStore($this->handlerContext->database()), new NoteTypes());
+    }
+
+    /**
+     * @return NoteMarkRepository A new one, for the part that asked.
+     */
+    public function noteMarkRepository(): NoteMarkRepository
+    {
+        return new NoteMarkRepository(new EntityStore($this->handlerContext->database()));
     }
 }

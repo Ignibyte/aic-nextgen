@@ -7,6 +7,7 @@ namespace AIC\Workflow\Application\Make;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
+use AIC\Workflow\Application\Console\ConsoleArguments;
 use AIC\Workflow\Domain\Console\CommandUsage;
 use AIC\Workflow\Domain\Console\ParsedArguments;
 use AIC\Workflow\Domain\Make\EntityPlan;
@@ -54,9 +55,9 @@ final readonly class MakeEntityCommand implements Command
             $commandInput,
             new CommandUsage(
                 'make:entity',
-                'make:entity <module> <Class> <table> --fields=<name>:<type>,… [--version=<v>] [--dry-run] [--json]',
+                'make:entity <module> <Class> <table> --fields=<name>:<type>,… [--key=uuid] [--version=<v>] [--dry-run] [--json]',
                 ['dry-run'],
-                ['fields', 'version'],
+                ['fields', 'key', 'version'],
                 3,
             ),
             $this->recipe(...),
@@ -76,7 +77,7 @@ final readonly class MakeEntityCommand implements Command
         [$module, $namespace, $class] = $this->makeNames->target('', $parsedArguments);
         $table = $this->makeNames->word($parsedArguments->positional(2), 'table');
         $version = $this->makeVersions->version($parsedArguments, 'create_' . $table . '_table');
-        $entityPlan = new EntityPlan($module, $namespace, $class, $table, $version, $fields);
+        $entityPlan = new EntityPlan($module, $namespace, $class, $table, $version, $fields, $this->uuidKey($parsedArguments));
         $path = $this->makeNames->path($entityPlan->path());
         $manifestCall = $this->makeCalls->both(
             $this->makeCalls->route('Get', $path, $class . 'ListPage', $namespace),
@@ -84,5 +85,23 @@ final readonly class MakeEntityCommand implements Command
         );
 
         return new MakeRecipe($module, $class, $this->makeEntities->files($entityPlan), $manifestCall, ['route GET ' . $path], true);
+    }
+
+    /**
+     * @param ParsedArguments $parsedArguments The line.
+     *
+     * @throws WorkflowRefusal When `--key` names anything but uuid.
+     *
+     * @return bool Whether `--key=uuid` keys the entity by a uuid the database makes (#307); without it, an identity.
+     */
+    private function uuidKey(ParsedArguments $parsedArguments): bool
+    {
+        $key = $parsedArguments->flag('key');
+
+        if ($key !== '' && $key !== 'uuid') {
+            throw new WorkflowRefusal('--key takes uuid, or nothing for an identity key.', ConsoleArguments::USAGE);
+        }
+
+        return $key === 'uuid';
     }
 }
