@@ -1,0 +1,31 @@
+---
+ticket: 1
+browser_testable: No
+---
+
+## Acceptance Criteria
+
+| # | Target | Met |
+|---|---|---|
+| 1 | The site module polls a ticker every five minutes | [ ] |
+
+## Design
+
+`bin/aic make poller site Ticker` writes the job and its service and adds the job and its schedule to the manifest.
+
+### File Manifest
+
+| File | Change | Purpose |
+|---|---|---|
+| `modules/site/src/Job/TickerPoll.php` | create | The job |
+| `modules/site/src/Service/TickerPoller.php` | create | The service it asks |
+| `modules/site/site.module.php` | modify | The job and its schedule |
+
+### Locked-In Decisions
+
+1. The poller scaffold makes both classes.
+
+## Entry Points
+
+| Kind | Method | Path or name | Class | Module | Status | Example |
+|---|---|---|---|---|---|---|

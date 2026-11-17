@@ -582,7 +582,7 @@
       }
     },
     "code.made": {
-      "description": "A bin/aic make:* command or bin/aic make <kind> (#298) wrote files while a run was open (#122): the make, what it made, the phase, and each file it wrote with the hash of its bytes, the manifest last.",
+      "description": "A bin/aic make:* command or bin/aic make <kind> (#298) wrote files while a run was open (#122): the make, what it made, the phase, its kind and scaffold, and each file it wrote with the hash of its bytes and whether it created it, the manifest last. Each created file is also a row of .aic/made.jsonl (#302).",
       "type": "object",
       "required": [
         "command",
@@ -634,9 +634,22 @@
               "hash": {
                 "type": "string",
                 "pattern": "^xxh128:[0-9a-f]{32}$"
+              },
+              "created": {
+                "type": "boolean",
+                "description": "Whether the make created it, so the made ledger has its row (#302); false for an edited manifest."
               }
             }
           }
+        },
+        "kind": {
+          "type": "string",
+          "description": "The kind that made it (#302): a built-in's name, an app kind's, or scaffold for make:scaffold."
+        },
+        "scaffold": {
+          "type": "string",
+          "pattern": "^(sha256:[0-9a-f]{64})?$",
+          "description": "The sha256 over the kind's scaffold folder (#302); empty when the kind has none."
         }
       }
     },

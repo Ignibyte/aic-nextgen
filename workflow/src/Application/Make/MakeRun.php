@@ -103,7 +103,7 @@ final readonly class MakeRun
         $nudges = $this->makeScope->check($commandUsage->name, $paths);
         $this->write($files);
         $note = $this->makeScope->watched()
-            ? $this->makeRecorder->record($commandUsage->name, $makeRecipe->target, $files)
+            ? $this->makeRecorder->record($commandUsage->name, $parsedArguments, $makeRecipe, $files)
             : '';
 
         return $this->makeReport->made($commandUsage, $makeRecipe, $files, [...$nudges, ...($note === '' ? [] : [$note])], false, $json);

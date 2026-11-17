@@ -30,7 +30,8 @@ final readonly class DeclarationCheck implements PhaseCheck
 {
     /**
      * What `composer run build` writes, exactly (#167: its two manifests and its two folders under `build/`, and the
-     * wiki), and the engine's state; any other file under `build/` is declared like a source.
+     * wiki), the engine's state and the made ledger, which the `made` row holds (#302); any other file under `build/` is
+     * declared like a source.
      */
     private const array EXEMPT = [
         'build/assets.json',
@@ -39,6 +40,7 @@ final readonly class DeclarationCheck implements PhaseCheck
         'build/assets/',
         'var/workflow/',
         'docs/wiki/',
+        '.aic/made.jsonl',
     ];
 
     /**

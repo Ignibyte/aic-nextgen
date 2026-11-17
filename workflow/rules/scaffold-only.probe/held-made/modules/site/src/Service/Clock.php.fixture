@@ -1,0 +1,12 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Site\Service;
+
+/**
+ * Made by a scaffold.
+ */
+final readonly class Clock
+{
+}

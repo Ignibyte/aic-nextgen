@@ -175,6 +175,8 @@ listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaf
 there with a manifest is one of AIC's own kinds (promotion is a folder copy), and an app kind of the same name is refused.
 #299: `bin/aic make:scaffold <kind> --from=<kind>` only after the operator answers `scaffold <kind>`; the guard walls
 `scaffolds/` but approved folders, and the `scaffolds` row holds a change against `var/workflow/scaffolds.json`.
+#302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
+the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
 cases (`workflow/probes/sweep/`) in throwaway apps made by `workflow/probes/scratch-app.sh`, the
 builder the seeker probe shares; it ends `probe-summary: P passed, F failed, N not run.`, exits 0

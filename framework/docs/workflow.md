@@ -91,7 +91,8 @@ Tessera name counts in an app's PHP and template files and its theme's scripts, 
 script API in those scripts alone (#271), and the report shows the ones AIC itself renders. A
 comment is no use, and nothing in `config/coverage.php`, where an app may keep a catalog that names
 every surface, counts: no name, class or call in it (#273). It is a report: exit 0 whatever is unused. `--missing` lists only the unused, `--json`
-answers the `aic.console/1` envelope.
+answers the `aic.console/1` envelope. `--made` (#302) reports instead, per module and theme, the
+files there, how many a scaffold made and how many of those still hold the bytes it wrote.
 
 Make commands create authored files and edit the owning manifest through the same guard. They
 record what was made. Declare the exact resulting paths in the open run first, run the build and
@@ -108,6 +109,13 @@ operator may approve one (`workflow:answer "scaffold <kind>"`), and only then do
 `make:scaffold <kind> --from=<kind>` write it; the guard walls `scaffolds/` otherwise, and the
 `scaffolds` row holds a change made without approval (#299). The workflow package's README
 states the grammar and every check.
+
+What a make creates while a run is open is recorded twice (#302): the `code.made` event, and a row
+per created file in `.aic/made.jsonl`, which is committed with the change: its path, kind, the
+hash of the kind's scaffold folder, the hash of the bytes written and the run. Only the engine
+writes the ledger; the guard walls `.aic/`, and the `made` row at code, check and complete holds a
+ledger that is not its base followed by this run's rows. An app that wants every new class and
+template to come from a scaffold names the shipped house rule `scaffold-only`.
 
 ## Command inventory
 

@@ -9,7 +9,6 @@ use AIC\Workflow\Application\CriteriaCheck;
 use AIC\Workflow\Application\DeclarationCheck;
 use AIC\Workflow\Application\FreezeCheck;
 use AIC\Workflow\Application\PhaseCheck;
-use AIC\Workflow\Application\Scaffold\ScaffoldFreezeCheck;
 use AIC\Workflow\Application\SeekerCheck;
 use AIC\Workflow\Application\SpecFreeze;
 use AIC\Workflow\Application\UtcTime;
@@ -83,7 +82,7 @@ final readonly class WorkflowChecks
             new DeclarationCheck($phase, $parts->runHost(), $specFile, $parts->evidenceRecorder(), $parts->runSubject()),
             $this->composition($phase),
             ...$this->ruleParts->exit($phase),
-            new ScaffoldFreezeCheck($phase, new LocalScaffoldLock($this->root), $parts->evidenceRecorder(), $parts->runSubject()),
+            ...(new ScaffoldParts($this->root, $parts))->exit($phase),
         ];
 
         return $phase === Phase::Code

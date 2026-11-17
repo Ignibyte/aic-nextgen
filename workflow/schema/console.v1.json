@@ -1023,6 +1023,62 @@
         }
       }
     },
+    "code:coverage:made": {
+      "description": "code:coverage --made (#302): per module and theme area, the files git lists, how many a scaffold made (a row in .aic/made.jsonl) and how many of those still hold the bytes it wrote; then the totals.",
+      "type": "object",
+      "required": [
+        "areas",
+        "files",
+        "made",
+        "unchanged"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "areas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "area",
+              "files",
+              "made",
+              "unchanged"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "area": {
+                "type": "string",
+                "pattern": "^(module|theme):"
+              },
+              "files": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "made": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "unchanged": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "made": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unchanged": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
     "answer:code:coverage": {
       "type": "object",
       "required": [
@@ -1038,7 +1094,14 @@
           ]
         },
         "data": {
-          "$ref": "#/$defs/code:coverage"
+          "oneOf": [
+            {
+              "$ref": "#/$defs/code:coverage"
+            },
+            {
+              "$ref": "#/$defs/code:coverage:made"
+            }
+          ]
         },
         "notes": {
           "type": "array",
