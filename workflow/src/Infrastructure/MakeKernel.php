@@ -10,16 +10,18 @@ use AIC\Workflow\Application\Make\MakeBlockCommand;
 use AIC\Workflow\Application\Make\MakeCommandCommand;
 use AIC\Workflow\Application\Make\MakeJobCommand;
 use AIC\Workflow\Application\Make\MakeModuleCommand;
+use AIC\Workflow\Application\Make\MakePolicyCommand;
 use AIC\Workflow\Application\Make\ModuleFolders;
 use AIC\Workflow\Application\ProjectFiles;
 
 /**
  * The make commands (#122), dev-only like the rest of the workflow:
  * `make:module`, `make:page`, `make:api`, `make:component`, `make:block`,
- * `make:command`, `make:job`, `make:migration`, `make:theme`, `make:layout` and `make:entity`, each writing files that
- * pass every gate and editing its module's manifest, then `make <kind>` and `make:catalog` for the app's own
- * scaffolds (#298). `CodeKernel` merges them;
- * gate:31 builds them over its in-memory files.
+ * `make:command`, `make:job`, `make:migration`, `make:theme`, `make:layout`,
+ * `make:entity` and `make:policy` (#304), each writing files that pass every
+ * gate and editing its module's manifest, then `make <kind>` and
+ * `make:catalog` for the app's own scaffolds (#298). `CodeKernel` merges
+ * them; gate:31 builds them over its in-memory files.
  */
 final readonly class MakeKernel
 {
@@ -63,6 +65,7 @@ final readonly class MakeKernel
             'make:layout' => $themeMakes->layout($makeRun),
             'make:module' => new MakeModuleCommand($makeRun, $moduleFolders),
             'make:page' => $themeMakes->page($makeRun),
+            'make:policy' => new MakePolicyCommand($makeRun, $projectFiles),
             'make:theme' => $themeMakes->theme($makeRun),
             ...$makeParts->migrations($makeRun),
             ...(new ScaffoldMakes($this->root, $projectFiles, $moduleFolders))->commands($makeRun),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Access\Application\AccessGates;
 use AIC\Config\Domain\AppConfig;
 use AIC\Container\Exception\ContainerException;
 use AIC\Controller\Application\PageDocuments;
@@ -43,33 +44,42 @@ final readonly class HandlerContext
     }
 
     /**
-     * @param Page $page A Page controller.
+     * @param Page   $page A Page controller.
+     * @param string $need The permission its route needs (#304), `signed-in`, or empty for none.
      *
-     * @return RequestHandlerInterface It, as a PSR-15 handler.
+     * @return RequestHandlerInterface It, as a PSR-15 handler, behind its need.
      */
-    public function page(Page $page): RequestHandlerInterface
+    public function page(Page $page, string $need = ''): RequestHandlerInterface
     {
-        return $this->httpHandlers->page($page);
+        $accessGates = new AccessGates($this->webRoots->database, $this->webRoots->responseBuilder);
+
+        return $accessGates->gate($need, $this->httpHandlers->page($page));
     }
 
     /**
-     * @param Api $api An Api controller.
+     * @param Api    $api  An Api controller.
+     * @param string $need The permission its route needs (#304), `signed-in`, or empty for none.
      *
-     * @return RequestHandlerInterface It, as a PSR-15 handler.
+     * @return RequestHandlerInterface It, as a PSR-15 handler, behind its need.
      */
-    public function api(Api $api): RequestHandlerInterface
+    public function api(Api $api, string $need = ''): RequestHandlerInterface
     {
-        return $this->httpHandlers->api($api);
+        $accessGates = new AccessGates($this->webRoots->database, $this->webRoots->responseBuilder);
+
+        return $accessGates->gate($need, $this->httpHandlers->api($api));
     }
 
     /**
      * @param Stream $stream A Stream controller.
+     * @param string $need   The permission its route needs (#304), `signed-in`, or empty for none.
      *
-     * @return RequestHandlerInterface It, as a PSR-15 handler.
+     * @return RequestHandlerInterface It, as a PSR-15 handler, behind its need.
      */
-    public function stream(Stream $stream): RequestHandlerInterface
+    public function stream(Stream $stream, string $need = ''): RequestHandlerInterface
     {
-        return $this->httpHandlers->stream($stream);
+        $accessGates = new AccessGates($this->webRoots->database, $this->webRoots->responseBuilder);
+
+        return $accessGates->gate($need, $this->httpHandlers->stream($stream));
     }
 
     /**

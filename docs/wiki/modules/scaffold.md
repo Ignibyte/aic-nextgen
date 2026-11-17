@@ -107,6 +107,12 @@ none
 | `App\Scaffold\Migration\CreateScaffoldItemsTable` | [modules/scaffold/src/Migration/CreateScaffoldItemsTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldItemsTable.php) |
 | `App\Scaffold\Migration\CreateScaffoldTasksTable` | [modules/scaffold/src/Migration/CreateScaffoldTasksTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldTasksTable.php) |
 
+### `src/Policy/`
+
+| Class | File |
+| --- | --- |
+| `App\Scaffold\Policy\ScaffoldTaskPolicy` | [modules/scaffold/src/Policy/ScaffoldTaskPolicy.php](../../../modules/scaffold/src/Policy/ScaffoldTaskPolicy.php) |
+
 ### `src/Repository/`
 
 | Class | File |
@@ -123,6 +129,7 @@ none
 
 ### Framework systems
 
+- [AIC\Access](../../../framework/docs/systems.md#9-auth)
 - [AIC\Block](../../../framework/docs/systems.md#6-blocks)
 - [AIC\Component](../../../framework/docs/systems.md#4-components)
 - [AIC\Controller](../../../framework/docs/systems.md#1-http-routing-and-the-kinds)

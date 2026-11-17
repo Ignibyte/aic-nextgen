@@ -8,6 +8,7 @@ use AIC\Module\Contracts\Binding;
 use AIC\Module\Contracts\ModuleCommand;
 use AIC\Module\Contracts\ModuleJob;
 use AIC\Module\Contracts\ModuleMiddleware;
+use AIC\Module\Contracts\ModulePermission;
 use AIC\Module\Contracts\ModuleSchedule;
 use AIC\Module\Contracts\ModuleSection;
 use AIC\Module\Contracts\PluginTag;
@@ -39,6 +40,7 @@ final readonly class SurfaceModuleRows
             'migrations' => $moduleDefinition->entries(ModuleSection::Migrations),
             'name' => $moduleDefinition->name,
             'namespace' => $moduleDefinition->namespace,
+            'permissions' => self::permissions($moduleDefinition),
             'plugins' => self::plugins($moduleDefinition),
             'prefixes' => $moduleDefinition->entries(ModuleSection::ProtectedPrefixes),
             'requires' => $moduleDefinition->entries(ModuleSection::Requires),
@@ -68,6 +70,22 @@ final readonly class SurfaceModuleRows
                 $moduleDefinition->declared(ModuleSchedule::class),
             )),
         ];
+    }
+
+    /**
+     * @param ModuleDefinition $moduleDefinition A module.
+     *
+     * @return list<array<string, string>> Each permission it declares (#304), with what it allows.
+     */
+    private static function permissions(ModuleDefinition $moduleDefinition): array
+    {
+        return array_map(
+            static fn (ModulePermission $modulePermission): array => [
+                'description' => $modulePermission->description,
+                'name' => $modulePermission->name,
+            ],
+            $moduleDefinition->declared(ModulePermission::class),
+        );
     }
 
     /**

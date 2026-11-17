@@ -20,19 +20,32 @@ use function sprintf;
 /**
  * The checks across modules (#93): a command, job or schedule name is the
  * app's, so no two modules, and no module and the framework, may share one;
- * a schedule queues a job that exists, on a cadence that parses.
+ * a schedule queues a job that exists, on a cadence that parses; and the
+ * access checks (#304).
  */
 final readonly class ModuleSetChecks
 {
     /**
      * The framework's own command names (`AIC\Module\Application\FrameworkCommands`).
      */
-    private const array FRAMEWORK_COMMANDS = ['migrate', 'migrate:status', 'queue:work', 'schedule:run'];
+    private const array FRAMEWORK_COMMANDS = [
+        'migrate', 'migrate:status', 'queue:failed', 'queue:retry', 'queue:work', 'role:assign', 'role:grant', 'role:revoke',
+        'role:unassign', 'schedule:run',
+    ];
+
+    /**
+     * @param AccessChecks $accessChecks The permissions and the routes' needs (#304).
+     */
+    public function __construct(
+        private AccessChecks $accessChecks = new AccessChecks(),
+    ) {
+    }
 
     /**
      * @param list<ModuleDefinition> $modules The modules.
      *
-     * @throws InvalidArgumentException When a name is taken twice, or a schedule names no job or an invalid cadence.
+     * @throws InvalidArgumentException When a name is taken twice, a schedule names no job or an invalid cadence, or an
+     *                                  access check refuses.
      */
     public function check(array $modules): void
     {
@@ -43,6 +56,8 @@ final readonly class ModuleSetChecks
         foreach ($modules as $module) {
             $this->checkSchedules($module, $jobs);
         }
+
+        $this->accessChecks->check($modules);
     }
 
     /**

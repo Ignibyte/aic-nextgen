@@ -86,4 +86,14 @@ final readonly class NoteViews
     {
         return $this->page([new Paragraph('Note not found.', 'not-found')], 404);
     }
+
+    /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
+     * @return PageDocument The 403 page for a pinned note the actor may not delete (#304).
+     */
+    public function forbidden(): PageDocument
+    {
+        return $this->page([new Paragraph('This note is pinned: deleting it needs notes.delete-pinned.', 'forbidden')], 403);
+    }
 }

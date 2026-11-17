@@ -110,15 +110,17 @@ final readonly class SurfaceManifest
      * @param list<Route>            $routes  The routes, as declared.
      * @param list<ModuleDefinition> $modules The modules, in build order.
      *
-     * @return list<array<string, string>> One row per route, with the module that declares it.
+     * @return list<array<string, string>> One row per route, with the module that declares it and what it needs (#304).
      */
     private function routes(array $routes, array $modules): array
     {
         $moduleOf = [];
+        $needs = [];
 
         foreach ($modules as $module) {
             foreach ($module->declared(ModuleRoute::class) as $moduleRoute) {
                 $moduleOf[$moduleRoute->handler] = $module->name;
+                $needs[$moduleRoute->handler] = $moduleRoute->needs;
             }
         }
 
@@ -127,6 +129,7 @@ final readonly class SurfaceManifest
             'kind' => $this->classKinds->entryKind($route->handler),
             'method' => $route->method->value,
             'module' => $moduleOf[$route->handler] ?? '',
+            'needs' => $needs[$route->handler] ?? '',
             'path' => $route->path,
         ], $routes);
     }

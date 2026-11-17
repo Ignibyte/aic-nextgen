@@ -1,8 +1,8 @@
 # Security
 
 The framework supplies session storage, a mandatory form guard, signed envelopes, redirect
-validation, upload checks and authentication. App code still decides which records a user may
-read or change. Use the normal request stack and typed Page/Api responses rather than bypassing
+validation, upload checks, authentication and authorization. App code still decides, through its
+policies, which records a user may read or change. Use the normal request stack and typed Page/Api responses rather than bypassing
 middleware. [systems.md](systems.md) maps the security namespaces; [tessera.md](tessera.md)
 describes enhanced requests.
 
@@ -134,7 +134,33 @@ exist (#177). `login()` answers an `AIC\Auth\Domain\SignedInUser` (the user's id
 hash) or null, so a sign-in reads the user once (#238). Password hashing uses Postgres pgcrypto bcrypt through
 `AIC\Auth\Application\PgcryptoPasswordHasher`. Declare protected route prefixes in the module
 manifest; anonymous visitors are redirected to sign-in with a validated same-origin next path.
-Authentication is separate from per-record permissions, which the app must enforce.
+Authentication is separate from authorization, below.
+
+## Authorization
+
+`AIC\Access` (#304) adds what a signed-in user may do. There is still no user entity: a user is
+the id the app's provider signed in.
+
+- **Permissions are code.** A module declares each, `->permission('notes.delete-pinned', 'Delete a
+  pinned note.')`: lower-case words in two or more parts joined by `.`, once across the app.
+- **Roles are data.** `aic_role_permissions` holds what each role grants and `aic_user_roles` what
+  each user holds. The operator changes them: `bin/aic role:grant|role:revoke <role> <permission>`
+  and `bin/aic role:assign|role:unassign <user> <role>`. A grant is not checked against the
+  declared names; `build/surface.json` lists each module's permissions.
+- **A route's need** (`->route(..., needs: 'notes.edit')`, or `needs: 'signed-in'`) is checked
+  before its controller: the generated wiring hands it to the kind's adapter, which wraps the
+  controller in `AIC\Access\Application\PermissionGate`. A user without it gets 403, plain text.
+  The build refuses an undeclared need, a handler whose routes need different things, and a route
+  under a protected prefix that says nothing (so a new page there cannot be left open by mistake).
+- **A record's decision** comes from the module's `AIC\Access\Contracts\Policy` for it, in
+  `src/Policy/`: each public method is an action, `delete(Actor $actor, Note $note): Decision`, or
+  `create(Actor $actor): Decision` before there is a record, and gate:8 holds every policy to that
+  shape. A controller takes the policy and
+  `AIC\Access\Application\Actors`, and asks before it writes:
+  `$this->notePolicy->delete($this->actors->actor($request), $note)->allows()`. `Actor::can()`
+  answers for one permission; nothing finds a policy at run time. `bin/aic make:policy <module>
+  <Entity>` writes one with a `create` action and declares the permission it asks; the agent adds
+  the record's actions. A policy is API for its controllers, so it carries `@api`.
 
 The typed secret config obtains the app secret from `AIC_APP_SECRET`; environment access belongs
 in `config/`. Supply a strong private secret per deployment, outside versioned files. Changing it

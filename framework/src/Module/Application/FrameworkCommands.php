@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Access\Application\RoleCommands;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
 use AIC\Database\Contracts\Database;
@@ -25,8 +26,9 @@ use AIC\Schema\Contracts\Migration;
 /**
  * The framework's own console commands (#6, #13, placed by #93): `migrate` and
  * `migrate:status` over every migration, `queue:work` over every job,
- * `queue:failed` and `queue:retry` over the failed ones (#208), and
- * `schedule:run` over every schedule.
+ * `queue:failed` and `queue:retry` over the failed ones (#208),
+ * `schedule:run` over every schedule, and `role:grant`, `role:revoke`,
+ * `role:assign` and `role:unassign` over the roles (#304).
  */
 final readonly class FrameworkCommands
 {
@@ -57,6 +59,7 @@ final readonly class FrameworkCommands
             'queue:retry' => new QueueRetryCommand($postgresQueue),
             'queue:work' => new QueueWorkCommand(new QueueWorker($postgresQueue, $jobs)),
             'schedule:run' => new ScheduleRunCommand(new Scheduler($this->database, $postgresQueue, $schedules)),
+            ...(new RoleCommands($this->database))->byName(),
         ];
     }
 }

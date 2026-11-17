@@ -14,7 +14,7 @@ app meets first.
 | 6. Blocks | Block |
 | 7. The browser runtime | Tessera |
 | 8. Form security | Form, Session, Secret |
-| 9. Auth | Auth |
+| 9. Auth | Auth, Access |
 | 10. Background work | Queue, Schedule, Notification |
 
 ## 1. HTTP, routing and the kinds
@@ -171,6 +171,11 @@ See [tessera.md](tessera.md) for markers, requests, replies and streams.
   `AIC\Auth\Contracts\UserProvider`, so there is no user entity in the framework; a sign-in hands
   back what the provider read as a `SignedInUser` (#238). A manifest's
   `protectedPrefix` turns an anonymous visitor away.
+- `AIC\Access`: what a signed-in user may do (#304). A module declares its permissions
+  (`->permission()`), a route says what it needs (`needs:`), and roles in Postgres
+  (`aic_role_permissions`, `aic_user_roles`, changed by `bin/aic role:*`) grant permissions to
+  users. `AIC\Access\Application\Actors` gives the request's `Actor`; a module's
+  `AIC\Access\Contracts\Policy` answers a `Decision` for one record, or before there is one.
 
 See [security.md](security.md) for sessions, form guards, uploads, auth and secret handling.
 

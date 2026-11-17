@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 /*
  * The account module's manifest (#126, from #93's auth and session): sign-in
- * and sign-out, the account page, the sign-in middleware guarding /account,
+ * and sign-out, the account page (any signed-in user) and its audit page
+ * (account.audit, #304), the sign-in middleware guarding /account,
  * the users table and user:add, the visit counter, and the uploads page with
  * its rules as a factory, which keeps an accepted upload in the app's public
  * and private files and sends the private copy (#213). The build reads it; nothing reads it at run
@@ -20,6 +21,7 @@ use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\RouteMethod;
 use App\Account\Command\UserAdd;
 use App\Account\Controller\AccountPage;
+use App\Account\Controller\AuditPage;
 use App\Account\Controller\LoginPage;
 use App\Account\Controller\LoginPost;
 use App\Account\Controller\LogoutPost;
@@ -39,7 +41,7 @@ return (new ModuleManifest('account'))
     ->route(RouteMethod::Get, '/login', LoginPage::class)
     ->route(RouteMethod::Post, '/login', LoginPost::class)
     ->route(RouteMethod::Post, '/logout', LogoutPost::class)
-    ->route(RouteMethod::Get, '/account', AccountPage::class)
+    ->route(RouteMethod::Get, '/account', AccountPage::class, needs: 'signed-in')
     ->route(RouteMethod::Get, '/visits', VisitsPage::class)
     ->route(RouteMethod::Post, '/visits/forget', VisitsForget::class)
     ->route(RouteMethod::Get, '/uploads', UploadsPage::class)
@@ -53,4 +55,6 @@ return (new ModuleManifest('account'))
     ->factory(UploadRules::class)
     ->command('user:add', UserAdd::class)
     ->migration(CreateUsersTable::class)
-    ->migration(AddUserIds::class);
+    ->migration(AddUserIds::class)
+    ->route(RouteMethod::Get, '/audit', AuditPage::class, needs: 'account.audit')
+    ->permission('account.audit', 'Read the account audit page.');

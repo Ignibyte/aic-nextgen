@@ -7,10 +7,13 @@ namespace App\Generated;
 use AIC\Container\Exception\ContainerException;
 use AIC\Form\Application\PostedFields;
 use AIC\Module\Application\HandlerContext;
-use App\Note\Controller\NoteTagPost;
-use App\Note\Controller\NoteTagsPage;
-use App\Note\Service\NoteTagForms;
-use App\Note\Service\NoteViews;
+use AIC\Tessera\Application\TesseraProps;
+use App\Note\Controller\StockPage;
+use App\Note\Controller\StockPost;
+use App\Note\Form\StockForm;
+use App\Note\Form\StockQueries;
+use App\Note\Service\StockList;
+use App\Note\Service\StockListLinks;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -29,29 +32,28 @@ final readonly class NoteHandlersPart4
     }
 
     /**
-     * @throws InvalidArgumentException When a called constructor or service fails.
      * @throws ContainerException       When a called constructor or service fails.
+     * @throws InvalidArgumentException When a called constructor or service fails.
      *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array
     {
         $noteHandlerServices = new NoteHandlerServices($this->handlerContext);
-        $noteTagForms = new NoteTagForms();
-        $noteViews = new NoteViews($this->handlerContext->documents());
+        $stockForm = new StockForm();
+        $stockList = new StockList(
+            $this->handlerContext->envelopeCodec(),
+            new TesseraProps($this->handlerContext->envelopeCodec()),
+            $noteHandlerServices->stockRepository(),
+            new StockListLinks(),
+        );
 
         return [
-            NoteTagPost::class => $this->handlerContext->page(
-                new NoteTagPost(
-                    $noteHandlerServices->noteRepository(),
-                    $noteHandlerServices->noteTagRepository(),
-                    $noteTagForms,
-                    $noteViews,
-                    new PostedFields(),
-                ),
+            StockPage::class => $this->handlerContext->page(
+                new StockPage($this->handlerContext->documents(), $stockForm, $stockList, new StockQueries()),
             ),
-            NoteTagsPage::class => $this->handlerContext->page(
-                new NoteTagsPage($noteHandlerServices->noteTagRepository(), $noteTagForms, $noteViews),
+            StockPost::class => $this->handlerContext->page(
+                new StockPost($this->handlerContext->documents(), $noteHandlerServices->stockRepository(), $stockForm, new PostedFields()),
             ),
         ];
     }

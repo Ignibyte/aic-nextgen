@@ -10,10 +10,10 @@ use AIC\Component\Contracts\Component;
 use AIC\Component\Domain\ThemeLayout;
 use AIC\Component\Domain\ThemePage;
 use AIC\Component\Exception\UnknownComponent;
+use App\Theme\Components\AuditView\AuditView;
 use App\Theme\Components\Greetings\Greetings;
 use App\Theme\Components\GreetingStatus\GreetingStatus;
 use App\Theme\Components\Home\Home;
-use App\Theme\Components\LineList\LineList;
 use Override;
 
 /**
@@ -44,12 +44,28 @@ final readonly class ThemeTemplatesPart1 implements ComponentTemplates
         return match (true) {
             $component instanceof ThemeLayout => (new ThemeHtmlTemplate())->render($component, $renderPass),
             $component instanceof ThemePage => (new ThemePageTemplate())->render($component, $renderPass),
+            $component instanceof AuditView => $this->renderAuditView($component, $renderPass),
             $component instanceof GreetingStatus => $this->renderGreetingStatus($component, $renderPass),
             $component instanceof Greetings => $this->renderGreetings($component, $renderPass),
             $component instanceof Home => $this->renderHome($component, $renderPass),
-            $component instanceof LineList => $this->renderLineList($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param AuditView  $auditView  The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/AuditView/audit-view.phtml.
+     */
+    private function renderAuditView(AuditView $auditView, RenderPass $renderPass): string
+    {
+        $renderPass->open($auditView);
+        require __DIR__ . '/templates/themes/app/components/AuditView/audit-view.phtml';
+
+        return $renderPass->close();
     }
 
     /**
@@ -96,22 +112,6 @@ final readonly class ThemeTemplatesPart1 implements ComponentTemplates
     {
         $renderPass->open($home);
         require __DIR__ . '/templates/themes/app/components/Home/home.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param LineList   $lineList   The component; its template reads it.
-     * @param RenderPass $renderPass The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/LineList/line-list.phtml.
-     */
-    private function renderLineList(LineList $lineList, RenderPass $renderPass): string
-    {
-        $renderPass->open($lineList);
-        require __DIR__ . '/templates/themes/app/components/LineList/line-list.phtml';
 
         return $renderPass->close();
     }

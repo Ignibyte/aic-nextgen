@@ -276,14 +276,12 @@ final readonly class ContextClassSource
      *
      * @throws InvalidArgumentException When a factory product has no factory receiver.
      *
-     * @return string Its array entry: its key, the object, wrapped when it is a controller.
+     * @return string Its array entry: its key, the object, wrapped when it is a controller, with its route's need.
      */
     private function entry(ContextEntry $contextEntry, array $locals, WiringRoots $wiringRoots): string
     {
         $prefix = '            ' . ($contextEntry->key === '' ? '' : $contextEntry->key . ' => ');
-        [$open, $close] = $contextEntry->wrap === ''
-            ? ['', '']
-            : ['$this->' . $wiringRoots->property . '->' . $contextEntry->wrap . '(', ')'];
+        [$open, $close, $needLine] = $contextEntry->wrapping($wiringRoots->property, self::INNER_INDENT);
         $line = $prefix . $open . $this->callSource->fit('', $contextEntry->wiredObject, $locals, $wiringRoots, '') . $close . ',';
 
         if (strlen($line) <= self::LINE_LIMIT) {
@@ -296,7 +294,7 @@ final readonly class ContextClassSource
 
         $inner = $this->callSource->fit(self::INNER_INDENT, $contextEntry->wiredObject, $locals, $wiringRoots, ',');
 
-        return $prefix . $open . "\n" . $inner . "\n            ),";
+        return $prefix . $open . "\n" . $inner . $needLine . "\n            ),";
     }
 
     /**

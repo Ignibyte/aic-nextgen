@@ -7,6 +7,7 @@ namespace Gates\Domain;
 use AIC\Module\Contracts\ModuleDeclaration;
 use AIC\Module\Contracts\ModuleEntry;
 use AIC\Module\Contracts\ModuleManifest;
+use AIC\Module\Contracts\ModuleRoute;
 use AIC\Module\Contracts\ModuleSection;
 
 use function str_starts_with;
@@ -68,6 +69,20 @@ final readonly class ModuleDefinition
         }
 
         return $declared;
+    }
+
+    /**
+     * @return array<string, string> What each of its handlers' routes need (#304), by handler; empty for nothing.
+     */
+    public function needs(): array
+    {
+        $needs = [];
+
+        foreach ($this->declared(ModuleRoute::class) as $moduleRoute) {
+            $needs[$moduleRoute->handler] = $moduleRoute->needs;
+        }
+
+        return $needs;
     }
 
     /**

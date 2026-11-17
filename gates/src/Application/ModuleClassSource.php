@@ -64,7 +64,7 @@ final readonly class ModuleClassSource
             ? $files
             : [
                 ...$files,
-                ...$this->handlerParts->services($wiredModule, array_map($this->controllerEntry(...), $wiredModule->controllers)),
+                ...$this->handlerParts->services($wiredModule, $this->controllerEntries($wiredModule)),
                 ...$this->routesSource->module($wiredModule->module),
             ];
     }
@@ -109,17 +109,35 @@ final readonly class ModuleClassSource
     {
         return $wiredModule->controllers === []
             ? []
-            : $this->handlerParts->parts($wiredModule, array_map($this->controllerEntry(...), $wiredModule->controllers));
+            : $this->handlerParts->parts($wiredModule, $this->controllerEntries($wiredModule));
     }
 
     /**
-     * @param WiredObject $wiredObject A route's controller.
+     * @param WiredModule $wiredModule A module, wired.
      *
-     * @return ContextEntry Its entry: keyed by its class, wrapped by its kind.
+     * @return list<ContextEntry> Its controllers' entries, each with what its routes need (#304).
      */
-    private function controllerEntry(WiredObject $wiredObject): ContextEntry
+    private function controllerEntries(WiredModule $wiredModule): array
     {
-        return new ContextEntry($this->short($wiredObject->class) . '::class', $wiredObject, $this->kind($wiredObject->class));
+        $needs = $wiredModule->module->needs();
+
+        return array_map(
+            fn (WiredObject $wiredObject): ContextEntry => $this->controllerEntry($wiredObject, $needs),
+            $wiredModule->controllers,
+        );
+    }
+
+    /**
+     * @param WiredObject           $wiredObject A route's controller.
+     * @param array<string, string> $needs       What each handler's routes need (#304), by handler.
+     *
+     * @return ContextEntry Its entry: keyed by its class, wrapped by its kind, with its need.
+     */
+    private function controllerEntry(WiredObject $wiredObject, array $needs): ContextEntry
+    {
+        $class = $wiredObject->class;
+
+        return new ContextEntry($this->short($class) . '::class', $wiredObject, $this->kind($class), $needs[$class] ?? '');
     }
 
     /**

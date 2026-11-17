@@ -6,7 +6,6 @@ namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
-use App\Note\Controller\NoteDeletePost;
 use App\Note\Controller\NoteUpdatePost;
 use App\Note\Form\NoteEnvelope;
 use App\Note\Service\NoteRequest;
@@ -37,19 +36,14 @@ final readonly class NoteHandlersPart2
     public function byId(): array
     {
         $noteHandlerServices = new NoteHandlerServices($this->handlerContext);
-        $noteRequest = new NoteRequest();
-        $noteViews = new NoteViews($this->handlerContext->documents());
         $noteEnvelope = new NoteEnvelope($this->handlerContext->envelopeCodec());
 
         return [
-            NoteDeletePost::class => $this->handlerContext->page(
-                new NoteDeletePost($noteHandlerServices->noteRepository(), $noteRequest, $noteViews, $noteEnvelope),
-            ),
             NoteUpdatePost::class => $this->handlerContext->page(
                 new NoteUpdatePost(
                     $noteHandlerServices->noteRepository(),
-                    $noteRequest,
-                    $noteViews,
+                    new NoteRequest(),
+                    new NoteViews($this->handlerContext->documents()),
                     $noteHandlerServices->noteForms(),
                     $noteEnvelope,
                 ),

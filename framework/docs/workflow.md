@@ -146,6 +146,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:migration` | scaffold a Migration |
 | `Command::make:module` | scaffold a module |
 | `Command::make:page` | scaffold a Page and declared component template |
+| `Command::make:policy` | scaffold an entity's Policy and declare the permission it asks (#304) |
 | `Command::make:scaffold` | start an app kind from an existing one, in a run the operator approved (#299) |
 | `Command::make:theme` | scaffold the site's selected theme |
 | `Command::module:list` | inspect modules |
