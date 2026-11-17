@@ -13,10 +13,12 @@ use App\Scaffold\Block\ScaffoldBlock;
 use App\Scaffold\Command\ScaffoldHello;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
+use App\Scaffold\Controller\ScaffoldEventListPage;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPost;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
 use App\Scaffold\Job\ScaffoldHelloJob;
+use App\Scaffold\Migration\CreateScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldItemsTable;
 use App\Scaffold\Migration\CreateScaffoldTasksTable;
 
@@ -32,4 +34,6 @@ return (new ModuleManifest('scaffold'))
     ->migration(CreateScaffoldItemsTable::class)
     ->route(RouteMethod::Get, '/scaffold-tasks', ScaffoldTaskListPage::class)
     ->migration(CreateScaffoldTasksTable::class)
-    ->permission('scaffold.scaffold-task.create', 'Create a scaffold task.');
+    ->permission('scaffold.scaffold-task.create', 'Create a scaffold task.')
+    ->route(RouteMethod::Get, '/scaffold-events', ScaffoldEventListPage::class)
+    ->migration(CreateScaffoldEventsTable::class);

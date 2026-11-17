@@ -305,6 +305,22 @@
             "path": "/stock.xml"
         },
         {
+            "handler": "App\\Note\\Controller\\NoteMarkListPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "note",
+            "needs": "",
+            "path": "/note-marks"
+        },
+        {
+            "handler": "App\\Note\\Controller\\NoteMarkRoundTripApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "note",
+            "needs": "",
+            "path": "/note-marks/round-trip"
+        },
+        {
             "handler": "App\\Scaffold\\Controller\\ScaffoldPage",
             "kind": "Page",
             "method": "GET",
@@ -343,6 +359,14 @@
             "module": "scaffold",
             "needs": "",
             "path": "/scaffold-tasks"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldEventListPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "scaffold",
+            "needs": "",
+            "path": "/scaffold-events"
         }
     ],
     "commands": [
@@ -568,7 +592,8 @@
                 "App\\Note\\Migration\\AddStockCost",
                 "App\\Note\\Migration\\ConvertStockCost",
                 "App\\Note\\Migration\\AddStockQuantity",
-                "App\\Note\\Migration\\CreateStockDaysView"
+                "App\\Note\\Migration\\CreateStockDaysView",
+                "App\\Note\\Migration\\CreateNoteMarksTable"
             ],
             "name": "note",
             "namespace": "App\\Note\\",
@@ -594,7 +619,8 @@
             "middleware": [],
             "migrations": [
                 "App\\Scaffold\\Migration\\CreateScaffoldItemsTable",
-                "App\\Scaffold\\Migration\\CreateScaffoldTasksTable"
+                "App\\Scaffold\\Migration\\CreateScaffoldTasksTable",
+                "App\\Scaffold\\Migration\\CreateScaffoldEventsTable"
             ],
             "name": "scaffold",
             "namespace": "App\\Scaffold\\",

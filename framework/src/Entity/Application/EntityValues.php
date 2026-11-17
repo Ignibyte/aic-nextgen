@@ -6,20 +6,19 @@ namespace AIC\Entity\Application;
 
 use AIC\Entity\Domain\EntityType;
 use AIC\Entity\Domain\Field;
-use AIC\Entity\Domain\FieldType;
+use AIC\Entity\Domain\FieldFormats;
 use InvalidArgumentException;
 
 use function array_keys;
 use function in_array;
 use function is_bool;
-use function is_int;
-use function is_string;
 
 /**
  * Values written to an entity type's fields (#184), checked against each
- * field: a string for Text, Date and Numeric, an int for Integer and Reference, a
- * bool for Boolean, and null only where the field is nullable. A bool is bound
- * as `true` or `false`, as Postgres reads it.
+ * field by `FieldFormats` (#307): a bool for Boolean, an int for Integer and an
+ * integer-keyed Reference, and for every other type a string in its form; null
+ * only where the field is nullable. A bool is bound as `true` or `false`, as
+ * Postgres reads it, and Postgres casts each string to its column's type.
  */
 final readonly class EntityValues
 {
@@ -90,7 +89,7 @@ final readonly class EntityValues
      */
     private static function check(string $table, Field $field, string|int|bool|null $value): void
     {
-        if ($value === null ? $field->nullable : self::fits($field->type, $value)) {
+        if ($value === null ? $field->nullable : (new FieldFormats())->fits($field, $value)) {
             return;
         }
 
@@ -98,23 +97,6 @@ final readonly class EntityValues
             'The ' . $table . ' entity\'s field "' . $field->name . '" does not take that value'
             . ($value === null ? ': it is not nullable.' : '.'),
         );
-    }
-
-    /**
-     * @param FieldType       $fieldType The field's type.
-     * @param string|int|bool $value     A value that is not null.
-     *
-     * @return bool Whether the value is of the PHP type the field type takes.
-     */
-    private static function fits(FieldType $fieldType, string|int|bool $value): bool
-    {
-        if ($fieldType === FieldType::Boolean) {
-            return is_bool($value);
-        }
-
-        return $fieldType === FieldType::Integer || $fieldType === FieldType::Reference
-            ? is_int($value)
-            : is_string($value);
     }
 
     /**

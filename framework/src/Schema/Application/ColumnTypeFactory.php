@@ -118,4 +118,51 @@ final readonly class ColumnTypeFactory implements ColumnTypes
     {
         return new ColumnType(LogicalType::Boolean, 0, 0);
     }
+
+    /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
+     * @return ColumnType A UUID (#307).
+     */
+    #[Override]
+    public function uuid(): ColumnType
+    {
+        return new ColumnType(LogicalType::Uuid, 0, 0);
+    }
+
+    /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
+     * @return ColumnType A UUID key the database generates for each row that names none (#307).
+     */
+    #[Override]
+    public function uuidKey(): ColumnType
+    {
+        return new ColumnType(LogicalType::UuidKey, 0, 0);
+    }
+
+    /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
+     * @return ColumnType A JSON document, stored parsed (#307).
+     */
+    #[Override]
+    public function jsonb(): ColumnType
+    {
+        return new ColumnType(LogicalType::Jsonb, 0, 0);
+    }
+
+    /**
+     * @param list<string> $choices The values it may hold.
+     *
+     * @throws InvalidArgumentException When there are none, one is repeated or one is not 1 to 63 letters, digits,
+     *                                  `_`, `.`, `:` or `-`.
+     *
+     * @return ColumnType Text that is one of them, checked by the database (#307).
+     */
+    #[Override]
+    public function choice(array $choices): ColumnType
+    {
+        return new ColumnType(LogicalType::Choice, 0, 0, $choices);
+    }
 }

@@ -8,6 +8,7 @@ use AIC\Schema\Contracts\Migration;
 use App\Note\Migration\AddStockCost;
 use App\Note\Migration\AddStockQuantity;
 use App\Note\Migration\ConvertStockCost;
+use App\Note\Migration\CreateNoteMarksTable;
 use App\Note\Migration\CreateNotesTable;
 use App\Note\Migration\CreateNoteTagsTable;
 use App\Note\Migration\CreateStockDaysView;
@@ -34,6 +35,7 @@ final readonly class NoteMigrations
             new ConvertStockCost(),
             new AddStockQuantity(),
             new CreateStockDaysView(),
+            new CreateNoteMarksTable(),
         ];
     }
 }

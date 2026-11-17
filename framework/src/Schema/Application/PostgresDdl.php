@@ -248,7 +248,8 @@ final readonly class PostgresDdl
      */
     private function column(Column $column): string
     {
-        return $column->name->value . ' ' . $this->type($column->type) . ($column->nullable ? '' : ' NOT NULL');
+        return $column->name->value . ' ' . $this->type($column->type) . ($column->nullable ? '' : ' NOT NULL')
+            . $this->check($column);
     }
 
     /**
@@ -268,6 +269,25 @@ final readonly class PostgresDdl
             LogicalType::Date => 'date',
             LogicalType::Numeric => 'numeric(' . $columnType->length . ', ' . $columnType->scale . ')',
             LogicalType::Boolean => 'boolean',
+            LogicalType::Uuid => 'uuid',
+            LogicalType::UuidKey => 'uuid DEFAULT gen_random_uuid()',
+            LogicalType::Jsonb => 'jsonb',
+            LogicalType::Choice => 'text',
         };
+    }
+
+    /**
+     * @param Column $column A column.
+     *
+     * @return string A choice's `CHECK (column IN (...))` (#307); empty for any other type. Each value is checked
+     *                to letters, digits and `_.:-`, so it needs no escaping.
+     */
+    private function check(Column $column): string
+    {
+        $choices = $column->type->choices;
+
+        return $choices === []
+            ? ''
+            : ' CHECK (' . $column->name->value . " IN ('" . implode("', '", $choices) . "'))";
     }
 }

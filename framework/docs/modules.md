@@ -235,7 +235,9 @@ content region only, and `layouts/page--<name>.phtml`; the document falls back t
 module: the entity (one property per field and its row as one line), its repository (the newest
 rows, read with a limit), its create-table migration and a list page at the table's path (`_`
 becomes `-`) that shows the newest 50 rows in a heading and paragraphs. Types are `text`,
-`numeric`, `date` and `boolean`; every table also has `id` and `created_at`. One manifest edit
+`numeric`, `date`, `boolean`, `uuid`, `json`, `timestamp` and `choice(a|b)` with its values;
+every table also has `id` and `created_at`, and `--key=uuid` makes `id` a uuid the database
+generates (newest first then by `created_at`). One manifest edit
 routes the page and runs the migration; run `bin/aic migrate` before opening the page.
 
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`

@@ -22,6 +22,7 @@ final readonly class EntityPlan
      * @param string                      $table     Its table, such as `scaffold_tasks`.
      * @param string                      $version   The version its migration records.
      * @param non-empty-list<EntityField> $fields    Its columns but `id` and `created_at`, in order.
+     * @param bool                        $uuidKey   Whether `id` is a uuid the database makes (#307), not an identity.
      */
     public function __construct(
         public string $module,
@@ -30,6 +31,7 @@ final readonly class EntityPlan
         public string $table,
         public string $version,
         public array $fields,
+        public bool $uuidKey = false,
     ) {
     }
 

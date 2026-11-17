@@ -78,6 +78,15 @@ interface TableBuilder
     public function boolean(string $name): self;
 
     /**
+     * @param string     $name       The column.
+     * @param ColumnType $columnType Its type, from `Schema::types()`: how a migration adds a uuid, a uuid key, a
+     *                               JSON document or a choice (#307).
+     *
+     * @return self The builder.
+     */
+    public function column(string $name, ColumnType $columnType): self;
+
+    /**
      * Lets the last column added hold null.
      *
      * @return self The builder.

@@ -35,4 +35,16 @@ enum LogicalType
 
     /** True or false. */
     case Boolean;
+
+    /** A UUID (#307). */
+    case Uuid;
+
+    /** A UUID key the database generates for each row that names none (#307). */
+    case UuidKey;
+
+    /** A JSON document, stored parsed (#307). */
+    case Jsonb;
+
+    /** Text that is one of a closed list of values, checked by the database (#307). */
+    case Choice;
 }

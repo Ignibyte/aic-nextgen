@@ -9,6 +9,7 @@ use AIC\Routing\Domain\DuplicateRouteException;
 use App\Note\Controller\NoteCreatePost;
 use App\Note\Controller\NoteDeletePost;
 use App\Note\Controller\NoteListPage;
+use App\Note\Controller\NoteMarkListPage;
 use App\Note\Controller\NoteShowPage;
 use App\Note\Controller\NoteTagPost;
 use App\Note\Controller\NoteTagsPage;
@@ -47,6 +48,7 @@ final readonly class NoteRoutes
             ->post('/notes/tags', NoteTagPost::class)
             ->get('/stock/days', StockDaysPage::class)
             ->get('/stock.csv', StockCsv::class)
-            ->get('/stock.xml', StockXml::class);
+            ->get('/stock.xml', StockXml::class)
+            ->get('/note-marks', NoteMarkListPage::class);
     }
 }

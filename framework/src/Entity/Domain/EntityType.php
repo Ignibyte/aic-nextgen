@@ -9,8 +9,9 @@ use InvalidArgumentException;
 use function preg_match;
 
 /**
- * An entity type: a table, its key (a bigint the database generates) and its
- * fields. Names are identifiers, so the SQL built from them needs no quoting.
+ * An entity type: a table, its key (a bigint the database generates, or since
+ * #307 a uuid) and its fields. Names are identifiers, so the SQL built from
+ * them needs no quoting.
  */
 final readonly class EntityType
 {
@@ -19,21 +20,44 @@ final readonly class EntityType
      * @param string       $key      The key column.
      * @param list<object> $fields   Its Fields: objects, the list form elephc keeps (plan.md).
      * @param bool         $readOnly Whether it maps a view (#191): queried like a table, never written.
+     * @param FieldType    $keyType  The key's type: `Integer`, or `Uuid` for a uuid the database generates (#307).
      *
-     * @throws InvalidArgumentException When the table or the key is not an identifier.
+     * @throws InvalidArgumentException When the table or the key is not an identifier, or the key type is neither.
      */
     public function __construct(
         public string $table,
         public string $key,
         private array $fields,
         public bool $readOnly = false,
+        public FieldType $keyType = FieldType::Integer,
     ) {
+        if ($keyType !== FieldType::Integer && $keyType !== FieldType::Uuid) {
+            throw new InvalidArgumentException('Entity type "' . $table . '": a key is an Integer or a Uuid.');
+        }
+
         if (
             preg_match('/^[a-z_][a-z0-9_]{0,62}$/', $table) !== 1
             || preg_match('/^[a-z_][a-z0-9_]{0,62}$/', $key) !== 1
         ) {
             throw new InvalidArgumentException('Entity type "' . $table . '": the table and the key are identifiers.');
         }
+    }
+
+    /**
+     * @param string $column One of its columns.
+     *
+     * @return string How a query reads it: `::text` for a Json field (#307), so every driver hands back Postgres's own
+     *                text of the document; empty for any other.
+     */
+    public function read(string $column): string
+    {
+        foreach ($this->fields as $field) {
+            if ($field instanceof Field && $field->name === $column && $field->type === FieldType::Json) {
+                return '::text';
+            }
+        }
+
+        return '';
     }
 
     /**

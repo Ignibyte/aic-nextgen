@@ -73,13 +73,24 @@ The development engine and its guard are described in [workflow.md](workflow.md)
 - `AIC\Schema`: migrations. A migration describes its tables through
   `AIC\Schema\Contracts\Schema`; `AIC\Schema\Application\Migrator` applies each version once, in version order across modules, in a
   transaction, and keeps a ledger with a checksum of each, so a changed migration shows as changed.
+  Besides the typed builder methods, `Schema::types()` gives `uuid()`, `uuidKey()` (a uuid key the
+  database makes with `gen_random_uuid()`), `jsonb()` and `choice(list)` (text with a
+  `CHECK (column IN (...))`), added with `TableBuilder::column(name, type)` (#307); a column cannot
+  change into a key or a choice.
 - `AIC\Entity`: tables as entity types with typed fields (Text, Date, Numeric, Boolean, Integer,
-  Reference, and the CreatedAt and UpdatedAt stamps the database sets), each nullable or not. A module's
-  repository builds on it (#184):
+  Reference, Uuid, Json, Choice, Timestamp, and the CreatedAt and UpdatedAt stamps the database
+  sets), each nullable or not, keyed by an integer or, with `keyType: FieldType::Uuid`, a uuid. A
+  module's repository builds on it (#184):
   - `AIC\Entity\Application\EntityStore` inserts (`insert`, `insertIfAbsent` on a unique field,
-    `upsert` over it), updates and deletes rows by key, and runs `transaction(Closure)`, rolling
-    back when the closure throws. Each written value must fit its field: a string, an int, a
-    bool, or null where the field is nullable.
+    `upsert` over it; `insertUuid` for a uuid-keyed type, answering the uuid the database made),
+    updates and deletes rows by key (an int, or a uuid string), and runs `transaction(Closure)`,
+    rolling back when the closure throws. Each written value must fit its field
+    by `AIC\Entity\Domain\FieldFormats` (#307): a bool for Boolean, an int for Integer and an
+    integer-keyed Reference, otherwise a string in its type's form (a uuid, a `YYYY-MM-DD` date,
+    an ISO 8601 timestamp with its zone, a decimal, valid JSON, one of a Choice's values), or
+    null where the field is nullable. Values stay strings: a JSON value class encodes itself, and a
+    backed enum passes `->value`. A Json field reads back as Postgres's text of the document (`{"a": 1}`).
+    `Row::dateTime()` reads a timestamp as a `DateTimeImmutable` in the offset the database gave.
   - `AIC\Entity\Application\EntityQuery` takes conditions (`where` with an
     `AIC\Entity\Domain\Comparison`, null for `IS NULL`; `whereIn`; `whereAny` over
     `AIC\Entity\Domain\Condition`s; `search`, a case-insensitive contains match across text

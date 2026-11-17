@@ -40,7 +40,7 @@ final readonly class {class}Repository
     public function latest(int $count): array
     {
         ${variable}Rows = $this->entityStore->query($this->{variable}Type())
-            ->orderByDescending('id')
+            ->orderByDescending('{order}')
             ->limit($count)
             ->rows()
             ->all();
@@ -57,7 +57,7 @@ final readonly class {class}Repository
     {
         return new EntityType('{table}', 'id', [
 {fields}            new Field('created_at', FieldType::CreatedAt),
-        ]);
+        ]{keyType});
     }
 
     /**
