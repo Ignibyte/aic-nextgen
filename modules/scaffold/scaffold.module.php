@@ -20,6 +20,7 @@ use App\Scaffold\Controller\ScaffoldTaskListPage;
 use App\Scaffold\Job\ScaffoldHelloJob;
 use App\Scaffold\Migration\CreateScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldItemsTable;
+use App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldTasksTable;
 
 return (new ModuleManifest('scaffold'))
@@ -36,4 +37,5 @@ return (new ModuleManifest('scaffold'))
     ->migration(CreateScaffoldTasksTable::class)
     ->permission('scaffold.scaffold-task.create', 'Create a scaffold task.')
     ->route(RouteMethod::Get, '/scaffold-events', ScaffoldEventListPage::class)
-    ->migration(CreateScaffoldEventsTable::class);
+    ->migration(CreateScaffoldEventsTable::class)
+    ->migration(CreateScaffoldTasksScaffoldEventsTable::class);

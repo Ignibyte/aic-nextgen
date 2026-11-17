@@ -7,6 +7,7 @@ namespace App\Generated;
 use AIC\Schema\Contracts\Migration;
 use App\Scaffold\Migration\CreateScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldItemsTable;
+use App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldTasksTable;
 
 /**
@@ -24,6 +25,7 @@ final readonly class ScaffoldMigrations
             new CreateScaffoldItemsTable(),
             new CreateScaffoldTasksTable(),
             new CreateScaffoldEventsTable(),
+            new CreateScaffoldTasksScaffoldEventsTable(),
         ];
     }
 }

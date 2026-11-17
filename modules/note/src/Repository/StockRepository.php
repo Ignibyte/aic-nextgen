@@ -11,8 +11,7 @@ use AIC\Entity\Application\EntityStore;
 use AIC\Entity\Domain\Comparison;
 use AIC\Entity\Domain\Condition;
 use AIC\Entity\Domain\EntityType;
-use AIC\Entity\Domain\Field;
-use AIC\Entity\Domain\FieldType;
+use App\Note\Entity\NoteTypes;
 use App\Note\Entity\StockItem;
 use App\Note\Entity\StockTotals;
 use App\Note\Form\StockEntry;
@@ -38,22 +37,13 @@ final readonly class StockRepository
 
     /**
      * @param EntityStore $entityStore The entity store.
-     *
-     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     * @param NoteTypes   $noteTypes   The module's entity types, `stock_items` among them (#306).
      */
     public function __construct(
         private EntityStore $entityStore,
+        NoteTypes $noteTypes,
     ) {
-        $this->entityType = new EntityType('stock_items', 'id', [
-            new Field('name', FieldType::Text),
-            new Field('price', FieldType::Numeric),
-            new Field('added_on', FieldType::Date),
-            new Field('certified', FieldType::Boolean),
-            new Field('created_at', FieldType::CreatedAt),
-            new Field('sku', FieldType::Text, true),
-            new Field('quantity', FieldType::Integer, true),
-            new Field('updated_at', FieldType::UpdatedAt, true),
-        ]);
+        $this->entityType = $noteTypes->stockItems();
     }
 
     /**

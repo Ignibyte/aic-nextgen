@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Entity relations: has-many, has-one, many-to-many, polymorphic** (#306). An `EntityType`
+  declares `Relation`s; a query counts (`withCount`), sums (`withSum`) and filters by related rows
+  (`withExisting`, `withMissing`, with conditions on the target), each a correlated subquery, and
+  `EntityStore::related()` loads a page's related rows in one query per relation as `RelatedRows`,
+  a many-to-many's pivot fields as `pivot_<field>`. `bin/aic make:relation` writes a pivot table's
+  migration and prints both sides' declarations (editing them in place is #328). The note fixture's
+  `/notes/relations` holds every kind on gate:23.
+
 - **Entity keys and field types: uuid, json, choice and timestamps** (#307). An `EntityType` may be
   keyed by uuid (`keyType: FieldType::Uuid`, `EntityStore::insertUuid()`, `update`/`delete` by
   `int|string`), and fields gain `Uuid`, `Json`, `Choice` (a closed list, checked by the database)

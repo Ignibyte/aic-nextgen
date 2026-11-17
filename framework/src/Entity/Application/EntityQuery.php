@@ -13,59 +13,38 @@ use AIC\Entity\Domain\Condition;
 use AIC\Entity\Domain\EntityType;
 use InvalidArgumentException;
 
-use function implode;
-
 /**
  * A query over one entity type: the key and every field of the rows that match
  * every condition (#184: comparisons, in-lists, null tests, any-of groups and a
  * search, each value bound), in `orderBy()` and `orderByDescending()` order,
  * past `offset()` rows and at most `limit()` of them, locked by `forUpdate()`.
- * `totals()` adds the matching rows up and `changes()` writes to them.
+ * `totals()` adds the matching rows up and `changes()` writes to them. Its
+ * entity type's relations (#306) add a count or a sum per row
+ * (`withCount()`, `withSum()`) and filter by related rows (`withExisting()`,
+ * `withMissing()`), each a correlated subquery.
  */
-final class EntityQuery
+final readonly class EntityQuery
 {
-    /**
-     * The tables joined through reference fields (#190).
-     */
-    private readonly EntityJoins $entityJoins;
+    /** The tables joined through reference fields (#190). */
+    private EntityJoins $entityJoins;
 
-    /**
-     * The conditions, joined by AND.
-     */
-    private readonly EntityConditions $entityConditions;
+    /** The conditions, joined by AND. */
+    private EntityConditions $entityConditions;
 
-    /**
-     * The columns to sort by, each ascending or with `DESC`.
-     *
-     * @var list<string>
-     */
-    private array $order = [];
-
-    /**
-     * How many rows it returns at most; 0 for no limit.
-     */
-    private int $limit = 0;
-
-    /**
-     * How many matching rows it skips.
-     */
-    private int $offset = 0;
-
-    /**
-     * Whether it locks the rows it reads until the transaction ends.
-     */
-    private bool $locked = false;
+    /** Its order, page and lock. */
+    private EntityPaging $entityPaging;
 
     /**
      * @param Database   $database   The database.
      * @param EntityType $entityType The entity type queried.
      */
     public function __construct(
-        private readonly Database $database,
-        private readonly EntityType $entityType,
+        private Database $database,
+        private EntityType $entityType,
     ) {
         $this->entityJoins = new EntityJoins($entityType);
         $this->entityConditions = new EntityConditions($entityType, $this->entityJoins);
+        $this->entityPaging = new EntityPaging();
     }
 
     /**
@@ -156,7 +135,7 @@ final class EntityQuery
      */
     public function orderBy(string $field): self
     {
-        $this->order[] = $this->entityConditions->column($field);
+        $this->entityPaging->order($this->entityConditions->column($field));
 
         return $this;
     }
@@ -170,7 +149,7 @@ final class EntityQuery
      */
     public function orderByDescending(string $field): self
     {
-        $this->order[] = $this->entityConditions->column($field) . ' DESC';
+        $this->entityPaging->order($this->entityConditions->column($field) . ' DESC');
 
         return $this;
     }
@@ -184,11 +163,7 @@ final class EntityQuery
      */
     public function limit(int $count): self
     {
-        if ($count < 1) {
-            throw new InvalidArgumentException('A query limit must be at least 1, not ' . $count . '.');
-        }
-
-        $this->limit = $count;
+        $this->entityPaging->limit($count);
 
         return $this;
     }
@@ -202,11 +177,66 @@ final class EntityQuery
      */
     public function offset(int $count): self
     {
-        if ($count < 0) {
-            throw new InvalidArgumentException('A query offset cannot be negative, not ' . $count . '.');
-        }
+        $this->entityPaging->offset($count);
 
-        $this->offset = $count;
+        return $this;
+    }
+
+    /**
+     * @param string $relation One of the entity type's relations, not Polymorphic.
+     *
+     * @throws InvalidArgumentException When it has no such relation, or the relation cannot be counted.
+     *
+     * @return self The query, each row with `<relation>_count`, an integer (#306).
+     */
+    public function withCount(string $relation): self
+    {
+        $this->entityJoins->compute($relation, '');
+
+        return $this;
+    }
+
+    /**
+     * @param string $relation One of the entity type's relations, not Polymorphic.
+     * @param string $field    A field of its target.
+     *
+     * @throws InvalidArgumentException When it has no such relation or field, or the relation cannot be summed.
+     *
+     * @return self The query, each row with `<relation>_sum_<field>`, the sum as text (#306).
+     */
+    public function withSum(string $relation, string $field): self
+    {
+        $this->entityJoins->compute($relation, $field);
+
+        return $this;
+    }
+
+    /**
+     * @param string          $relation   One of the entity type's relations, not Polymorphic.
+     * @param list<Condition> $conditions Conditions on its target's fields, all of which a related row meets.
+     *
+     * @throws InvalidArgumentException When it has no such relation, it cannot filter, or a condition names no field.
+     *
+     * @return self The query, keeping the rows with at least one such related row (#306).
+     */
+    public function withExisting(string $relation, array $conditions = []): self
+    {
+        $this->entityConditions->related($relation, $conditions, false);
+
+        return $this;
+    }
+
+    /**
+     * @param string          $relation   One of the entity type's relations, not Polymorphic.
+     * @param list<Condition> $conditions Conditions on its target's fields.
+     *
+     * @throws InvalidArgumentException When it has no such relation, it cannot filter, or a condition names no field.
+     *
+     * @return self The query, keeping the rows with no such related row (#306).
+     */
+    public function withMissing(string $relation, array $conditions = []): self
+    {
+        $this->entityConditions->related($relation, $conditions, true);
 
         return $this;
     }
@@ -216,7 +246,7 @@ final class EntityQuery
      */
     public function forUpdate(): self
     {
-        $this->locked = true;
+        $this->entityPaging->lock();
 
         return $this;
     }
@@ -229,11 +259,7 @@ final class EntityQuery
     public function rows(): Rows
     {
         $sql = 'SELECT ' . $this->entityJoins->selected() . ' FROM ' . $this->entityJoins->from()
-            . $this->entityConditions->sql()
-            . ($this->order === [] ? '' : ' ORDER BY ' . implode(', ', $this->order))
-            . ($this->limit > 0 ? ' LIMIT ' . $this->limit : '')
-            . ($this->offset > 0 ? ' OFFSET ' . $this->offset : '')
-            . ($this->locked ? ' FOR UPDATE OF ' . $this->entityType->table : '');
+            . $this->entityConditions->sql() . $this->entityPaging->sql($this->entityType->table);
 
         return $this->database->fetchAll($sql, $this->entityConditions->params());
     }

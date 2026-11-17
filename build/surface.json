@@ -321,6 +321,14 @@
             "path": "/note-marks/round-trip"
         },
         {
+            "handler": "App\\Note\\Controller\\NoteRelationsApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "note",
+            "needs": "",
+            "path": "/notes/relations"
+        },
+        {
             "handler": "App\\Scaffold\\Controller\\ScaffoldPage",
             "kind": "Page",
             "method": "GET",
@@ -593,7 +601,9 @@
                 "App\\Note\\Migration\\ConvertStockCost",
                 "App\\Note\\Migration\\AddStockQuantity",
                 "App\\Note\\Migration\\CreateStockDaysView",
-                "App\\Note\\Migration\\CreateNoteMarksTable"
+                "App\\Note\\Migration\\CreateNoteMarksTable",
+                "App\\Note\\Migration\\CreateNotesStockItemsTable",
+                "App\\Note\\Migration\\CreateNoteMentionsTable"
             ],
             "name": "note",
             "namespace": "App\\Note\\",
@@ -620,7 +630,8 @@
             "migrations": [
                 "App\\Scaffold\\Migration\\CreateScaffoldItemsTable",
                 "App\\Scaffold\\Migration\\CreateScaffoldTasksTable",
-                "App\\Scaffold\\Migration\\CreateScaffoldEventsTable"
+                "App\\Scaffold\\Migration\\CreateScaffoldEventsTable",
+                "App\\Scaffold\\Migration\\CreateScaffoldTasksScaffoldEventsTable"
             ],
             "name": "scaffold",
             "namespace": "App\\Scaffold\\",

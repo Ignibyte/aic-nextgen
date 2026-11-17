@@ -54,7 +54,7 @@ final readonly class NoteHandlerServices
      */
     public function stockRepository(): StockRepository
     {
-        return new StockRepository(new EntityStore($this->handlerContext->database()));
+        return new StockRepository(new EntityStore($this->handlerContext->database()), new NoteTypes());
     }
 
     /**

@@ -87,6 +87,15 @@
             "captures": false
         },
         {
+            "name": "note relations, counted, summed, filtered and loaded",
+            "method": "GET",
+            "path": "/notes/relations",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "download",
             "method": "GET",
             "path": "/download/hello.txt",

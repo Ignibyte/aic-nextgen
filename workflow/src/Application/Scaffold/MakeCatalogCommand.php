@@ -56,6 +56,10 @@ final readonly class MakeCatalogCommand implements Command
         'make:module' => ['make:module <module> [--requires=a,b]', 'a module with its manifest'],
         'make:page' => ['make:page <module> <Class> <path> [--component=<C>] [--layout=<name>] [--post]', 'a page at a route'],
         'make:policy' => ['make:policy <module> <Entity>', "an entity's policy and the permission its create action asks"],
+        'make:relation' => [
+            'make:relation <module> <owner_table> <target_table> [--keys=int,int] [--fields=<name>:<type>,…]',
+            'a many-to-many pivot table and the relation lines for both sides',
+        ],
         'make:theme' => ['make:theme <name>', 'a theme'],
     ];
 

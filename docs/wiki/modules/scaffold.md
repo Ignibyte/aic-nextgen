@@ -44,6 +44,7 @@ none
 - `App\Scaffold\Migration\CreateScaffoldItemsTable`
 - `App\Scaffold\Migration\CreateScaffoldTasksTable`
 - `App\Scaffold\Migration\CreateScaffoldEventsTable`
+- `App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable`
 
 ## Plugins
 
@@ -110,6 +111,7 @@ none
 | --- | --- |
 | `App\Scaffold\Migration\CreateScaffoldEventsTable` | [modules/scaffold/src/Migration/CreateScaffoldEventsTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldEventsTable.php) |
 | `App\Scaffold\Migration\CreateScaffoldItemsTable` | [modules/scaffold/src/Migration/CreateScaffoldItemsTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldItemsTable.php) |
+| `App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable` | [modules/scaffold/src/Migration/CreateScaffoldTasksScaffoldEventsTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldTasksScaffoldEventsTable.php) |
 | `App\Scaffold\Migration\CreateScaffoldTasksTable` | [modules/scaffold/src/Migration/CreateScaffoldTasksTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldTasksTable.php) |
 
 ### `src/Policy/`

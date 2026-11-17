@@ -1005,6 +1005,7 @@
             "make:module",
             "make:page",
             "make:policy",
+            "make:relation",
             "make:scaffold",
             "make:theme"
           ]

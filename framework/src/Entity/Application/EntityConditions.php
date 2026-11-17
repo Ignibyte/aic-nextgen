@@ -132,6 +132,30 @@ final class EntityConditions
     }
 
     /**
+     * @param string          $relation   One of the entity type's relations, not Polymorphic.
+     * @param list<Condition> $conditions Conditions on its target's fields, all of which a related row meets.
+     * @param bool            $missing    Whether to keep the rows with no such related row, not those with one.
+     *
+     * @throws InvalidArgumentException When it has no such relation, it cannot filter, or a condition names no field.
+     */
+    public function related(string $relation, array $conditions, bool $missing): void
+    {
+        [$exists, $params] = (new RelationSql())->exists($this->entityType, $relation, $conditions);
+        $this->subquery(($missing ? 'NOT ' : '') . $exists, $params);
+    }
+
+    /**
+     * @param string           $clause A whole clause the caller built from identifiers: an EXISTS subquery, or a
+     *                                 subquery's link to its owner row (#306).
+     * @param list<string|int> $params Its values, in order.
+     */
+    public function subquery(string $clause, array $params): void
+    {
+        $this->clauses[] = $clause;
+        $this->params = [...$this->params, ...$params];
+    }
+
+    /**
      * @param string $field A field of the entity type, its key, or a joined field `prefix.field`.
      *
      * @throws InvalidArgumentException When the entity type, or the join, has no such column.

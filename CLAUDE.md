@@ -165,9 +165,9 @@ the gate suite is the dev package `ignibyte/aic-gates`, run by `vendor/bin/aic-g
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
-layout (#157), entity (#123), policy (#304) and client (#305); dev-only in
+layout (#157), entity (#123), policy (#304), client (#305) and relation (#306); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the fifteen make lines (a uuid entity, #307).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the sixteen make lines (a pivot, #306).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
@@ -184,6 +184,9 @@ Outbound tab, `make:client`; curl is in the native pins; gate:23 serves a stub u
 #307: entity uuid keys (`keyType: FieldType::Uuid`, `insertUuid()`), field types `Uuid`, `Json`, `Choice`, `Timestamp`
 checked as strings by `FieldFormats`, `Row::dateTime()`, Schema `types()->uuid()|uuidKey()|jsonb()|choice()` with
 `TableBuilder::column()`, `make:entity --key=uuid`; gate:31 runs 15 make lines.
+#306: entity relations (`Relation`: HasMany, HasOne, ManyToMany through a pivot, Polymorphic), `EntityQuery::withCount|
+withSum|withExisting|withMissing`, `EntityStore::related()` → `RelatedRows`, `make:relation` (pivot migration and printed
+declarations; in-place edits are #328); gate:31 runs 16 make lines.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted

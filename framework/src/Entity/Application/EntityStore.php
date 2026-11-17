@@ -7,9 +7,8 @@ namespace AIC\Entity\Application;
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
+use AIC\Database\Contracts\Rows;
 use AIC\Entity\Domain\EntityType;
-use AIC\Entity\Domain\FieldFormats;
-use AIC\Entity\Domain\FieldType;
 use Closure;
 use InvalidArgumentException;
 use Throwable;
@@ -63,7 +62,7 @@ final readonly class EntityStore
      */
     public function insert(EntityType $entityType, array $values): int
     {
-        self::keyedBy($entityType, FieldType::Integer, 'insertUuid()');
+        (new EntityKeys())->integerKeyed($entityType);
         $entityValues = new EntityValues($entityType, $values);
 
         return $this->database->fetchOne($this->insertSql($entityType, $entityValues, ''), $entityValues->params())->int($entityType->key);
@@ -83,7 +82,7 @@ final readonly class EntityStore
      */
     public function insertUuid(EntityType $entityType, array $values): string
     {
-        self::keyedBy($entityType, FieldType::Uuid, 'insert()');
+        (new EntityKeys())->uuidKeyed($entityType);
         $entityValues = new EntityValues($entityType, $values);
 
         $sql = $this->insertSql($entityType, $entityValues, '');
@@ -103,7 +102,7 @@ final readonly class EntityStore
      */
     public function insertIfAbsent(EntityType $entityType, array $values, string $unique): ?int
     {
-        self::keyedBy($entityType, FieldType::Integer, 'upsert()');
+        (new EntityKeys())->integerKeyed($entityType);
         $entityValues = new EntityValues($entityType, $values);
         $sql = $this->insertSql($entityType, $entityValues, ' ON CONFLICT (' . self::unique($entityValues, $unique) . ') DO NOTHING');
         $row = $this->database->fetchAll($sql, $entityValues->params())->first();
@@ -154,7 +153,9 @@ final readonly class EntityStore
      */
     public function update(EntityType $entityType, int|string $key, array $values): void
     {
-        self::checkKey($entityType, $key);
+        if (!(new EntityKeys())->isKey($entityType, $key)) {
+            throw new InvalidArgumentException('That is not a key of the ' . $entityType->table . ' entity.');
+        }
 
         if ($this->query($entityType)->where($entityType->key, $key)->changes()->update($values) === 0) {
             throw new EntityNotFoundException('No ' . $entityType->table . ' row has that key.');
@@ -172,9 +173,24 @@ final readonly class EntityStore
     {
         $sql = 'DELETE FROM ' . $entityType->table . ' WHERE ' . $entityType->key . ' = ?';
 
-        if (!(new FieldFormats())->key($entityType->keyType, $key) || $this->database->execute($sql, [$key]) === 0) {
+        if (!(new EntityKeys())->isKey($entityType, $key) || $this->database->execute($sql, [$key]) === 0) {
             throw new EntityNotFoundException('No ' . $entityType->table . ' row has that key.');
         }
+    }
+
+    /**
+     * @param EntityType $entityType The owner rows' entity type.
+     * @param string     $name       One of its relations (#306).
+     * @param Rows       $rows       A page of owner rows, as a query read them.
+     *
+     * @throws InvalidArgumentException When it has no such relation.
+     * @throws QueryException           When a query fails, or a row lacks a column the relation reads.
+     *
+     * @return RelatedRows Each owner's related rows, by its key: one query per relation, never one per row.
+     */
+    public function related(EntityType $entityType, string $name, Rows $rows): RelatedRows
+    {
+        return (new RelationLoader($this->database))->load($entityType, $name, $rows);
     }
 
     /**
@@ -240,32 +256,5 @@ final readonly class EntityStore
     private static function marks(int $count, string $mark): array
     {
         return array_fill(0, $count, $mark);
-    }
-
-    /**
-     * @param EntityType $entityType The entity type.
-     * @param FieldType  $fieldType  The key type the method writes.
-     * @param string     $instead    The method for the other key type.
-     *
-     * @throws InvalidArgumentException When the entity type is keyed otherwise.
-     */
-    private static function keyedBy(EntityType $entityType, FieldType $fieldType, string $instead): void
-    {
-        if ($entityType->keyType !== $fieldType) {
-            throw new InvalidArgumentException('The ' . $entityType->table . ' entity is keyed otherwise: write it with ' . $instead . '.');
-        }
-    }
-
-    /**
-     * @param EntityType $entityType The entity type.
-     * @param int|string $key        A key for it.
-     *
-     * @throws InvalidArgumentException When the key is not of the type's key type.
-     */
-    private static function checkKey(EntityType $entityType, int|string $key): void
-    {
-        if (!(new FieldFormats())->key($entityType->keyType, $key)) {
-            throw new InvalidArgumentException('That is not a key of the ' . $entityType->table . ' entity.');
-        }
     }
 }

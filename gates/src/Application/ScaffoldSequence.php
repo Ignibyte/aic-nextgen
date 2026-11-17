@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 /**
- * The fifteen `bin/aic make:*` lines that make `modules/scaffold/` (#122),
+ * The sixteen `bin/aic make:*` lines that make `modules/scaffold/` (#122),
  * run in order by gate:31 and by anyone regenerating the module: every
  * writer, a page naming its component, a named layout (#157), a page making
  * its own view in that layout, an entity with its table and list page
  * (#123), that entity's policy (#304), a client of one upstream (#305), and a
- * uuid-keyed entity with every field type (#307).
+ * uuid-keyed entity with every field type (#307), and a pivot relating the
+ * two entities (#306).
  */
 final readonly class ScaffoldSequence
 {
@@ -53,6 +54,15 @@ final readonly class ScaffoldSequence
             '--key=uuid',
             '--fields=label:text,state:choice(open|shut),payload:json,happened_at:timestamp,source:uuid',
             '--version=2026_11_17_000000_create_scaffold_events_table',
+        ],
+        [
+            'make:relation',
+            'scaffold',
+            'scaffold_tasks',
+            'scaffold_events',
+            '--keys=int,uuid',
+            '--fields=note:text',
+            '--version=2026_11_17_000001_create_scaffold_tasks_scaffold_events_table',
         ],
     ];
 }
