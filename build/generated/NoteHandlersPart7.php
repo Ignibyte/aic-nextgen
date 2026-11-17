@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
+use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
 use App\Note\Controller\NoteMarkListPage;
 use App\Note\Controller\NoteMarkRoundTripApi;
+use App\Note\Controller\NoteRelationsApi;
+use App\Note\Entity\NoteTypes;
 use App\Note\Service\NoteMarkRoundTrip;
+use App\Note\Service\NoteRelations;
+use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -26,7 +31,8 @@ final readonly class NoteHandlersPart7
     }
 
     /**
-     * @throws ContainerException When a called constructor or service fails.
+     * @throws ContainerException       When a called constructor or service fails.
+     * @throws InvalidArgumentException When a called constructor or service fails.
      *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
@@ -34,12 +40,14 @@ final readonly class NoteHandlersPart7
     {
         $noteHandlerServices = new NoteHandlerServices($this->handlerContext);
         $noteMarkRoundTrip = new NoteMarkRoundTrip($noteHandlerServices->noteMarkRepository());
+        $entityStore = new EntityStore($this->handlerContext->database());
 
         return [
             NoteMarkListPage::class => $this->handlerContext->page(
                 new NoteMarkListPage($this->handlerContext->documents(), $noteHandlerServices->noteMarkRepository()),
             ),
             NoteMarkRoundTripApi::class => $this->handlerContext->api(new NoteMarkRoundTripApi($noteMarkRoundTrip)),
+            NoteRelationsApi::class => $this->handlerContext->api(new NoteRelationsApi(new NoteRelations($entityStore, new NoteTypes()))),
         ];
     }
 }

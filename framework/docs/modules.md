@@ -240,6 +240,13 @@ every table also has `id` and `created_at`, and `--key=uuid` makes `id` a uuid t
 generates (newest first then by `created_at`). One manifest edit
 routes the page and runs the migration; run `bin/aic migrate` before opening the page.
 
+`bin/aic make:relation <module> <owner_table> <target_table> [--keys=int,uuid] [--fields=…]`
+writes the migration of the pivot `<owner>_<target>`: an `id`, each side's key column (the table's
+singular and `_id`; `--keys` gives each side's key type, owner first), the pivot's own fields as
+make:entity takes them, one link per pair, and foreign keys that delete a link with either row.
+The manifest gains the migration, and the make prints the pivot's entity type and a `ManyToMany`
+for each side's entity type, which the agent adds where the module declares its types.
+
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
 (the HTML and page templates), `src/Layouts/Page.php` (four regions: header, content, nav, footer)
 and a stylesheet, then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module

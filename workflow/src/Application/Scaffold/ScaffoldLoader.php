@@ -29,7 +29,7 @@ final readonly class ScaffoldLoader
      */
     public const array RESERVED = [
         'api', 'block', 'catalog', 'client', 'command', 'component', 'entity', 'job', 'layout', 'migration', 'module',
-        'page', 'policy', 'scaffold', 'theme',
+        'page', 'policy', 'relation', 'scaffold', 'theme',
     ];
 
     /**

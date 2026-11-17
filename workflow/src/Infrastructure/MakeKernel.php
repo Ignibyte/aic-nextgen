@@ -69,7 +69,7 @@ final readonly class MakeKernel
             'make:page' => $themeMakes->page($makeRun),
             'make:policy' => new MakePolicyCommand($makeRun, $projectFiles),
             'make:theme' => $themeMakes->theme($makeRun),
-            ...$makeParts->migrations($makeRun),
+            ...(new VersionedMakes())->commands($makeRun),
             ...(new ScaffoldMakes($this->root, $projectFiles, $moduleFolders))->commands($makeRun),
         ];
     }

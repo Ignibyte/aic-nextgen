@@ -109,6 +109,19 @@ The development engine and its guard are described in [workflow.md](workflow.md)
   - `totals()` also groups: `countBy(field)`, `sumBy(field, group)` and `averageBy(field, group,
     scale)` (#209), keyed by the group's text, largest first; an average is rounded to `scale`
     places in SQL and comes back as text.
+  - Relations (#306): an `EntityType` declares `relations: [new Relation(...)]`, each named and
+    of a `RelationKind`: `HasMany` and `HasOne` (the target's column holding the owner's key),
+    `ManyToMany` (through a pivot entity type with its own fields; `key` and `otherKey` are its
+    two key columns) and `Polymorphic` (an id field and a type field on the owner, over a closed
+    map of type names to entity types). A target is built without relations back to its owner.
+    A query takes `withCount(relation)` and `withSum(relation, field)` (columns
+    `<relation>_count`, an integer, and `<relation>_sum_<field>`, text) and filters with
+    `withExisting(relation, conditions)` and `withMissing(relation, conditions)`, each a
+    correlated subquery, so limits still page owners; a Polymorphic relation, or one to the
+    owner's own table, takes none of these. `EntityStore::related(type, relation, rows)` loads a
+    page's related rows in one query per relation (one per type for a Polymorphic) as
+    `RelatedRows`: `rowsOf(key)` loops like a query's rows, `one(key)` gives the first, and a
+    ManyToMany's rows carry the pivot's fields as `pivot_<field>`.
   - A report is a view a module's migration creates through `Schema::view(name, select)`, the one
     place a module writes SQL; an `EntityType` marked read-only maps it and is queried like a
     table, and every write to it is refused.

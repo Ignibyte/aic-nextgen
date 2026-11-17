@@ -8,6 +8,7 @@ use AIC\Controller\Contracts\Command;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\ConsoleContext;
 use App\Note\Command\StockSample;
+use App\Note\Entity\NoteTypes;
 use App\Note\Repository\StockRepository;
 use InvalidArgumentException;
 
@@ -32,7 +33,7 @@ final readonly class NoteCommands
      */
     public function byName(): array
     {
-        $stockRepository = new StockRepository(new EntityStore($this->consoleContext->database()));
+        $stockRepository = new StockRepository(new EntityStore($this->consoleContext->database()), new NoteTypes());
 
         return [
             'stock:sample' => new StockSample($stockRepository),

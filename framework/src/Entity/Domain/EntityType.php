@@ -10,17 +10,18 @@ use function preg_match;
 
 /**
  * An entity type: a table, its key (a bigint the database generates, or since
- * #307 a uuid) and its fields. Names are identifiers, so the SQL built from
+ * #307 a uuid), its fields and since #306 its relations. Names are identifiers, so the SQL built from
  * them needs no quoting.
  */
 final readonly class EntityType
 {
     /**
-     * @param string       $table    The table, or a view.
-     * @param string       $key      The key column.
-     * @param list<object> $fields   Its Fields: objects, the list form elephc keeps (plan.md).
-     * @param bool         $readOnly Whether it maps a view (#191): queried like a table, never written.
-     * @param FieldType    $keyType  The key's type: `Integer`, or `Uuid` for a uuid the database generates (#307).
+     * @param string       $table     The table, or a view.
+     * @param string       $key       The key column.
+     * @param list<object> $fields    Its Fields: objects, the list form elephc keeps (plan.md).
+     * @param bool         $readOnly  Whether it maps a view (#191): queried like a table, never written.
+     * @param FieldType    $keyType   The key's type: `Integer`, or `Uuid` for a uuid the database generates (#307).
+     * @param list<object> $relations Its Relations (#306), each named once.
      *
      * @throws InvalidArgumentException When the table or the key is not an identifier, or the key type is neither.
      */
@@ -30,6 +31,7 @@ final readonly class EntityType
         private array $fields,
         public bool $readOnly = false,
         public FieldType $keyType = FieldType::Integer,
+        private array $relations = [],
     ) {
         if ($keyType !== FieldType::Integer && $keyType !== FieldType::Uuid) {
             throw new InvalidArgumentException('Entity type "' . $table . '": a key is an Integer or a Uuid.');
@@ -41,6 +43,24 @@ final readonly class EntityType
         ) {
             throw new InvalidArgumentException('Entity type "' . $table . '": the table and the key are identifiers.');
         }
+    }
+
+    /**
+     * @param string $name A relation's name.
+     *
+     * @throws InvalidArgumentException When the type declares no relation so named.
+     *
+     * @return Relation It (#306).
+     */
+    public function relation(string $name): Relation
+    {
+        foreach ($this->relations as $relation) {
+            if ($relation instanceof Relation && $relation->name === $name) {
+                return $relation;
+            }
+        }
+
+        throw new InvalidArgumentException('The ' . $this->table . ' entity has no relation "' . $name . '".');
     }
 
     /**

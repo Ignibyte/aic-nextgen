@@ -31,6 +31,13 @@ final class EntityJoins
     private array $joins = [];
 
     /**
+     * Each relation's count or sum column (#306), as `, (<subquery>) AS <name>`.
+     *
+     * @var list<string>
+     */
+    private array $computed = [];
+
+    /**
      * @param EntityType $entityType The entity type queried.
      */
     public function __construct(
@@ -101,8 +108,23 @@ final class EntityJoins
     }
 
     /**
+     * @param string $relation One of the entity type's relations, not Polymorphic.
+     * @param string $field    A field of its target to sum; empty to count the related rows.
+     *
+     * @throws InvalidArgumentException When it has no such relation or field, or the relation cannot be a subquery.
+     */
+    public function compute(string $relation, string $field): void
+    {
+        $relationSql = new RelationSql();
+        $this->computed[] = $field === ''
+            ? ', ' . $relationSql->count($this->entityType, $relation) . ' AS ' . $relation . '_count'
+            : ', ' . $relationSql->sum($this->entityType, $relation, $field) . ' AS ' . $relation . '_sum_' . $field;
+    }
+
+    /**
      * @return string The columns a row returns: the entity type's, then each joined type's as `prefix_column`; a
-     *                Json field as Postgres's text of it, the same under PHP and natively (#307).
+     *                Json field as Postgres's text of it, the same under PHP and natively (#307); then each count or
+     *                sum over a relation (#306).
      */
     public function selected(): string
     {
@@ -117,7 +139,7 @@ final class EntityJoins
             $columns = [...$columns, ...self::joined($join)];
         }
 
-        return implode(', ', $columns);
+        return implode(', ', $columns) . implode('', $this->computed);
     }
 
     /**
