@@ -24,13 +24,16 @@ use function sprintf;
 
 /**
  * One tab's panel of the profiler's detail page (#230), as plain components:
- * the request, its timeline, its statements (a repeated one marked), its
- * templates and its Tessera exchange.
+ * the request, its timeline, its statements (a repeated one marked), its calls
+ * to upstreams (#305), its templates and its Tessera exchange.
  */
 final readonly class ProfilerPanels
 {
     /** The database tab's columns: the position, the SQL, the time and the rows (#240). */
     private const array STATEMENT_ALIGNMENTS = [TableAlign::End, TableAlign::Start, TableAlign::End, TableAlign::End];
+
+    /** The outbound tab's columns: the method, the URL, the status and the time (#305). */
+    private const array CALL_ALIGNMENTS = [TableAlign::Start, TableAlign::Start, TableAlign::End, TableAlign::End];
 
     /** The templates tab's columns: the path, the component and the time (#240). */
     private const array TEMPLATE_ALIGNMENTS = [TableAlign::Start, TableAlign::Start, TableAlign::End];
@@ -54,6 +57,7 @@ final readonly class ProfilerPanels
         return match ($tab) {
             'timeline' => $this->timeline($profileView),
             'database' => $this->database($profileView),
+            'outbound' => $this->outbound($profileView),
             'templates' => $this->templates($profileView),
             'tessera' => $this->tessera($profileView),
             default => $this->request($profileView),
@@ -106,12 +110,12 @@ final readonly class ProfilerPanels
      */
     private function database(ProfileView $profileView): Table
     {
-        $sql = array_map(static fn (StatementRecord $statementRecord): string => $statementRecord->sql, $profileView->statements);
+        $sql = array_map(static fn (StatementRecord $statementRecord): string => $statementRecord->sql, $profileView->records->statements);
         $counts = array_count_values($sql);
         $rows = [];
         $repeated = 0;
 
-        foreach ($profileView->statements as $position => $statementRecord) {
+        foreach ($profileView->records->statements as $position => $statementRecord) {
             $repeat = ($counts[$statementRecord->sql] ?? 1) > 1;
             $repeated += $repeat
                 ? 1
@@ -132,13 +136,36 @@ final readonly class ProfilerPanels
     /**
      * @param ProfileView $profileView The profile.
      *
+     * @return Table Each call to an upstream (#305), in order; status 0 when it got no answer.
+     */
+    private function outbound(ProfileView $profileView): Table
+    {
+        $rows = [];
+
+        foreach ($profileView->records->calls as $outboundCall) {
+            $rows[] = new TableRow([
+                new TableCell($outboundCall->method),
+                new TableCell($outboundCall->url),
+                new TableCell((string) $outboundCall->status),
+                new TableCell((string) $outboundCall->microseconds),
+            ], $outboundCall->status === 0 || $outboundCall->status >= 500 ? 'warn' : '');
+        }
+
+        $caption = sprintf('%d call(s) to upstreams', count($rows));
+
+        return new Table(['Method', 'URL', 'Status', 'µs'], $rows, $caption, alignments: self::CALL_ALIGNMENTS);
+    }
+
+    /**
+     * @param ProfileView $profileView The profile.
+     *
      * @return Table Each template, in the order each finished.
      */
     private function templates(ProfileView $profileView): Table
     {
         $rows = [];
 
-        foreach ($profileView->components as $componentRecord) {
+        foreach ($profileView->records->components as $componentRecord) {
             $rows[] = new TableRow([
                 new TableCell($componentRecord->path),
                 new TableCell($componentRecord->component),

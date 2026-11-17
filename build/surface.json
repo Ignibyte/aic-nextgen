@@ -113,6 +113,14 @@
             "path": "/notifications/read"
         },
         {
+            "handler": "App\\Site\\Controller\\UpstreamApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "site",
+            "needs": "",
+            "path": "/upstream"
+        },
+        {
             "handler": "App\\Account\\Controller\\LoginPage",
             "kind": "Page",
             "method": "GET",
@@ -477,7 +485,9 @@
                 "App\\Site\\Block\\SiteNavBlock"
             ],
             "exports": [],
-            "factories": [],
+            "factories": [
+                "App\\Site\\Service\\Upstream\\SiteClients"
+            ],
             "middleware": [],
             "migrations": [
                 "App\\Site\\Migration\\CreateSubscribersTable",

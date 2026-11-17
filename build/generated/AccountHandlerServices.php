@@ -53,6 +53,9 @@ final readonly class AccountHandlerServices
      */
     public function keptUploads(): KeptUploads
     {
-        return new KeptUploads(new PublicFiles($this->handlerContext->root()), new PrivateFiles($this->handlerContext->root()));
+        return new KeptUploads(
+            new PublicFiles($this->handlerContext->roots()->root()),
+            new PrivateFiles($this->handlerContext->roots()->root()),
+        );
     }
 }

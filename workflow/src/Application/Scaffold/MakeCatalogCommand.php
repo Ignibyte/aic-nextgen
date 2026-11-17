@@ -43,6 +43,7 @@ final readonly class MakeCatalogCommand implements Command
     private const array BUILT_IN = [
         'make:api' => ['make:api <module> <Class> <path>', 'an Api answering JSON at a GET route'],
         'make:block' => ['make:block <module> <Class> [--region=content] [--weight=10] [--prefix=/path]', 'a block placed in a region'],
+        'make:client' => ['make:client <module> <Name>', 'a typed client of one upstream API and its reply value'],
         'make:command' => ['make:command <module> <Class> <name>', 'a console command'],
         'make:component' => ['make:component <Class>', 'a theme component with its template'],
         'make:entity' => [

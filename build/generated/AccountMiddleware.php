@@ -37,12 +37,12 @@ final readonly class AccountMiddleware
     {
         $userRepository = new UserRepository(new EntityStore($this->handlerContext->database()));
         $pgcryptoPasswordHasher = new PgcryptoPasswordHasher($this->handlerContext->database());
-        $routeAuthConfig = (new AccessRules($this->handlerContext->protectedPrefixes()))->routeAuthConfig();
+        $accessRules = new AccessRules($this->handlerContext->roots()->protectedPrefixes());
 
         return [
             new RequireAuthenticationMiddleware(
                 new Authenticator($userRepository, $pgcryptoPasswordHasher),
-                $routeAuthConfig,
+                $accessRules->routeAuthConfig(),
                 $this->handlerContext->responseBuilder(),
             ),
         ];

@@ -42,12 +42,14 @@ final readonly class SiteHandlers
 
         return [
             HealthApi::class => $this->handlerContext->api(new HealthApi($databaseStatus)),
-            KeptPageDownload::class => $this->handlerContext->stream(new KeptPageDownload(new PrivateFiles($this->handlerContext->root()))),
+            KeptPageDownload::class => $this->handlerContext->stream(
+                new KeptPageDownload(new PrivateFiles($this->handlerContext->roots()->root())),
+            ),
             ResourceDownload::class => $this->handlerContext->stream(
-                new ResourceDownload(new RequestedFile($this->handlerContext->root())),
+                new ResourceDownload(new RequestedFile($this->handlerContext->roots()->root())),
             ),
             StatusApi::class => $this->handlerContext->api(
-                new StatusApi($this->handlerContext->appConfig(), $this->handlerContext->bootedAt(), $databaseStatus),
+                new StatusApi($this->handlerContext->appConfig(), $this->handlerContext->roots()->bootedAt(), $databaseStatus),
             ),
             TickEvents::class => $this->handlerContext->stream(new TickEvents()),
             TicksPage::class => $this->handlerContext->page(new TicksPage($this->handlerContext->documents())),

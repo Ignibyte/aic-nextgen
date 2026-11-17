@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 /**
- * The thirteen `bin/aic make:*` lines that make `modules/scaffold/` (#122),
+ * The fourteen `bin/aic make:*` lines that make `modules/scaffold/` (#122),
  * run in order by gate:31 and by anyone regenerating the module: every
  * writer, a page naming its component, a named layout (#157), a page making
  * its own view in that layout, an entity with its table and list page
- * (#123), and that entity's policy (#304).
+ * (#123), that entity's policy (#304), and a client of one upstream (#305).
  */
 final readonly class ScaffoldSequence
 {
@@ -43,5 +43,6 @@ final readonly class ScaffoldSequence
             '--version=2026_10_25_000000_create_scaffold_tasks_table',
         ],
         ['make:policy', 'scaffold', 'ScaffoldTask'],
+        ['make:client', 'scaffold', 'ScaffoldFeed'],
     ];
 }

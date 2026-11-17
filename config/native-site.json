@@ -51,6 +51,15 @@
             "captures": false
         },
         {
+            "name": "upstream, the stub called once, pooled and retried",
+            "method": "GET",
+            "path": "/upstream",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "download",
             "method": "GET",
             "path": "/download/hello.txt",
@@ -1407,6 +1416,15 @@
         }
     ],
     "profiled": [
+        {
+            "name": "profiled upstream, each outbound call recorded",
+            "method": "GET",
+            "path": "/upstream",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
         {
             "name": "profiled home, the toolbar spliced",
             "method": "GET",

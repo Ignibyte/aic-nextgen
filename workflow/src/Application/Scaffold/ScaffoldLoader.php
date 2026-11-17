@@ -28,8 +28,8 @@ final readonly class ScaffoldLoader
      * The kinds the built-in makes and the engine's own commands use, which no app scaffold may take.
      */
     public const array RESERVED = [
-        'api', 'block', 'catalog', 'command', 'component', 'entity', 'job', 'layout', 'migration', 'module', 'page',
-        'policy', 'scaffold', 'theme',
+        'api', 'block', 'catalog', 'client', 'command', 'component', 'entity', 'job', 'layout', 'migration', 'module',
+        'page', 'policy', 'scaffold', 'theme',
     ];
 
     /**

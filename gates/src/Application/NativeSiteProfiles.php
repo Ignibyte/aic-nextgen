@@ -19,8 +19,9 @@ use function substr;
  * (#234): the two profiles their `X-AIC-Profile` headers name, reduced by
  * Postgres to their shape. The shape is the handler, kind, status, method,
  * path and query, the Tessera headers asked and answered, the field names,
- * each statement's SQL and each template's path and class, one text column a
- * member. Times, ids and the browser key are left out.
+ * each statement's SQL, each template's path and class, and each outbound
+ * call's method, URL and status (#305), one text column a member. Times, ids
+ * and the browser key are left out.
  */
 final readonly class NativeSiteProfiles
 {
@@ -32,7 +33,9 @@ final readonly class NativeSiteProfiles
         . " (10, 'statements', (SELECT coalesce(jsonb_agg(s->'sql' ORDER BY n), '[]'::jsonb)::text"
         . " FROM jsonb_array_elements(p->'statements') WITH ORDINALITY AS e(s, n))),"
         . " (11, 'components', (SELECT coalesce(jsonb_agg(jsonb_build_array(c->'path', c->'component') ORDER BY n), '[]'::jsonb)::text"
-        . " FROM jsonb_array_elements(p->'components') WITH ORDINALITY AS e(c, n)))) AS m(n, member, value) ORDER BY m.n";
+        . " FROM jsonb_array_elements(p->'components') WITH ORDINALITY AS e(c, n))),"
+        . " (12, 'calls', (SELECT coalesce(jsonb_agg(jsonb_build_array(c->'method', c->'url', c->'status') ORDER BY n), '[]'::jsonb)::text"
+        . " FROM jsonb_array_elements(coalesce(p->'calls', '[]'::jsonb)) WITH ORDINALITY AS e(c, n)))) AS m(n, member, value) ORDER BY m.n";
 
     /**
      * @param list<NativeSiteStep>   $steps  The profiled steps.

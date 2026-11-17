@@ -20,10 +20,20 @@ use Gates\Domain\WiringRoots;
 /**
  * The roots each side of the app gives the modules' constructors (#93), as the
  * generated code reaches them: the web side's through `HandlerContext`, the
- * console's through `ConsoleContext`. They match the contexts' accessors.
+ * console's through `ConsoleContext`. They match the contexts' accessors; a
+ * path (`outbound()->client`, `roots()->root`) reaches one through a bundle
+ * the context returns (#305).
  */
 final readonly class WiringContexts
 {
+    /**
+     * @param OutboundRoots $outboundRoots The outbound roots both sides give (#305).
+     */
+    public function __construct(
+        private OutboundRoots $outboundRoots = new OutboundRoots(),
+    ) {
+    }
+
     /**
      * @return WiringRoots What a controller or a middleware may ask for.
      */
@@ -39,8 +49,14 @@ final readonly class WiringContexts
                 PageDocuments::class => 'documents',
                 PublicAssets::class => 'assets',
                 ResponseBuilder::class => 'responseBuilder',
+                ...$this->outboundRoots->byType('roots()->outbound()->'),
             ],
-            ['bootedAt' => 'bootedAt', 'protectedPrefixes' => 'protectedPrefixes', 'root' => 'root', 'schedules' => 'schedules'],
+            [
+                'bootedAt' => 'roots()->bootedAt',
+                'protectedPrefixes' => 'roots()->protectedPrefixes',
+                'root' => 'roots()->root',
+                'schedules' => 'roots()->schedules',
+            ],
         );
     }
 
@@ -58,6 +74,7 @@ final readonly class WiringContexts
                 MailTransport::class => 'mailTransport',
                 PageDocuments::class => 'documents',
                 PageFiles::class => 'pageFiles',
+                ...$this->outboundRoots->byType('outbound()->'),
             ],
             ['root' => 'root'],
         );

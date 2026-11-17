@@ -8,6 +8,9 @@ use AIC\Config\Domain\AppConfig;
 use AIC\Container\Exception\ContainerException;
 use AIC\Controller\Application\PageDocuments;
 use AIC\Database\Contracts\Database;
+use AIC\HttpClient\Application\Outbound;
+use AIC\HttpClient\Application\OutboundWiring;
+use AIC\HttpClient\Domain\Upstreams;
 use AIC\Notification\Contracts\MailTransport;
 use AIC\Notification\Domain\MailConfig;
 use AIC\Storage\Application\PageFiles;
@@ -102,6 +105,18 @@ final readonly class ConsoleContext
     public function pageFiles(): PageFiles
     {
         return $this->pages()->pageFiles();
+    }
+
+    /**
+     * @return Outbound The client, pool, factories and upstreams for calls to upstream APIs (#305), unobserved.
+     */
+    public function outbound(): Outbound
+    {
+        $upstreams = $this->appConfig instanceof AppConfig
+            ? $this->appConfig->upstreams
+            : new Upstreams();
+
+        return (new OutboundWiring())->outbound($upstreams);
     }
 
     /**

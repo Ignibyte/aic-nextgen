@@ -43,7 +43,7 @@ final readonly class SiteHandlersPart3
     {
         $queueLines = new QueueLines(new QueueRecords($this->handlerContext->database()));
         $postgresQueue = new PostgresQueue($this->handlerContext->database());
-        $scheduler = new Scheduler($this->handlerContext->database(), $postgresQueue, $this->handlerContext->schedules());
+        $scheduler = new Scheduler($this->handlerContext->database(), $postgresQueue, $this->handlerContext->roots()->schedules());
 
         return [
             JobsPage::class => $this->handlerContext->page(
@@ -51,7 +51,7 @@ final readonly class SiteHandlersPart3
                     $this->handlerContext->documents(),
                     $queueLines,
                     new ScheduleLines($scheduler),
-                    $this->handlerContext->schedules(),
+                    $this->handlerContext->roots()->schedules(),
                 ),
             ),
             JobsPost::class => $this->handlerContext->page(new JobsPost($postgresQueue)),

@@ -71,7 +71,7 @@ if (($arguments[1] ?? '') !== 'serve') {
     $gate = new NativeSiteGate(
         $toolchain,
         $builder,
-        new NativeSiteSites($toolchain, new ProcServerLauncher()),
+        new NativeSiteSites($toolchain, new ProcServerLauncher(), $package),
         $comparer,
         $gateUser,
         $browser,

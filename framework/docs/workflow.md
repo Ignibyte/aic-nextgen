@@ -138,6 +138,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:api` | scaffold an Api |
 | `Command::make:block` | scaffold a Block |
 | `Command::make:catalog` | list every kind, built-in and the app's (#298) |
+| `Command::make:client` | scaffold a typed client of one upstream and its reply value (#305) |
 | `Command::make:command` | scaffold a Command |
 | `Command::make:component` | scaffold declared Component data and template |
 | `Command::make:entity` | scaffold an entity, its repository, migration and list page |

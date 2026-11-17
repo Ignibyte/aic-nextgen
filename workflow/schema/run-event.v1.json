@@ -596,6 +596,7 @@
             "make",
             "make:api",
             "make:block",
+            "make:client",
             "make:command",
             "make:component",
             "make:entity",

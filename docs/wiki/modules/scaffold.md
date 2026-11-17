@@ -124,6 +124,8 @@ none
 | Class | File |
 | --- | --- |
 | `App\Scaffold\Service\ScaffoldBody` | [modules/scaffold/src/Service/ScaffoldBody.php](../../../modules/scaffold/src/Service/ScaffoldBody.php) |
+| `App\Scaffold\Service\ScaffoldFeedClient` | [modules/scaffold/src/Service/ScaffoldFeedClient.php](../../../modules/scaffold/src/Service/ScaffoldFeedClient.php) |
+| `App\Scaffold\Service\ScaffoldFeedReply` | [modules/scaffold/src/Service/ScaffoldFeedReply.php](../../../modules/scaffold/src/Service/ScaffoldFeedReply.php) |
 
 ## Uses
 
@@ -135,6 +137,7 @@ none
 - [AIC\Controller](../../../framework/docs/systems.md#1-http-routing-and-the-kinds)
 - [AIC\Database](../../../framework/docs/systems.md#3-data)
 - [AIC\Entity](../../../framework/docs/systems.md#3-data)
+- [AIC\HttpClient](../../../framework/docs/systems.md#1-http-routing-and-the-kinds)
 - [AIC\Module](../../../framework/docs/systems.md#2-wiring-and-modules)
 - [AIC\Schema](../../../framework/docs/systems.md#3-data)
 

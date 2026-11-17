@@ -7,6 +7,7 @@ namespace AIC\Profiler\Application;
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
+use AIC\HttpClient\Contracts\OutboundCall;
 use AIC\Profiler\Domain\ComponentRecord;
 use AIC\Profiler\Domain\StatementRecord;
 
@@ -26,6 +27,12 @@ final readonly class ProfileParts
     private const string COMPONENTS = "SELECT coalesce(c->>'path', '') AS path, coalesce(c->>'component', '') AS component,"
         . " coalesce((c->>'microseconds')::bigint, 0) AS microseconds"
         . " FROM aic_profiles, jsonb_array_elements(profile::jsonb->'components') WITH ORDINALITY AS e(c, n)"
+        . ' WHERE id = ? ORDER BY n';
+
+    /** A profile's calls to upstreams (#305), in order. */
+    private const string CALLS = "SELECT coalesce(c->>'method', '') AS method, coalesce(c->>'url', '') AS url,"
+        . " coalesce((c->>'status')::bigint, 0) AS status, coalesce((c->>'microseconds')::bigint, 0) AS microseconds"
+        . " FROM aic_profiles, jsonb_array_elements(coalesce(profile::jsonb->'calls', '[]'::jsonb)) WITH ORDINALITY AS e(c, n)"
         . ' WHERE id = ? ORDER BY n';
 
     /** An object of strings, by name. */
@@ -85,6 +92,25 @@ final readonly class ProfileParts
         }
 
         return $components;
+    }
+
+    /**
+     * @param Database $database The database.
+     * @param string   $id       A profile's id.
+     *
+     * @throws QueryException When the table cannot be read.
+     *
+     * @return list<OutboundCall> Its calls to upstreams (#305), in order; none for a profile kept before them.
+     */
+    public function calls(Database $database, string $id): array
+    {
+        $calls = [];
+
+        foreach ($database->fetchAll(self::CALLS, [$id]) as $row) {
+            $calls[] = new OutboundCall($row->string('method'), $row->string('url'), $row->int('status'), $row->int('microseconds'));
+        }
+
+        return $calls;
     }
 
     /**

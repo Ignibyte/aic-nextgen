@@ -7,9 +7,12 @@ namespace AIC\Profiler\Application;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\RenderObserver;
 use AIC\Http\Application\ResponseBuilder;
+use AIC\HttpClient\Contracts\OutboundCall;
+use AIC\HttpClient\Contracts\OutboundObserver;
 use AIC\Kernel\Contracts\RequestObserver;
 use AIC\Kernel\Domain\Monotonic;
 use AIC\Profiler\Domain\ComponentRecord;
+use AIC\Profiler\Domain\ProfileRecords;
 use AIC\Profiler\Domain\ProfileTimes;
 use AIC\Profiler\Domain\RequestFacts;
 use AIC\Profiler\Domain\StatementRecord;
@@ -25,11 +28,11 @@ use function str_starts_with;
 /**
  * One request's profile while it runs (#229): told by the dynamic
  * application, the router, the Renderer and the profiled database, and kept by
- * the writer when the request answers, named in `X-AIC-Profile`. It lives for
+ * the writer when the request answers, with each call to an upstream (#305), named in `X-AIC-Profile`. It lives for
  * one request, as each request starts with fresh PHP state. The profiler's
  * own pages (`/_profiler`) are not recorded.
  */
-final class Profile implements RenderObserver, RequestObserver, RouteObserver
+final class Profile implements OutboundObserver, RenderObserver, RequestObserver, RouteObserver
 {
     /** The response header that names the profile. */
     public const string HEADER = 'X-AIC-Profile';
@@ -71,6 +74,9 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
 
     /** @var list<ComponentRecord> */
     private array $components = [];
+
+    /** @var list<OutboundCall> */
+    private array $calls = [];
 
     /**
      * @param ProfileWriter    $profileWriter    Keeps the profile.
@@ -177,6 +183,15 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
     }
 
     /**
+     * @param OutboundCall $outboundCall A call the request made to an upstream.
+     */
+    #[Override]
+    public function called(OutboundCall $outboundCall): void
+    {
+        $this->calls[] = $outboundCall;
+    }
+
+    /**
      * @param ServerRequestInterface $serverRequest The request, as it started.
      * @param ResponseInterface      $response      What the app answered.
      *
@@ -190,7 +205,8 @@ final class Profile implements RenderObserver, RequestObserver, RouteObserver
         }
 
         $requestFacts = $this->facts($serverRequest, $response);
-        $id = $this->profileWriter->store($this->id, $requestFacts, $this->times(), $this->statements, $this->components);
+        $profileRecords = new ProfileRecords($this->statements, $this->components, $this->calls);
+        $id = $this->profileWriter->store($this->id, $requestFacts, $this->times(), $profileRecords);
 
         return $id === ''
             ? $response

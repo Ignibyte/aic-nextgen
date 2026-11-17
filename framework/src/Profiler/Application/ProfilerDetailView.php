@@ -29,6 +29,7 @@ final readonly class ProfilerDetailView
         ['request', 'Request'],
         ['timeline', 'Timeline'],
         ['database', 'Database'],
+        ['outbound', 'Outbound'],
         ['templates', 'Templates'],
         ['tessera', 'Tessera'],
     ];

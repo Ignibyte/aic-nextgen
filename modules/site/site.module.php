@@ -6,7 +6,8 @@ declare(strict_types=1);
  * The site module's manifest (#93; the fixture app's since #126): the home
  * page, the status and health APIs, file downloads, the tick stream and its
  * page, the greeting pages and their greeters, the jobs and notifications pages with the demo job and its
- * schedule, the site's blocks, db:ping, greet and notifications:forget (#210).
+ * schedule, the site's blocks, db:ping, greet and notifications:forget (#210), and the
+ * /upstream Api with its clients' factory (#305).
  * Its components, layouts and assets live in the theme (#153). The build reads it; nothing reads it at
  * run time.
  */
@@ -32,6 +33,7 @@ use App\Site\Controller\ResourceDownload;
 use App\Site\Controller\StatusApi;
 use App\Site\Controller\TickEvents;
 use App\Site\Controller\TicksPage;
+use App\Site\Controller\UpstreamApi;
 use App\Site\Job\DemoJob;
 use App\Site\Job\KeptPageJob;
 use App\Site\Migration\CreateSubscribersTable;
@@ -39,6 +41,7 @@ use App\Site\Migration\MakeSubscriberEmailUnique;
 use App\Site\Service\EnglishGreeter;
 use App\Site\Service\Greeter;
 use App\Site\Service\SpanishGreeter;
+use App\Site\Service\Upstream\SiteClients;
 
 return (new ModuleManifest('site'))
     ->route(RouteMethod::Get, '/api/status', StatusApi::class)
@@ -66,4 +69,6 @@ return (new ModuleManifest('site'))
     ->job('kept-page', KeptPageJob::class)
     ->schedule('demo-every-minute', 'demo', ['mode' => 'succeed'], '* * * * *')
     ->migration(CreateSubscribersTable::class)
-    ->migration(MakeSubscriberEmailUnique::class);
+    ->migration(MakeSubscriberEmailUnique::class)
+    ->route(RouteMethod::Get, '/upstream', UpstreamApi::class)
+    ->factory(SiteClients::class);

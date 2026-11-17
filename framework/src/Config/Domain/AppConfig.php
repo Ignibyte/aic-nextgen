@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Config\Domain;
 
+use AIC\HttpClient\Domain\Upstreams;
 use AIC\Tessera\Domain\TesseraRelease;
 use InvalidArgumentException;
 
@@ -30,6 +31,8 @@ final readonly class AppConfig
      *                                     and assets from (#153); null for an app with no HTML.
      * @param int            $maxBodyBytes The largest request body the app takes (#196); a larger one answers
      *                                     413 before the session. The default is the compiled server's own.
+     * @param Upstreams      $upstreams    The upstream APIs the app calls, by name (#305), each URL and token
+     *                                     read from the environment here.
      *
      * @throws InvalidArgumentException When the name is blank or the cap is below one byte.
      */
@@ -38,6 +41,7 @@ final readonly class AppConfig
         public TesseraRelease $tessera,
         public ?string $theme = null,
         public int $maxBodyBytes = self::MAX_BODY_BYTES,
+        public Upstreams $upstreams = new Upstreams(),
     ) {
         if (trim($name) === '') {
             throw new InvalidArgumentException('AppConfig: the application name must not be blank.');

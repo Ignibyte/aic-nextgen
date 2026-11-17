@@ -47,7 +47,7 @@ final readonly class SiteHandlersPart2
                     $this->handlerContext->documents(),
                     $siteHandlerServices->greetingForm(),
                     $this->handlerContext->appConfig(),
-                    $this->handlerContext->bootedAt(),
+                    $this->handlerContext->roots()->bootedAt(),
                 ),
             ),
         ];

@@ -70,7 +70,7 @@ try {
         ? new ProfiledDatabase($pdoDatabase, $profile)
         : $pdoDatabase;
     $requestObservers = $profile instanceof Profile
-        ? new RequestObservers($profile, $profile, $profile, true)
+        ? new RequestObservers($profile, $profile, $profile, true, $profile)
         : new RequestObservers();
 
     $appKernel = new AppKernel(
