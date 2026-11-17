@@ -9,7 +9,7 @@
 #       ignibyte/aic-workflow required by path from a copy
 #       of workflow/ in <package-copy>, the tool configs stripped of the
 #       package's own source (scratch-app.php strip), gate:21's cache.txt
-#       copied so its first run starts warm, the git hooks installed and
+#       and gate:33's scaffold-cache.txt copied so their first runs start warm, the git hooks installed and
 #       bin/aic workflow:init run. Two commits: base, then workflow:init.
 #   scratch-app.sh look <spec>
 #       Plan's code lookups for <spec>, run in the current app (#118): the
@@ -47,6 +47,10 @@ make_app() {
         if [ -f "${repo}/.native-gate/cache.txt" ]; then
             mkdir -p .native-gate
             cp "${repo}/.native-gate/cache.txt" .native-gate/cache.txt
+        fi
+        if [ -f "${repo}/.native-gate/scaffold-cache.txt" ]; then
+            mkdir -p .native-gate
+            cp "${repo}/.native-gate/scaffold-cache.txt" .native-gate/scaffold-cache.txt
         fi
         php "${repo}/workflow/probes/scratch-app.php" strip "${package}"
         git config user.email probe@example.com

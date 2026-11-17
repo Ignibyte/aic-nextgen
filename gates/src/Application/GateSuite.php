@@ -205,6 +205,13 @@ final readonly class GateSuite
             'app',
             ['php', 'gate-module-markup.php'],
         ],
+        33 => [
+            "App scaffolds: every kind under scaffolds/, the app's and the workflow package's, loads, starts from a kind, names "
+                . 'every file in its folder and fills every placeholder, each census rule proven on a planted fixture; and each '
+                . 'kind, made with its probe values in a copy of the project, passes the gates that read module code.',
+            'app',
+            ['php', 'gate-scaffolds.php'],
+        ],
     ];
 
     /**

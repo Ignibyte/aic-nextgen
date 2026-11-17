@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **gate:33, app scaffolds** (#300). Every kind under `scaffolds/`, the app's and the workflow
+  package's, passes a census: it loads, its `from()` names a kind, every file in its folder is
+  named, every placeholder is filled. Each census rule must fire on a planted fixture first, so an
+  empty census never passes. Then each kind is made with its probe values in a copy of the project
+  and judged there by the gates that read module code (6 to 16, 21, 24 to 27, 32); a kind that
+  passed is cached by its folder's hash. An app runs it: 30 gates.
+
 - **The scaffold run: a new kind only with the operator's approval** (#299). When no kind fits,
   the agent asks, and the operator approves one by answering `scaffold <kind>`. In that run only,
   `bin/aic make:scaffold <kind> --from=<kind>` writes `scaffolds/<kind>/` from an app or AIC kind

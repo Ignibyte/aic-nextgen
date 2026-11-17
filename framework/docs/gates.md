@@ -157,8 +157,15 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 30 | suite files | root configs match the stubs, composer scripts/plugins match the suite, and custom PHPCS/PHPMD XML matches its writers | `vendor/bin/aic-gate init` for root stubs; rebuild or reinstall a stale package |
 | 31 | make scaffold | *AIC only*: `modules/scaffold/` and its theme components and layout are what the twelve `bin/aic make:*` lines make, byte for byte, and `make:module` prints the lines the build asks for | not run in an app |
 | 32 | module markup | no file under `modules/` holds HTML: no template or markup file, no inline output, no tag, markup declaration or character reference in a literal or text file, no HTML function; any `<` in a controller; no XML as text: an `<?` declaration, a `</name>` or a `<name/>` of any name (#233) | move the markup into a theme component, XML into an `XmlDocument`; write a usage placeholder as `{name}` |
+| 33 | app scaffolds | every kind under `scaffolds/`, the app's and the workflow package's, loads, starts from a kind, names every file in its folder and fills every placeholder (each census rule proven on a planted fixture first); each kind, made with its probe values in a copy of the project (in `site`, else the first module), passes gates 6 to 16, 21, 24 to 27 and 32 there; an unchanged kind is cached | fix the scaffold the finding names; when the project fails the same gate on its own, fix the project first |
 
 ## The gates that need more than PHP
+
+- **gate:33** copies the project (what git lists, `vendor/`, `tools/` and the analysers' caches,
+  cloned cheaply on a copy-on-write disk), makes each scaffold there, builds, and runs the gates that
+  read module code, so a kind's first check takes a couple of minutes. It records each kind that
+  passed by the hash of its folder in `.native-gate/scaffold-cache.txt`; a scaffold edit makes it
+  run again. It defers when `ignibyte/aic-workflow` is not installed (#300).
 
 - **gate:21** compiles each runtime class with its dependencies under elephc, runs it, and compares
   the output with PHP's. A class whose files and toolchain are unchanged since its last green run
