@@ -7,8 +7,12 @@ namespace AIC\Workflow\Application\Make;
 use AIC\Workflow\Application\Scaffold\ScaffoldTemplate;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
+use function array_map;
+use function basename;
 use function file_get_contents;
+use function glob;
 use function is_file;
+use function sort;
 
 /**
  * The built-in makes' text (#301): each a `*.tpl` file under the package's
@@ -40,6 +44,19 @@ final readonly class MakeTemplates
      */
     public function render(string $kind, string $template, array $values): string
     {
+        return $this->scaffoldTemplate->render($this->text($kind, $template), $values);
+    }
+
+    /**
+     * @param string $kind     The built-in kind.
+     * @param string $template The template's file name.
+     *
+     * @throws WorkflowRefusal When the template is missing.
+     *
+     * @return string Its text, unfilled (`make:scaffold --from`, #299).
+     */
+    public function text(string $kind, string $template): string
+    {
         $path = $this->folder . '/' . $kind . '/' . $template;
         $text = is_file($path)
             ? file_get_contents($path)
@@ -49,6 +66,20 @@ final readonly class MakeTemplates
             throw new WorkflowRefusal('the workflow package lacks scaffolds/' . $kind . '/' . $template . '; reinstall it.');
         }
 
-        return $this->scaffoldTemplate->render($text, $values);
+        return $text;
+    }
+
+    /**
+     * @param string $kind A kind.
+     *
+     * @return list<string> The file names of its built-in templates, sorted; empty when it is no built-in (#299).
+     */
+    public function names(string $kind): array
+    {
+        $paths = glob($this->folder . '/' . $kind . '/*.tpl');
+        $names = array_map(basename(...), $paths === false ? [] : $paths);
+        sort($names);
+
+        return $names;
     }
 }

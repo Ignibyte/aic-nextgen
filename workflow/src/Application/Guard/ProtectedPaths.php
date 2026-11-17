@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Guard;
 
+use AIC\Workflow\Application\Scaffold\ScaffoldApprovals;
 use AIC\Workflow\Domain\Guard\GuardScene;
 use AIC\Workflow\Domain\RunState;
 
@@ -20,8 +21,9 @@ use function substr;
  * What the agent never writes, run or no run, whatever the enforcement
  * (#102): the run's state but its spec, the opt-in, the hook wiring, the
  * workflow package itself, the pack `workflow:init` installed and its lock
- * (#105), and Claude Code's own global settings and plugins. A path counts
- * as spelled and as landed. Reading is never refused.
+ * (#105), the app's scaffolds but the kinds the open run approved (#299),
+ * and Claude Code's own global settings and plugins. A path counts as
+ * spelled and as landed. Reading is never refused.
  */
 final readonly class ProtectedPaths
 {
@@ -39,11 +41,18 @@ final readonly class ProtectedPaths
     private const string PACK = " is the workflow's pack: bin/aic workflow:init writes it, and the operator edits it between runs.";
 
     /**
-     * @param string       $root         The project's root.
-     * @param string       $home         The user's home; empty when unknown.
-     * @param string       $package      The workflow package the guard runs from.
-     * @param PathResolver $pathResolver Where a path lands.
-     * @param list<string> $pack         The pack's files and its lock, relative to the project (#105).
+     * Why the app's scaffolds are walled (#299).
+     */
+    private const string SCAFFOLDS = "scaffolds/ holds the app's make kinds, frozen: bin/aic make:scaffold writes a new one in a run "
+        . 'the operator approved; ask with bin/aic workflow:ask, and the operator answers "scaffold <kind>".';
+
+    /**
+     * @param string            $root              The project's root.
+     * @param string            $home              The user's home; empty when unknown.
+     * @param string            $package           The workflow package the guard runs from.
+     * @param PathResolver      $pathResolver      Where a path lands.
+     * @param list<string>      $pack              The pack's files and its lock, relative to the project (#105).
+     * @param ScaffoldApprovals $scaffoldApprovals The scaffold kinds the open run approves (#299).
      */
     public function __construct(
         private string $root,
@@ -51,6 +60,7 @@ final readonly class ProtectedPaths
         private string $package,
         private PathResolver $pathResolver,
         private array $pack = [],
+        private ScaffoldApprovals $scaffoldApprovals = new ScaffoldApprovals(),
     ) {
     }
 
@@ -65,7 +75,9 @@ final readonly class ProtectedPaths
         $landed = $this->pathResolver->landed($absolute);
         $spec = $this->spec($guardScene);
 
-        return $absolute === $spec || $landed === $spec ? '' : $this->hit([$absolute, $landed], $this->entries($guardScene));
+        return $absolute === $spec || $landed === $spec || $this->approved([$absolute, $landed], $guardScene)
+            ? ''
+            : $this->hit([$absolute, $landed], $this->entries($guardScene));
     }
 
     /**
@@ -162,6 +174,7 @@ final readonly class ProtectedPaths
             $this->root . '/.claude/settings.local.json' => "the hook wiring is the operator's.",
             $this->root . '/.codex' => "Codex control files are the operator's.",
             $this->root . '/config/workflow.php' => 'config/workflow.php holds the levers: the operator changes it.',
+            $this->root . '/scaffolds' => self::SCAFFOLDS,
             $this->root . '/var/index' => 'var/index/ is the code index: only bin/aic code:* and the engine write it (#118).',
             $this->root . '/var/workflow' => "var/workflow/ is the run's state: only the engine writes it, through bin/aic workflow:*.",
         ];
@@ -206,6 +219,23 @@ final readonly class ProtectedPaths
         }
 
         return $ruled;
+    }
+
+    /**
+     * @param array{string, string} $paths      A path as spelled and as landed.
+     * @param GuardScene            $guardScene The run, whose operator may have approved scaffold kinds (#299).
+     *
+     * @return bool Whether either lies in the folder of a kind the open run's operator approved.
+     */
+    private function approved(array $paths, GuardScene $guardScene): bool
+    {
+        $kinds = $this->scaffoldApprovals->kinds($guardScene->runState);
+
+        return array_any(
+            $kinds,
+            fn (string $kind): bool => $this->under($paths[0], $this->root . '/scaffolds/' . $kind)
+                || $this->under($paths[1], $this->root . '/scaffolds/' . $kind),
+        );
     }
 
     /**

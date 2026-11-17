@@ -11,6 +11,8 @@ use AIC\Workflow\Application\Make\ModuleFolders;
 use AIC\Workflow\Application\ProjectFiles;
 use AIC\Workflow\Application\Scaffold\MakeCatalogCommand;
 use AIC\Workflow\Application\Scaffold\MakeKindCommand;
+use AIC\Workflow\Application\Scaffold\MakeScaffoldCommand;
+use AIC\Workflow\Application\Scaffold\ScaffoldCopy;
 use AIC\Workflow\Application\Scaffold\ScaffoldLoader;
 use AIC\Workflow\Application\Scaffold\ScaffoldRecipe;
 
@@ -41,7 +43,7 @@ final readonly class ScaffoldMakes
     /**
      * @param MakeRun $makeRun The run every make goes through.
      *
-     * @return array<string, Command> `make` and `make:catalog`.
+     * @return array<string, Command> `make`, `make:catalog` and `make:scaffold` (#299).
      */
     public function commands(MakeRun $makeRun): array
     {
@@ -53,9 +55,12 @@ final readonly class ScaffoldMakes
         $makeReport = new MakeReport($this->projectFiles);
         $scaffoldRecipe = new ScaffoldRecipe(new ParsedManifests($this->projectFiles), $this->moduleFolders);
 
+        $scaffoldCopy = new ScaffoldCopy($scaffoldLoader, $layeredScaffolds);
+
         return [
             'make' => new MakeKindCommand($makeRun, $makeReport, $scaffoldLoader, $scaffoldRecipe),
             'make:catalog' => new MakeCatalogCommand($scaffoldLoader, $makeReport),
+            'make:scaffold' => new MakeScaffoldCommand($makeRun, $scaffoldLoader, $scaffoldCopy, new RunStateFile($this->root)),
         ];
     }
 }

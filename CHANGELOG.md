@@ -6,6 +6,15 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The scaffold run: a new kind only with the operator's approval** (#299). When no kind fits,
+  the agent asks, and the operator approves one by answering `scaffold <kind>`. In that run only,
+  `bin/aic make:scaffold <kind> --from=<kind>` writes `scaffolds/<kind>/` from an app or AIC kind
+  (renamed) or a built-in's templates (with a starting manifest). The guard walls `scaffolds/` at
+  every lever but the approved folders, and a `scaffolds` row at code, check and complete holds
+  any other change against the record complete writes (`var/workflow/scaffolds.json`).
+  `workflow:probe` gains `14-scaffold`. Plan grounding now names the nearest folder that exists
+  when a created file's folder is new.
+
 - **AIC's own kinds and the built-in templates on the scaffold format** (#301). Every built-in make
   writes its text from a `*.tpl` file in the workflow package's `scaffolds/<kind>/`, filled by
   #298's engine; what a make computes (entity fields, migration versions, a page's component and

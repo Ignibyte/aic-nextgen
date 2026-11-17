@@ -103,7 +103,10 @@ with its usage, the files it writes and when not to use it. An app kind is a fol
 `scaffolds/<kind>/`: `<kind>.scaffold.php` returns a `ScaffoldManifest` (its description, typed
 arguments, files, manifest edits and probe values) beside `*.tpl` templates that hold only
 `{placeholder|filter}` text. `make <kind> <module> <Name> [--<arg>=…]` fills them through the same run
-as the built-ins, and the same line always writes the same bytes. The workflow package's README
+as the built-ins, and the same line always writes the same bytes. When no kind fits, ask: the
+operator may approve one (`workflow:answer "scaffold <kind>"`), and only then does
+`make:scaffold <kind> --from=<kind>` write it; the guard walls `scaffolds/` otherwise, and the
+`scaffolds` row holds a change made without approval (#299). The workflow package's README
 states the grammar and every check.
 
 ## Command inventory
@@ -135,6 +138,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:migration` | scaffold a Migration |
 | `Command::make:module` | scaffold a module |
 | `Command::make:page` | scaffold a Page and declared component template |
+| `Command::make:scaffold` | start an app kind from an existing one, in a run the operator approved (#299) |
 | `Command::make:theme` | scaffold the site's selected theme |
 | `Command::module:list` | inspect modules |
 | `Command::module:show` | inspect a module's declarations |

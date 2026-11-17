@@ -9,7 +9,7 @@ use AIC\Workflow\Application\CriteriaCheck;
 use AIC\Workflow\Application\DeclarationCheck;
 use AIC\Workflow\Application\FreezeCheck;
 use AIC\Workflow\Application\PhaseCheck;
-use AIC\Workflow\Application\RenderedCheck;
+use AIC\Workflow\Application\Scaffold\ScaffoldFreezeCheck;
 use AIC\Workflow\Application\SeekerCheck;
 use AIC\Workflow\Application\SpecFreeze;
 use AIC\Workflow\Application\UtcTime;
@@ -18,8 +18,8 @@ use AIC\Workflow\Domain\Phase;
 /**
  * The engine's checks, in the order they run at each phase (#100, #101).
  * Plan: the spec is written, then it reads as a contract and is frozen.
- * Code, check and complete: the gate, the freeze, the declaration audit and
- * the composition check; check and complete add the rendered check; check
+ * Code, check and complete: the gate, the freeze, the declaration audit,
+ * the composition check and the house rules, then the scaffolds' freeze (#299); check and complete add the rendered check; check
  * adds the browser evidence, complete the criteria; code ends with the
  * seeker's one pass (#103, #127).
  */
@@ -83,19 +83,12 @@ final readonly class WorkflowChecks
             new DeclarationCheck($phase, $parts->runHost(), $specFile, $parts->evidenceRecorder(), $parts->runSubject()),
             $this->composition($phase),
             ...$this->ruleParts->exit($phase),
+            new ScaffoldFreezeCheck($phase, new LocalScaffoldLock($this->root), $parts->evidenceRecorder(), $parts->runSubject()),
         ];
-        $renderedCheck = new RenderedCheck(
-            $phase,
-            $this->site,
-            new HttpSiteProbe(),
-            $specFile,
-            $parts->evidenceRecorder(),
-            $parts->runSubject(),
-        );
 
         return $phase === Phase::Code
             ? [...$checks, $this->seekerCheck]
-            : [...$checks, $renderedCheck];
+            : [...$checks, (new BrowserParts($this->root, $parts, $this->site))->rendered($phase)];
     }
 
     /**
