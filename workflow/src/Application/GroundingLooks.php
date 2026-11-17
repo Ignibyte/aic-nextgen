@@ -229,9 +229,24 @@ final readonly class GroundingLooks
 
         return match (true) {
             str_starts_with($area, 'module:'), str_starts_with($area, 'system:') => substr($area, (int) strpos($area, ':') + 1),
-            str_contains($path, '/') => substr($path, 0, (int) strrpos($path, '/') + 1),
+            str_contains($path, '/') => $this->folder(substr($path, 0, (int) strrpos($path, '/'))),
             default => $path,
         };
+    }
+
+    /**
+     * @param string $folder A created file's folder, which may not exist yet.
+     *
+     * @return string It, or the nearest folder above it that exists, with its slash: `code:tree` outlines only a folder
+     *                that is there, and an outline above a path covers it (#299).
+     */
+    private function folder(string $folder): string
+    {
+        while (!$this->codePaths->isDirectory($folder) && str_contains($folder, '/')) {
+            $folder = substr($folder, 0, (int) strrpos($folder, '/'));
+        }
+
+        return $folder . '/';
     }
 
     /**

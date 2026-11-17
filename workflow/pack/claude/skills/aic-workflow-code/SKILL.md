@@ -40,7 +40,9 @@ another file, add its row to the manifest first; the run records it as declared 
   gate. `--dry-run` lists the paths it will write; add each to the manifest first.
   `bin/aic make:catalog` lists every kind: the built-in `make:*` and the app's own kinds under
   `scaffolds/`, made with `bin/aic make <kind> <module> <Name>` (#298). Read each kind's `not for`
-  lines; when no kind fits, ask with `workflow:ask` rather than hand-writing a new shape.
+  lines; when no kind fits, ask with `workflow:ask` rather than hand-writing a new shape. If the
+  operator answers `scaffold <kind>`, run `bin/aic make:scaffold <kind> --from=<nearest kind>`, declare
+  the folder's files, and edit them until `make:catalog` lists the kind without a refusal.
 - **Themes and templates.** `make:component <Class>` writes the component and its template into
   the theme and edits no manifest. A default `make:page` writes its own view there too;
   `make:page --component=<Class>` reuses a theme component. `make:theme <name>` writes

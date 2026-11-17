@@ -153,6 +153,25 @@ built-in makes: the planner's collision checks, the guard's wall, the rollback a
 scaffold with its usage, the files it writes and its `notFor` lines. A scaffold that does not load
 is listed with its refusal.
 
+### A new kind: the scaffold run
+
+An agent never writes a scaffold on its own (#299). When `make:catalog` has no kind that fits, it
+asks (`bin/aic workflow:ask`), and the operator, from a terminal, either names a kind or approves
+one: `bin/aic workflow:answer "scaffold <kind>"`. In that run only,
+`bin/aic make:scaffold <kind> --from=<kind>` writes `scaffolds/<kind>/` from a kind that exists: an
+app or AIC kind is copied with its kind renamed and `from()` naming the source; a built-in's
+templates are copied (`{class}` read as `{name}`) beside a starting manifest that does not load
+until the agent describes it. The agent declares the folder's files in the spec and edits them;
+`make:catalog` says what is still missing.
+
+- **The wall.** The guard refuses every write under `scaffolds/`, run or no run, at every lever,
+  except in the folder of a kind the open run's operator approved.
+- **The freeze.** The `scaffolds` row at code, check and complete holds every file under
+  `scaffolds/` to `var/workflow/scaffolds.json`, but an approved kind's folder. Complete's row
+  writes the record when it passes, so a change made between runs holds the next run until the
+  operator approves a scaffold run for its kind. Before a first run completes nothing is frozen,
+  and the row says so.
+
 ### Built-in templates and AIC's own kinds
 
 Every built-in make writes its text from a template in the package's `scaffolds/<kind>/` (#301), in

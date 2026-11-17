@@ -1003,6 +1003,7 @@
             "make:migration",
             "make:module",
             "make:page",
+            "make:scaffold",
             "make:theme"
           ]
         },
