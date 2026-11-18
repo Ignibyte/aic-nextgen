@@ -63,4 +63,9 @@ interface Database
      * @throws QueryException When the transaction cannot roll back.
      */
     public function rollBack(): void;
+
+    /**
+     * @return bool Whether a transaction is open (#309), so a write that records its event joins it.
+     */
+    public function inTransaction(): bool;
 }

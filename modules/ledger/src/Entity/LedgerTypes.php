@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Ledger\Entity;
 
+use AIC\Entity\Domain\EntityEvent;
 use AIC\Entity\Domain\EntityType;
 use AIC\Entity\Domain\Field;
 use AIC\Entity\Domain\FieldType;
+use AIC\Entity\Domain\Lifecycle;
+use AIC\Entity\Domain\Listener;
 use InvalidArgumentException;
 
 /**
  * The ledger module's entity types (#310): `ledger_entries`, whose total and
  * label the database generates, and `ledger_reviews`, each referencing its
- * entry.
+ * entry; since #309 `ledger_accounts`, audited and soft-deleting, and the
+ * `ledger_notices` its listener's job writes.
  */
 final readonly class LedgerTypes
 {
@@ -27,10 +31,23 @@ final readonly class LedgerTypes
     private EntityType $reviews;
 
     /**
+     * The `ledger_accounts` table: audited, soft-deleting, with a listener on each new account (#309).
+     */
+    private EntityType $accounts;
+
+    /**
+     * The `ledger_notices` table: what the listener's job wrote.
+     */
+    private EntityType $notices;
+
+    /**
      * @throws InvalidArgumentException When a type is declared wrongly.
      */
     public function __construct()
     {
+        $this->accounts = self::accountsType();
+        $fields = [new Field('line', FieldType::Text), new Field('created_at', FieldType::CreatedAt)];
+        $this->notices = new EntityType('ledger_notices', 'id', $fields);
         $this->entries = new EntityType('ledger_entries', 'id', [
             new Field('account', FieldType::Text),
             new Field('quantity', FieldType::Integer),
@@ -59,10 +76,44 @@ final readonly class LedgerTypes
     }
 
     /**
+     * @return EntityType The `ledger_accounts` table: every write audited, a delete a stamp of `deleted_at`, and a
+     *                    new account queues `ledger-account-opened`.
+     */
+    public function accounts(): EntityType
+    {
+        return $this->accounts;
+    }
+
+    /**
+     * @return EntityType The `ledger_notices` table.
+     */
+    public function notices(): EntityType
+    {
+        return $this->notices;
+    }
+
+    /**
      * @return EntityType The `ledger_reviews` table, its `entry_id` a reference to an entry.
      */
     public function reviews(): EntityType
     {
         return $this->reviews;
+    }
+
+    /**
+     * @throws InvalidArgumentException When the type is declared wrongly.
+     *
+     * @return EntityType The `ledger_accounts` table: audited, soft-deleting on `deleted_at`, and a listener queuing
+     *                    `ledger-account-opened` for each new account.
+     */
+    private static function accountsType(): EntityType
+    {
+        $lifecycle = new Lifecycle(true, 'deleted_at', [new Listener(EntityEvent::Created, 'ledger-account-opened')]);
+
+        return new EntityType('ledger_accounts', 'id', [
+            new Field('name', FieldType::Text),
+            new Field('deleted_at', FieldType::Timestamp, true),
+            new Field('created_at', FieldType::CreatedAt),
+        ], lifecycle: $lifecycle);
     }
 }

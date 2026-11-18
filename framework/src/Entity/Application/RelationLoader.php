@@ -76,8 +76,9 @@ final readonly class RelationLoader
      */
     private function owned(Relation $relation, EntityType $entityType, array $keys): Rows
     {
-        $sql = 'SELECT ' . (new EntityJoins($entityType))->selected() . ' FROM ' . $entityType->table . ' WHERE ' . $entityType->table . '.'
-            . $relation->key . ' IN (' . self::marks($keys) . ') ORDER BY ' . $entityType->table . '.' . $entityType->key;
+        $table = $entityType->table;
+        $sql = 'SELECT ' . (new EntityJoins($entityType))->selected() . ' FROM ' . $table . ' WHERE ' . $table . '.' . $relation->key
+            . ' IN (' . self::marks($keys) . ')' . self::live($entityType) . ' ORDER BY ' . $table . '.' . $entityType->key;
 
         return $this->database->fetchAll($sql, $keys);
     }
@@ -106,7 +107,7 @@ final readonly class RelationLoader
 
         $join = $target->table . ' ON ' . $target->table . '.' . $target->key . ' = ' . $pivot->table . '.' . $relation->otherKey;
         $sql = 'SELECT ' . implode(', ', $columns) . ' FROM ' . $pivot->table . ' INNER JOIN ' . $join
-            . ' WHERE ' . $pivot->table . '.' . $relation->key . ' IN (' . self::marks($keys) . ')'
+            . ' WHERE ' . $pivot->table . '.' . $relation->key . ' IN (' . self::marks($keys) . ')' . self::live($target)
             . ' ORDER BY ' . $pivot->table . '.' . $pivot->key;
 
         return $this->database->fetchAll($sql, $keys);
@@ -158,7 +159,7 @@ final readonly class RelationLoader
         }
 
         $sql = 'SELECT ' . (new EntityJoins($entityType))->selected() . ' FROM ' . $entityType->table . ' WHERE '
-            . $entityType->table . '.' . $entityType->key . ' IN (' . self::marks($keys) . ')';
+            . $entityType->table . '.' . $entityType->key . ' IN (' . self::marks($keys) . ')' . self::live($entityType);
         $byKey = [];
 
         foreach ($this->database->fetchAll($sql, $keys) as $row) {
@@ -261,5 +262,20 @@ final readonly class RelationLoader
     private static function marks(array $keys): string
     {
         return implode(', ', array_fill(0, count($keys), '?'));
+    }
+
+    /**
+     * @param EntityType $entityType A relation's target.
+     *
+     * @return string ` AND <its deleted field> IS NULL` for a soft-deleting target (#309), so a load sees live rows only;
+     *                empty for any other.
+     */
+    private static function live(EntityType $entityType): string
+    {
+        $live = $entityType->live($entityType->table);
+
+        return $live === ''
+            ? ''
+            : ' AND ' . $live;
     }
 }

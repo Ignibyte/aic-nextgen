@@ -10,6 +10,7 @@ use AIC\Database\Contracts\Row;
 use AIC\Database\Contracts\Rows;
 use AIC\Entity\Domain\Comparison;
 use AIC\Entity\Domain\Condition;
+use AIC\Entity\Domain\DeletedScope;
 use AIC\Entity\Domain\EntityType;
 use InvalidArgumentException;
 
@@ -37,10 +38,12 @@ final readonly class EntityQuery
     /**
      * @param Database   $database   The database.
      * @param EntityType $entityType The entity type queried.
+     * @param string     $actor      Who its changes are credited to (#309).
      */
     public function __construct(
         private Database $database,
         private EntityType $entityType,
+        private string $actor = '',
     ) {
         $this->entityJoins = new EntityJoins($entityType);
         $this->entityConditions = new EntityConditions($entityType, $this->entityJoins);
@@ -242,6 +245,20 @@ final readonly class EntityQuery
     }
 
     /**
+     * @param DeletedScope $deletedScope Which rows of a soft-deleting type it sees (#309): all, or the deleted ones.
+     *
+     * @throws InvalidArgumentException When it asks for the deleted rows of a type that deletes for good.
+     *
+     * @return self The query.
+     */
+    public function withDeleted(DeletedScope $deletedScope = DeletedScope::All): self
+    {
+        $this->entityConditions->scope($deletedScope);
+
+        return $this;
+    }
+
+    /**
      * @return self The query, locking the rows it reads until the transaction ends (`FOR UPDATE`).
      */
     public function forUpdate(): self
@@ -304,6 +321,6 @@ final readonly class EntityQuery
      */
     public function changes(): EntityChanges
     {
-        return new EntityChanges($this->database, $this->entityType, $this->entityJoins, $this->entityConditions);
+        return new EntityChanges($this->database, $this->actor, $this->entityType, $this->entityJoins, $this->entityConditions);
     }
 }

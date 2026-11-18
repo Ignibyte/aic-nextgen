@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Entity\Application\AuditTrail;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
+use App\Ledger\Controller\LedgerAccountsApi;
 use App\Ledger\Controller\LedgerGuardsApi;
+use App\Ledger\Controller\LedgerNoticesApi;
 use App\Ledger\Entity\LedgerTypes;
 use App\Ledger\Repository\LedgerRepository;
+use App\Ledger\Service\LedgerAccounts;
 use App\Ledger\Service\LedgerGuards;
+use App\Ledger\Service\LedgerNotices;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -35,10 +40,14 @@ final readonly class LedgerHandlers
     public function byId(): array
     {
         $entityStore = new EntityStore($this->handlerContext->database());
-        $ledgerGuards = new LedgerGuards($entityStore, new LedgerRepository($entityStore, new LedgerTypes()));
+        $ledgerTypes = new LedgerTypes();
+        $ledgerGuards = new LedgerGuards($entityStore, new LedgerRepository($entityStore, $ledgerTypes));
+        $ledgerAccounts = new LedgerAccounts($entityStore, new AuditTrail($this->handlerContext->database()), $ledgerTypes);
 
         return [
+            LedgerAccountsApi::class => $this->handlerContext->api(new LedgerAccountsApi($ledgerAccounts)),
             LedgerGuardsApi::class => $this->handlerContext->api(new LedgerGuardsApi($ledgerGuards)),
+            LedgerNoticesApi::class => $this->handlerContext->api(new LedgerNoticesApi(new LedgerNotices($entityStore, $ledgerTypes))),
         ];
     }
 }

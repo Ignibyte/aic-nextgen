@@ -209,6 +209,22 @@
             "path": "/ledger/guards"
         },
         {
+            "handler": "App\\Ledger\\Controller\\LedgerAccountsApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "",
+            "path": "/ledger/accounts/round-trip"
+        },
+        {
+            "handler": "App\\Ledger\\Controller\\LedgerNoticesApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "",
+            "path": "/ledger/notices"
+        },
+        {
             "handler": "App\\Note\\Controller\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -497,6 +513,12 @@
             "name": "kept-page"
         },
         {
+            "class": "App\\Ledger\\Job\\LedgerAccountOpenedJob",
+            "kind": "Job",
+            "module": "ledger",
+            "name": "ledger-account-opened"
+        },
+        {
             "class": "AIC\\Notification\\Application\\DeliverNotification",
             "kind": "Job",
             "module": "framework",
@@ -600,7 +622,9 @@
             "middleware": [],
             "migrations": [
                 "App\\Ledger\\Migration\\CreateLedgerEntriesTable",
-                "App\\Ledger\\Migration\\CreateLedgerReviewsTable"
+                "App\\Ledger\\Migration\\CreateLedgerReviewsTable",
+                "App\\Ledger\\Migration\\CreateLedgerAccountsTable",
+                "App\\Ledger\\Migration\\CreateLedgerNoticesTable"
             ],
             "name": "ledger",
             "namespace": "App\\Ledger\\",

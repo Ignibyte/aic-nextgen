@@ -99,6 +99,15 @@ final readonly class ProfiledDatabase implements Database
     }
 
     /**
+     * @return bool Whether a transaction is open (#309); asking records no statement.
+     */
+    #[Override]
+    public function inTransaction(): bool
+    {
+        return $this->database->inTransaction();
+    }
+
+    /**
      * @throws QueryException When the transaction cannot commit.
      */
     #[Override]

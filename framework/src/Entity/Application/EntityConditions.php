@@ -6,6 +6,7 @@ namespace AIC\Entity\Application;
 
 use AIC\Entity\Domain\Comparison;
 use AIC\Entity\Domain\Condition;
+use AIC\Entity\Domain\DeletedScope;
 use AIC\Entity\Domain\EntityType;
 use InvalidArgumentException;
 
@@ -38,6 +39,11 @@ final class EntityConditions
     private array $params = [];
 
     /**
+     * Which rows of a soft-deleting type it sees (#309): the live ones unless asked.
+     */
+    private DeletedScope $deletedScope = DeletedScope::Live;
+
+    /**
      * @param EntityType  $entityType  The entity type queried.
      * @param EntityJoins $entityJoins The query's joins, whose fields a condition may name as `prefix.field`.
      */
@@ -45,6 +51,20 @@ final class EntityConditions
         private readonly EntityType $entityType,
         private readonly EntityJoins $entityJoins,
     ) {
+    }
+
+    /**
+     * @param DeletedScope $deletedScope Which rows of a soft-deleting type to see (#309).
+     *
+     * @throws InvalidArgumentException When it asks for the deleted rows of a type that deletes for good.
+     */
+    public function scope(DeletedScope $deletedScope): void
+    {
+        if ($deletedScope === DeletedScope::Deleted && !$this->entityType->lifecycle->isSoft()) {
+            throw new InvalidArgumentException('The ' . $this->entityType->table . ' entity deletes for good: it has no deleted rows.');
+        }
+
+        $this->deletedScope = $deletedScope;
     }
 
     /**
@@ -184,13 +204,26 @@ final class EntityConditions
     }
 
     /**
-     * @return string ` WHERE …` with every condition; empty when there is none.
+     * @return string ` WHERE …` with every condition and, for a soft-deleting type, the scope's (#309); empty when
+     *                there is none.
      */
     public function sql(): string
     {
-        return $this->clauses === []
+        $table = $this->entityType->table;
+        $clauses = $this->clauses;
+        $scoped = match ($this->deletedScope) {
+            DeletedScope::Live => $this->entityType->live($table),
+            DeletedScope::All => '',
+            DeletedScope::Deleted => $table . '.' . $this->entityType->lifecycle->deletedAt . ' IS NOT NULL',
+        };
+
+        if ($scoped !== '') {
+            $clauses[] = $scoped;
+        }
+
+        return $clauses === []
             ? ''
-            : ' WHERE ' . implode(' AND ', $this->clauses);
+            : ' WHERE ' . implode(' AND ', $clauses);
     }
 
     /**

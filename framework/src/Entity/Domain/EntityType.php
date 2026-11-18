@@ -10,7 +10,8 @@ use function preg_match;
 
 /**
  * An entity type: a table, its key (a bigint the database generates, or since
- * #307 a uuid), its fields and since #306 its relations. Names are identifiers, so the SQL built from
+ * #307 a uuid), its fields, since #306 its relations and since #309 its
+ * lifecycle. Names are identifiers, so the SQL built from
  * them needs no quoting.
  */
 final readonly class EntityType
@@ -22,8 +23,10 @@ final readonly class EntityType
      * @param bool         $readOnly  Whether it maps a view (#191): queried like a table, never written.
      * @param FieldType    $keyType   The key's type: `Integer`, or `Uuid` for a uuid the database generates (#307).
      * @param list<object> $relations Its Relations (#306), each named once.
+     * @param Lifecycle    $lifecycle What its writes record, and whether it deletes softly (#309).
      *
-     * @throws InvalidArgumentException When the table or the key is not an identifier, or the key type is neither.
+     * @throws InvalidArgumentException When the table or the key is not an identifier, the key type is neither, or
+     *                                  the soft-delete field is not a nullable Timestamp of the type.
      */
     public function __construct(
         public string $table,
@@ -32,6 +35,7 @@ final readonly class EntityType
         public bool $readOnly = false,
         public FieldType $keyType = FieldType::Integer,
         private array $relations = [],
+        public Lifecycle $lifecycle = new Lifecycle(),
     ) {
         if ($keyType !== FieldType::Integer && $keyType !== FieldType::Uuid) {
             throw new InvalidArgumentException('Entity type "' . $table . '": a key is an Integer or a Uuid.');
@@ -43,6 +47,21 @@ final readonly class EntityType
         ) {
             throw new InvalidArgumentException('Entity type "' . $table . '": the table and the key are identifiers.');
         }
+
+        $this->checkDeletedAt();
+    }
+
+    /**
+     * @param string $alias The table's name or alias in the query.
+     *
+     * @return string `<alias>.<deleted field> IS NULL` for a soft-deleting type (#309), so a query or a relation reads
+     *                live rows only; empty for any other type.
+     */
+    public function live(string $alias): string
+    {
+        return $this->lifecycle->isSoft()
+            ? $alias . '.' . $this->lifecycle->deletedAt . ' IS NULL'
+            : '';
     }
 
     /**
@@ -99,14 +118,19 @@ final readonly class EntityType
     }
 
     /**
-     * @return list<string> The fields a caller writes: all but the CreatedAt fields, in order.
+     * @return list<string> The fields a caller writes, in order: all but the stamps and a soft delete's field (#309),
+     *                      which only `delete()` and `restore()` write.
      */
     public function writable(): array
     {
         $names = [];
 
         foreach ($this->fields as $field) {
-            if (!($field instanceof Field) || !$field->type->isWritable()) {
+            if (
+                !($field instanceof Field)
+                || !$field->type->isWritable()
+                || $field->name === $this->lifecycle->deletedAt
+            ) {
                 continue;
             }
 
@@ -148,6 +172,33 @@ final readonly class EntityType
         }
 
         throw new InvalidArgumentException('The ' . $this->table . ' entity has no field "' . $name . '".');
+    }
+
+    /**
+     * @throws InvalidArgumentException When a soft delete's field is not a nullable Timestamp of the type.
+     */
+    private function checkDeletedAt(): void
+    {
+        $deletedAt = $this->lifecycle->deletedAt;
+
+        if ($deletedAt === '') {
+            return;
+        }
+
+        foreach ($this->fields as $field) {
+            if (
+                $field instanceof Field
+                && $field->name === $deletedAt
+                && $field->type === FieldType::Timestamp
+                && $field->nullable
+            ) {
+                return;
+            }
+        }
+
+        throw new InvalidArgumentException(
+            'Entity type "' . $this->table . '": a soft delete names one of its nullable Timestamp fields.',
+        );
     }
 
     /**

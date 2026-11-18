@@ -105,6 +105,25 @@
             "captures": false
         },
         {
+            "name": "ledger accounts, a lifecycle round trip and its audit trail",
+            "method": "GET",
+            "path": "/ledger/accounts/round-trip",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger notices, after the worker ran the account listener's job",
+            "method": "GET",
+            "path": "/ledger/notices",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false,
+            "work": true
+        },
+        {
             "name": "download",
             "method": "GET",
             "path": "/download/hello.txt",
