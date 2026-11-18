@@ -7,9 +7,13 @@ namespace AIC\Entity\Application;
 use AIC\Entity\Domain\EntityJoin;
 use AIC\Entity\Domain\EntityType;
 use AIC\Entity\Domain\FieldType;
+use AIC\Entity\Domain\JsonValue;
+use AIC\Entity\Domain\Similarity;
+use AIC\Entity\Domain\Window;
 use InvalidArgumentException;
 
 use function array_any;
+use function count;
 use function explode;
 use function implode;
 use function in_array;
@@ -36,6 +40,13 @@ final class EntityJoins
      * @var list<string>
      */
     private array $computed = [];
+
+    /**
+     * The computed columns' bound values, in the order of their marks (#311).
+     *
+     * @var list<string>
+     */
+    private array $computedParams = [];
 
     /**
      * @param EntityType $entityType The entity type queried.
@@ -122,9 +133,33 @@ final class EntityJoins
     }
 
     /**
+     * @param list<object> $columns Windows, JsonValues and Similarities (#311).
+     *
+     * @throws InvalidArgumentException When one is none of these, names a field the type lacks, or its alias is a column.
+     */
+    public function computeColumns(array $columns): void
+    {
+        $computedSql = new ComputedSql($this->entityType);
+        $computed = $this->windows($computedSql, $columns) + $this->jsonValues($computedSql, $columns)
+            + $this->similarities($computedSql, $columns);
+
+        if ($computed !== count($columns)) {
+            throw new InvalidArgumentException('A computed column is a Window, a JsonValue or a Similarity.');
+        }
+    }
+
+    /**
+     * @return list<string> The values the selected columns bind, before the conditions' (#311).
+     */
+    public function params(): array
+    {
+        return $this->computedParams;
+    }
+
+    /**
      * @return string The columns a row returns: the entity type's, then each joined type's as `prefix_column`; a
      *                Json field as Postgres's text of it, the same under PHP and natively (#307); then each count or
-     *                sum over a relation (#306).
+     *                sum over a relation (#306) and each computed column (#311).
      */
     public function selected(): string
     {
@@ -148,6 +183,76 @@ final class EntityJoins
     public function hasAny(): bool
     {
         return $this->joins !== [];
+    }
+
+    /**
+     * @param ComputedSql  $computedSql Renders each.
+     * @param list<object> $columns     The computed columns asked for.
+     *
+     * @throws InvalidArgumentException When a window names a field the type lacks, or its alias is a column.
+     *
+     * @return int How many were windows.
+     */
+    private function windows(ComputedSql $computedSql, array $columns): int
+    {
+        $before = count($this->computed);
+
+        foreach ($columns as $column) {
+            if (!$column instanceof Window) {
+                continue;
+            }
+
+            $this->computed[] = $computedSql->windowColumn($column);
+        }
+
+        return count($this->computed) - $before;
+    }
+
+    /**
+     * @param ComputedSql  $computedSql Renders each.
+     * @param list<object> $columns     The computed columns asked for.
+     *
+     * @throws InvalidArgumentException When a JSON value's field is not a Json field, or its alias is a column.
+     *
+     * @return int How many were JSON values.
+     */
+    private function jsonValues(ComputedSql $computedSql, array $columns): int
+    {
+        $before = count($this->computed);
+
+        foreach ($columns as $column) {
+            if (!$column instanceof JsonValue) {
+                continue;
+            }
+
+            $this->computed[] = $computedSql->jsonColumn($column);
+        }
+
+        return count($this->computed) - $before;
+    }
+
+    /**
+     * @param ComputedSql  $computedSql Renders each.
+     * @param list<object> $columns     The computed columns asked for.
+     *
+     * @throws InvalidArgumentException When a similarity's field is not a Text field, or its alias is a column.
+     *
+     * @return int How many were similarities, each text bound in order.
+     */
+    private function similarities(ComputedSql $computedSql, array $columns): int
+    {
+        $before = count($this->computed);
+
+        foreach ($columns as $column) {
+            if (!$column instanceof Similarity) {
+                continue;
+            }
+
+            $this->computed[] = $computedSql->similarityColumn($column);
+            $this->computedParams[] = $column->text;
+        }
+
+        return count($this->computed) - $before;
     }
 
     /**

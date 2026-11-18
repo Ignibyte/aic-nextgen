@@ -140,6 +140,17 @@ The development engine and its guard are described in [workflow.md](workflow.md)
     page's related rows in one query per relation (one per type for a Polymorphic) as
     `RelatedRows`: `rowsOf(key)` loops like a query's rows, `one(key)` gives the first, and a
     ManyToMany's rows carry the pivot's fields as `pivot_<field>`.
+  - Query forms (#311): `withColumns([...])` adds computed columns: `new Window(alias, WindowFunction,
+    partitionBy, orderBy, Direction)` (row number, rank or dense rank within a partition, an integer),
+    `new JsonValue(alias, jsonField, path)` (the text at a path, null where missing) and `new
+    Similarity(alias, textField, text)` (pg_trgm's similarity, as text). `Comparison::Contains` keeps a
+    Json field holding a JSON document, `EqualsIgnoringCase` compares lower case and `Similar` uses
+    pg_trgm's `%` at its threshold. `withValuesIn(field, sourceType, sourceField, conditions)` keeps
+    rows whose field is among another table's values, a subquery. `AIC\Entity\Application\EntityTrees`
+    reads a tree a type keeps in a Reference to itself, `descendants(type, parentField, key)` and
+    `ancestors(...)`, each row with its `depth`, live rows only, stopping at depth 64. A lock around
+    a callable is `PostgresLocks::around()` (#312). Unions, named CTEs and conditions on a computed
+    column come later (#329).
   - Lifecycle (#309): an `EntityType` takes `lifecycle: new Lifecycle(audited, deletedAt, listeners)`.
     Each write to an observed type (audited, or with a `Listener`) records its `EntityEvent` (Created,
     Updated, Deleted, Restored, Purged) for every row it changed, in the write's transaction: the

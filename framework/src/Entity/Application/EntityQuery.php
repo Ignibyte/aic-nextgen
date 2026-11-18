@@ -10,7 +10,6 @@ use AIC\Database\Contracts\Row;
 use AIC\Database\Contracts\Rows;
 use AIC\Entity\Domain\Comparison;
 use AIC\Entity\Domain\Condition;
-use AIC\Entity\Domain\DeletedScope;
 use AIC\Entity\Domain\EntityType;
 use InvalidArgumentException;
 
@@ -26,6 +25,8 @@ use InvalidArgumentException;
  */
 final readonly class EntityQuery
 {
+    use QueryForms;
+
     /** The tables joined through reference fields (#190). */
     private EntityJoins $entityJoins;
 
@@ -245,20 +246,6 @@ final readonly class EntityQuery
     }
 
     /**
-     * @param DeletedScope $deletedScope Which rows of a soft-deleting type it sees (#309): all, or the deleted ones.
-     *
-     * @throws InvalidArgumentException When it asks for the deleted rows of a type that deletes for good.
-     *
-     * @return self The query.
-     */
-    public function withDeleted(DeletedScope $deletedScope = DeletedScope::All): self
-    {
-        $this->entityConditions->scope($deletedScope);
-
-        return $this;
-    }
-
-    /**
      * @return self The query, locking the rows it reads until the transaction ends (`FOR UPDATE`).
      */
     public function forUpdate(): self
@@ -278,7 +265,7 @@ final readonly class EntityQuery
         $sql = 'SELECT ' . $this->entityJoins->selected() . ' FROM ' . $this->entityJoins->from()
             . $this->entityConditions->sql() . $this->entityPaging->sql($this->entityType->table);
 
-        return $this->database->fetchAll($sql, $this->entityConditions->params());
+        return $this->database->fetchAll($sql, [...$this->entityJoins->params(), ...$this->entityConditions->params()]);
     }
 
     /**

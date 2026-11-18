@@ -249,6 +249,14 @@
             "path": "/ledger/limited"
         },
         {
+            "handler": "App\\Ledger\\Controller\\LedgerCategoriesApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "",
+            "path": "/ledger/categories"
+        },
+        {
             "handler": "App\\Note\\Controller\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -674,7 +682,8 @@
                 "App\\Ledger\\Migration\\CreateLedgerReviewsTable",
                 "App\\Ledger\\Migration\\CreateLedgerAccountsTable",
                 "App\\Ledger\\Migration\\CreateLedgerNoticesTable",
-                "App\\Ledger\\Migration\\AddLedgerAccountsStanding"
+                "App\\Ledger\\Migration\\AddLedgerAccountsStanding",
+                "App\\Ledger\\Migration\\CreateLedgerCategoriesTable"
             ],
             "name": "ledger",
             "namespace": "App\\Ledger\\",

@@ -202,6 +202,9 @@ moves it in one guarded UPDATE recorded as `Transitioned`; `TransitionRefusedExc
 #312: `AIC\Cache` on Postgres: `PostgresCache` (get, put, forget, remember, increment), `PostgresLocks` (advisory:
 `holdForTransaction`, `around`, `tryAround`), `RateLimiter` and `RateLimitMiddleware` (429, `Retry-After`; `RateLimits` from a
 module factory), unlogged tables (`TableBuilder::unlogged()`), `bin/aic cache:prune|rate:reset`, the job `aic-cache-prune`.
+#311: query forms: `EntityQuery::withColumns([Window, JsonValue, Similarity])`, `withValuesIn()` (a subquery),
+`Comparison::Contains|EqualsIgnoringCase|Similar`, `EntityTrees::descendants|ancestors` (recursive, depth 64); unions, named
+CTEs and conditions on computed columns are #329; the compiled PDO's `text[]` parameter defect is #330.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted

@@ -36,6 +36,11 @@ final readonly class LedgerTypes
     private EntityType $accounts;
 
     /**
+     * The `ledger_categories` table: a tree by `parent_id`, with JSON traits (#311).
+     */
+    private EntityType $categories;
+
+    /**
      * The `ledger_notices` table: what the listener's job wrote.
      */
     private EntityType $notices;
@@ -46,6 +51,7 @@ final readonly class LedgerTypes
     public function __construct()
     {
         $this->accounts = self::accountsType();
+        $this->categories = self::categoriesType();
         $fields = [new Field('line', FieldType::Text), new Field('created_at', FieldType::CreatedAt)];
         $this->notices = new EntityType('ledger_notices', 'id', $fields);
         $this->entries = new EntityType('ledger_entries', 'id', [
@@ -85,6 +91,14 @@ final readonly class LedgerTypes
     }
 
     /**
+     * @return EntityType The `ledger_categories` table, its `parent_id` a reference to its own table.
+     */
+    public function categories(): EntityType
+    {
+        return $this->categories;
+    }
+
+    /**
      * @return EntityType The `ledger_notices` table.
      */
     public function notices(): EntityType
@@ -116,5 +130,26 @@ final readonly class LedgerTypes
             new Field('created_at', FieldType::CreatedAt),
             new Field('standing', FieldType::Choice, false, null, ['open', 'frozen', 'closed']),
         ], lifecycle: $lifecycle, stateMachine: (new LedgerAccountStandingTransitions())->machine());
+    }
+
+    /**
+     * @throws InvalidArgumentException When the type is declared wrongly.
+     *
+     * @return EntityType The `ledger_categories` table: a name, the parent it sits under and JSON traits. The parent's
+     *                    type is built without the reference, as a target always is.
+     */
+    private static function categoriesType(): EntityType
+    {
+        $name = new Field('name', FieldType::Text);
+        $traits = new Field('traits', FieldType::Json);
+        $created = new Field('created_at', FieldType::CreatedAt);
+        $entityType = new EntityType('ledger_categories', 'id', [$name, $traits, $created]);
+
+        return new EntityType('ledger_categories', 'id', [
+            $name,
+            new Field('parent_id', FieldType::Reference, true, $entityType),
+            $traits,
+            $created,
+        ]);
     }
 }

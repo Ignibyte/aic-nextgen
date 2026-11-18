@@ -142,6 +142,15 @@
             "captures": false
         },
         {
+            "name": "ledger categories, windows, JSON, text search, a tree and a subquery",
+            "method": "GET",
+            "path": "/ledger/categories",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "ledger limited, the first hit after a reset",
             "method": "GET",
             "path": "/ledger/limited",

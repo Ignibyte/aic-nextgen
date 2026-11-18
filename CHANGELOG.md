@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Query forms: window columns, JSON, text search, trees and subqueries** (#311). `EntityQuery::withColumns()`
+  adds computed columns: a `Window` (row number, rank or dense rank within a partition), a `JsonValue`
+  (a Json field's text at a path) and a `Similarity` (trigram likeness to a value). `Comparison` gains
+  `Contains` (a JSON document), `EqualsIgnoringCase` and `Similar`. `withValuesIn()` filters by another
+  table's values, and `EntityTrees` walks a self-referencing tree down or up with each row's depth.
+  Unions, named CTEs and conditions on computed columns follow in #329.
+
 - **Cache, locks and rate limits on Postgres** (#312). `AIC\Cache` needs no Redis: `PostgresCache` keeps
   text values by key until they expire (`get`, `put`, `forget`, `remember`, an atomic `increment`),
   `PostgresLocks` takes advisory locks for a transaction or around a closure (`around`, `tryAround`),
