@@ -608,6 +608,7 @@
             "make:policy",
             "make:relation",
             "make:scaffold",
+            "make:state",
             "make:theme"
           ]
         },

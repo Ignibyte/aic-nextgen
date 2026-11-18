@@ -38,7 +38,7 @@ final readonly class CreateEntityAuditTable implements Migration
             ->identity('id')
             ->string('entity', 63)
             ->string('entity_key', 64)
-            ->column('event', $columnTypes->choice(['created', 'updated', 'deleted', 'restored', 'purged']))
+            ->column('event', $columnTypes->choice(['created', 'updated', 'deleted', 'restored', 'purged', 'transitioned']))
             ->string('actor', 128)
             ->column('changes', $columnTypes->jsonb())
             ->timestampTz('recorded_at')

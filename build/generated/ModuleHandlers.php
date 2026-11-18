@@ -41,9 +41,9 @@ final readonly class ModuleHandlers
             (new AccountHandlers($this->handlerContext))->byId(),
             (new AccountHandlersPart2($this->handlerContext))->byId(),
             (new LedgerHandlers($this->handlerContext))->byId(),
+            (new LedgerHandlersPart2($this->handlerContext))->byId(),
             (new NoteHandlers($this->handlerContext))->byId(),
             (new NoteHandlersPart2($this->handlerContext))->byId(),
-            (new NoteHandlersPart3($this->handlerContext))->byId(),
             (new ModuleHandlersPart2($this->handlerContext))->byId(),
         );
     }

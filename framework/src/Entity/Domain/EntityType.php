@@ -11,22 +11,24 @@ use function preg_match;
 /**
  * An entity type: a table, its key (a bigint the database generates, or since
  * #307 a uuid), its fields, since #306 its relations and since #309 its
- * lifecycle. Names are identifiers, so the SQL built from
+ * lifecycle and since #308 its state machine. Names are identifiers, so the SQL built from
  * them needs no quoting.
  */
 final readonly class EntityType
 {
     /**
-     * @param string       $table     The table, or a view.
-     * @param string       $key       The key column.
-     * @param list<object> $fields    Its Fields: objects, the list form elephc keeps (plan.md).
-     * @param bool         $readOnly  Whether it maps a view (#191): queried like a table, never written.
-     * @param FieldType    $keyType   The key's type: `Integer`, or `Uuid` for a uuid the database generates (#307).
-     * @param list<object> $relations Its Relations (#306), each named once.
-     * @param Lifecycle    $lifecycle What its writes record, and whether it deletes softly (#309).
+     * @param string            $table        The table, or a view.
+     * @param string            $key          The key column.
+     * @param list<object>      $fields       Its Fields: objects, the list form elephc keeps (plan.md).
+     * @param bool              $readOnly     Whether it maps a view (#191): queried like a table, never written.
+     * @param FieldType         $keyType      The key's type: `Integer`, or `Uuid` for a uuid the database generates (#307).
+     * @param list<object>      $relations    Its Relations (#306), each named once.
+     * @param Lifecycle         $lifecycle    What its writes record, and whether it deletes softly (#309).
+     * @param StateMachine|null $stateMachine Its state field's states and transitions (#308); null for none.
      *
      * @throws InvalidArgumentException When the table or the key is not an identifier, the key type is neither, or
-     *                                  the soft-delete field is not a nullable Timestamp of the type.
+     *                                  the soft-delete field is not a nullable Timestamp of the type, or the state
+     *                                  field is not a required Choice of the machine's states.
      */
     public function __construct(
         public string $table,
@@ -36,6 +38,7 @@ final readonly class EntityType
         public FieldType $keyType = FieldType::Integer,
         private array $relations = [],
         public Lifecycle $lifecycle = new Lifecycle(),
+        public ?StateMachine $stateMachine = null,
     ) {
         if ($keyType !== FieldType::Integer && $keyType !== FieldType::Uuid) {
             throw new InvalidArgumentException('Entity type "' . $table . '": a key is an Integer or a Uuid.');
@@ -49,6 +52,7 @@ final readonly class EntityType
         }
 
         $this->checkDeletedAt();
+        $this->checkStateMachine();
     }
 
     /**
@@ -118,8 +122,9 @@ final readonly class EntityType
     }
 
     /**
-     * @return list<string> The fields a caller writes, in order: all but the stamps and a soft delete's field (#309),
-     *                      which only `delete()` and `restore()` write.
+     * @return list<string> The fields a caller writes, in order: all but the stamps, a soft delete's field (#309),
+     *                      which only `delete()` and `restore()` write, and a state field (#308), which only a
+     *                      transition writes.
      */
     public function writable(): array
     {
@@ -130,6 +135,7 @@ final readonly class EntityType
                 !($field instanceof Field)
                 || !$field->type->isWritable()
                 || $field->name === $this->lifecycle->deletedAt
+                || $field->name === $this->stateField()
             ) {
                 continue;
             }
@@ -172,6 +178,45 @@ final readonly class EntityType
         }
 
         throw new InvalidArgumentException('The ' . $this->table . ' entity has no field "' . $name . '".');
+    }
+
+    /**
+     * @return array<string, string> The state field and the state every new row starts in (#308); empty for a type
+     *                               with no state machine.
+     */
+    public function initialState(): array
+    {
+        return $this->stateMachine instanceof StateMachine
+            ? [$this->stateMachine->field => $this->stateMachine->initial()]
+            : [];
+    }
+
+    /**
+     * @return string The state field (#308); empty for a type with no state machine.
+     */
+    public function stateField(): string
+    {
+        return $this->stateMachine instanceof StateMachine
+            ? $this->stateMachine->field
+            : '';
+    }
+
+    /**
+     * @throws InvalidArgumentException When the state field is not a required Choice whose values are the states.
+     */
+    private function checkStateMachine(): void
+    {
+        $stateMachine = $this->stateMachine;
+
+        if (!$stateMachine instanceof StateMachine) {
+            return;
+        }
+
+        if (!$stateMachine->fits($this->field($stateMachine->field))) {
+            throw new InvalidArgumentException(
+                'Entity type "' . $this->table . '": a state field is a required Choice whose values are the states, in order.',
+            );
+        }
     }
 
     /**

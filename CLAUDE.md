@@ -165,9 +165,9 @@ the gate suite is the dev package `ignibyte/aic-gates`, run by `vendor/bin/aic-g
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
-layout (#157), entity (#123), policy (#304), client (#305) and relation (#306); dev-only in
+layout (#157), entity (#123), policy (#304), client (#305), relation (#306) and state (#308); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the sixteen make lines (a pivot, #306).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the seventeen make lines (a pivot, #306; a state, #308).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
@@ -195,6 +195,10 @@ with an `IndexMethod`), `types()->generated(type, term)`, and the trigger guards
 on an observed type records its `EntityEvent` in the write's transaction (`Database::inTransaction()`): a row in the
 append-only `aic_entity_audit` (`EntityStore::withActor()`, `AuditTrail::history()`) and each listener's job queued.
 Soft deletes: every read sees live rows unless `withDeleted(DeletedScope)`; `changes()->restore()|purge()`. No event bus.
+#308: state machines: `EntityType`'s `StateMachine` (a Choice field, `Transition`s with an optional permission); the field
+is never written by a caller, an insert starts it in the first state, `EntityTransitions::apply(type, key, name, Actor)`
+moves it in one guarded UPDATE recorded as `Transitioned`; `TransitionRefusedException`. `types()->defaulted()`,
+`make:state` (enum, transitions class, migration); gate:31 runs 17 make lines.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
@@ -235,7 +239,7 @@ Background work is a job; the HTTP server's processes are its workers.
 - The repo root is AIC's fixture app, `aic/app` (#126): five modules under `modules/`, three cut
   from the ten-module demo (the tag `demo-reference`; rebuilt in `Ignibyte/aic-demo` by #128 and
   #129). `site` holds home, greeting and job; `note` holds stock; `account` holds auth and
-  session; content and faq were dropped. `ledger` (#310) holds the schema declarations and guards, and since #309 the entity lifecycle. `scaffold` (#122) is what the make commands make, held
+  session; content and faq were dropped. `ledger` (#310) holds the schema declarations and guards, since #309 the entity lifecycle and since #308 a state machine. `scaffold` (#122) is what the make commands make, held
   by gate:31: regenerate it, never edit it by hand. It is AIC's test bed, not a showcase: a feature the
   gates need is added here with its framework change. Each module has its classes
   in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Block`, `Form`,

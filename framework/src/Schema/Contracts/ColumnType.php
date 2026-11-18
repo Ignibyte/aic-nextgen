@@ -26,9 +26,11 @@ final readonly class ColumnType
      *                                  none twice; empty for the other types.
      * @param Term|null    $generatedAs What a generated column holds (#310), from `ColumnTypes::generated()`;
      *                                  null for a column the app writes.
+     * @param Term|null    $defaultTo   What a column holds when a row names none (#308), from
+     *                                  `ColumnTypes::defaulted()`; null for no default.
      *
-     * @throws InvalidArgumentException When the length, the scale or the choices do not fit the type, or a key or
-     *                                  a choice is generated.
+     * @throws InvalidArgumentException When the length, the scale or the choices do not fit the type, a key or
+     *                                  a choice is generated, or a key or a generated column has a default.
      */
     public function __construct(
         public LogicalType $logicalType,
@@ -36,10 +38,9 @@ final readonly class ColumnType
         public int $scale,
         public array $choices = [],
         public ?Term $generatedAs = null,
+        public ?Term $defaultTo = null,
     ) {
-        if ($generatedAs instanceof Term && !$this->generatable()) {
-            throw new InvalidArgumentException('A key or a choice column cannot be generated.');
-        }
+        $this->checkComputed();
 
         if (!$this->fits() || !$this->chosen()) {
             throw new InvalidArgumentException(match ($logicalType) {
@@ -54,11 +55,34 @@ final readonly class ColumnType
     }
 
     /**
+     * @throws InvalidArgumentException When a key or a choice is generated, or a key or a generated column has a
+     *                                  default.
+     */
+    private function checkComputed(): void
+    {
+        if ($this->generatedAs instanceof Term && !$this->generatable()) {
+            throw new InvalidArgumentException('A key or a choice column cannot be generated.');
+        }
+
+        if ($this->defaultTo instanceof Term && ($this->generatedAs instanceof Term || !$this->defaultable())) {
+            throw new InvalidArgumentException('A key or a generated column has no default of its own.');
+        }
+    }
+
+    /**
      * @return bool Whether a column of this type may be generated: any but a key or a choice.
      */
     private function generatable(): bool
     {
         return !in_array($this->logicalType, [LogicalType::BigIdentity, LogicalType::UuidKey, LogicalType::Choice], true);
+    }
+
+    /**
+     * @return bool Whether a column of this type may take a default: any but a key, which has its own.
+     */
+    private function defaultable(): bool
+    {
+        return $this->logicalType !== LogicalType::BigIdentity && $this->logicalType !== LogicalType::UuidKey;
     }
 
     /**

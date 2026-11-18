@@ -26,14 +26,15 @@ final readonly class ModuleHandlersPart2
     }
 
     /**
-     * @throws ContainerException       When a called constructor or service fails.
      * @throws InvalidArgumentException When a called constructor or service fails.
+     * @throws ContainerException       When a called constructor or service fails.
      *
      * @return array<string, RequestHandlerInterface> The modules' handlers by id.
      */
     public function byId(): array
     {
         return array_merge(
+            (new NoteHandlersPart3($this->handlerContext))->byId(),
             (new NoteHandlersPart4($this->handlerContext))->byId(),
             (new NoteHandlersPart5($this->handlerContext))->byId(),
             (new NoteHandlersPart6($this->handlerContext))->byId(),

@@ -24,4 +24,7 @@ enum EntityEvent: string
 
     /** A row deleted for good, soft-deleted or not. */
     case Purged = 'purged';
+
+    /** A state machine's transition (#308); its audit row holds the state entered. */
+    case Transitioned = 'transitioned';
 }

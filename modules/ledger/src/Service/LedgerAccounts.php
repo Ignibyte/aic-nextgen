@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Ledger\Service;
 
 use AIC\Database\Contracts\QueryException;
-use AIC\Entity\Application\AuditTrail;
 use AIC\Entity\Application\EntityNotFoundException;
 use AIC\Entity\Application\EntityStore;
 use AIC\Entity\Domain\DeletedScope;
@@ -26,13 +25,13 @@ final readonly class LedgerAccounts
     private const string ACTOR = 'ledger-round-trip';
 
     /**
-     * @param EntityStore $entityStore The entity store.
-     * @param AuditTrail  $auditTrail  The audit trail.
-     * @param LedgerTypes $ledgerTypes The ledger's entity types.
+     * @param EntityStore   $entityStore   The entity store.
+     * @param LedgerHistory $ledgerHistory The account's history as lines.
+     * @param LedgerTypes   $ledgerTypes   The ledger's entity types.
      */
     public function __construct(
         private EntityStore $entityStore,
-        private AuditTrail $auditTrail,
+        private LedgerHistory $ledgerHistory,
         private LedgerTypes $ledgerTypes,
     ) {
     }
@@ -59,9 +58,7 @@ final readonly class LedgerAccounts
         $purged = $entityStore->query($accounts)->withDeleted()->where('id', $key)->changes()->purge();
         $lines[] = 'purged ' . $purged . ': ' . $this->seen($key);
 
-        foreach ($this->auditTrail->history($accounts, $key) as $row) {
-            $lines[] = $row->string('event') . ' by ' . $row->string('actor') . ': ' . $row->string('changes');
-        }
+        $lines = [...$lines, ...$this->ledgerHistory->lines($accounts, $key)];
 
         return new LedgerLines('steps', [...$lines, ...$this->refused()]);
     }

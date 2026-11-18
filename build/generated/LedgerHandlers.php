@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
-use AIC\Entity\Application\AuditTrail;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
 use App\Ledger\Controller\LedgerAccountsApi;
@@ -39,10 +38,11 @@ final readonly class LedgerHandlers
      */
     public function byId(): array
     {
+        $ledgerHandlerServices = new LedgerHandlerServices($this->handlerContext);
         $entityStore = new EntityStore($this->handlerContext->database());
         $ledgerTypes = new LedgerTypes();
         $ledgerGuards = new LedgerGuards($entityStore, new LedgerRepository($entityStore, $ledgerTypes));
-        $ledgerAccounts = new LedgerAccounts($entityStore, new AuditTrail($this->handlerContext->database()), $ledgerTypes);
+        $ledgerAccounts = new LedgerAccounts($entityStore, $ledgerHandlerServices->ledgerHistory(), $ledgerTypes);
 
         return [
             LedgerAccountsApi::class => $this->handlerContext->api(new LedgerAccountsApi($ledgerAccounts)),

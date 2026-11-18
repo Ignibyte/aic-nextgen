@@ -225,6 +225,14 @@
             "path": "/ledger/notices"
         },
         {
+            "handler": "App\\Ledger\\Controller\\LedgerStandingApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "",
+            "path": "/ledger/accounts/standing"
+        },
+        {
             "handler": "App\\Note\\Controller\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -624,11 +632,17 @@
                 "App\\Ledger\\Migration\\CreateLedgerEntriesTable",
                 "App\\Ledger\\Migration\\CreateLedgerReviewsTable",
                 "App\\Ledger\\Migration\\CreateLedgerAccountsTable",
-                "App\\Ledger\\Migration\\CreateLedgerNoticesTable"
+                "App\\Ledger\\Migration\\CreateLedgerNoticesTable",
+                "App\\Ledger\\Migration\\AddLedgerAccountsStanding"
             ],
             "name": "ledger",
             "namespace": "App\\Ledger\\",
-            "permissions": [],
+            "permissions": [
+                {
+                    "description": "Freeze a ledger account, so nothing posts to it until it thaws.",
+                    "name": "ledger.freeze"
+                }
+            ],
             "plugins": [],
             "prefixes": [],
             "requires": [
@@ -682,7 +696,8 @@
                 "App\\Scaffold\\Migration\\CreateScaffoldItemsTable",
                 "App\\Scaffold\\Migration\\CreateScaffoldTasksTable",
                 "App\\Scaffold\\Migration\\CreateScaffoldEventsTable",
-                "App\\Scaffold\\Migration\\CreateScaffoldTasksScaffoldEventsTable"
+                "App\\Scaffold\\Migration\\CreateScaffoldTasksScaffoldEventsTable",
+                "App\\Scaffold\\Migration\\AddScaffoldTasksStage"
             ],
             "name": "scaffold",
             "namespace": "App\\Scaffold\\",

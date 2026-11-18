@@ -166,16 +166,20 @@ final readonly class PostgresDdl
     /**
      * @param Column $column A column.
      *
-     * @return string Its definition, a generated column's expression last (#310).
+     * @return string Its definition: its default after the type (#308), a generated column's expression last (#310).
      */
     private function column(Column $column): string
     {
         $generatedAs = $column->type->generatedAs;
+        $defaultTo = $column->type->defaultTo;
         $generated = $generatedAs instanceof Term
             ? ' GENERATED ALWAYS AS (' . $generatedAs->sql . ') STORED'
             : '';
+        $default = $defaultTo instanceof Term
+            ? ' DEFAULT ' . $defaultTo->sql
+            : '';
 
-        return $column->name->value . ' ' . $this->type($column->type) . ($column->nullable ? '' : ' NOT NULL')
+        return $column->name->value . ' ' . $this->type($column->type) . $default . ($column->nullable ? '' : ' NOT NULL')
             . $this->check($column) . $generated;
     }
 

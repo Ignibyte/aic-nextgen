@@ -45,6 +45,7 @@ none
 - `App\Scaffold\Migration\CreateScaffoldTasksTable`
 - `App\Scaffold\Migration\CreateScaffoldEventsTable`
 - `App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable`
+- `App\Scaffold\Migration\AddScaffoldTasksStage`
 
 ## Plugins
 
@@ -98,6 +99,8 @@ none
 | --- | --- |
 | `App\Scaffold\Entity\ScaffoldEvent` | [modules/scaffold/src/Entity/ScaffoldEvent.php](../../../modules/scaffold/src/Entity/ScaffoldEvent.php) |
 | `App\Scaffold\Entity\ScaffoldTask` | [modules/scaffold/src/Entity/ScaffoldTask.php](../../../modules/scaffold/src/Entity/ScaffoldTask.php) |
+| `App\Scaffold\Entity\ScaffoldTaskStage` | [modules/scaffold/src/Entity/ScaffoldTaskStage.php](../../../modules/scaffold/src/Entity/ScaffoldTaskStage.php) |
+| `App\Scaffold\Entity\ScaffoldTaskStageTransitions` | [modules/scaffold/src/Entity/ScaffoldTaskStageTransitions.php](../../../modules/scaffold/src/Entity/ScaffoldTaskStageTransitions.php) |
 
 ### `src/Job/`
 
@@ -109,6 +112,7 @@ none
 
 | Class | File |
 | --- | --- |
+| `App\Scaffold\Migration\AddScaffoldTasksStage` | [modules/scaffold/src/Migration/AddScaffoldTasksStage.php](../../../modules/scaffold/src/Migration/AddScaffoldTasksStage.php) |
 | `App\Scaffold\Migration\CreateScaffoldEventsTable` | [modules/scaffold/src/Migration/CreateScaffoldEventsTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldEventsTable.php) |
 | `App\Scaffold\Migration\CreateScaffoldItemsTable` | [modules/scaffold/src/Migration/CreateScaffoldItemsTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldItemsTable.php) |
 | `App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable` | [modules/scaffold/src/Migration/CreateScaffoldTasksScaffoldEventsTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldTasksScaffoldEventsTable.php) |

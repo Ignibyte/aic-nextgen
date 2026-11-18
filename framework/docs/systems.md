@@ -88,6 +88,8 @@ The development engine and its guard are described in [workflow.md](workflow.md)
     migration's `extension('pg_trgm')`, `JsonPath`); a created table refuses one that names a column
     it lacks. `types()->generated(type, term)` is a stored generated column, added with `column()` or
     `addColumn()` and never retyped into; nothing writes one (the database refuses with SQLSTATE 428C9).
+    `types()->defaulted(type, term)` gives a column a default (#308), so a required column joins a
+    table with rows.
   - Guards (#310), as triggers the DDL generates: `Schema::appendOnly(table)` refuses every UPDATE,
     DELETE and TRUNCATE (an audit trail, a ledger); `Schema::finalOnce(table, columns)` refuses
     changing a listed column once it holds a value and deleting a row where one does (a decision
@@ -152,6 +154,13 @@ The development engine and its guard are described in [workflow.md](workflow.md)
     total, change and relation count, filter and load sees live rows only, `withDeleted()` sees all and
     `withDeleted(DeletedScope::Deleted)` only the deleted, and `changes()->restore()` and `purge()`
     bring a row back or delete it for good.
+  - State machines (#308): an `EntityType` takes `stateMachine: new StateMachine(field, states,
+    transitions)`, its field a required Choice of the states, the first where every insert starts;
+    no caller writes it. `AIC\Entity\Application\EntityTransitions::apply(type, key, transition,
+    actor)` asks the `Actor` for the `Transition`'s permission (#304), then moves the row in one
+    UPDATE whose WHERE holds the edge, recorded as `Transitioned` through the lifecycle and credited
+    to the actor. A refused or illegal edge is a `TransitionRefusedException` and writes nothing; a
+    missing row is `EntityNotFoundException`. `upsert` refuses a type with a state machine.
   - A report is a view a module's migration creates through `Schema::view(name, select)`, the one
     place a module writes SQL; an `EntityType` marked read-only maps it and is queried like a
     table, and every write to it is refused.

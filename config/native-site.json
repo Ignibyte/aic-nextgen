@@ -124,6 +124,15 @@
             "work": true
         },
         {
+            "name": "ledger standing, an account walked along its state machine",
+            "method": "GET",
+            "path": "/ledger/accounts/standing",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "download",
             "method": "GET",
             "path": "/download/hello.txt",
