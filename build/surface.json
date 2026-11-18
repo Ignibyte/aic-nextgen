@@ -233,6 +233,22 @@
             "path": "/ledger/accounts/standing"
         },
         {
+            "handler": "App\\Ledger\\Controller\\LedgerCacheApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "",
+            "path": "/ledger/cache"
+        },
+        {
+            "handler": "App\\Ledger\\Controller\\LedgerLimitedApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "",
+            "path": "/ledger/limited"
+        },
+        {
             "handler": "App\\Note\\Controller\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -411,6 +427,12 @@
     ],
     "commands": [
         {
+            "class": "AIC\\Cache\\Application\\CachePruneCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "cache:prune"
+        },
+        {
             "class": "App\\Site\\Command\\DatabasePing",
             "kind": "Command",
             "module": "site",
@@ -457,6 +479,12 @@
             "kind": "Command",
             "module": "framework",
             "name": "queue:work"
+        },
+        {
+            "class": "AIC\\Cache\\Application\\RateResetCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "rate:reset"
         },
         {
             "class": "AIC\\Access\\Application\\RoleCommand",
@@ -508,6 +536,12 @@
         }
     ],
     "jobs": [
+        {
+            "class": "AIC\\Cache\\Application\\CachePruneJob",
+            "kind": "Job",
+            "module": "framework",
+            "name": "aic-cache-prune"
+        },
         {
             "class": "App\\Site\\Job\\DemoJob",
             "kind": "Job",
@@ -626,8 +660,15 @@
             "bindings": [],
             "blocks": [],
             "exports": [],
-            "factories": [],
-            "middleware": [],
+            "factories": [
+                "App\\Ledger\\Service\\LedgerLimits"
+            ],
+            "middleware": [
+                {
+                    "class": "AIC\\Cache\\Application\\RateLimitMiddleware",
+                    "position": "AfterSession"
+                }
+            ],
             "migrations": [
                 "App\\Ledger\\Migration\\CreateLedgerEntriesTable",
                 "App\\Ledger\\Migration\\CreateLedgerReviewsTable",

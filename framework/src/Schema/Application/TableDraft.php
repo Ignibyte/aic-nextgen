@@ -204,6 +204,20 @@ final readonly class TableDraft implements TableBuilder
     }
 
     /**
+     * Makes the table unlogged (#312): Postgres keeps no write-ahead log of it, so writes are faster and a crash
+     * empties it. For a cache or a counter, never for data that must survive.
+     *
+     * @return self The builder.
+     */
+    #[Override]
+    public function unlogged(): self
+    {
+        $this->tableParts->unlog();
+
+        return $this;
+    }
+
+    /**
      * @param list<string> $columns The primary key's columns.
      *
      * @return self The builder.

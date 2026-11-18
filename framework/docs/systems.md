@@ -165,6 +165,20 @@ The development engine and its guard are described in [workflow.md](workflow.md)
     place a module writes SQL; an `EntityType` marked read-only maps it and is queried like a
     table, and every write to it is refused.
   - Every value is bound, and only the entity types' own field names reach the SQL.
+- `AIC\Cache`: a cache, locks and rate limits in Postgres alone (#312); there is no Redis client in core.
+  `AIC\Cache\Application\PostgresCache` keeps text values by key (1 to 200 letters, digits and `:._-`,
+  checked by `CacheKey`) in the unlogged `aic_cache`: `get` (null when missing or expired), `put` with
+  its seconds, `forget`, `remember` (a closure computes a miss) and `increment`, one atomic upsert that
+  keeps a live counter's expiry. A module encodes its own values. `PostgresLocks` takes advisory locks
+  by name: `holdForTransaction` (refused outside an open transaction, held to its end), `around` (waits,
+  runs the closure, always releases) and `tryAround` (runs only when the lock is free, and says so).
+  `RateLimiter::hit(name, client, limit, seconds)` counts in the unlogged `aic_rate_limits`, a client's
+  window opening at its first hit, and answers a `RateDecision`. `RateLimitMiddleware` (a module lists
+  it, `AfterSession`) counts each `RateLimit` whose path prefix a request starts with, from the
+  `RateLimits` one module's factory gives, keyed by the peer's address, and past a limit answers 429
+  with `Retry-After`. `bin/aic cache:prune` and the job `aic-cache-prune` (for an app's schedule)
+  remove what expired; `bin/aic rate:reset <name>` clears a limit's counts. `TableBuilder::unlogged()`
+  makes such a table.
 - `AIC\Storage`: the app's stored files (#213), in two stores under `<root>/var/storage/`, which a
   deploy keeps across releases. `AIC\Storage\Application\PublicFiles` holds what any visitor may
   fetch; `AIC\Storage\Application\PublicFileHandler` serves it at `/files/<key>` after the assets

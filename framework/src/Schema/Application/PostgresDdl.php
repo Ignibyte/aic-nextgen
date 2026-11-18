@@ -62,7 +62,11 @@ final readonly class PostgresDdl
 
         $definitions = array_merge($definitions, (new PostgresClauseDdl())->clauses($table->name, $table->constraints));
 
-        return 'CREATE TABLE ' . $table->name->value . ' (' . implode(', ', $definitions) . ')';
+        $create = $table->unlogged
+            ? 'CREATE UNLOGGED TABLE '
+            : 'CREATE TABLE ';
+
+        return $create . $table->name->value . ' (' . implode(', ', $definitions) . ')';
     }
 
     /**

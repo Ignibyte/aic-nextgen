@@ -6,6 +6,7 @@ namespace AIC\Module\Application;
 
 use AIC\Access\Domain\CreateAccessTables;
 use AIC\Auth\Domain\EnablePgcrypto;
+use AIC\Cache\Domain\CreateCacheTables;
 use AIC\Entity\Domain\CreateEntityAuditTable;
 use AIC\Notification\Domain\AddNotificationInbox;
 use AIC\Notification\Domain\CreateNotificationsTable;
@@ -38,6 +39,7 @@ final readonly class FrameworkMigrations
             new CreateProfilesTable(),
             new CreateAccessTables(),
             new CreateEntityAuditTable(),
+            new CreateCacheTables(),
         ];
     }
 }

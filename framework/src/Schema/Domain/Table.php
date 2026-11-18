@@ -21,6 +21,7 @@ final readonly class Table
      * @param list<object> $columns     Its Columns, in order: objects, the list form elephc keeps (plan.md).
      * @param list<string> $primaryKey  The primary key's columns; empty for none.
      * @param Constraints  $constraints Its unique constraints, indexes, foreign keys and checks.
+     * @param bool         $unlogged    Whether it skips the write-ahead log (#312): a crash empties it.
      *
      * @throws InvalidArgumentException When there are no columns, a key, constraint, index, check or generated
      *                                  column names a column the table lacks, or a SetNull foreign key's column
@@ -31,6 +32,7 @@ final readonly class Table
         public array $columns,
         public array $primaryKey,
         public Constraints $constraints,
+        public bool $unlogged = false,
     ) {
         $names = self::names($columns);
 

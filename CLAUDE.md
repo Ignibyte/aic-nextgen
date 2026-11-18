@@ -199,6 +199,9 @@ Soft deletes: every read sees live rows unless `withDeleted(DeletedScope)`; `cha
 is never written by a caller, an insert starts it in the first state, `EntityTransitions::apply(type, key, name, Actor)`
 moves it in one guarded UPDATE recorded as `Transitioned`; `TransitionRefusedException`. `types()->defaulted()`,
 `make:state` (enum, transitions class, migration); gate:31 runs 17 make lines.
+#312: `AIC\Cache` on Postgres: `PostgresCache` (get, put, forget, remember, increment), `PostgresLocks` (advisory:
+`holdForTransaction`, `around`, `tryAround`), `RateLimiter` and `RateLimitMiddleware` (429, `Retry-After`; `RateLimits` from a
+module factory), unlogged tables (`TableBuilder::unlogged()`), `bin/aic cache:prune|rate:reset`, the job `aic-cache-prune`.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
@@ -239,7 +242,7 @@ Background work is a job; the HTTP server's processes are its workers.
 - The repo root is AIC's fixture app, `aic/app` (#126): five modules under `modules/`, three cut
   from the ten-module demo (the tag `demo-reference`; rebuilt in `Ignibyte/aic-demo` by #128 and
   #129). `site` holds home, greeting and job; `note` holds stock; `account` holds auth and
-  session; content and faq were dropped. `ledger` (#310) holds the schema declarations and guards, since #309 the entity lifecycle and since #308 a state machine. `scaffold` (#122) is what the make commands make, held
+  session; content and faq were dropped. `ledger` (#310) holds the schema declarations and guards, since #309 the entity lifecycle, since #308 a state machine and since #312 the cache. `scaffold` (#122) is what the make commands make, held
   by gate:31: regenerate it, never edit it by hand. It is AIC's test bed, not a showcase: a feature the
   gates need is added here with its framework change. Each module has its classes
   in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Block`, `Form`,

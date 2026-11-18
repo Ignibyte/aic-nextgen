@@ -7,7 +7,9 @@ namespace App\Generated;
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use App\Ledger\Controller\LedgerAccountsApi;
+use App\Ledger\Controller\LedgerCacheApi;
 use App\Ledger\Controller\LedgerGuardsApi;
+use App\Ledger\Controller\LedgerLimitedApi;
 use App\Ledger\Controller\LedgerNoticesApi;
 use App\Ledger\Controller\LedgerStandingApi;
 
@@ -30,6 +32,8 @@ final readonly class LedgerRoutes
             ->get('/ledger/guards', LedgerGuardsApi::class)
             ->get('/ledger/accounts/round-trip', LedgerAccountsApi::class)
             ->get('/ledger/notices', LedgerNoticesApi::class)
-            ->get('/ledger/accounts/standing', LedgerStandingApi::class);
+            ->get('/ledger/accounts/standing', LedgerStandingApi::class)
+            ->get('/ledger/cache', LedgerCacheApi::class)
+            ->get('/ledger/limited', LedgerLimitedApi::class);
     }
 }
