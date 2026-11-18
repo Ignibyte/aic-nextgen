@@ -25,6 +25,7 @@ final readonly class ModuleRoutes
         $routeCollector = (new SiteRoutes())->add($routeCollector);
         $routeCollector = (new SiteRoutesPart2())->add($routeCollector);
         $routeCollector = (new AccountRoutes())->add($routeCollector);
+        $routeCollector = (new LedgerRoutes())->add($routeCollector);
         $routeCollector = (new NoteRoutes())->add($routeCollector);
         $routeCollector = (new NoteRoutesPart2())->add($routeCollector);
 

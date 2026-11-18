@@ -96,6 +96,15 @@
             "captures": false
         },
         {
+            "name": "ledger guards, every refused write and the generated columns",
+            "method": "GET",
+            "path": "/ledger/guards",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "download",
             "method": "GET",
             "path": "/download/hello.txt",

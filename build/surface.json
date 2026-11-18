@@ -201,6 +201,14 @@
             "path": "/audit"
         },
         {
+            "handler": "App\\Ledger\\Controller\\LedgerGuardsApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "",
+            "path": "/ledger/guards"
+        },
+        {
             "handler": "App\\Note\\Controller\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -580,6 +588,25 @@
             "prefixes": [
                 "/account"
             ],
+            "requires": [
+                "site"
+            ]
+        },
+        {
+            "bindings": [],
+            "blocks": [],
+            "exports": [],
+            "factories": [],
+            "middleware": [],
+            "migrations": [
+                "App\\Ledger\\Migration\\CreateLedgerEntriesTable",
+                "App\\Ledger\\Migration\\CreateLedgerReviewsTable"
+            ],
+            "name": "ledger",
+            "namespace": "App\\Ledger\\",
+            "permissions": [],
+            "plugins": [],
+            "prefixes": [],
             "requires": [
                 "site"
             ]

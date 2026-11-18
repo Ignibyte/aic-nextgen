@@ -22,6 +22,7 @@ final readonly class ModuleMigrations
         return array_merge(
             (new SiteMigrations())->all(),
             (new AccountMigrations())->all(),
+            (new LedgerMigrations())->all(),
             (new NoteMigrations())->all(),
             (new ScaffoldMigrations())->all(),
         );

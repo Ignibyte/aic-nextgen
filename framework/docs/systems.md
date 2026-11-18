@@ -77,6 +77,22 @@ The development engine and its guard are described in [workflow.md](workflow.md)
   database makes with `gen_random_uuid()`), `jsonb()` and `choice(list)` (text with a
   `CHECK (column IN (...))`), added with `TableBuilder::column(name, type)` (#307); a column cannot
   change into a key or a choice.
+  - Declarations (#310): `Schema::expressions()` gives typed terms (`column`, `integer`, `decimal`,
+    `text`, `boolean`, `calculate` with an `Arithmetic`, `concat`, `lower`, `length`) and predicates
+    (`compare` with an `Operator`, `isNull`, `oneOf`, `all`, `any`, `not`), each rendered as it is
+    built by `AIC\Schema\Application\PostgresExpressions`, the one class that makes a `Term` or a
+    `Predicate` (gate:8, `aic.schemaExpression`); a text literal doubles its quotes and refuses NUL.
+    Both builders share `TableConstraints`: `unique`, `index`, `check(name, predicate)` (the
+    constraint `<table>_<name>`), `indexWhere(columns, predicate)`, `uniqueWhere(columns, predicate)`
+    and `indexUsing(columns, IndexMethod)` (`Hash`, `Gin`, `Gist`, `Brin`, `Trigram` with the
+    migration's `extension('pg_trgm')`, `JsonPath`); a created table refuses one that names a column
+    it lacks. `types()->generated(type, term)` is a stored generated column, added with `column()` or
+    `addColumn()` and never retyped into; nothing writes one (the database refuses with SQLSTATE 428C9).
+  - Guards (#310), as triggers the DDL generates: `Schema::appendOnly(table)` refuses every UPDATE,
+    DELETE and TRUNCATE (an audit trail, a ledger); `Schema::finalOnce(table, columns)` refuses
+    changing a listed column once it holds a value and deleting a row where one does (a decision
+    recorded once). Both raise SQLSTATE 23001, which a module sees as the `QueryException`'s message.
+    A loop check or a denormalization belongs in a repository, inside `EntityStore::transaction()`.
 - `AIC\Entity`: tables as entity types with typed fields (Text, Date, Numeric, Boolean, Integer,
   Reference, Uuid, Json, Choice, Timestamp, and the CreatedAt and UpdatedAt stamps the database
   sets), each nullable or not, keyed by an integer or, with `keyType: FieldType::Uuid`, a uuid. A

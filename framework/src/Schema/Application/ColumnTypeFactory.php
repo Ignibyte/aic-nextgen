@@ -7,6 +7,7 @@ namespace AIC\Schema\Application;
 use AIC\Schema\Contracts\ColumnType;
 use AIC\Schema\Contracts\ColumnTypes;
 use AIC\Schema\Contracts\LogicalType;
+use AIC\Schema\Contracts\Term;
 use InvalidArgumentException;
 use Override;
 
@@ -164,5 +165,23 @@ final readonly class ColumnTypeFactory implements ColumnTypes
     public function choice(array $choices): ColumnType
     {
         return new ColumnType(LogicalType::Choice, 0, 0, $choices);
+    }
+
+    /**
+     * @param ColumnType $columnType The column's type: any but a key, a choice or another generated column.
+     * @param Term       $term       What it holds (#310).
+     *
+     * @throws InvalidArgumentException When the type cannot be generated.
+     *
+     * @return ColumnType A stored generated column of that type.
+     */
+    #[Override]
+    public function generated(ColumnType $columnType, Term $term): ColumnType
+    {
+        if ($columnType->generatedAs instanceof Term) {
+            throw new InvalidArgumentException('A generated column is generated once: its type is a plain column type.');
+        }
+
+        return new ColumnType($columnType->logicalType, $columnType->length, $columnType->scale, $columnType->choices, $term);
     }
 }

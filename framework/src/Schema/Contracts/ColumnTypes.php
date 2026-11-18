@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Schema\Contracts;
 
+use InvalidArgumentException;
+
 /**
  * Every column type a migration can name, one method each (#86): the
  * vocabulary of `TableBuilder` and of `TableAlteration::addColumn()` and
@@ -82,4 +84,14 @@ interface ColumnTypes
      * @return ColumnType Text that is one of them, checked by the database (#307).
      */
     public function choice(array $choices): ColumnType;
+
+    /**
+     * @param ColumnType $columnType The column's type: any but a key, a choice or another generated column.
+     * @param Term       $term       What it holds, computed from the row's other columns (#310).
+     *
+     * @throws InvalidArgumentException When the type cannot be generated.
+     *
+     * @return ColumnType A column the database computes and stores on every write; nothing writes it.
+     */
+    public function generated(ColumnType $columnType, Term $term): ColumnType;
 }

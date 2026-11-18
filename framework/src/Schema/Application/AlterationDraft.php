@@ -24,15 +24,23 @@ final readonly class AlterationDraft implements TableAlteration
     use AddsConstraints;
 
     /**
-     * @param Identifier      $identifier      The existing table's name.
-     * @param ColumnChanges   $columnChanges   Collects the columns to add and the type changes.
-     * @param ConstraintDraft $constraintDraft Collects the constraints and indexes to add.
+     * Collects the columns to add and the type changes.
+     */
+    private ColumnChanges $columnChanges;
+
+    /**
+     * Collects the constraints, indexes and checks to add.
+     */
+    private ConstraintDraft $constraintDraft;
+
+    /**
+     * @param Identifier $identifier The existing table's name.
      */
     public function __construct(
         private Identifier $identifier,
-        private ColumnChanges $columnChanges,
-        private ConstraintDraft $constraintDraft,
     ) {
+        $this->columnChanges = new ColumnChanges();
+        $this->constraintDraft = new ConstraintDraft();
     }
 
     /**

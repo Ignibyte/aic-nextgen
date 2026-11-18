@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace AIC\Schema\Contracts;
 
 /**
- * Changes to a table an earlier migration created: columns to add, columns
- * whose type changes, and unique constraints and indexes. Each method returns
- * the builder, so a migration chains them; the database checks the columns
- * when the migration runs.
+ * Changes to a table an earlier migration created: columns to add and
+ * columns whose type changes, with the unique constraints, indexes and checks
+ * of TableConstraints. Each method returns the builder, so a migration chains
+ * them; the database checks the columns when the migration runs.
  */
-interface TableAlteration
+interface TableAlteration extends TableConstraints
 {
     /**
      * @param string     $name       The new column. It is required unless `nullable()` follows, and a required
@@ -37,22 +37,4 @@ interface TableAlteration
      * @return self The builder.
      */
     public function changeType(string $column, ColumnType $columnType, string $using = ''): self;
-
-    /**
-     * @api
-     *
-     * @param list<string> $columns Columns whose values, taken together, no two rows may share.
-     *
-     * @return self The builder.
-     */
-    public function unique(array $columns): self;
-
-    /**
-     * @api
-     *
-     * @param list<string> $columns The columns to index, in order.
-     *
-     * @return self The builder.
-     */
-    public function index(array $columns): self;
 }

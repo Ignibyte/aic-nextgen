@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Schema\Domain;
 
 use AIC\Schema\Contracts\OnDelete;
+use AIC\Schema\Contracts\Term;
 use InvalidArgumentException;
 
 use function in_array;
@@ -19,10 +20,11 @@ final readonly class Table
      * @param Identifier   $name        The table's name.
      * @param list<object> $columns     Its Columns, in order: objects, the list form elephc keeps (plan.md).
      * @param list<string> $primaryKey  The primary key's columns; empty for none.
-     * @param Constraints  $constraints Its unique constraints, indexes and foreign keys.
+     * @param Constraints  $constraints Its unique constraints, indexes, foreign keys and checks.
      *
-     * @throws InvalidArgumentException When there are no columns, a key, constraint or index names a column
-     *                                  the table lacks, or a SetNull foreign key's column is required.
+     * @throws InvalidArgumentException When there are no columns, a key, constraint, index, check or generated
+     *                                  column names a column the table lacks, or a SetNull foreign key's column
+     *                                  is required.
      */
     public function __construct(
         public Identifier $name,
@@ -40,6 +42,7 @@ final readonly class Table
         $this->checkGroups('a unique constraint', $constraints->uniques, $names);
         $this->checkGroups('an index', $constraints->indexes, $names);
         $this->checkForeignKeys($names);
+        $this->checkDeclarations($names);
     }
 
     /**
@@ -57,6 +60,79 @@ final readonly class Table
             }
 
             $this->check($what, $group->columns, $names);
+        }
+    }
+
+    /**
+     * @param list<string> $names The table's column names.
+     *
+     * @throws InvalidArgumentException When a check, a partial or method index, or a generated column names a
+     *                                  column the table lacks (#310).
+     */
+    private function checkDeclarations(array $names): void
+    {
+        foreach ($this->constraints->checks as $check) {
+            if (!$check instanceof Check) {
+                continue;
+            }
+
+            $this->check('the check ' . $check->name->value, $check->predicate->columns, $names);
+        }
+
+        $this->checkPartialIndexes($names);
+        $this->checkMethodIndexes($names);
+        $this->checkGenerated($names);
+    }
+
+    /**
+     * @param list<string> $names The table's column names.
+     *
+     * @throws InvalidArgumentException When a partial index names a column the table lacks.
+     */
+    private function checkPartialIndexes(array $names): void
+    {
+        foreach ($this->constraints->partialIndexes as $partialIndex) {
+            if (!$partialIndex instanceof PartialIndex) {
+                continue;
+            }
+
+            $this->check('a partial index', $partialIndex->columns(), $names);
+        }
+    }
+
+    /**
+     * @param list<string> $names The table's column names.
+     *
+     * @throws InvalidArgumentException When an index of another method names a column the table lacks.
+     */
+    private function checkMethodIndexes(array $names): void
+    {
+        foreach ($this->constraints->methodIndexes as $methodIndex) {
+            if (!$methodIndex instanceof MethodIndex) {
+                continue;
+            }
+
+            $this->check('an index', $methodIndex->columnGroup->columns, $names);
+        }
+    }
+
+    /**
+     * @param list<string> $names The table's column names.
+     *
+     * @throws InvalidArgumentException When a generated column reads a column the table lacks.
+     */
+    private function checkGenerated(array $names): void
+    {
+        foreach ($this->columns as $column) {
+            $term = $column instanceof Column
+                ? $column->type->generatedAs
+                : null;
+
+            if (!$term instanceof Term) {
+                continue;
+            }
+
+            $this->check('a generated column', $term->columns, $names);
         }
     }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AIC\Schema\Application;
 
+use AIC\Schema\Contracts\ColumnTypes;
+use AIC\Schema\Contracts\TableBuilder;
 use AIC\Schema\Domain\Column;
 use AIC\Schema\Domain\Identifier;
 use AIC\Schema\Domain\Table;
@@ -34,13 +36,27 @@ final class TableParts
     private array $primaryKey = [];
 
     /**
-     * @param Identifier      $identifier      The table's name.
-     * @param ConstraintDraft $constraintDraft Its unique constraints, indexes and foreign keys.
+     * Its unique constraints, indexes, foreign keys and checks.
+     */
+    private readonly ConstraintDraft $constraintDraft;
+
+    /**
+     * @param Identifier $identifier The table's name.
      */
     public function __construct(
         private readonly Identifier $identifier,
-        private readonly ConstraintDraft $constraintDraft,
     ) {
+        $this->constraintDraft = new ConstraintDraft();
+    }
+
+    /**
+     * @param ColumnTypes $columnTypes Makes each column's type.
+     *
+     * @return TableBuilder The builder a migration chains on, collecting into these parts.
+     */
+    public function builder(ColumnTypes $columnTypes): TableBuilder
+    {
+        return new TableDraft($this, $this->constraintDraft, $columnTypes);
     }
 
     /**

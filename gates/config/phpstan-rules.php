@@ -9,6 +9,7 @@ use Gates\PhpStan\HtmlMarkupReadRule;
 use Gates\PhpStan\PolicyShapeRule;
 use Gates\PhpStan\RenderTreeInputRule;
 use Gates\PhpStan\RuleFactory;
+use Gates\PhpStan\SchemaExpressionRule;
 use Gates\PhpStan\TaggedServiceTypeRule;
 use Gates\PhpStan\TemplateUsageProvider;
 
@@ -35,6 +36,7 @@ return [
         HtmlConstructionRule::class,
         ControllerReturnTypeRule::class,
         PolicyShapeRule::class,
+        SchemaExpressionRule::class,
     ],
     'services' => $services,
 ];
