@@ -36,6 +36,11 @@ final class TableParts
     private array $primaryKey = [];
 
     /**
+     * Whether the table skips the write-ahead log (#312).
+     */
+    private bool $unlogged = false;
+
+    /**
      * Its unique constraints, indexes, foreign keys and checks.
      */
     private readonly ConstraintDraft $constraintDraft;
@@ -84,6 +89,14 @@ final class TableParts
     }
 
     /**
+     * Makes the table unlogged (#312): faster writes, emptied by a crash.
+     */
+    public function unlog(): void
+    {
+        $this->unlogged = true;
+    }
+
+    /**
      * @param list<string> $columns The primary key's columns.
      */
     public function primary(array $columns): void
@@ -98,6 +111,6 @@ final class TableParts
      */
     public function table(): Table
     {
-        return new Table($this->identifier, $this->columns, $this->primaryKey, $this->constraintDraft->constraints());
+        return new Table($this->identifier, $this->columns, $this->primaryKey, $this->constraintDraft->constraints(), $this->unlogged);
     }
 }

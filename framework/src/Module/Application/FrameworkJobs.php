@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Cache\Application\CachePruneJob;
+use AIC\Cache\Application\PostgresCache;
+use AIC\Cache\Application\RateLimiter;
 use AIC\Controller\Contracts\Job;
 use AIC\Database\Contracts\Database;
 use AIC\Notification\Application\DatabaseChannel;
@@ -15,7 +18,8 @@ use AIC\Notification\Domain\MailConfig;
 
 /**
  * The framework's own queue jobs (#48, placed by #93): `notify`, which delivers
- * one notification through the database or the mail channel.
+ * one notification through the database or the mail channel, and since #312
+ * `aic-cache-prune`.
  */
 final readonly class FrameworkJobs
 {
@@ -41,6 +45,9 @@ final readonly class FrameworkJobs
             'mail' => new MailChannel($this->mailTransport, $this->mailConfig),
         ];
 
-        return [Notifier::JOB => new DeliverNotification($channels)];
+        return [
+            CachePruneJob::NAME => new CachePruneJob(new PostgresCache($this->database), new RateLimiter($this->database)),
+            Notifier::JOB => new DeliverNotification($channels),
+        ];
     }
 }

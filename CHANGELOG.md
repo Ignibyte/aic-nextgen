@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Cache, locks and rate limits on Postgres** (#312). `AIC\Cache` needs no Redis: `PostgresCache` keeps
+  text values by key until they expire (`get`, `put`, `forget`, `remember`, an atomic `increment`),
+  `PostgresLocks` takes advisory locks for a transaction or around a closure (`around`, `tryAround`),
+  and `RateLimiter` counts a client's hits in a window that opens at its first hit.
+  `RateLimitMiddleware` answers 429 with `Retry-After` past the `RateLimits` a module's factory gives.
+  Both tables are unlogged (`TableBuilder::unlogged()`, new). `bin/aic cache:prune` and the job
+  `aic-cache-prune` remove what expired; `bin/aic rate:reset <name>` clears a limit.
+
 - **State machines on entities, and `make:state`** (#308). An `EntityType` takes a `StateMachine`: a
   Choice field, its states (the first where every insert starts) and named `Transition`s, each with an
   optional permission. Nothing writes the field directly: `EntityTransitions::apply(type, key,

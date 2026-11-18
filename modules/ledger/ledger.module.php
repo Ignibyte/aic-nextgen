@@ -7,10 +7,14 @@ declare(strict_types=1);
  * reads it; nothing reads it at run time.
  */
 
+use AIC\Cache\Application\RateLimitMiddleware;
+use AIC\Module\Contracts\MiddlewarePosition;
 use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\RouteMethod;
 use App\Ledger\Controller\LedgerAccountsApi;
+use App\Ledger\Controller\LedgerCacheApi;
 use App\Ledger\Controller\LedgerGuardsApi;
+use App\Ledger\Controller\LedgerLimitedApi;
 use App\Ledger\Controller\LedgerNoticesApi;
 use App\Ledger\Controller\LedgerStandingApi;
 use App\Ledger\Job\LedgerAccountOpenedJob;
@@ -19,6 +23,7 @@ use App\Ledger\Migration\CreateLedgerAccountsTable;
 use App\Ledger\Migration\CreateLedgerEntriesTable;
 use App\Ledger\Migration\CreateLedgerNoticesTable;
 use App\Ledger\Migration\CreateLedgerReviewsTable;
+use App\Ledger\Service\LedgerLimits;
 
 return (new ModuleManifest('ledger'))
     ->requires('site')
@@ -32,4 +37,8 @@ return (new ModuleManifest('ledger'))
     ->route(RouteMethod::Get, '/ledger/notices', LedgerNoticesApi::class)
     ->migration(AddLedgerAccountsStanding::class)
     ->route(RouteMethod::Get, '/ledger/accounts/standing', LedgerStandingApi::class)
-    ->permission('ledger.freeze', 'Freeze a ledger account, so nothing posts to it until it thaws.');
+    ->permission('ledger.freeze', 'Freeze a ledger account, so nothing posts to it until it thaws.')
+    ->route(RouteMethod::Get, '/ledger/cache', LedgerCacheApi::class)
+    ->route(RouteMethod::Get, '/ledger/limited', LedgerLimitedApi::class)
+    ->middleware(RateLimitMiddleware::class, MiddlewarePosition::AfterSession)
+    ->factory(LedgerLimits::class);

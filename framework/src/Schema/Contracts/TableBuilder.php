@@ -95,6 +95,14 @@ interface TableBuilder extends TableConstraints
     public function nullable(): self;
 
     /**
+     * Makes the table unlogged (#312): Postgres keeps no write-ahead log of it, so writes are faster and a crash
+     * empties it. For a cache or a counter, never for data that must survive.
+     *
+     * @return self The builder.
+     */
+    public function unlogged(): self;
+
+    /**
      * @param list<string> $columns The primary key's columns.
      *
      * @return self The builder.

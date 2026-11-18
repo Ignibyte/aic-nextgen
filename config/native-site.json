@@ -133,6 +133,43 @@
             "captures": false
         },
         {
+            "name": "ledger cache, values, a counter and locks",
+            "method": "GET",
+            "path": "/ledger/cache",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger limited, the first hit after a reset",
+            "method": "GET",
+            "path": "/ledger/limited",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false,
+            "console": "rate:reset ledger-limited"
+        },
+        {
+            "name": "ledger limited, the second hit",
+            "method": "GET",
+            "path": "/ledger/limited",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger limited, the third hit, past the limit",
+            "method": "GET",
+            "path": "/ledger/limited",
+            "form": "",
+            "header": "",
+            "status": 429,
+            "captures": false
+        },
+        {
             "name": "download",
             "method": "GET",
             "path": "/download/hello.txt",

@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Cache\Application\PostgresCache;
+use AIC\Cache\Application\PostgresLocks;
 use AIC\Entity\Application\EntityStore;
 use AIC\Entity\Application\EntityTransitions;
 use AIC\Module\Application\HandlerContext;
+use App\Ledger\Controller\LedgerCacheApi;
+use App\Ledger\Controller\LedgerLimitedApi;
 use App\Ledger\Controller\LedgerStandingApi;
 use App\Ledger\Entity\LedgerTypes;
+use App\Ledger\Service\LedgerCache;
 use App\Ledger\Service\LedgerStanding;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -35,14 +40,22 @@ final readonly class LedgerHandlersPart2
     public function byId(): array
     {
         $ledgerHandlerServices = new LedgerHandlerServices($this->handlerContext);
+        $entityStore = new EntityStore($this->handlerContext->database());
         $ledgerStanding = new LedgerStanding(
-            new EntityStore($this->handlerContext->database()),
+            $entityStore,
             new EntityTransitions($this->handlerContext->database()),
             $ledgerHandlerServices->ledgerHistory(),
             new LedgerTypes(),
         );
+        $ledgerCache = new LedgerCache(
+            new PostgresCache($this->handlerContext->database()),
+            new PostgresLocks($this->handlerContext->database()),
+            $entityStore,
+        );
 
         return [
+            LedgerCacheApi::class => $this->handlerContext->api(new LedgerCacheApi($ledgerCache)),
+            LedgerLimitedApi::class => $this->handlerContext->api(new LedgerLimitedApi()),
             LedgerStandingApi::class => $this->handlerContext->api(new LedgerStandingApi($ledgerStanding)),
         ];
     }
