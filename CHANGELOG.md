@@ -6,6 +6,16 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Entity lifecycle: events with listener jobs, an audit trail and soft deletes** (#309). An `EntityType`
+  takes a `Lifecycle`: audited, a soft-delete field, and `Listener`s that name a job. Every write to an
+  observed type records its event (created, updated, deleted, restored, purged) in the write's
+  transaction, joining the caller's when one is open: a row in the framework's append-only
+  `aic_entity_audit` (who, from `EntityStore::withActor()`; what, as jsonb; when), read with
+  `AuditTrail::history()`, and each listener's job queued. A soft-deleting type's delete stamps its
+  field and every read sees live rows only, unless `withDeleted()`; `changes()->restore()` and `purge()`
+  bring a row back or delete it for good. The database gains `inTransaction()`. **For apps:**
+  `upsert()` refuses an observed type, and a soft-delete field is never written directly.
+
 - **Schema declarations: checks, partial and method indexes, generated columns, database guards**
   (#310). `Schema::expressions()` gives typed terms and predicates, so a migration declares
   `check(name, predicate)`, `indexWhere`, `uniqueWhere` and `indexUsing(columns, IndexMethod)` (hash,

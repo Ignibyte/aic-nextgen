@@ -100,6 +100,17 @@ final class PdoDatabase implements Database
     }
 
     /**
+     * @return bool Whether a transaction is open (#309); with no connection yet, none is, and asking opens none.
+     */
+    #[Override]
+    public function inTransaction(): bool
+    {
+        $open = $this->connection[0] ?? null;
+
+        return $open instanceof PDO && $open->inTransaction();
+    }
+
+    /**
      * @param string                           $sql    A statement, with `?` placeholders.
      * @param list<string|int|float|bool|null> $params The values for the placeholders, in order.
      *

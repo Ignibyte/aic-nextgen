@@ -191,6 +191,10 @@ declarations; in-place edits are #328); gate:31 runs 16 make lines.
 gate:8 `aic.schemaExpression`), `TableConstraints` on both builders (`check`, `indexWhere`, `uniqueWhere`, `indexUsing`
 with an `IndexMethod`), `types()->generated(type, term)`, and the trigger guards `Schema::appendOnly()` and
 `finalOnce()` (SQLSTATE 23001); the `ledger` fixture module's `/ledger/guards`. Typed views stay with #294.
+#309: entity lifecycle: `EntityType`'s `Lifecycle` (audited, a soft-delete field, `Listener`s naming jobs); each write
+on an observed type records its `EntityEvent` in the write's transaction (`Database::inTransaction()`): a row in the
+append-only `aic_entity_audit` (`EntityStore::withActor()`, `AuditTrail::history()`) and each listener's job queued.
+Soft deletes: every read sees live rows unless `withDeleted(DeletedScope)`; `changes()->restore()|purge()`. No event bus.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
@@ -231,7 +235,7 @@ Background work is a job; the HTTP server's processes are its workers.
 - The repo root is AIC's fixture app, `aic/app` (#126): five modules under `modules/`, three cut
   from the ten-module demo (the tag `demo-reference`; rebuilt in `Ignibyte/aic-demo` by #128 and
   #129). `site` holds home, greeting and job; `note` holds stock; `account` holds auth and
-  session; content and faq were dropped. `ledger` (#310) holds the schema declarations and guards. `scaffold` (#122) is what the make commands make, held
+  session; content and faq were dropped. `ledger` (#310) holds the schema declarations and guards, and since #309 the entity lifecycle. `scaffold` (#122) is what the make commands make, held
   by gate:31: regenerate it, never edit it by hand. It is AIC's test bed, not a showcase: a feature the
   gates need is added here with its framework change. Each module has its classes
   in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Block`, `Form`,

@@ -32,9 +32,9 @@ final readonly class LedgerGuards
     /**
      * @throws Throwable When a step fails for a reason other than a refused write.
      *
-     * @return LedgerGuardsBody Each step and what came of it.
+     * @return LedgerLines Each step and what came of it.
      */
-    public function body(): LedgerGuardsBody
+    public function body(): LedgerLines
     {
         $ledgerTrail = new LedgerTrail();
         $this->attempt($ledgerTrail, 'change an entry', $this->generated($ledgerTrail));
@@ -46,7 +46,7 @@ final readonly class LedgerGuards
         $this->attempt($ledgerTrail, 'delete a decided review', $this->withdrawn());
         $this->attempt($ledgerTrail, 'decide unsigned', $this->unsigned());
 
-        return new LedgerGuardsBody($ledgerTrail->lines());
+        return new LedgerLines('steps', $ledgerTrail->lines());
     }
 
     /**

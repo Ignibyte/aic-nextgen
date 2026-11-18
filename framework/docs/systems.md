@@ -138,6 +138,20 @@ The development engine and its guard are described in [workflow.md](workflow.md)
     page's related rows in one query per relation (one per type for a Polymorphic) as
     `RelatedRows`: `rowsOf(key)` loops like a query's rows, `one(key)` gives the first, and a
     ManyToMany's rows carry the pivot's fields as `pivot_<field>`.
+  - Lifecycle (#309): an `EntityType` takes `lifecycle: new Lifecycle(audited, deletedAt, listeners)`.
+    Each write to an observed type (audited, or with a `Listener`) records its `EntityEvent` (Created,
+    Updated, Deleted, Restored, Purged) for every row it changed, in the write's transaction: the
+    caller's when one is open (`Database::inTransaction()`), its own otherwise. Audited, it adds a row
+    to the framework's append-only `aic_entity_audit` (entity, key, event, the actor from
+    `EntityStore::withActor($userId)`, the written values as jsonb, when), which
+    `AIC\Entity\Application\AuditTrail::history(type, key)` reads oldest first, purged rows included.
+    A `Listener` names a job its module's manifest declares; the job is queued with `entity`, `key`,
+    `event` and `fields`. There is no general event bus and no observer: a listener that does work
+    is a Job. `upsert` refuses an observed type. A soft-deleting type names a nullable Timestamp field
+    (`deletedAt`), which no caller writes: `delete()` and `changes()->delete()` stamp it, every query,
+    total, change and relation count, filter and load sees live rows only, `withDeleted()` sees all and
+    `withDeleted(DeletedScope::Deleted)` only the deleted, and `changes()->restore()` and `purge()`
+    bring a row back or delete it for good.
   - A report is a view a module's migration creates through `Schema::view(name, select)`, the one
     place a module writes SQL; an `EntityType` marked read-only maps it and is queried like a
     table, and every write to it is refused.

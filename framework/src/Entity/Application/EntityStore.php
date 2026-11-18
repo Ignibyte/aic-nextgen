@@ -33,19 +33,40 @@ final readonly class EntityStore
     /**
      * @param Database $database The database.
      */
+    /**
+     * Runs each write and records its event (#309).
+     */
+    private EntityLifecycle $entityLifecycle;
+
+    /**
+     * @param Database $database The database.
+     * @param string   $actor    Who writes, for the audit trail (#309): a signed-in user's id; empty for the app.
+     */
     public function __construct(
         private Database $database,
+        private string $actor = '',
     ) {
+        $this->entityLifecycle = new EntityLifecycle($database, $actor);
+    }
+
+    /**
+     * @param string $actor Who writes: the signed-in user's id, as `Actor::$userId` holds it (#309).
+     *
+     * @return self A store whose writes the audit trail credits to that actor.
+     */
+    public function withActor(string $actor): self
+    {
+        return new self($this->database, $actor);
     }
 
     /**
      * @param EntityType $entityType The entity type.
      *
-     * @return EntityQuery A query over its rows.
+     * @return EntityQuery A query over its rows: a soft-deleting type's live ones unless it asks (#309).
      */
     public function query(EntityType $entityType): EntityQuery
     {
-        return new EntityQuery($this->database, $entityType);
+        return new EntityQuery($this->database, $entityType, $this->actor);
     }
 
     /**
@@ -63,9 +84,13 @@ final readonly class EntityStore
     public function insert(EntityType $entityType, array $values): int
     {
         (new EntityKeys())->integerKeyed($entityType);
-        $entityValues = new EntityValues($entityType, $values);
+        $row = $this->inserted($entityType, new EntityValues($entityType, $values), '');
 
-        return $this->database->fetchOne($this->insertSql($entityType, $entityValues, ''), $entityValues->params())->int($entityType->key);
+        if (!$row instanceof Row) {
+            throw new QueryException('The insert returned no row.');
+        }
+
+        return $row->int($entityType->key);
     }
 
     /**
@@ -83,11 +108,13 @@ final readonly class EntityStore
     public function insertUuid(EntityType $entityType, array $values): string
     {
         (new EntityKeys())->uuidKeyed($entityType);
-        $entityValues = new EntityValues($entityType, $values);
+        $row = $this->inserted($entityType, new EntityValues($entityType, $values), '');
 
-        $sql = $this->insertSql($entityType, $entityValues, '');
+        if (!$row instanceof Row) {
+            throw new QueryException('The insert returned no row.');
+        }
 
-        return $this->database->fetchOne($sql, $entityValues->params())->string($entityType->key);
+        return $row->string($entityType->key);
     }
 
     /**
@@ -104,8 +131,7 @@ final readonly class EntityStore
     {
         (new EntityKeys())->integerKeyed($entityType);
         $entityValues = new EntityValues($entityType, $values);
-        $sql = $this->insertSql($entityType, $entityValues, ' ON CONFLICT (' . self::unique($entityValues, $unique) . ') DO NOTHING');
-        $row = $this->database->fetchAll($sql, $entityValues->params())->first();
+        $row = $this->inserted($entityType, $entityValues, ' ON CONFLICT (' . self::unique($entityValues, $unique) . ') DO NOTHING');
 
         return $row instanceof Row
             ? $row->int($entityType->key)
@@ -122,6 +148,12 @@ final readonly class EntityStore
      */
     public function upsert(EntityType $entityType, array $values, string $unique): void
     {
+        if ($entityType->lifecycle->isObserved()) {
+            throw new InvalidArgumentException(
+                'The ' . $entityType->table . ' entity records its events, and an upsert cannot tell a create from an update.',
+            );
+        }
+
         $entityValues = new EntityValues($entityType, $values);
         $column = self::unique($entityValues, $unique);
         $assignments = [];
@@ -171,9 +203,10 @@ final readonly class EntityStore
      */
     public function delete(EntityType $entityType, int|string $key): void
     {
-        $sql = 'DELETE FROM ' . $entityType->table . ' WHERE ' . $entityType->key . ' = ?';
-
-        if (!(new EntityKeys())->isKey($entityType, $key) || $this->database->execute($sql, [$key]) === 0) {
+        if (
+            !(new EntityKeys())->isKey($entityType, $key)
+            || $this->query($entityType)->where($entityType->key, $key)->changes()->delete() === 0
+        ) {
             throw new EntityNotFoundException('No ' . $entityType->table . ' row has that key.');
         }
     }
@@ -201,16 +234,17 @@ final readonly class EntityStore
     public function transaction(Closure $work): void
     {
         $this->database->beginTransaction();
+        $committed = false;
 
         try {
             $work();
-        } catch (Throwable $throwable) {
-            $this->database->rollBack();
-
-            throw $throwable;
+            $this->database->commit();
+            $committed = true;
+        } finally {
+            if (!$committed && $this->database->inTransaction()) {
+                $this->database->rollBack();
+            }
         }
-
-        $this->database->commit();
     }
 
     /**
@@ -224,10 +258,27 @@ final readonly class EntityStore
     {
         $stamped = array_merge($entityType->createdAt(), $entityType->updatedAt());
         $columns = array_merge($entityValues->columns(), $stamped);
-        $marks = array_merge(self::marks(count($entityValues->columns()), '?'), self::marks(count($stamped), 'now()'));
+        $marks = array_merge(array_fill(0, count($entityValues->columns()), '?'), array_fill(0, count($stamped), 'now()'));
 
         return 'INSERT INTO ' . $entityType->table . ' (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $marks) . ')'
-            . $conflict . ' RETURNING ' . $entityType->key;
+            . $conflict . ' RETURNING ' . $entityType->key . ', ' . $entityType->key . '::text AS aic_key';
+    }
+
+    /**
+     * @param EntityType   $entityType   The entity type.
+     * @param EntityValues $entityValues The checked values.
+     * @param string       $conflict     An `ON CONFLICT` clause, or empty.
+     *
+     * @throws QueryException When the insert, its audit row or a listener's job fails (#309).
+     *
+     * @return Row|null The new row's key; null when a conflict left the table as it was.
+     */
+    private function inserted(EntityType $entityType, EntityValues $entityValues, string $conflict): ?Row
+    {
+        $sql = $this->insertSql($entityType, $entityValues, $conflict);
+        $params = $entityValues->params();
+
+        return $this->entityLifecycle->insert($entityType, $sql, $params, $entityValues->columns())->first();
     }
 
     /**
@@ -245,16 +296,5 @@ final readonly class EntityStore
         }
 
         return $unique;
-    }
-
-    /**
-     * @param int    $count How many.
-     * @param string $mark  A placeholder or an expression.
-     *
-     * @return list<string> The mark, that many times.
-     */
-    private static function marks(int $count, string $mark): array
-    {
-        return array_fill(0, $count, $mark);
     }
 }
