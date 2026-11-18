@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AIC\Entity\Application;
 
-use AIC\Entity\Domain\Comparison;
 use AIC\Entity\Domain\Condition;
 use AIC\Entity\Domain\DeletedScope;
 use AIC\Entity\Domain\EntityType;
@@ -12,7 +11,6 @@ use InvalidArgumentException;
 
 use function implode;
 use function in_array;
-use function is_bool;
 use function mb_trim;
 use function str_contains;
 use function strtr;
@@ -176,6 +174,31 @@ final class EntityConditions
     }
 
     /**
+     * @param string          $field       A field of the entity type.
+     * @param EntityType      $entityType  Another entity type, or the same.
+     * @param string          $sourceField A field of it, or its key, whose values the field must be among.
+     * @param list<Condition> $conditions  Conditions on its rows; its live rows only, for a soft-deleting one.
+     *
+     * @throws InvalidArgumentException When a field is not its type's, or a condition is malformed.
+     */
+    public function valuesIn(string $field, EntityType $entityType, string $sourceField, array $conditions): void
+    {
+        $column = $this->column($field);
+        $entityConditions = new self($entityType, new EntityJoins($entityType));
+
+        foreach ($conditions as $condition) {
+            $entityConditions->add($condition);
+        }
+
+        if ($sourceField !== $entityType->key) {
+            $entityType->field($sourceField);
+        }
+
+        $subquery = 'SELECT ' . $entityType->table . '.' . $sourceField . ' FROM ' . $entityType->table . $entityConditions->sql();
+        $this->subquery($column . ' IN (' . $subquery . ')', $entityConditions->params());
+    }
+
+    /**
      * @param string $field A field of the entity type, its key, or a joined field `prefix.field`.
      *
      * @throws InvalidArgumentException When the entity type, or the join, has no such column.
@@ -243,51 +266,16 @@ final class EntityConditions
      */
     private function clause(Condition $condition): string
     {
+        $conditionSql = new ConditionSql();
         $column = $this->column($condition->field);
         $value = $condition->value;
 
         if ($value === null) {
-            return $column . self::nullTest($condition->comparison);
+            return $column . $conditionSql->nullTest($condition->comparison);
         }
 
-        $this->params[] = self::bound($value);
+        $this->params[] = $conditionSql->bound($value);
 
-        return $column . ' ' . $condition->comparison->value . ' ?';
-    }
-
-    /**
-     * @param string|int|bool $value A condition's value.
-     *
-     * @return string|int It as bound: a bool as `true` or `false`.
-     */
-    private static function bound(string|int|bool $value): string|int
-    {
-        if (!is_bool($value)) {
-            return $value;
-        }
-
-        return $value
-            ? 'true'
-            : 'false';
-    }
-
-    /**
-     * @param Comparison $comparison How a field is compared with null.
-     *
-     * @throws InvalidArgumentException When it is an ordering comparison.
-     *
-     * @return string ` IS NULL` or ` IS NOT NULL`.
-     */
-    private static function nullTest(Comparison $comparison): string
-    {
-        if ($comparison === Comparison::Equals) {
-            return ' IS NULL';
-        }
-
-        if ($comparison === Comparison::NotEquals) {
-            return ' IS NOT NULL';
-        }
-
-        throw new InvalidArgumentException('Only Equals and NotEquals compare a field with null.');
+        return $conditionSql->compared($column, $condition->comparison);
     }
 }

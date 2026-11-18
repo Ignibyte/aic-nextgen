@@ -13,6 +13,7 @@ use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\RouteMethod;
 use App\Ledger\Controller\LedgerAccountsApi;
 use App\Ledger\Controller\LedgerCacheApi;
+use App\Ledger\Controller\LedgerCategoriesApi;
 use App\Ledger\Controller\LedgerGuardsApi;
 use App\Ledger\Controller\LedgerLimitedApi;
 use App\Ledger\Controller\LedgerNoticesApi;
@@ -20,6 +21,7 @@ use App\Ledger\Controller\LedgerStandingApi;
 use App\Ledger\Job\LedgerAccountOpenedJob;
 use App\Ledger\Migration\AddLedgerAccountsStanding;
 use App\Ledger\Migration\CreateLedgerAccountsTable;
+use App\Ledger\Migration\CreateLedgerCategoriesTable;
 use App\Ledger\Migration\CreateLedgerEntriesTable;
 use App\Ledger\Migration\CreateLedgerNoticesTable;
 use App\Ledger\Migration\CreateLedgerReviewsTable;
@@ -41,4 +43,6 @@ return (new ModuleManifest('ledger'))
     ->route(RouteMethod::Get, '/ledger/cache', LedgerCacheApi::class)
     ->route(RouteMethod::Get, '/ledger/limited', LedgerLimitedApi::class)
     ->middleware(RateLimitMiddleware::class, MiddlewarePosition::AfterSession)
-    ->factory(LedgerLimits::class);
+    ->factory(LedgerLimits::class)
+    ->migration(CreateLedgerCategoriesTable::class)
+    ->route(RouteMethod::Get, '/ledger/categories', LedgerCategoriesApi::class);
