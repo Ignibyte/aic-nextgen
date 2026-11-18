@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Schema\Contracts\Migration;
+use App\Ledger\Migration\AddLedgerAccountsStanding;
 use App\Ledger\Migration\CreateLedgerAccountsTable;
 use App\Ledger\Migration\CreateLedgerEntriesTable;
 use App\Ledger\Migration\CreateLedgerNoticesTable;
@@ -26,6 +27,7 @@ final readonly class LedgerMigrations
             new CreateLedgerReviewsTable(),
             new CreateLedgerAccountsTable(),
             new CreateLedgerNoticesTable(),
+            new AddLedgerAccountsStanding(),
         ];
     }
 }

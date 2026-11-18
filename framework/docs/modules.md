@@ -247,6 +247,14 @@ make:entity takes them, one link per pair, and foreign keys that delete a link w
 The manifest gains the migration, and the make prints the pivot's entity type and a `ManyToMany`
 for each side's entity type, which the agent adds where the module declares its types.
 
+`bin/aic make:state <module> <table> <field> --states=open,closed --transitions=close:open>closed[@permission],…`
+puts a state machine on a field (#308). It writes the backed enum of the states
+(`<Singular><Field>` in `src/Entity/`), the transitions class beside it (`machine()`, one private
+method per transition, `|` between the states a transition leaves and `@` before the permission it
+needs) and a migration that adds the field as a choice of the states, defaulting to the first. The
+manifest gains the migration; the make prints the field and the `stateMachine:` to add to the entity
+type. A transition is taken with `EntityTransitions::apply()`; nothing writes the field by hand.
+
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
 (the HTML and page templates), `src/Layouts/Page.php` (four regions: header, content, nav, footer)
 and a stylesheet, then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module

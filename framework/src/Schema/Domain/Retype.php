@@ -23,7 +23,8 @@ final readonly class Retype
      * @param string     $using  The SQL expression that converts each value, when the database cannot cast it
      *                           itself; empty for none. The migration's author writes it, never a visitor.
      *
-     * @throws InvalidArgumentException When the new type is a key, a choice or a generated column (#310), which only a
+     * @throws InvalidArgumentException When the new type is a key, a choice, a generated column (#310) or has a default
+     *                                  (#308), which only a
      *                                  new column can be.
      */
     public function __construct(
@@ -33,9 +34,13 @@ final readonly class Retype
     ) {
         $onlyNew = [LogicalType::BigIdentity, LogicalType::UuidKey, LogicalType::Choice];
 
-        if (in_array($type->logicalType, $onlyNew, true) || $type->generatedAs instanceof Term) {
+        if (
+            in_array($type->logicalType, $onlyNew, true)
+            || $type->generatedAs instanceof Term
+            || $type->defaultTo instanceof Term
+        ) {
             throw new InvalidArgumentException(
-                'Column ' . $column->value . ': a column cannot change into a key, a choice or a generated column.',
+                'Column ' . $column->value . ': a column cannot change into a key, a choice, a generated column or a default.',
             );
         }
     }

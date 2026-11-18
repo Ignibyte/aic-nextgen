@@ -6,7 +6,6 @@ namespace AIC\Entity\Application;
 
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
-use AIC\Database\Contracts\Row;
 use AIC\Database\Contracts\Rows;
 use AIC\Entity\Domain\EntityType;
 use Closure;
@@ -84,13 +83,13 @@ final readonly class EntityStore
     public function insert(EntityType $entityType, array $values): int
     {
         (new EntityKeys())->integerKeyed($entityType);
-        $row = $this->inserted($entityType, new EntityValues($entityType, $values), '');
+        $key = $this->inserted($entityType, new EntityValues($entityType, $values, $entityType->initialState()), '');
 
-        if (!$row instanceof Row) {
+        if ($key === null) {
             throw new QueryException('The insert returned no row.');
         }
 
-        return $row->int($entityType->key);
+        return (int) $key;
     }
 
     /**
@@ -108,13 +107,13 @@ final readonly class EntityStore
     public function insertUuid(EntityType $entityType, array $values): string
     {
         (new EntityKeys())->uuidKeyed($entityType);
-        $row = $this->inserted($entityType, new EntityValues($entityType, $values), '');
+        $key = $this->inserted($entityType, new EntityValues($entityType, $values, $entityType->initialState()), '');
 
-        if (!$row instanceof Row) {
+        if ($key === null) {
             throw new QueryException('The insert returned no row.');
         }
 
-        return $row->string($entityType->key);
+        return $key;
     }
 
     /**
@@ -130,12 +129,12 @@ final readonly class EntityStore
     public function insertIfAbsent(EntityType $entityType, array $values, string $unique): ?int
     {
         (new EntityKeys())->integerKeyed($entityType);
-        $entityValues = new EntityValues($entityType, $values);
-        $row = $this->inserted($entityType, $entityValues, ' ON CONFLICT (' . self::unique($entityValues, $unique) . ') DO NOTHING');
+        $entityValues = new EntityValues($entityType, $values, $entityType->initialState());
+        $key = $this->inserted($entityType, $entityValues, ' ON CONFLICT (' . self::unique($entityValues, $unique) . ') DO NOTHING');
 
-        return $row instanceof Row
-            ? $row->int($entityType->key)
-            : null;
+        return $key === null
+            ? null
+            : (int) $key;
     }
 
     /**
@@ -148,9 +147,10 @@ final readonly class EntityStore
      */
     public function upsert(EntityType $entityType, array $values, string $unique): void
     {
-        if ($entityType->lifecycle->isObserved()) {
+        if ($entityType->lifecycle->isObserved() || $entityType->stateField() !== '') {
             throw new InvalidArgumentException(
-                'The ' . $entityType->table . ' entity records its events, and an upsert cannot tell a create from an update.',
+                'The ' . $entityType->table . ' entity records its events or keeps a state;'
+                . ' an upsert cannot tell a create from an update.',
             );
         }
 
@@ -271,14 +271,19 @@ final readonly class EntityStore
      *
      * @throws QueryException When the insert, its audit row or a listener's job fails (#309).
      *
-     * @return Row|null The new row's key; null when a conflict left the table as it was.
+     * @return string|null The new row's key, as the text the database returned; null when a conflict left the table
+     *                     as it was.
      */
-    private function inserted(EntityType $entityType, EntityValues $entityValues, string $conflict): ?Row
+    private function inserted(EntityType $entityType, EntityValues $entityValues, string $conflict): ?string
     {
         $sql = $this->insertSql($entityType, $entityValues, $conflict);
         $params = $entityValues->params();
 
-        return $this->entityLifecycle->insert($entityType, $sql, $params, $entityValues->columns())->first();
+        foreach ($this->entityLifecycle->insert($entityType, $sql, $params, $entityValues->columns()) as $row) {
+            return $row->string('aic_key');
+        }
+
+        return null;
     }
 
     /**

@@ -6,6 +6,15 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **State machines on entities, and `make:state`** (#308). An `EntityType` takes a `StateMachine`: a
+  Choice field, its states (the first where every insert starts) and named `Transition`s, each with an
+  optional permission. Nothing writes the field directly: `EntityTransitions::apply(type, key,
+  transition, actor)` checks the actor's permission and moves the row in one UPDATE that holds the
+  edge, recorded as `transitioned` in the audit trail; a refused or illegal edge throws
+  `TransitionRefusedException` and writes nothing. Schema gains `types()->defaulted(type, term)`.
+  `bin/aic make:state` writes the enum, the transitions class and the migration. **For apps:**
+  `upsert()` refuses a type with a state machine.
+
 - **Entity lifecycle: events with listener jobs, an audit trail and soft deletes** (#309). An `EntityType`
   takes a `Lifecycle`: audited, a soft-delete field, and `Listener`s that name a job. Every write to an
   observed type records its event (created, updated, deleted, restored, purged) in the write's

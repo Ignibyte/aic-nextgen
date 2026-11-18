@@ -12,7 +12,9 @@ use AIC\Module\Contracts\RouteMethod;
 use App\Ledger\Controller\LedgerAccountsApi;
 use App\Ledger\Controller\LedgerGuardsApi;
 use App\Ledger\Controller\LedgerNoticesApi;
+use App\Ledger\Controller\LedgerStandingApi;
 use App\Ledger\Job\LedgerAccountOpenedJob;
+use App\Ledger\Migration\AddLedgerAccountsStanding;
 use App\Ledger\Migration\CreateLedgerAccountsTable;
 use App\Ledger\Migration\CreateLedgerEntriesTable;
 use App\Ledger\Migration\CreateLedgerNoticesTable;
@@ -27,4 +29,7 @@ return (new ModuleManifest('ledger'))
     ->migration(CreateLedgerNoticesTable::class)
     ->job('ledger-account-opened', LedgerAccountOpenedJob::class)
     ->route(RouteMethod::Get, '/ledger/accounts/round-trip', LedgerAccountsApi::class)
-    ->route(RouteMethod::Get, '/ledger/notices', LedgerNoticesApi::class);
+    ->route(RouteMethod::Get, '/ledger/notices', LedgerNoticesApi::class)
+    ->migration(AddLedgerAccountsStanding::class)
+    ->route(RouteMethod::Get, '/ledger/accounts/standing', LedgerStandingApi::class)
+    ->permission('ledger.freeze', 'Freeze a ledger account, so nothing posts to it until it thaws.');

@@ -18,6 +18,7 @@ use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPost;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
 use App\Scaffold\Job\ScaffoldHelloJob;
+use App\Scaffold\Migration\AddScaffoldTasksStage;
 use App\Scaffold\Migration\CreateScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldItemsTable;
 use App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable;
@@ -38,4 +39,5 @@ return (new ModuleManifest('scaffold'))
     ->permission('scaffold.scaffold-task.create', 'Create a scaffold task.')
     ->route(RouteMethod::Get, '/scaffold-events', ScaffoldEventListPage::class)
     ->migration(CreateScaffoldEventsTable::class)
-    ->migration(CreateScaffoldTasksScaffoldEventsTable::class);
+    ->migration(CreateScaffoldTasksScaffoldEventsTable::class)
+    ->migration(AddScaffoldTasksStage::class);

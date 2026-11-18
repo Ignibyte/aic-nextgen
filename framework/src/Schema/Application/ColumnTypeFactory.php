@@ -184,4 +184,22 @@ final readonly class ColumnTypeFactory implements ColumnTypes
 
         return new ColumnType($columnType->logicalType, $columnType->length, $columnType->scale, $columnType->choices, $term);
     }
+
+    /**
+     * @param ColumnType $columnType The column's type: any but a key or a generated column.
+     * @param Term       $term       What a row that names no value holds (#308).
+     *
+     * @throws InvalidArgumentException When the type cannot take a default, or has one.
+     *
+     * @return ColumnType The type with its default.
+     */
+    #[Override]
+    public function defaulted(ColumnType $columnType, Term $term): ColumnType
+    {
+        if ($columnType->defaultTo instanceof Term) {
+            throw new InvalidArgumentException('A column has one default: its type is a plain column type.');
+        }
+
+        return new ColumnType($columnType->logicalType, $columnType->length, $columnType->scale, $columnType->choices, null, $term);
+    }
 }

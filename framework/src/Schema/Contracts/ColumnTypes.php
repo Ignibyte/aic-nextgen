@@ -94,4 +94,15 @@ interface ColumnTypes
      * @return ColumnType A column the database computes and stores on every write; nothing writes it.
      */
     public function generated(ColumnType $columnType, Term $term): ColumnType;
+
+    /**
+     * @param ColumnType $columnType The column's type: any but a key or a generated column.
+     * @param Term       $term       What a row that names no value holds (#308), such as a state machine's initial
+     *                               state; a column added to a table with rows takes it on each.
+     *
+     * @throws InvalidArgumentException When the type cannot take a default, or has one.
+     *
+     * @return ColumnType The type with its default.
+     */
+    public function defaulted(ColumnType $columnType, Term $term): ColumnType;
 }

@@ -103,8 +103,8 @@ final readonly class LedgerTypes
     /**
      * @throws InvalidArgumentException When the type is declared wrongly.
      *
-     * @return EntityType The `ledger_accounts` table: audited, soft-deleting on `deleted_at`, and a listener queuing
-     *                    `ledger-account-opened` for each new account.
+     * @return EntityType The `ledger_accounts` table: audited, soft-deleting on `deleted_at`, a listener queuing
+     *                    `ledger-account-opened` for each new account, and its standing a state machine (#308).
      */
     private static function accountsType(): EntityType
     {
@@ -114,6 +114,7 @@ final readonly class LedgerTypes
             new Field('name', FieldType::Text),
             new Field('deleted_at', FieldType::Timestamp, true),
             new Field('created_at', FieldType::CreatedAt),
-        ], lifecycle: $lifecycle);
+            new Field('standing', FieldType::Choice, false, null, ['open', 'frozen', 'closed']),
+        ], lifecycle: $lifecycle, stateMachine: (new LedgerAccountStandingTransitions())->machine());
     }
 }
