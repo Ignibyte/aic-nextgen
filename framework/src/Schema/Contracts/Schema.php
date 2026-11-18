@@ -46,4 +46,31 @@ interface Schema
      * @throws InvalidArgumentException When the name is not an identifier, or the SELECT is empty.
      */
     public function view(string $name, string $select): void;
+
+    /**
+     * @return Expressions The typed terms and predicates checks, partial indexes and generated columns take (#310).
+     */
+    public function expressions(): Expressions;
+
+    /**
+     * Refuses every UPDATE, DELETE and TRUNCATE of the table (#310), as a trigger the dialect generates: an audit
+     * trail or a ledger. A refused write fails with SQLSTATE 23001.
+     *
+     * @param string $table A table this migration or an earlier one created.
+     *
+     * @throws InvalidArgumentException When the name is not an identifier, or a trigger's name would be too long.
+     */
+    public function appendOnly(string $table): void;
+
+    /**
+     * Refuses changing any of the columns once it holds a value, and deleting a row where one does (#310), as a
+     * trigger the dialect generates: a decision recorded once. A refused write fails with SQLSTATE 23001.
+     *
+     * @param string       $table   A table this migration or an earlier one created.
+     * @param list<string> $columns Its nullable columns that, once set, stay as they are.
+     *
+     * @throws InvalidArgumentException When a name is not an identifier, there are no columns, or a function or
+     *                                  trigger's name would be too long.
+     */
+    public function finalOnce(string $table, array $columns): void;
 }

@@ -6,15 +6,13 @@ namespace AIC\Schema\Application;
 
 use AIC\Schema\Contracts\ColumnType;
 use AIC\Schema\Contracts\LogicalType;
-use AIC\Schema\Contracts\OnDelete;
+use AIC\Schema\Contracts\Term;
 use AIC\Schema\Domain\Alteration;
 use AIC\Schema\Domain\Column;
-use AIC\Schema\Domain\ColumnGroup;
-use AIC\Schema\Domain\Constraints;
-use AIC\Schema\Domain\ForeignKey;
 use AIC\Schema\Domain\Identifier;
 use AIC\Schema\Domain\Retype;
 use AIC\Schema\Domain\Table;
+use AIC\Schema\Domain\TableGuard;
 use AIC\Schema\Domain\View;
 use InvalidArgumentException;
 
@@ -22,7 +20,8 @@ use function array_merge;
 use function implode;
 
 /**
- * Postgres DDL for the schema AST.
+ * Postgres DDL for the schema AST; indexes and guards through PostgresIndexDdl
+ * and PostgresGuardDdl (#310).
  */
 final readonly class PostgresDdl
 {
@@ -49,7 +48,9 @@ final readonly class PostgresDdl
     /**
      * @param Table $table A table.
      *
-     * @return string Its `CREATE TABLE`, with its primary key, unique constraints and foreign keys.
+     * @throws InvalidArgumentException When a check's name would be longer than an identifier may be.
+     *
+     * @return string Its `CREATE TABLE`, with its primary key, unique constraints, foreign keys and checks.
      */
     public function createTable(Table $table): string
     {
@@ -59,7 +60,7 @@ final readonly class PostgresDdl
             $definitions[] = 'PRIMARY KEY (' . implode(', ', $table->primaryKey) . ')';
         }
 
-        $definitions = array_merge($definitions, $this->clauses($table->constraints));
+        $definitions = array_merge($definitions, (new PostgresClauseDdl())->clauses($table->name, $table->constraints));
 
         return 'CREATE TABLE ' . $table->name->value . ' (' . implode(', ', $definitions) . ')';
     }
@@ -73,7 +74,19 @@ final readonly class PostgresDdl
      */
     public function createIndexes(Table $table): array
     {
-        return $this->indexes($table->name, $table->constraints);
+        return (new PostgresIndexDdl())->indexes($table->name, $table->constraints);
+    }
+
+    /**
+     * @param TableGuard $tableGuard A guard on a table (#310).
+     *
+     * @throws InvalidArgumentException When a function or trigger name would be longer than an identifier may be.
+     *
+     * @return list<string> Its function and triggers.
+     */
+    public function createGuard(TableGuard $tableGuard): array
+    {
+        return (new PostgresGuardDdl())->statements($tableGuard);
     }
 
     /**
@@ -99,11 +112,11 @@ final readonly class PostgresDdl
 
         $statements = array_merge($statements, $this->retypes($table, $alteration->retyped));
 
-        foreach ($this->clauses($alteration->constraints) as $clause) {
+        foreach ((new PostgresClauseDdl())->clauses($alteration->table, $alteration->constraints) as $clause) {
             $statements[] = $table . ' ADD ' . $clause;
         }
 
-        return array_merge($statements, $this->indexes($alteration->table, $alteration->constraints));
+        return array_merge($statements, (new PostgresIndexDdl())->indexes($alteration->table, $alteration->constraints));
     }
 
     /**
@@ -151,105 +164,19 @@ final readonly class PostgresDdl
     }
 
     /**
-     * @param Constraints $constraints A table's constraints.
-     *
-     * @return list<string> Its unique constraints and then its foreign keys, as table constraints.
-     */
-    private function clauses(Constraints $constraints): array
-    {
-        return array_merge($this->uniques($constraints), $this->foreignKeys($constraints));
-    }
-
-    /**
-     * @param Constraints $constraints A table's constraints.
-     *
-     * @return list<string> Its unique constraints.
-     */
-    private function uniques(Constraints $constraints): array
-    {
-        $definitions = [];
-
-        foreach ($constraints->uniques as $unique) {
-            if (!($unique instanceof ColumnGroup)) {
-                continue;
-            }
-
-            $definitions[] = 'UNIQUE (' . implode(', ', $unique->columns) . ')';
-        }
-
-        return $definitions;
-    }
-
-    /**
-     * @param Constraints $constraints A table's constraints.
-     *
-     * @return list<string> Its foreign-key constraints.
-     */
-    private function foreignKeys(Constraints $constraints): array
-    {
-        $definitions = [];
-
-        foreach ($constraints->foreignKeys as $foreignKey) {
-            if (!($foreignKey instanceof ForeignKey)) {
-                continue;
-            }
-
-            $definitions[] = $this->foreignKey($foreignKey);
-        }
-
-        return $definitions;
-    }
-
-    /**
-     * @param Identifier  $identifier  The table.
-     * @param Constraints $constraints Its constraints.
-     *
-     * @throws InvalidArgumentException When an index name would be longer than an identifier may be.
-     *
-     * @return list<string> A `CREATE INDEX` for each of its indexes, in order.
-     */
-    private function indexes(Identifier $identifier, Constraints $constraints): array
-    {
-        $statements = [];
-
-        foreach ($constraints->indexes as $index) {
-            if (!($index instanceof ColumnGroup)) {
-                continue;
-            }
-
-            $statements[] = 'CREATE INDEX ' . $index->indexName($identifier)->value . ' ON ' . $identifier->value
-                . ' (' . implode(', ', $index->columns) . ')';
-        }
-
-        return $statements;
-    }
-
-    /**
-     * @param ForeignKey $foreignKey A foreign key.
-     *
-     * @return string Its table constraint.
-     */
-    private function foreignKey(ForeignKey $foreignKey): string
-    {
-        $onDelete = match ($foreignKey->onDelete) {
-            OnDelete::Restrict => 'RESTRICT',
-            OnDelete::Cascade => 'CASCADE',
-            OnDelete::SetNull => 'SET NULL',
-        };
-
-        return 'FOREIGN KEY (' . $foreignKey->column->value . ') REFERENCES ' . $foreignKey->table->value
-            . ' (' . $foreignKey->foreignColumn->value . ') ON DELETE ' . $onDelete;
-    }
-
-    /**
      * @param Column $column A column.
      *
-     * @return string Its definition.
+     * @return string Its definition, a generated column's expression last (#310).
      */
     private function column(Column $column): string
     {
+        $generatedAs = $column->type->generatedAs;
+        $generated = $generatedAs instanceof Term
+            ? ' GENERATED ALWAYS AS (' . $generatedAs->sql . ') STORED'
+            : '';
+
         return $column->name->value . ' ' . $this->type($column->type) . ($column->nullable ? '' : ' NOT NULL')
-            . $this->check($column);
+            . $this->check($column) . $generated;
     }
 
     /**

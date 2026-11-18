@@ -8,6 +8,7 @@ use InvalidArgumentException;
 
 use function array_unique;
 use function count;
+use function in_array;
 use function preg_match;
 
 /**
@@ -23,15 +24,23 @@ final readonly class ColumnType
      * @param int          $scale       A Numeric's digits after the point; 0 for the other types.
      * @param list<string> $choices     A Choice's values (#307), each 1 to 63 letters, digits, `_`, `.`, `:` or `-`,
      *                                  none twice; empty for the other types.
+     * @param Term|null    $generatedAs What a generated column holds (#310), from `ColumnTypes::generated()`;
+     *                                  null for a column the app writes.
      *
-     * @throws InvalidArgumentException When the length, the scale or the choices do not fit the type.
+     * @throws InvalidArgumentException When the length, the scale or the choices do not fit the type, or a key or
+     *                                  a choice is generated.
      */
     public function __construct(
         public LogicalType $logicalType,
         public int $length,
         public int $scale,
         public array $choices = [],
+        public ?Term $generatedAs = null,
     ) {
+        if ($generatedAs instanceof Term && !$this->generatable()) {
+            throw new InvalidArgumentException('A key or a choice column cannot be generated.');
+        }
+
         if (!$this->fits() || !$this->chosen()) {
             throw new InvalidArgumentException(match ($logicalType) {
                 LogicalType::String => 'A string column has a positive length.',
@@ -42,6 +51,14 @@ final readonly class ColumnType
                 LogicalType::Jsonb => 'Only a string or a numeric column has a size, and only a choice column has values.',
             });
         }
+    }
+
+    /**
+     * @return bool Whether a column of this type may be generated: any but a key or a choice.
+     */
+    private function generatable(): bool
+    {
+        return !in_array($this->logicalType, [LogicalType::BigIdentity, LogicalType::UuidKey, LogicalType::Choice], true);
     }
 
     /**

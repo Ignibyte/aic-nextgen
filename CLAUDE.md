@@ -187,6 +187,10 @@ checked as strings by `FieldFormats`, `Row::dateTime()`, Schema `types()->uuid()
 #306: entity relations (`Relation`: HasMany, HasOne, ManyToMany through a pivot, Polymorphic), `EntityQuery::withCount|
 withSum|withExisting|withMissing`, `EntityStore::related()` → `RelatedRows`, `make:relation` (pivot migration and printed
 declarations; in-place edits are #328); gate:31 runs 16 make lines.
+#310: schema declarations: `Schema::expressions()` (typed `Term`s and `Predicate`s; only `PostgresExpressions` makes one,
+gate:8 `aic.schemaExpression`), `TableConstraints` on both builders (`check`, `indexWhere`, `uniqueWhere`, `indexUsing`
+with an `IndexMethod`), `types()->generated(type, term)`, and the trigger guards `Schema::appendOnly()` and
+`finalOnce()` (SQLSTATE 23001); the `ledger` fixture module's `/ledger/guards`. Typed views stay with #294.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
@@ -224,10 +228,10 @@ Background work is a job; the HTTP server's processes are its workers.
 - One package, **`ignibyte/aic-framework`**, in `framework/`, namespace `AIC\` with one namespace per
   system (`AIC\Http`, `AIC\Routing`, `AIC\Entity`, ...). It reaches the root through a composer
   path repository and moves to its own repo when published.
-- The repo root is AIC's fixture app, `aic/app` (#126): four modules under `modules/`, three cut
+- The repo root is AIC's fixture app, `aic/app` (#126): five modules under `modules/`, three cut
   from the ten-module demo (the tag `demo-reference`; rebuilt in `Ignibyte/aic-demo` by #128 and
   #129). `site` holds home, greeting and job; `note` holds stock; `account` holds auth and
-  session; content and faq were dropped. `scaffold` (#122) is what the make commands make, held
+  session; content and faq were dropped. `ledger` (#310) holds the schema declarations and guards. `scaffold` (#122) is what the make commands make, held
   by gate:31: regenerate it, never edit it by hand. It is AIC's test bed, not a showcase: a feature the
   gates need is added here with its framework change. Each module has its classes
   in `modules/<name>/src/<Kind>/` as `App\<Name>\<Kind>\` (`Controller`, `Block`, `Form`,
@@ -545,7 +549,8 @@ The settings of each gate are in `CONSTITUTION.md` §0.
   Its message names the folder, the `->export(...)` or the `->requires(...)` to add; the shell
   list is a constant in `ModuleShellRule`, which also admits the theme's classes.
 - Components only (#99), as gate:8 rules (`gates/src/PhpStan`) and a gate:9 phpat test:
-  - `aic.htmlConstruction`: only `Renderer` makes an `Html`.
+  - `aic.htmlConstruction`: only `Renderer` makes an `Html`. Its sibling outside rendering,
+    `aic.schemaExpression` (#310), lets only `PostgresExpressions` make a schema `Term` or `Predicate`.
   - `aic.htmlMarkupRead`: only `Psr7ResponseWriter` reads one, a first-class callable included.
   - In a module's `src/Controller/`: `aic.controllerReturnType` refuses a method returning
     anything but its kind's response, so helpers go to `src/Service/`.

@@ -8,16 +8,12 @@ use AIC\Component\Application\Renderer;
 use AIC\Component\Contracts\Html;
 use Override;
 use PhpParser\Node;
-use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\New_;
-use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Constant\ConstantStringType;
 
-use function array_map;
 use function in_array;
 
 /**
@@ -51,7 +47,7 @@ final readonly class HtmlConstructionRule implements Rule
         $classReflection = $scope->getClassReflection();
 
         if (
-            !in_array(Html::class, self::built($node, $scope), true)
+            !in_array(Html::class, (new BuiltClasses())->named($node, $scope), true)
             || $classReflection !== null
             && $classReflection->getName() === Renderer::class
         ) {
@@ -62,33 +58,6 @@ final readonly class HtmlConstructionRule implements Rule
             RuleErrorBuilder::message('Only ' . Renderer::class . ' makes an Html (#99); hand the Renderer components instead.')
                 ->identifier('aic.htmlConstruction')
                 ->build(),
-        ];
-    }
-
-    /**
-     * @param New_  $new   A `new`.
-     * @param Scope $scope Where it is.
-     *
-     * @return list<string> The classes it may build: the resolved name, or the class-strings and objects its expression holds.
-     */
-    private static function built(New_ $new, Scope $scope): array
-    {
-        if ($new->class instanceof Name) {
-            return [$scope->resolveName($new->class)];
-        }
-
-        if (!$new->class instanceof Expr) {
-            return [];
-        }
-
-        $type = $scope->getType($new->class);
-
-        return [
-            ...array_map(
-                static fn (ConstantStringType $constantStringType): string => $constantStringType->getValue(),
-                $type->getConstantStrings(),
-            ),
-            ...$type->getObjectClassNames(),
         ];
     }
 }

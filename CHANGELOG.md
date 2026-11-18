@@ -6,6 +6,16 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Schema declarations: checks, partial and method indexes, generated columns, database guards**
+  (#310). `Schema::expressions()` gives typed terms and predicates, so a migration declares
+  `check(name, predicate)`, `indexWhere`, `uniqueWhere` and `indexUsing(columns, IndexMethod)` (hash,
+  GIN, GiST, BRIN, trigram, JSON paths) on either builder, and `types()->generated(type, term)` for a
+  stored generated column, all without SQL. `Schema::appendOnly(table)` and `finalOnce(table, columns)`
+  generate triggers that refuse every update, delete and truncate, or any change to a value once set
+  (SQLSTATE 23001). gate:8's `aic.schemaExpression` keeps a module from building a term from raw SQL.
+  The fixture's new `ledger` module shows each guard refusing at `/ledger/guards` on gate:23.
+  `TableBuilder` and `TableAlteration` now extend `TableConstraints`, whose methods return `static`.
+
 - **Entity relations: has-many, has-one, many-to-many, polymorphic** (#306). An `EntityType`
   declares `Relation`s; a query counts (`withCount`), sums (`withSum`) and filters by related rows
   (`withExisting`, `withMissing`, with conditions on the target), each a correlated subquery, and

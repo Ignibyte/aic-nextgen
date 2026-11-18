@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace AIC\Schema\Contracts;
 
 /**
- * A new table's columns, in order, its primary key, and its unique
- * constraints, indexes and foreign keys. Each method returns the builder, so a
- * migration chains them; a column is required unless `nullable()` follows it.
+ * A new table's columns, in order, its primary key and its foreign keys, with
+ * the unique constraints, indexes and checks of TableConstraints. Each method
+ * returns the builder, so a migration chains them; a column is required unless
+ * `nullable()` follows it.
  */
-interface TableBuilder
+interface TableBuilder extends TableConstraints
 {
     /**
      * @param string $name The column, an integer the database generates for each row.
@@ -99,20 +100,6 @@ interface TableBuilder
      * @return self The builder.
      */
     public function primary(array $columns): self;
-
-    /**
-     * @param list<string> $columns Columns whose values, taken together, no two rows share.
-     *
-     * @return self The builder.
-     */
-    public function unique(array $columns): self;
-
-    /**
-     * @param list<string> $columns The columns to index, in order.
-     *
-     * @return self The builder.
-     */
-    public function index(array $columns): self;
 
     /**
      * @api

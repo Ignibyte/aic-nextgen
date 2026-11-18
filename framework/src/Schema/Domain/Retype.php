@@ -6,6 +6,7 @@ namespace AIC\Schema\Domain;
 
 use AIC\Schema\Contracts\ColumnType;
 use AIC\Schema\Contracts\LogicalType;
+use AIC\Schema\Contracts\Term;
 use InvalidArgumentException;
 
 use function in_array;
@@ -22,7 +23,8 @@ final readonly class Retype
      * @param string     $using  The SQL expression that converts each value, when the database cannot cast it
      *                           itself; empty for none. The migration's author writes it, never a visitor.
      *
-     * @throws InvalidArgumentException When the new type is a key or a choice, which only a new column can be.
+     * @throws InvalidArgumentException When the new type is a key, a choice or a generated column (#310), which only a
+     *                                  new column can be.
      */
     public function __construct(
         public Identifier $column,
@@ -31,8 +33,10 @@ final readonly class Retype
     ) {
         $onlyNew = [LogicalType::BigIdentity, LogicalType::UuidKey, LogicalType::Choice];
 
-        if (in_array($type->logicalType, $onlyNew, true)) {
-            throw new InvalidArgumentException('Column ' . $column->value . ': a column cannot change into a key or a choice.');
+        if (in_array($type->logicalType, $onlyNew, true) || $type->generatedAs instanceof Term) {
+            throw new InvalidArgumentException(
+                'Column ' . $column->value . ': a column cannot change into a key, a choice or a generated column.',
+            );
         }
     }
 }
