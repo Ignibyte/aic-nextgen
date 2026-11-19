@@ -14,6 +14,9 @@ use AIC\Module\Contracts\RouteMethod;
 use App\Ledger\Controller\LedgerAccountsApi;
 use App\Ledger\Controller\LedgerCacheApi;
 use App\Ledger\Controller\LedgerCategoriesApi;
+use App\Ledger\Controller\LedgerFeedPage;
+use App\Ledger\Controller\LedgerFeedPost;
+use App\Ledger\Controller\LedgerFeedStream;
 use App\Ledger\Controller\LedgerGuardsApi;
 use App\Ledger\Controller\LedgerLimitedApi;
 use App\Ledger\Controller\LedgerNoticesApi;
@@ -45,4 +48,8 @@ return (new ModuleManifest('ledger'))
     ->middleware(RateLimitMiddleware::class, MiddlewarePosition::AfterSession)
     ->factory(LedgerLimits::class)
     ->migration(CreateLedgerCategoriesTable::class)
-    ->route(RouteMethod::Get, '/ledger/categories', LedgerCategoriesApi::class);
+    ->route(RouteMethod::Get, '/ledger/categories', LedgerCategoriesApi::class)
+    ->permission('ledger.feed', 'Read and post to the ledger feed, which streams each post to every open page.')
+    ->route(RouteMethod::Get, '/ledger/feed', LedgerFeedPage::class, needs: 'ledger.feed')
+    ->route(RouteMethod::Post, '/ledger/feed', LedgerFeedPost::class, needs: 'ledger.feed')
+    ->route(RouteMethod::Get, '/ledger/feed/events', LedgerFeedStream::class, needs: 'ledger.feed');

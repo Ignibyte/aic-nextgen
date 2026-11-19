@@ -34,6 +34,7 @@ final readonly class ModuleHandlersPart2
     public function byId(): array
     {
         return array_merge(
+            (new LedgerHandlersPart4($this->handlerContext))->byId(),
             (new NoteHandlers($this->handlerContext))->byId(),
             (new NoteHandlersPart2($this->handlerContext))->byId(),
             (new NoteHandlersPart3($this->handlerContext))->byId(),

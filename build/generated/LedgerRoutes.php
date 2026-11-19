@@ -9,6 +9,9 @@ use AIC\Routing\Domain\DuplicateRouteException;
 use App\Ledger\Controller\LedgerAccountsApi;
 use App\Ledger\Controller\LedgerCacheApi;
 use App\Ledger\Controller\LedgerCategoriesApi;
+use App\Ledger\Controller\LedgerFeedPage;
+use App\Ledger\Controller\LedgerFeedPost;
+use App\Ledger\Controller\LedgerFeedStream;
 use App\Ledger\Controller\LedgerGuardsApi;
 use App\Ledger\Controller\LedgerLimitedApi;
 use App\Ledger\Controller\LedgerNoticesApi;
@@ -36,6 +39,9 @@ final readonly class LedgerRoutes
             ->get('/ledger/accounts/standing', LedgerStandingApi::class)
             ->get('/ledger/cache', LedgerCacheApi::class)
             ->get('/ledger/limited', LedgerLimitedApi::class)
-            ->get('/ledger/categories', LedgerCategoriesApi::class);
+            ->get('/ledger/categories', LedgerCategoriesApi::class)
+            ->get('/ledger/feed', LedgerFeedPage::class)
+            ->post('/ledger/feed', LedgerFeedPost::class)
+            ->get('/ledger/feed/events', LedgerFeedStream::class);
     }
 }

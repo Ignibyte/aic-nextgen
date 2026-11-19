@@ -28,6 +28,8 @@ final readonly class ServerEvent
      *                                 null for any other event.
      * @param bool           $resumes  With `last`: the connection ends but the stream does not, and Tessera
      *                                 reconnects from `Last-Event-ID` (#202).
+     * @param int            $retry    The client's reconnect delay from now on, in milliseconds, as a `retry:`
+     *                                 field (#314); 0 for none.
      */
     public function __construct(
         public string $name,
@@ -36,26 +38,33 @@ final readonly class ServerEvent
         public string $id = '',
         public ?Component $elements = null,
         public bool $resumes = false,
+        public int $retry = 0,
     ) {
     }
 
     /**
      * @param string $elements The event's component rendered, any number of lines; ignored when it has none.
      *
-     * @return string The event on the wire: `event:`, `id:` when it has one, one `data:` per line, the component's
-     *                lines as `data: elements …`, then a blank line; a comment is one `:` line and a blank line.
+     * @return string The event on the wire: `retry:` when it sets one, `event:`, `id:` when it has one, one `data:`
+     *                per line, the component's lines as `data: elements …`, then a blank line; a comment is one `:`
+     *                line after any `retry:` and `id:` (an id with no data still sets the client's last id, #314),
+     *                and a blank line.
      */
     public function wire(string $elements): string
     {
+        $retry = $this->retry > 0
+            ? 'retry: ' . $this->retry . "\n"
+            : '';
+
+        $id = $this->id !== ''
+            ? 'id: ' . self::oneLine($this->id) . "\n"
+            : '';
+
         if ($this->name === '') {
-            return ': ' . self::oneLine($this->data) . "\n\n";
+            return $retry . $id . ': ' . self::oneLine($this->data) . "\n\n";
         }
 
-        $wire = 'event: ' . self::oneLine($this->name) . "\n";
-
-        if ($this->id !== '') {
-            $wire .= 'id: ' . self::oneLine($this->id) . "\n";
-        }
+        $wire = $retry . 'event: ' . self::oneLine($this->name) . "\n" . $id;
 
         $wire .= self::fields('', $this->data);
 

@@ -14,8 +14,8 @@ use function sprintf;
 use function strtolower;
 
 /**
- * Sends a PSR-7 response through the SAPI sink: the status line, each header,
- * then the body.
+ * Sends a PSR-7 response through the SAPI sink: each header, the status and
+ * its status line, then the body.
  *
  * `Set-Cookie` goes out one line per value, since cookies cannot be folded into
  * one comma-separated line (RFC 6265 section 3); every other header goes out as
@@ -43,21 +43,21 @@ final readonly class SapiResponseEmitter
      */
     public function emit(ResponseInterface $response): void
     {
+        foreach (array_keys($response->getHeaders()) as $name) {
+            $this->emitHeader($response, (string) $name);
+        }
+
+        // The status goes after the headers, since PHP's header() sets one of
+        // its own for some lines: any WWW-Authenticate line makes a 401, so a
+        // 403 with RFC 6750's insufficient_scope challenge (#313) keeps its
+        // status only this way; a Location line makes a 302. It is set once:
+        // http_response_code() after a `HTTP/` line warns under php-fpm (#314).
         $status = $response->getStatusCode();
         $this->sapiSink->status($status);
         $this->sapiSink->header(
             sprintf('HTTP/%s %d %s', $response->getProtocolVersion(), $status, $response->getReasonPhrase()),
             true,
         );
-
-        foreach (array_keys($response->getHeaders()) as $name) {
-            $this->emitHeader($response, (string) $name);
-        }
-
-        // PHP's header() turns any response with a WWW-Authenticate line into
-        // a 401; a 403 carrying RFC 6750's insufficient_scope challenge (#313)
-        // keeps its own status only when it is set again after the headers.
-        $this->sapiSink->status($status);
 
         $stream = $response->getBody();
 

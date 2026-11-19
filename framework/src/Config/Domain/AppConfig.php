@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Config\Domain;
 
 use AIC\Auth\Domain\OidcProviders;
+use AIC\Broadcast\Domain\BroadcastConfig;
 use AIC\HttpClient\Domain\Upstreams;
 use AIC\Tessera\Domain\TesseraRelease;
 use InvalidArgumentException;
@@ -26,16 +27,17 @@ final readonly class AppConfig
     public const int MAX_BODY_BYTES = 8_388_608;
 
     /**
-     * @param string         $name         The application's name, as pages show it.
-     * @param TesseraRelease $tessera      The Tessera release the pages load (#70).
-     * @param string|null    $theme        The folder under `themes/` the build reads the components, layouts
-     *                                     and assets from (#153); null for an app with no HTML.
-     * @param int            $maxBodyBytes The largest request body the app takes (#196); a larger one answers
-     *                                     413 before the session. The default is the compiled server's own.
-     * @param Upstreams      $upstreams    The upstream APIs the app calls, by name (#305), each URL and token
-     *                                     read from the environment here.
-     * @param OidcProviders  $oidc         The OpenID Connect providers people sign in through, by name (#313),
-     *                                     each client secret read from the environment here.
+     * @param string          $name         The application's name, as pages show it.
+     * @param TesseraRelease  $tessera      The Tessera release the pages load (#70).
+     * @param string|null     $theme        The folder under `themes/` the build reads the components, layouts
+     *                                      and assets from (#153); null for an app with no HTML.
+     * @param int             $maxBodyBytes The largest request body the app takes (#196); a larger one answers
+     *                                      413 before the session. The default is the compiled server's own.
+     * @param Upstreams       $upstreams    The upstream APIs the app calls, by name (#305), each URL and token
+     *                                      read from the environment here.
+     * @param OidcProviders   $oidc         The OpenID Connect providers people sign in through, by name (#313),
+     *                                      each client secret read from the environment here.
+     * @param BroadcastConfig $broadcast    How broadcast streams use the site's workers (#314).
      *
      * @throws InvalidArgumentException When the name is blank or the cap is below one byte.
      */
@@ -46,6 +48,7 @@ final readonly class AppConfig
         public int $maxBodyBytes = self::MAX_BODY_BYTES,
         public Upstreams $upstreams = new Upstreams(),
         public OidcProviders $oidc = new OidcProviders(),
+        public BroadcastConfig $broadcast = new BroadcastConfig(),
     ) {
         if (trim($name) === '') {
             throw new InvalidArgumentException('AppConfig: the application name must not be blank.');

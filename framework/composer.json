@@ -19,6 +19,7 @@
         "php": "^8.5",
         "ext-curl": "*",
         "ext-pdo": "*",
+        "ext-pdo_pgsql": "*",
         "psr/container": "^2.0",
         "psr/http-client": "^1.0",
         "psr/http-factory": "^1.1",

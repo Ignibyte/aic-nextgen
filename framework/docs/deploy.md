@@ -27,6 +27,20 @@ Then, once per release and on a schedule:
 - `bin/aic schedule:run` every minute (a systemd timer or cron) queues the schedules due.
 - `bin/aic queue:work`, under a service that restarts it, runs the queued jobs.
 
+## Open streams and workers
+
+Every open event stream holds one PHP worker until its connection ends: a compiled child (`--workers`
+times `--handler-concurrency`; AIC serves 2 of 8) or a php-fpm child (`pm.max_children`). A broadcast
+stream (#314) bounds that: each connection lasts `AppConfig::$broadcast->holdSeconds`, then the client
+reconnects with its last id and misses nothing, and at most `streams` are open across the site; one more
+is told to come back after `refusedRetryMs`. Set `streams` below one compiled worker's
+`--handler-concurrency`, not below the total: connections do not spread evenly between workers, and a
+page that lands on a worker whose children all hold streams waits until one ends. Measured on AIC's own
+compiled site (2 workers of 8, the cap out of the way): 14 open streams left `/health` answering in
+16 ms; at 15 the page waited past 10 seconds. The default cap is 7. Under php-fpm keep it below
+`pm.max_children`. A site that needs more open streams than that wants the socket server (#32), which
+holds connections without workers.
+
 Stored files live under `var/storage/` ([modules.md](modules.md#assets) covers the public build
 assets). Keep `var/storage/` on a volume that survives a release.
 

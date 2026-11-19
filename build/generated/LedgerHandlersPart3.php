@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Broadcast\Application\Broadcaster;
+use AIC\Container\Exception\ContainerException;
 use AIC\Entity\Application\EntityStore;
 use AIC\Entity\Application\EntityTrees;
 use AIC\Module\Application\HandlerContext;
 use App\Ledger\Controller\LedgerCategoriesApi;
+use App\Ledger\Controller\LedgerFeedPage;
+use App\Ledger\Controller\LedgerFeedPost;
 use App\Ledger\Entity\LedgerTypes;
 use App\Ledger\Service\LedgerCategories;
 use App\Ledger\Service\LedgerCategoryQueries;
@@ -30,6 +34,7 @@ final readonly class LedgerHandlersPart3
 
     /**
      * @throws InvalidArgumentException When a called constructor or service fails.
+     * @throws ContainerException       When a called constructor or service fails.
      *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
@@ -43,9 +48,12 @@ final readonly class LedgerHandlersPart3
             new LedgerCategoryQueries($entityStore, $ledgerTypes),
             $ledgerTypes,
         );
+        $broadcaster = new Broadcaster($this->handlerContext->database(), $this->handlerContext->appConfig());
 
         return [
             LedgerCategoriesApi::class => $this->handlerContext->api(new LedgerCategoriesApi($ledgerCategories)),
+            LedgerFeedPage::class => $this->handlerContext->page(new LedgerFeedPage($this->handlerContext->documents()), 'ledger.feed'),
+            LedgerFeedPost::class => $this->handlerContext->page(new LedgerFeedPost($broadcaster), 'ledger.feed'),
         ];
     }
 }
