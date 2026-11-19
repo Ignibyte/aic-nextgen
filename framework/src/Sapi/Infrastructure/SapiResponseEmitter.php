@@ -54,6 +54,11 @@ final readonly class SapiResponseEmitter
             $this->emitHeader($response, (string) $name);
         }
 
+        // PHP's header() turns any response with a WWW-Authenticate line into
+        // a 401; a 403 carrying RFC 6750's insufficient_scope challenge (#313)
+        // keeps its own status only when it is set again after the headers.
+        $this->sapiSink->status($status);
+
         $stream = $response->getBody();
 
         if ($stream->isSeekable()) {

@@ -8,6 +8,7 @@ use Gates\Domain\WiredObject;
 use Gates\Domain\WiringRoots;
 use InvalidArgumentException;
 
+use function array_key_exists;
 use function array_map;
 use function implode;
 use function in_array;
@@ -51,9 +52,42 @@ final readonly class CallSource
      */
     public function statement(string $name, WiredObject $wiredObject, array $locals, WiringRoots $wiringRoots): string
     {
-        return $wiredObject->method === ''
-            ? $this->fit('        ' . $name . ' = ', $wiredObject, $locals, $wiringRoots, ';')
-            : '        ' . $name . ' = ' . $this->inline($wiredObject, $locals, $wiringRoots) . ';';
+        return $this->fitted('        ' . $name . ' = ', $wiredObject, $locals, $wiringRoots, ';');
+    }
+
+    /**
+     * `new X(...)`, or a factory's product `(new F(...))->method()`, on one line when it fits, else the
+     * construction's arguments one per line (#313: a factory of four roots overran the line).
+     *
+     * @param string                $prefix      What comes before it on its line, its indent included.
+     * @param WiredObject           $wiredObject The service.
+     * @param array<string, string> $locals      The local's name by class.
+     * @param WiringRoots           $wiringRoots The side's context.
+     * @param string                $suffix      What comes after it.
+     *
+     * @throws InvalidArgumentException When a factory product has no factory receiver.
+     *
+     * @return string The code.
+     */
+    public function fitted(
+        string $prefix,
+        WiredObject $wiredObject,
+        array $locals,
+        WiringRoots $wiringRoots,
+        string $suffix,
+    ): string {
+        if ($wiredObject->method === '') {
+            return $this->fit($prefix, $wiredObject, $locals, $wiringRoots, $suffix);
+        }
+
+        $factory = $wiredObject->arguments[0] ?? throw new InvalidArgumentException(
+            'A factory product has no factory receiver: ' . $wiredObject->class,
+        );
+        $call = '->' . $wiredObject->method . '()';
+
+        return array_key_exists($factory->class, $locals)
+            ? $prefix . $locals[$factory->class] . $call . $suffix
+            : $this->fit($prefix . '(', $factory, $locals, $wiringRoots, ')' . $call . $suffix);
     }
 
     /**

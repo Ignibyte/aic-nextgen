@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Module\Application;
 
 use AIC\Access\Domain\CreateAccessTables;
+use AIC\Access\Domain\CreateTokensTable;
 use AIC\Auth\Domain\EnablePgcrypto;
 use AIC\Cache\Domain\CreateCacheTables;
 use AIC\Entity\Domain\CreateEntityAuditTable;
@@ -40,6 +41,7 @@ final readonly class FrameworkMigrations
             new CreateAccessTables(),
             new CreateEntityAuditTable(),
             new CreateCacheTables(),
+            new CreateTokensTable(),
         ];
     }
 }

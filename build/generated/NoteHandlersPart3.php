@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Access\Application\Actors;
+use AIC\Access\Application\BearerTokens;
 use AIC\Access\Application\PostgresRoles;
 use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
@@ -39,7 +40,7 @@ final readonly class NoteHandlersPart3
     public function byId(): array
     {
         $noteHandlerServices = new NoteHandlerServices($this->handlerContext);
-        $actors = new Actors(new PostgresRoles($this->handlerContext->database()));
+        $actors = new Actors(new PostgresRoles($this->handlerContext->database()), new BearerTokens($this->handlerContext->database()));
 
         return [
             NoteDeletePost::class => $this->handlerContext->page(

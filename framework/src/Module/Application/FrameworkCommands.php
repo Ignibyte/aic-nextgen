@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
-use AIC\Access\Application\RoleCommands;
+use AIC\Access\Application\AccessCommands;
 use AIC\Cache\Application\CacheCommands;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
@@ -60,7 +60,7 @@ final readonly class FrameworkCommands
             'queue:retry' => new QueueRetryCommand($postgresQueue),
             'queue:work' => new QueueWorkCommand(new QueueWorker($postgresQueue, $jobs)),
             'schedule:run' => new ScheduleRunCommand(new Scheduler($this->database, $postgresQueue, $schedules)),
-            ...(new RoleCommands($this->database))->byName(),
+            ...(new AccessCommands($this->database))->byName(),
             ...(new CacheCommands($this->database))->byName(),
         ];
     }

@@ -44,6 +44,9 @@ An HTML answer to a GET, or to a POST, PUT, PATCH or DELETE (#242). Form handler
   status (303 by default).
 - `AIC\Controller\Domain\PageFullVisit`: tells the browser runtime to load a location as a full
   page.
+- `AIC\Controller\Domain\ProviderRedirect`: 303 to a configured OpenID Connect provider's
+  authorization endpoint, the one redirect that leaves the site; `OidcSignIn::start()` makes it
+  (see [security.md](security.md#sign-in-through-a-provider)).
 - `AIC\Controller\Domain\PageUnchanged`: a `204`, for a poll of one component whose data has not
   changed; see [tessera.md](tessera.md#markers-and-fragments).
 

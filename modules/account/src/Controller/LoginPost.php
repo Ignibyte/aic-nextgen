@@ -70,7 +70,9 @@ final readonly class LoginPost implements Page
             return $this->pageDocuments->content([new Heading('Sign in'), $form], 422, 'Sign in');
         }
 
-        $this->requestSession->read($serverRequest)->set(self::JOINED, $signedIn->profile['joined'] ?? '');
+        $session = $this->requestSession->read($serverRequest);
+        $session->set(self::JOINED, $signedIn->profile['joined'] ?? '');
+        $session->set(OidcCallbackPage::EMAIL, '');
 
         return new PageRedirect((new SameOriginPath('/account'))->resolve($next));
     }

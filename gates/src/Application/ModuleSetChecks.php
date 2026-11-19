@@ -30,7 +30,7 @@ final readonly class ModuleSetChecks
      */
     private const array FRAMEWORK_COMMANDS = [
         'migrate', 'migrate:status', 'queue:failed', 'queue:retry', 'queue:work', 'role:assign', 'role:grant', 'role:revoke',
-        'role:unassign', 'schedule:run',
+        'role:unassign', 'schedule:run', 'token:add', 'token:list', 'token:revoke',
     ];
 
     /**

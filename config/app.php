@@ -19,8 +19,14 @@ declare(strict_types=1);
  * The upstreams (#305): each API the app calls, by name, its URL and token
  * from the environment. `stub` is gate:23's local stub server, which the gate
  * names in AIC_UPSTREAM_STUB; elsewhere nothing answers there.
+ *
+ * The sign-in providers (#313): `stub` is the same stub as an OpenID Connect
+ * provider, a public client with no secret, its callback on whichever origin
+ * the request came to.
  */
 
+use AIC\Auth\Domain\OidcProvider;
+use AIC\Auth\Domain\OidcProviders;
 use AIC\Config\Domain\AppConfig;
 use AIC\HttpClient\Domain\Upstream;
 use AIC\HttpClient\Domain\Upstreams;
@@ -34,6 +40,8 @@ $setting = static function (string $name, string $default): string {
         : $default;
 };
 
+$stub = $setting('AIC_UPSTREAM_STUB', 'http://127.0.0.1:8095');
+
 return new AppConfig(
     name: 'AIC nextgen',
     tessera: new TesseraRelease('0.4.3', [
@@ -43,6 +51,17 @@ return new AppConfig(
     theme: 'app',
     maxBodyBytes: 16_384,
     upstreams: new Upstreams([
-        'stub' => new Upstream($setting('AIC_UPSTREAM_STUB', 'http://127.0.0.1:8095'), $setting('AIC_UPSTREAM_STUB_TOKEN', '')),
+        'stub' => new Upstream($stub, $setting('AIC_UPSTREAM_STUB_TOKEN', '')),
+    ]),
+    oidc: new OidcProviders([
+        'stub' => new OidcProvider(
+            issuer: $stub,
+            authorizationEndpoint: $stub . '/oidc/authorize',
+            tokenEndpoint: $stub . '/oidc/token',
+            clientId: 'aic-fixture',
+            clientSecret: $setting('AIC_OIDC_STUB_SECRET', ''),
+            callback: '/sign-in/oidc/callback',
+            scopes: 'openid email',
+        ),
     ]),
 );

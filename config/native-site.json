@@ -2,7 +2,9 @@
     "schema": "aic.native-site/1",
     "console": [
         "role:grant gate-auditor account.audit",
-        "role:assign gate gate-auditor"
+        "role:assign gate gate-auditor",
+        "token:revoke gate-portal",
+        "token:add gate-portal {password} account.caller"
     ],
     "steps": [
         {
@@ -994,6 +996,60 @@
             "captures": false
         },
         {
+            "name": "caller, no token",
+            "method": "GET",
+            "path": "/api/caller",
+            "form": "",
+            "header": "",
+            "status": 403,
+            "captures": false
+        },
+        {
+            "name": "caller, an unknown token",
+            "method": "GET",
+            "path": "/api/caller",
+            "form": "",
+            "header": "Authorization: Bearer not-a-known-token",
+            "status": 401,
+            "captures": false
+        },
+        {
+            "name": "caller, the console's token",
+            "method": "GET",
+            "path": "/api/caller",
+            "form": "",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "audit, a token without account.audit beside a session with it",
+            "method": "GET",
+            "path": "/audit",
+            "form": "",
+            "header": "Authorization: Bearer {password}",
+            "status": 403,
+            "captures": false
+        },
+        {
+            "name": "account, a token never meets signed-in",
+            "method": "GET",
+            "path": "/account",
+            "form": "",
+            "header": "Authorization: Bearer {password}",
+            "status": 403,
+            "captures": false
+        },
+        {
+            "name": "caller, a bearer post skips the CSRF check",
+            "method": "POST",
+            "path": "/api/caller",
+            "form": "",
+            "header": "Authorization: Bearer {password}",
+            "status": 405,
+            "captures": false
+        },
+        {
             "name": "logout",
             "method": "POST",
             "path": "/logout",
@@ -1009,6 +1065,24 @@
             "form": "",
             "header": "",
             "status": 303,
+            "captures": false
+        },
+        {
+            "name": "oidc callback, a sign-in not started here",
+            "method": "GET",
+            "path": "/sign-in/oidc/callback?code=forged&state=forged",
+            "form": "",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "login, with the refused sign-in's reason",
+            "method": "GET",
+            "path": "/login",
+            "form": "",
+            "header": "",
+            "status": 200,
             "captures": false
         },
         {

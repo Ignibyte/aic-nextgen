@@ -49,8 +49,11 @@ final readonly class AccountPage implements Page
     public function page(ServerRequestInterface $serverRequest): PageResponse
     {
         $user = $this->authenticator->userId($serverRequest);
-        $joined = $this->requestSession->read($serverRequest)->get(LoginPost::JOINED) ?? '';
-        $signedIn = 'Signed in as ' . $user . ($joined === '' ? '.' : ', a member since ' . $joined . '.');
+        $session = $this->requestSession->read($serverRequest);
+        $joined = $session->get(LoginPost::JOINED) ?? '';
+        $email = $session->get(OidcCallbackPage::EMAIL) ?? '';
+        $signedIn = 'Signed in as ' . $user . ($email === '' ? '' : ' (' . $email . ')')
+            . ($joined === '' ? '.' : ', a member since ' . $joined . '.');
         $form = new Form('', '/logout', [new Button('Sign out', 'submit', 'sign-out')], $this->formTokens->guard($serverRequest));
 
         return $this->pageDocuments->content(

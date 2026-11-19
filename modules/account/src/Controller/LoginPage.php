@@ -8,6 +8,7 @@ use AIC\Component\Domain\Heading;
 use AIC\Controller\Application\PageDocuments;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
+use AIC\Session\Application\RequestSession;
 use App\Account\Form\LoginForm;
 use LogicException;
 use Override;
@@ -22,12 +23,14 @@ use function is_string;
 final readonly class LoginPage implements Page
 {
     /**
-     * @param PageDocuments $pageDocuments Makes the page.
-     * @param LoginForm     $loginForm     The form.
+     * @param PageDocuments  $pageDocuments  Makes the page.
+     * @param LoginForm      $loginForm      The forms.
+     * @param RequestSession $requestSession The request's session, with a refused sign-in's reason.
      */
     public function __construct(
         private PageDocuments $pageDocuments,
         private LoginForm $loginForm,
+        private RequestSession $requestSession = new RequestSession(),
     ) {
     }
 
@@ -46,8 +49,19 @@ final readonly class LoginPage implements Page
             ? $query['next']
             : '';
 
+        $session = $this->requestSession->read($serverRequest);
+        $refused = $session->get(OidcCallbackPage::REFUSED) ?? '';
+
+        if ($refused !== '') {
+            $session->set(OidcCallbackPage::REFUSED, '');
+        }
+
         return $this->pageDocuments->content(
-            [new Heading('Sign in'), $this->loginForm->form($serverRequest, '', $next, '')],
+            [
+                new Heading('Sign in'),
+                $this->loginForm->form($serverRequest, '', $next, ''),
+                $this->loginForm->providerForm($serverRequest, $refused),
+            ],
             200,
             'Sign in',
         );

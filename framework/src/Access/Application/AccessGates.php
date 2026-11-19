@@ -32,8 +32,12 @@ final readonly class AccessGates
      */
     public function gate(string $need, RequestHandlerInterface $requestHandler): RequestHandlerInterface
     {
-        return $need === ''
-            ? $requestHandler
-            : new PermissionGate($need, $requestHandler, new Actors(new PostgresRoles($this->database)), $this->responseBuilder);
+        if ($need === '') {
+            return $requestHandler;
+        }
+
+        $actors = new Actors(new PostgresRoles($this->database), new BearerTokens($this->database));
+
+        return new PermissionGate($need, $requestHandler, $actors, $this->responseBuilder);
     }
 }

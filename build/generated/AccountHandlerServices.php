@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Auth\Application\Authenticator;
+use AIC\Auth\Application\OidcSignIn;
 use AIC\Auth\Application\PgcryptoPasswordHasher;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
@@ -12,6 +13,7 @@ use AIC\Storage\Application\PrivateFiles;
 use AIC\Storage\Application\PublicFiles;
 use App\Account\Repository\UserRepository;
 use App\Account\Service\KeptUploads;
+use App\Account\Service\SignInProviders;
 use InvalidArgumentException;
 
 /**
@@ -57,5 +59,18 @@ final readonly class AccountHandlerServices
             new PublicFiles($this->handlerContext->roots()->root()),
             new PrivateFiles($this->handlerContext->roots()->root()),
         );
+    }
+
+    /**
+     * @return OidcSignIn A new one, for the part that asked.
+     */
+    public function oidcSignIn(): OidcSignIn
+    {
+        return (new SignInProviders(
+            $this->handlerContext->appConfig(),
+            $this->handlerContext->roots()->outbound()->client(),
+            $this->handlerContext->roots()->outbound()->requests(),
+            $this->handlerContext->roots()->outbound()->streams(),
+        ))->oidcSignIn();
     }
 }
