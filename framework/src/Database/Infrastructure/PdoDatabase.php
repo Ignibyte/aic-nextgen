@@ -11,36 +11,38 @@ use AIC\Database\Contracts\Rows;
 use AIC\Database\Domain\DatabaseConfig;
 use Override;
 use PDO;
+use Pdo\Pgsql;
 use PDOException;
 use PDOStatement;
 
-use function array_filter;
-use function array_keys;
+use function array_key_exists;
 use function is_array;
-use function is_scalar;
 use function is_string;
-
-use const ARRAY_FILTER_USE_KEY;
+use function max;
+use function preg_match;
 
 /**
- * The database over PDO pgsql. The connection opens on the first query and
- * serves the worker for its life; it is held in a one-slot list, the form
- * elephc keeps an object's type in (plan.md, native style).
+ * The database over PDO pgsql (a `Pdo\Pgsql`, for LISTEN and its
+ * notifications, #314). The connection opens on the first query and serves
+ * the request for its life; it is held in a one-slot list, the form elephc
+ * keeps an object's type in (plan.md, native style).
  */
 final class PdoDatabase implements Database
 {
     /**
      * The open connection in a one-slot list; empty until the first query.
      *
-     * @var list<PDO>
+     * @var list<Pgsql>
      */
     private array $connection = [];
 
     /**
      * @param DatabaseConfig $databaseConfig Where the database is.
+     * @param PdoRows        $pdoRows        Narrows each fetched row.
      */
     public function __construct(
         private readonly DatabaseConfig $databaseConfig,
+        private readonly PdoRows $pdoRows = new PdoRows(),
     ) {
     }
 
@@ -58,7 +60,7 @@ final class PdoDatabase implements Database
         $pdoStatement = $this->run($sql, $params);
 
         try {
-            $row = self::row($pdoStatement);
+            $row = $this->pdoRows->next($pdoStatement);
         } catch (PDOException $pdoException) {
             throw self::failure($pdoException);
         }
@@ -86,11 +88,11 @@ final class PdoDatabase implements Database
         $rows = [];
 
         try {
-            $row = self::row($pdoStatement);
+            $row = $this->pdoRows->next($pdoStatement);
 
             while ($row instanceof Row) {
                 $rows[] = $row;
-                $row = self::row($pdoStatement);
+                $row = $this->pdoRows->next($pdoStatement);
             }
         } catch (PDOException $pdoException) {
             throw self::failure($pdoException);
@@ -107,7 +109,7 @@ final class PdoDatabase implements Database
     {
         $open = $this->connection[0] ?? null;
 
-        return $open instanceof PDO && $open->inTransaction();
+        return $open instanceof Pgsql && $open->inTransaction();
     }
 
     /**
@@ -164,6 +166,48 @@ final class PdoDatabase implements Database
     }
 
     /**
+     * @param string $channel A lower-case identifier, 1 to 63 characters.
+     *
+     * @throws QueryException When the name is not one, or LISTEN fails.
+     */
+    #[Override]
+    public function listen(string $channel): void
+    {
+        if (preg_match('/^[a-z_][a-z0-9_]{0,62}$/', $channel) !== 1) {
+            throw new QueryException('"' . $channel . '" is not a channel: a lower-case identifier of up to 63 characters.');
+        }
+
+        try {
+            $this->pdo()->exec('LISTEN ' . $channel);
+        } catch (PDOException $pdoException) {
+            throw self::failure($pdoException);
+        }
+    }
+
+    /**
+     * @param int $timeoutMs How long to wait, in milliseconds; 0 only takes one already here.
+     *
+     * @throws QueryException When the wait fails.
+     *
+     * @return string The next notification's payload on a channel listened to; empty when none came in time.
+     */
+    #[Override]
+    public function notification(int $timeoutMs): string
+    {
+        try {
+            $notice = $this->pdo()->getNotify(PDO::FETCH_ASSOC, max(0, $timeoutMs));
+
+            if (!is_array($notice) || !array_key_exists('payload', $notice) || !is_string($notice['payload'])) {
+                return '';
+            }
+
+            return $notice['payload'];
+        } catch (PDOException $pdoException) {
+            throw self::failure($pdoException);
+        }
+    }
+
+    /**
      * @param string                           $sql    A statement, with `?` placeholders.
      * @param list<string|int|float|bool|null> $params The values for the placeholders, in order.
      *
@@ -191,73 +235,26 @@ final class PdoDatabase implements Database
     /**
      * @throws PDOException When the connection cannot be opened.
      *
-     * @return PDO The connection, opened on first use.
+     * @return Pgsql The connection, opened on first use.
      */
-    private function pdo(): PDO
+    private function pdo(): Pgsql
     {
         $open = $this->connection[0] ?? null;
 
-        if ($open instanceof PDO) {
+        if ($open instanceof Pgsql) {
             return $open;
         }
 
         $config = $this->databaseConfig;
-        $pdo = new PDO(
+        $pgsql = new Pgsql(
             'pgsql:host=' . $config->host . ';port=' . $config->port . ';dbname=' . $config->database,
             $config->user,
             $config->password,
             [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => false],
         );
-        $this->connection = [$pdo];
+        $this->connection = [$pgsql];
 
-        return $pdo;
-    }
-
-    /**
-     * Fetch and narrow a row at the PDO boundary. Unsupported values and keys
-     * are omitted; no unchecked driver value reaches a Row.
-     *
-     * @param PDOStatement $pdoStatement The executed query.
-     *
-     * @throws PDOException When the next row cannot be fetched.
-     *
-     * @return Row|null The next row, or null at the end of the result.
-     */
-    private static function row(PDOStatement $pdoStatement): ?Row
-    {
-        $row = $pdoStatement->fetch(PDO::FETCH_ASSOC);
-
-        if (!is_array($row)) {
-            return null;
-        }
-
-        $values = [];
-
-        foreach (array_keys(array_filter($row, is_string(...), ARRAY_FILTER_USE_KEY)) as $key) {
-            $name = self::name($key);
-
-            if (!is_scalar($row[$key]) && $row[$key] !== null) {
-                continue;
-            }
-
-            $values[$name] = $row[$key];
-        }
-
-        return new Row($values);
-    }
-
-    /**
-     * @param string|int $key A key after the driver row's name filter.
-     *
-     * @throws QueryException When an unsupported numeric key reaches the normalizer.
-     *
-     * @return string The column name.
-     */
-    private static function name(string|int $key): string
-    {
-        return is_string($key)
-            ? $key
-            : throw new QueryException('A fetched column must have a string name.');
+        return $pgsql;
     }
 
     /**

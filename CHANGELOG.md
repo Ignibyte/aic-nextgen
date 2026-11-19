@@ -6,6 +6,19 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Real-time push to SSE streams over Postgres LISTEN/NOTIFY** (#314). `AIC\Broadcast`:
+  `Broadcaster::publish(Channel, data)`, from a controller or a Job, writes the event to `aic_broadcasts`
+  and notifies the Postgres channel `aic_broadcasts` in one statement (joining an open transaction); a
+  Stream controller answers `Broadcasts::stream(Channel, BroadcastEvents, request)`, which sends each
+  event after `Last-Event-ID`, keeps the connection alive while idle, and ends it as a reconnect after
+  `holdSeconds`, naming the last id, so a stream frees its worker often and misses nothing. At most
+  `streams` (7 by default) are open across the site, held by session advisory locks; one more is told to
+  come back after `refusedRetryMs`. Who may read a channel is its route's `needs:`.
+  `Database::listen()` and `notification()` sit on a `Pdo\Pgsql` connection; `ServerEvent` takes
+  `retry:` and an id on a comment. The fixture's `/ledger/feed` shows each post on every open page.
+  **Fixed:** #313's emitter warned on every php-fpm response ("http_response_code() after header");
+  the status now goes once, after the headers. **For apps:** the framework requires `ext-pdo_pgsql`.
+
 - **Bearer tokens for the Api kind, and sign-in through an OpenID Connect provider** (#313). A
   server-to-server caller sends `Authorization: Bearer <token>`: `bin/aic token:add <name> <token>
   <scope>...` keeps the token's SHA-256 and its scopes in `aic_api_tokens` (`token:list`,

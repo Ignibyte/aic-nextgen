@@ -8,10 +8,10 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
+use App\Theme\Components\Greetings\Greetings;
+use App\Theme\Components\Home\Home;
 use App\Theme\Components\LineList\LineList;
 use App\Theme\Components\NoteCard\NoteCard;
-use App\Theme\Components\NoteList\NoteList;
-use App\Theme\Components\Panel\Panel;
 use Override;
 
 /**
@@ -40,12 +40,44 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
+            $component instanceof Greetings => $this->renderGreetings($component, $renderPass),
+            $component instanceof Home => $this->renderHome($component, $renderPass),
             $component instanceof LineList => $this->renderLineList($component, $renderPass),
             $component instanceof NoteCard => $this->renderNoteCard($component, $renderPass),
-            $component instanceof NoteList => $this->renderNoteList($component, $renderPass),
-            $component instanceof Panel => $this->renderPanel($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param Greetings  $greetings  The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/Greetings/greetings.phtml.
+     */
+    private function renderGreetings(Greetings $greetings, RenderPass $renderPass): string
+    {
+        $renderPass->open($greetings);
+        require __DIR__ . '/templates/themes/app/components/Greetings/greetings.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Home       $home       The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/Home/home.phtml.
+     */
+    private function renderHome(Home $home, RenderPass $renderPass): string
+    {
+        $renderPass->open($home);
+        require __DIR__ . '/templates/themes/app/components/Home/home.phtml';
+
+        return $renderPass->close();
     }
 
     /**
@@ -76,38 +108,6 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
     {
         $renderPass->open($noteCard);
         require __DIR__ . '/templates/themes/app/components/NoteCard/note-card.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param NoteList   $noteList   The component; its template reads it.
-     * @param RenderPass $renderPass The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/NoteList/note-list.phtml.
-     */
-    private function renderNoteList(NoteList $noteList, RenderPass $renderPass): string
-    {
-        $renderPass->open($noteList);
-        require __DIR__ . '/templates/themes/app/components/NoteList/note-list.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param Panel      $panel      The component; its template reads it.
-     * @param RenderPass $renderPass The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/Panel/panel.phtml.
-     */
-    private function renderPanel(Panel $panel, RenderPass $renderPass): string
-    {
-        $renderPass->open($panel);
-        require __DIR__ . '/templates/themes/app/components/Panel/panel.phtml';
 
         return $renderPass->close();
     }

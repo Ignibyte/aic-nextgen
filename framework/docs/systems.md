@@ -15,7 +15,7 @@ app meets first.
 | 7. The browser runtime | Tessera |
 | 8. Form security | Form, Session, Secret |
 | 9. Auth | Auth, Access |
-| 10. Background work | Queue, Schedule, Notification |
+| 10. Background work | Queue, Schedule, Notification, Broadcast |
 
 ## 1. HTTP, routing and the kinds
 
@@ -66,7 +66,9 @@ The development engine and its guard are described in [workflow.md](workflow.md)
 ## 3. Data
 
 - `AIC\Database`: `AIC\Database\Contracts\Database`, parameterised queries with `?` placeholders
-  over PDO pgsql, typed rows and transactions. Postgres is the only database. It is the framework's
+  over PDO pgsql, typed rows and transactions, and LISTEN with its notifications on the request's own
+  connection: `listen(channel)` and `notification(timeoutMs)`, over `Pdo\Pgsql::getNotify()` (#314).
+  Postgres is the only database. It is the framework's
   seam: an app's modules and theme never depend on it (gate:9). They read and write tables through
   `AIC\Entity`, and ask the database about itself (whether it answers, its version, a setting)
   through `AIC\Database\Application\DatabaseStatus`.
@@ -297,6 +299,26 @@ See [security.md](security.md) for sessions, form guards, uploads, auth and secr
   user's kept notifications (unread count, a page newest first, one by id, the newest few after an id, up to a limit (#207))
   and marks them read, every query scoped to that user (#202); `forget(userId)` deletes them all, so
   a gate:23 pass can start the gate user's inbox afresh (#210).
+- `AIC\Broadcast`: real-time push from a Job or a controller to the open streams of a channel (#314),
+  on Postgres alone. `AIC\Broadcast\Application\Broadcaster::publish(Channel, data)` writes the
+  event (text a module encodes) as a row of `aic_broadcasts` and notifies the one Postgres channel `aic_broadcasts` with the
+  channel's name, in one statement that also removes rows older than `BroadcastConfig::$keepSeconds`;
+  inside an open transaction the streams wake only when it commits. A `Channel` is lower-case letters
+  and digits in parts joined by `.` or `-` (`ledger.feed`), a column value and never SQL. A Stream
+  controller answers `Broadcasts::stream(Channel, BroadcastEvents, request)`: `BroadcastSource` listens,
+  sends each event after the request's `Last-Event-ID` (only new ones without it), each made by the
+  module's `BroadcastEvents` with the row's id as its id, waits on the database's notifications while
+  idle, sends a keep-alive after `keepAliveSeconds`, and ends the connection as a reconnect after
+  `holdSeconds` (#202), so the client comes back with its last id and misses nothing. At most
+  `streams` broadcast streams are open at once across the site (`StreamSlots`: session advisory locks
+  on each stream's own connection, freed when its request ends; 7 by default, below one compiled worker's
+  handlers, see [deploy.md](deploy.md#open-streams-and-workers)); one more is a single reconnect whose
+  `retry:` is `refusedRetryMs`. A stream sends a keep-alive as soon as it listens, so its headers go out
+  at once, and its hold's reconnect names the last id, so a quiet channel resumes where it began. `AppConfig::$broadcast` holds the five settings. Who may read a
+  channel is its Stream route's `needs:` (#304), a person's role or a token's scope (#313). An event
+  whose transaction commits after a later one's can be missed by a stream that already sent the
+  later one; a module that must never miss one reads its own table on reconnect. Presence and
+  two-way traffic wait on the socket server (#32).
 
 ## The layer ladder
 

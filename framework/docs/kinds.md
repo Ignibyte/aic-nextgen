@@ -83,7 +83,13 @@ in memory has no modification time, so `If-Modified-Since` is not read.
 An answer sent over time or in pieces:
 
 - `AIC\Controller\Domain\EventStream`: Server-Sent Events, pulled one at a time from an
-  `AIC\Controller\Contracts\EventSource`.
+  `AIC\Controller\Contracts\EventSource`. A `ServerEvent` may carry `retry:` (#314), and a comment
+  may carry an id, which sets the client's last id with no data.
+- An open event stream holds one of the compiled site's PHP children for as long as it lasts, so a
+  stream that waits on others' events is a broadcast stream, `AIC\Broadcast\Application\Broadcasts`
+  (#314): it ends its connection after a hold and resumes from `Last-Event-ID`, and the site caps how
+  many are open at once; see [systems.md](systems.md#10-background-work) and
+  [deploy.md](deploy.md).
 - `AIC\Controller\Domain\FileDownload`: a file with its media type, download name and the request; it
   answers a `Range` header with 206 or 416. It is validated: a strong `ETag` from the file's
   modification time and size, and `Last-Modified`; `If-None-Match` or `If-Modified-Since` answers 304,

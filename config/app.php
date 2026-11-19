@@ -23,10 +23,15 @@ declare(strict_types=1);
  * The sign-in providers (#313): `stub` is the same stub as an OpenID Connect
  * provider, a public client with no secret, its callback on whichever origin
  * the request came to.
+ *
+ * Broadcast streams (#314): the fixture holds each connection 3 seconds, so
+ * gate:23's stream step ends soon and the feed page shows a reconnect
+ * often.
  */
 
 use AIC\Auth\Domain\OidcProvider;
 use AIC\Auth\Domain\OidcProviders;
+use AIC\Broadcast\Domain\BroadcastConfig;
 use AIC\Config\Domain\AppConfig;
 use AIC\HttpClient\Domain\Upstream;
 use AIC\HttpClient\Domain\Upstreams;
@@ -64,4 +69,5 @@ return new AppConfig(
             scopes: 'openid email',
         ),
     ]),
+    broadcast: new BroadcastConfig(holdSeconds: 3),
 );

@@ -11,9 +11,9 @@ use AIC\Component\Domain\ThemeLayout;
 use AIC\Component\Domain\ThemePage;
 use AIC\Component\Exception\UnknownComponent;
 use App\Theme\Components\AuditView\AuditView;
-use App\Theme\Components\Greetings\Greetings;
+use App\Theme\Components\Feed\Feed;
+use App\Theme\Components\FeedEntry\FeedEntry;
 use App\Theme\Components\GreetingStatus\GreetingStatus;
-use App\Theme\Components\Home\Home;
 use Override;
 
 /**
@@ -45,9 +45,9 @@ final readonly class ThemeTemplatesPart1 implements ComponentTemplates
             $component instanceof ThemeLayout => (new ThemeHtmlTemplate())->render($component, $renderPass),
             $component instanceof ThemePage => (new ThemePageTemplate())->render($component, $renderPass),
             $component instanceof AuditView => $this->renderAuditView($component, $renderPass),
+            $component instanceof Feed => $this->renderFeed($component, $renderPass),
+            $component instanceof FeedEntry => $this->renderFeedEntry($component, $renderPass),
             $component instanceof GreetingStatus => $this->renderGreetingStatus($component, $renderPass),
-            $component instanceof Greetings => $this->renderGreetings($component, $renderPass),
-            $component instanceof Home => $this->renderHome($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }
@@ -69,6 +69,38 @@ final readonly class ThemeTemplatesPart1 implements ComponentTemplates
     }
 
     /**
+     * @param Feed       $feed       The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/Feed/feed.phtml.
+     */
+    private function renderFeed(Feed $feed, RenderPass $renderPass): string
+    {
+        $renderPass->open($feed);
+        require __DIR__ . '/templates/themes/app/components/Feed/feed.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param FeedEntry  $feedEntry  The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/FeedEntry/feed-entry.phtml.
+     */
+    private function renderFeedEntry(FeedEntry $feedEntry, RenderPass $renderPass): string
+    {
+        $renderPass->open($feedEntry);
+        require __DIR__ . '/templates/themes/app/components/FeedEntry/feed-entry.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
      * @param GreetingStatus $greetingStatus The component; its template reads it.
      * @param RenderPass     $renderPass     The pass its template writes through.
      *
@@ -80,38 +112,6 @@ final readonly class ThemeTemplatesPart1 implements ComponentTemplates
     {
         $renderPass->open($greetingStatus);
         require __DIR__ . '/templates/themes/app/components/GreetingStatus/greeting-status.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param Greetings  $greetings  The component; its template reads it.
-     * @param RenderPass $renderPass The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/Greetings/greetings.phtml.
-     */
-    private function renderGreetings(Greetings $greetings, RenderPass $renderPass): string
-    {
-        $renderPass->open($greetings);
-        require __DIR__ . '/templates/themes/app/components/Greetings/greetings.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param Home       $home       The component; its template reads it.
-     * @param RenderPass $renderPass The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/Home/home.phtml.
-     */
-    private function renderHome(Home $home, RenderPass $renderPass): string
-    {
-        $renderPass->open($home);
-        require __DIR__ . '/templates/themes/app/components/Home/home.phtml';
 
         return $renderPass->close();
     }

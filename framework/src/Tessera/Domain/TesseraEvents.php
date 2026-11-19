@@ -99,11 +99,16 @@ final readonly class TesseraEvents
      * A source that bounds each connection returns this when one has lasted long enough (#202): the connection
      * ends without `tessera-close`, and Tessera reconnects with the last event id it saw.
      *
+     * @param int    $retryMs How long the client waits before it reconnects, in milliseconds, sent as `retry:`
+     *                        (#314); 0 keeps its delay as it is.
+     * @param string $id      The id the client sends back as `Last-Event-ID`, so a stream that sent no event on
+     *                        this connection still resumes where it began (#314); empty for none.
+     *
      * @return ServerEvent The `: reconnect` comment, last and resuming.
      */
-    public function reconnect(): ServerEvent
+    public function reconnect(int $retryMs = 0, string $id = ''): ServerEvent
     {
-        return new ServerEvent('', 'reconnect', true, '', null, true);
+        return new ServerEvent('', 'reconnect', true, $id, null, true, $retryMs);
     }
 
     /**

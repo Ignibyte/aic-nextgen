@@ -210,6 +210,10 @@ permissions, so `needs:` takes a token's scope (never `signed-in`); a bearer req
 check, no sign-in redirect; 401 `invalid_token`, 403 `insufficient_scope`). `AppConfig::$oidc` providers, `OidcSignIn` (code
 flow, PKCE S256, id token claims checked unsigned until #325), `Authenticator::signInAs()`; the fixture's `/api/caller` and
 `/sign-in/oidc` against gate:23's stub provider. The token endpoint is #331.
+#314: real-time push: `AIC\Broadcast` (`Broadcaster::publish(Channel, data)` writes `aic_broadcasts` and `pg_notify`s;
+`Broadcasts::stream()` sends a channel's events after `Last-Event-ID` over `Database::listen()|notification()`, ends each
+connection after `holdSeconds`, and caps open streams site-wide at `streams`, below one worker's handlers, default 7);
+channel access is the route's `needs:`; the fixture's `/ledger/feed`. The framework requires `ext-pdo_pgsql`.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted

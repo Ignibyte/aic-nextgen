@@ -4,7 +4,10 @@
         "role:grant gate-auditor account.audit",
         "role:assign gate gate-auditor",
         "token:revoke gate-portal",
-        "token:add gate-portal {password} account.caller"
+        "token:add gate-portal {password} account.caller",
+        "role:grant gate-feed ledger.feed",
+        "role:assign gate gate-feed",
+        "role:assign stub:ada gate-feed"
     ],
     "steps": [
         {
@@ -951,6 +954,15 @@
             "captures": false
         },
         {
+            "name": "ledger feed, anonymous",
+            "method": "GET",
+            "path": "/ledger/feed",
+            "form": "",
+            "header": "",
+            "status": 403,
+            "captures": false
+        },
+        {
             "name": "login page",
             "method": "GET",
             "path": "/login?next=%2Faccount",
@@ -992,6 +1004,33 @@
             "path": "/audit",
             "form": "",
             "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger feed, with ledger.feed",
+            "method": "GET",
+            "path": "/ledger/feed",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger feed, a post",
+            "method": "POST",
+            "path": "/ledger/feed",
+            "form": "text=a+gate+post&aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "ledger feed stream, one hold after an id past every post",
+            "method": "GET",
+            "path": "/ledger/feed/events",
+            "form": "",
+            "header": "Last-Event-ID: 999999999999",
             "status": 200,
             "captures": false
         },
@@ -1047,6 +1086,15 @@
             "form": "",
             "header": "Authorization: Bearer {password}",
             "status": 405,
+            "captures": false
+        },
+        {
+            "name": "ledger feed stream, a token without ledger.feed",
+            "method": "GET",
+            "path": "/ledger/feed/events",
+            "form": "",
+            "header": "Authorization: Bearer {password}",
+            "status": 403,
             "captures": false
         },
         {

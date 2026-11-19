@@ -281,6 +281,30 @@
             "path": "/ledger/categories"
         },
         {
+            "handler": "App\\Ledger\\Controller\\LedgerFeedPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "ledger.feed",
+            "path": "/ledger/feed"
+        },
+        {
+            "handler": "App\\Ledger\\Controller\\LedgerFeedPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "ledger",
+            "needs": "ledger.feed",
+            "path": "/ledger/feed"
+        },
+        {
+            "handler": "App\\Ledger\\Controller\\LedgerFeedStream",
+            "kind": "Stream",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "ledger.feed",
+            "path": "/ledger/feed/events"
+        },
+        {
             "handler": "App\\Note\\Controller\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -738,6 +762,10 @@
                 {
                     "description": "Freeze a ledger account, so nothing posts to it until it thaws.",
                     "name": "ledger.freeze"
+                },
+                {
+                    "description": "Read and post to the ledger feed, which streams each post to every open page.",
+                    "name": "ledger.feed"
                 }
             ],
             "plugins": [],
@@ -851,6 +879,16 @@
                 "component": "App\\Theme\\Components\\AuditView\\AuditView",
                 "generated": "build/generated/templates/themes/app/components/AuditView/audit-view.phtml",
                 "source": "themes/app/components/AuditView/audit-view.phtml"
+            },
+            {
+                "component": "App\\Theme\\Components\\Feed\\Feed",
+                "generated": "build/generated/templates/themes/app/components/Feed/feed.phtml",
+                "source": "themes/app/components/Feed/feed.phtml"
+            },
+            {
+                "component": "App\\Theme\\Components\\FeedEntry\\FeedEntry",
+                "generated": "build/generated/templates/themes/app/components/FeedEntry/feed-entry.phtml",
+                "source": "themes/app/components/FeedEntry/feed-entry.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\GreetingStatus\\GreetingStatus",

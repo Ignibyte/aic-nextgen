@@ -130,6 +130,32 @@ final readonly class ProfiledDatabase implements Database
     }
 
     /**
+     * @param string $channel A lower-case identifier.
+     *
+     * @throws QueryException When the name is not one, or LISTEN fails.
+     */
+    #[Override]
+    public function listen(string $channel): void
+    {
+        $started = $this->monotonic->microseconds();
+        $this->database->listen($channel);
+        $this->told('LISTEN ' . $channel, $started, 0);
+    }
+
+    /**
+     * @param int $timeoutMs How long to wait, in milliseconds.
+     *
+     * @throws QueryException When the wait fails.
+     *
+     * @return string The next notification's payload; empty when none came in time. A wait records no statement.
+     */
+    #[Override]
+    public function notification(int $timeoutMs): string
+    {
+        return $this->database->notification($timeoutMs);
+    }
+
+    /**
      * @param string $sql     The statement's text.
      * @param int    $started When it began, by the monotonic clock.
      * @param int    $rows    The rows it read or changed.
