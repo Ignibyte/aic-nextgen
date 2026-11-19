@@ -264,12 +264,15 @@ See [tessera.md](tessera.md) for markers, requests, replies and streams.
   the session; passwords are hashed by Postgres pgcrypto (bcrypt). Users come from the app through
   `AIC\Auth\Contracts\UserProvider`, so there is no user entity in the framework; a sign-in hands
   back what the provider read as a `SignedInUser` (#238). A manifest's
-  `protectedPrefix` turns an anonymous visitor away.
+  `protectedPrefix` turns an anonymous visitor away. `AIC\Auth\Application\OidcSignIn` signs a
+  person in through an OpenID Connect provider named in `AppConfig::$oidc` (#313).
 - `AIC\Access`: what a signed-in user may do (#304). A module declares its permissions
   (`->permission()`), a route says what it needs (`needs:`), and roles in Postgres
   (`aic_role_permissions`, `aic_user_roles`, changed by `bin/aic role:*`) grant permissions to
   users. `AIC\Access\Application\Actors` gives the request's `Actor`; a module's
   `AIC\Access\Contracts\Policy` answers a `Decision` for one record, or before there is one.
+  A bearer token (`aic_api_tokens`, `bin/aic token:*`) is an actor too, its scopes the
+  permissions it holds (#313).
 
 See [security.md](security.md) for sessions, form guards, uploads, auth and secret handling.
 

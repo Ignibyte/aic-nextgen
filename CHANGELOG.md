@@ -6,6 +6,18 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Bearer tokens for the Api kind, and sign-in through an OpenID Connect provider** (#313). A
+  server-to-server caller sends `Authorization: Bearer <token>`: `bin/aic token:add <name> <token>
+  <scope>...` keeps the token's SHA-256 and its scopes in `aic_api_tokens` (`token:list`,
+  `token:revoke`). Scopes are permissions, so a route's `needs:` is met by a user's role or a token's
+  scope; `signed-in` never by a token. A bearer request is judged by its token alone: it skips the
+  CSRF check and the sign-in redirect, an unknown token answers 401 `invalid_token` and a short scope
+  403 `insufficient_scope` (RFC 6750). `AppConfig::$oidc` names OpenID Connect providers;
+  `OidcSignIn` runs the authorization code flow with PKCE through the app's PSR-18 client and checks
+  the id token's issuer, audience, expiry and nonce (the signature waits on #325), and
+  `Authenticator::signInAs()` signs the identity in. **For apps:** a request carrying a bearer header
+  no longer reads the session's user. An OAuth token endpoint follows in #331.
+
 - **Query forms: window columns, JSON, text search, trees and subqueries** (#311). `EntityQuery::withColumns()`
   adds computed columns: a `Window` (row number, rank or dense rank within a partition), a `JsonValue`
   (a Json field's text at a path) and a `Similarity` (trigram likeness to a value). `Comparison` gains

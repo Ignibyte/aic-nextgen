@@ -55,4 +55,26 @@ final readonly class LoginForm
 
         return new Form('login-form', '/login', $fields, $this->formTokens->guard($serverRequest));
     }
+
+    /**
+     * @param ServerRequestInterface $serverRequest The request, with its session.
+     * @param string                 $refused       Why the last provider sign-in did not happen; empty for none.
+     *
+     * @throws LogicException When the request carries no session.
+     *
+     * @return Form The provider's button (#313), a post to `/sign-in/oidc`.
+     */
+    public function providerForm(ServerRequestInterface $serverRequest, string $refused): Form
+    {
+        $alerts = $refused === ''
+            ? []
+            : [new Alert(AlertSeverity::Error, $refused, 'sign-in-refused')];
+
+        return new Form(
+            'provider-form',
+            '/sign-in/oidc',
+            [...$alerts, new Button('Sign in with the stub provider', 'submit', 'provider-sign-in')],
+            $this->formTokens->guard($serverRequest),
+        );
+    }
 }

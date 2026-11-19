@@ -31,7 +31,9 @@ when needed instead of retaining it as shared mutable state.
 DELETE, PATCH, POST or PUT. It compares the submitted token to the session token with a constant-time
 comparison. A nonempty header takes precedence over the hidden field. Missing or mismatched tokens
 get 403, or 419 when a Tessera request header is present. A nonempty honeypot gets 400. Controllers
-cannot opt out by returning a different Page response.
+cannot opt out by returning a different Page response. A request with an `Authorization: Bearer`
+header passes (#313): a browser cannot send that header to another site without a CORS preflight,
+which AIC never answers, and such a request is judged by its token alone (see bearer tokens below).
 
 `AIC\Form\Contracts\FormToken` defines these checked names:
 
@@ -161,6 +163,50 @@ the id the app's provider signed in.
   answers for one permission; nothing finds a policy at run time. `bin/aic make:policy <module>
   <Entity>` writes one with a `create` action and declares the permission it asks; the agent adds
   the record's actions. A policy is API for its controllers, so it carries `@api`.
+
+## Bearer tokens
+
+A server-to-server caller reaches a route with a bearer token, as RFC 6750 says (#313). Scopes are
+permissions: a token holds names the modules declare with `->permission()`, and a route's `needs:`
+is met by a user's role or a token's scope alike.
+
+- **The operator issues them.** `bin/aic token:add <name> <token> <scope>...` takes the value as
+  `user:add` takes a password: 32 visible characters or more, chosen by the operator (`openssl rand
+  -hex 32`). `aic_api_tokens` keeps the name, the scopes and the SHA-256 of the value, never the
+  value. `bin/aic token:list` shows names and scopes; `bin/aic token:revoke <name>` ends one on the
+  next request. A token lives until it is revoked; a token endpoint (client credentials, the
+  authorization server MCP needs) comes later (#331).
+- **One credential per request.** `AIC\Http\Domain\BearerCredential` finds the token. With one,
+  `AIC\Access\Application\Actors` answers the token's actor (`Actor::$client` is its name, its
+  scopes are the permissions) and never reads the session's user. `signed-in` is a person's need,
+  which no token meets. Such a request skips the CSRF check and the sign-in redirect of a protected
+  prefix; its route's need judges it.
+- **Refusals follow RFC 6750.** `PermissionGate` answers an unknown or revoked token 401 with
+  `WWW-Authenticate: Bearer error="invalid_token"`, and a known token without the need 403 with
+  `error="insufficient_scope", scope="<need>"`. A request with no token keeps the plain 403.
+
+## Sign-in through a provider
+
+`AIC\Auth\Application\OidcSignIn` signs a person in through an OpenID Connect provider such as
+Keycloak, by the authorization code flow with PKCE (#313). `AppConfig::$oidc` names the providers
+(`AIC\Auth\Domain\OidcProviders` of `OidcProvider`: issuer, authorization and token endpoints, client
+id and secret, callback, scopes). Each URL is https, or http on a loopback host for a local stub; an
+empty secret is a public client. A callback written as a path joins the request's origin.
+
+- `start($request, $name)` keeps a fresh state, nonce and S256 verifier in the session and answers
+  `AIC\Controller\Domain\ProviderRedirect`, the one page response that leaves the site, and only for a
+  configured authorization endpoint. Start it from a POST, so the form guard keeps another site from
+  starting a sign-in in a visitor's session.
+- `finish($request)` clears what start kept, checks the state, exchanges the code through the app's
+  PSR-18 client (`AIC\Auth\Application\CodeExchange`, HTTP Basic for a confidential client) and
+  checks the id token's claims with `AIC\Auth\Domain\IdTokenClaims`: issuer, audience (and `azp`),
+  expiry and nonce. It answers an `OidcIdentity` (provider, subject, email) or throws
+  `AIC\Auth\Contracts\SignInRefusedException` with a reason for the person.
+- The signature is not checked yet: the token comes straight from the token endpoint over TLS,
+  which OpenID Connect Core 3.1.3.7 item 6 accepts in its place. RS256 needs asymmetric openssl in
+  the compiler (#325).
+- Who the identity is in the app is the caller's decision; `Authenticator::signInAs($request,
+  $userId)` regenerates the session and signs that id in. The fixture signs in `<provider>:<subject>`.
 
 The typed secret config obtains the app secret from `AIC_APP_SECRET`; environment access belongs
 in `config/`. Supply a strong private secret per deployment, outside versioned files. Changing it

@@ -72,6 +72,19 @@ final readonly class Authenticator
     }
 
     /**
+     * @param ServerRequestInterface $serverRequest The request, with its session.
+     * @param string                 $userId        The id a provider's identity is in the app (#313), as its caller decides.
+     *
+     * @throws LogicException When the request carries no session.
+     */
+    public function signInAs(ServerRequestInterface $serverRequest, string $userId): void
+    {
+        $session = $this->requestSession->read($serverRequest);
+        $session->regenerateId();
+        $session->set(self::USER, $userId);
+    }
+
+    /**
      * Signs the user out: the session ends with the request.
      *
      * @param ServerRequestInterface $serverRequest The logout post, with its session.

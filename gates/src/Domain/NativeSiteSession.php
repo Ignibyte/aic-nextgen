@@ -81,18 +81,21 @@ final class NativeSiteSession
     /**
      * @param NativeSiteStep $nativeSiteStep A step.
      *
-     * @return string Its own header lines, then the session cookie unless they set a cookie themselves (#71: a
-     *                Tessera write needs its headers and its session); empty for neither.
+     * @return string Its own header lines, `{password}` replaced (#313: a bearer token the console added), then the
+     *                session cookie unless they set a cookie themselves (#71: a Tessera write needs its headers and its
+     *                session); empty for neither.
      */
     public function header(NativeSiteStep $nativeSiteStep): string
     {
-        if ($this->cookie === '' || str_contains($nativeSiteStep->header, 'Cookie:')) {
-            return $nativeSiteStep->header;
+        $header = str_replace('{password}', $this->password, $nativeSiteStep->header);
+
+        if ($this->cookie === '' || str_contains($header, 'Cookie:')) {
+            return $header;
         }
 
-        return $nativeSiteStep->header === ''
+        return $header === ''
             ? 'Cookie: ' . $this->cookie
-            : $nativeSiteStep->header . "\r\n" . 'Cookie: ' . $this->cookie;
+            : $header . "\r\n" . 'Cookie: ' . $this->cookie;
     }
 
     /**

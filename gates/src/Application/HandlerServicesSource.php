@@ -179,9 +179,7 @@ final readonly class HandlerServicesSource
         $others = $calls;
         unset($others[$wiredObject->class]);
         $callSource = $this->generatedCalls->callSource;
-        $body = $wiredObject->method === ''
-            ? $callSource->fit('        return ', $wiredObject, $others, $wiringRoots, ';')
-            : '        return ' . $callSource->inline($wiredObject, $others, $wiringRoots) . ';';
+        $body = $callSource->fitted('        return ', $wiredObject, $others, $wiringRoots, ';');
         $short = $this->generatedCalls->phpClassFile->short($wiredObject->class);
 
         return strtr(self::METHOD, [

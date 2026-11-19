@@ -201,6 +201,30 @@
             "path": "/audit"
         },
         {
+            "handler": "App\\Account\\Controller\\CallerApi",
+            "kind": "Api",
+            "method": "GET",
+            "module": "account",
+            "needs": "account.caller",
+            "path": "/api/caller"
+        },
+        {
+            "handler": "App\\Account\\Controller\\OidcStartPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "account",
+            "needs": "",
+            "path": "/sign-in/oidc"
+        },
+        {
+            "handler": "App\\Account\\Controller\\OidcCallbackPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "account",
+            "needs": "",
+            "path": "/sign-in/oidc/callback"
+        },
+        {
             "handler": "App\\Ledger\\Controller\\LedgerGuardsApi",
             "kind": "Api",
             "method": "GET",
@@ -537,6 +561,24 @@
             "name": "stock:sample"
         },
         {
+            "class": "AIC\\Access\\Application\\TokenAddCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "token:add"
+        },
+        {
+            "class": "AIC\\Access\\Application\\TokenListCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "token:list"
+        },
+        {
+            "class": "AIC\\Access\\Application\\TokenRevokeCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "token:revoke"
+        },
+        {
             "class": "App\\Account\\Command\\UserAdd",
             "kind": "Command",
             "module": "account",
@@ -636,7 +678,8 @@
             "exports": [],
             "factories": [
                 "App\\Account\\Service\\AccessRules",
-                "App\\Account\\Service\\UploadRules"
+                "App\\Account\\Service\\UploadRules",
+                "App\\Account\\Service\\SignInProviders"
             ],
             "middleware": [
                 {
@@ -654,6 +697,10 @@
                 {
                     "description": "Read the account audit page.",
                     "name": "account.audit"
+                },
+                {
+                    "description": "Read who the caller is over the API, with a bearer token.",
+                    "name": "account.caller"
                 }
             ],
             "plugins": [],

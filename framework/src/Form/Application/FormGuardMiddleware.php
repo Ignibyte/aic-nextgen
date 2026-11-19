@@ -6,6 +6,7 @@ namespace AIC\Form\Application;
 
 use AIC\Form\Contracts\FormToken;
 use AIC\Http\Application\ResponseBuilder;
+use AIC\Http\Domain\BearerCredential;
 use AIC\Session\Application\RequestSession;
 use AIC\Tessera\Domain\TesseraRequest;
 use InvalidArgumentException;
@@ -23,7 +24,10 @@ use function in_array;
  * Guards every unsafe request before routing (#42): the CSRF token, sent as
  * the `aic_csrf` field or the `X-AIC-CSRF` header, must match the session's,
  * or the answer is 403; a filled honeypot field is a bot, answered 400. No
- * controller can skip it. It runs after SessionMiddleware.
+ * controller can skip it. It runs after SessionMiddleware. A request with
+ * a bearer token (#313) passes: a browser cannot send that header to another
+ * site without a CORS preflight, and such a request is judged by its token
+ * alone, never by the session's user.
  */
 final readonly class FormGuardMiddleware implements MiddlewareInterface
 {
@@ -33,14 +37,16 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
     private const array UNSAFE = ['DELETE', 'PATCH', 'POST', 'PUT'];
 
     /**
-     * @param RequestSession  $requestSession  Reads the session off the request.
-     * @param ResponseBuilder $responseBuilder Makes the refusals.
-     * @param PostedFields    $postedFields    Reads the token and the honeypot.
+     * @param RequestSession   $requestSession   Reads the session off the request.
+     * @param ResponseBuilder  $responseBuilder  Makes the refusals.
+     * @param PostedFields     $postedFields     Reads the token and the honeypot.
+     * @param BearerCredential $bearerCredential Tells a bearer request.
      */
     public function __construct(
         private RequestSession $requestSession,
         private ResponseBuilder $responseBuilder,
         private PostedFields $postedFields = new PostedFields(),
+        private BearerCredential $bearerCredential = new BearerCredential(),
     ) {
     }
 
@@ -55,7 +61,7 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
     #[Override]
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (!in_array($request->getMethod(), self::UNSAFE, true)) {
+        if (!$this->guards($request)) {
             return $handler->handle($request);
         }
 
@@ -77,6 +83,16 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
         }
 
         return $handler->handle($request);
+    }
+
+    /**
+     * @param ServerRequestInterface $serverRequest The request.
+     *
+     * @return bool Whether it is unsafe and judged by its session, not by a bearer token.
+     */
+    private function guards(ServerRequestInterface $serverRequest): bool
+    {
+        return in_array($serverRequest->getMethod(), self::UNSAFE, true) && !$this->bearerCredential->present($serverRequest);
     }
 
     /**

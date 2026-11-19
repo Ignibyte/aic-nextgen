@@ -8,9 +8,12 @@ use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use App\Account\Controller\AccountPage;
 use App\Account\Controller\AuditPage;
+use App\Account\Controller\CallerApi;
 use App\Account\Controller\LoginPage;
 use App\Account\Controller\LoginPost;
 use App\Account\Controller\LogoutPost;
+use App\Account\Controller\OidcCallbackPage;
+use App\Account\Controller\OidcStartPost;
 use App\Account\Controller\UploadDownload;
 use App\Account\Controller\UploadsPage;
 use App\Account\Controller\UploadsPost;
@@ -42,6 +45,9 @@ final readonly class AccountRoutes
             ->get('/uploads', UploadsPage::class)
             ->post('/uploads', UploadsPost::class)
             ->get('/uploads/latest', UploadDownload::class)
-            ->get('/audit', AuditPage::class);
+            ->get('/audit', AuditPage::class)
+            ->get('/api/caller', CallerApi::class)
+            ->post('/sign-in/oidc', OidcStartPost::class)
+            ->get('/sign-in/oidc/callback', OidcCallbackPage::class);
     }
 }

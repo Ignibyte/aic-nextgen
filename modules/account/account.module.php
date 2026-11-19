@@ -8,8 +8,9 @@ declare(strict_types=1);
  * (account.audit, #304), the sign-in middleware guarding /account,
  * the users table and user:add, the visit counter, and the uploads page with
  * its rules as a factory, which keeps an accepted upload in the app's public
- * and private files and sends the private copy (#213). The build reads it; nothing reads it at run
- * time.
+ * and private files and sends the private copy (#213), the bearer token's
+ * caller at /api/caller and sign-in through gate:23's stub OIDC provider
+ * (#313). The build reads it; nothing reads it at run time.
  */
 
 use AIC\Auth\Application\PgcryptoPasswordHasher;
@@ -22,9 +23,12 @@ use AIC\Module\Contracts\RouteMethod;
 use App\Account\Command\UserAdd;
 use App\Account\Controller\AccountPage;
 use App\Account\Controller\AuditPage;
+use App\Account\Controller\CallerApi;
 use App\Account\Controller\LoginPage;
 use App\Account\Controller\LoginPost;
 use App\Account\Controller\LogoutPost;
+use App\Account\Controller\OidcCallbackPage;
+use App\Account\Controller\OidcStartPost;
 use App\Account\Controller\UploadDownload;
 use App\Account\Controller\UploadsPage;
 use App\Account\Controller\UploadsPost;
@@ -34,6 +38,7 @@ use App\Account\Migration\AddUserIds;
 use App\Account\Migration\CreateUsersTable;
 use App\Account\Repository\UserRepository;
 use App\Account\Service\AccessRules;
+use App\Account\Service\SignInProviders;
 use App\Account\Service\UploadRules;
 
 return (new ModuleManifest('account'))
@@ -57,4 +62,9 @@ return (new ModuleManifest('account'))
     ->migration(CreateUsersTable::class)
     ->migration(AddUserIds::class)
     ->route(RouteMethod::Get, '/audit', AuditPage::class, needs: 'account.audit')
-    ->permission('account.audit', 'Read the account audit page.');
+    ->permission('account.audit', 'Read the account audit page.')
+    ->route(RouteMethod::Get, '/api/caller', CallerApi::class, needs: 'account.caller')
+    ->permission('account.caller', 'Read who the caller is over the API, with a bearer token.')
+    ->route(RouteMethod::Post, '/sign-in/oidc', OidcStartPost::class)
+    ->route(RouteMethod::Get, '/sign-in/oidc/callback', OidcCallbackPage::class)
+    ->factory(SignInProviders::class);

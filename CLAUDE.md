@@ -205,6 +205,11 @@ module factory), unlogged tables (`TableBuilder::unlogged()`), `bin/aic cache:pr
 #311: query forms: `EntityQuery::withColumns([Window, JsonValue, Similarity])`, `withValuesIn()` (a subquery),
 `Comparison::Contains|EqualsIgnoringCase|Similar`, `EntityTrees::descendants|ancestors` (recursive, depth 64); unions, named
 CTEs and conditions on computed columns are #329; the compiled PDO's `text[]` parameter defect is #330.
+#313: bearer tokens and OIDC sign-in: `aic_api_tokens` (SHA-256 only; `bin/aic token:add|list|revoke`), scopes are
+permissions, so `needs:` takes a token's scope (never `signed-in`); a bearer request is judged by its token alone (no CSRF
+check, no sign-in redirect; 401 `invalid_token`, 403 `insufficient_scope`). `AppConfig::$oidc` providers, `OidcSignIn` (code
+flow, PKCE S256, id token claims checked unsigned until #325), `Authenticator::signInAs()`; the fixture's `/api/caller` and
+`/sign-in/oidc` against gate:23's stub provider. The token endpoint is #331.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
