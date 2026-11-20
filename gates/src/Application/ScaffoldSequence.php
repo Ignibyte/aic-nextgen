@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 /**
- * The twenty `bin/aic make:*` lines that make `modules/scaffold/` (#122),
+ * The twenty-one `bin/aic` make lines that make `modules/scaffold/` (#122),
  * run in order by gate:31 and by anyone regenerating the module: every
  * writer, a component with a script and a page showing it (#315), a page
  * naming its component, a named layout (#157), a page making its own view in
  * that layout, an entity with its table and list page (#123), that entity's
  * policy (#304), a client of one upstream (#305), a uuid-keyed entity with
  * every field type (#307), a pivot relating the two entities (#306), a state
- * machine on the first entity (#308), and an MCP tool (#316).
+ * machine on the first entity (#308), an MCP tool (#316), and three tables
+ * imported from a committed pg_dump (#318).
  */
 final readonly class ScaffoldSequence
 {
@@ -77,5 +78,12 @@ final readonly class ScaffoldSequence
             '--version=2026_11_18_000001_add_scaffold_tasks_stage',
         ],
         ['make:mcp-tool', 'scaffold', 'ScaffoldLookupTool'],
+        [
+            'schema:import',
+            'gates/fixtures/schema-import.sql',
+            '--module=scaffold',
+            '--tables=scaffold_shelves,scaffold_books,scaffold_loans',
+            '--version=2026_11_20_000000',
+        ],
     ];
 }

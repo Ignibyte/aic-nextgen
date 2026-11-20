@@ -95,6 +95,18 @@ when a layout needs a document of its own.
 `--needs`, declares that name as the permission it needs. `composer run build` then writes its schemas
 and adapter into the module's `App\Generated\<Module>Mcp` ([mcp.md](../framework/docs/mcp.md)).
 
+`schema:import <dump.sql> --module=<m> [--tables=a,b] [--version=<v>] [--dry-run]` (#318) turns a
+`pg_dump --schema-only` into baseline migrations: one `Create<Table>Table` per table, written after
+the tables its foreign keys reference, with consecutive versions and the manifest's `->migration()`
+calls, through the same make run. It reads the column types Schema has, identity, serial and uuid
+keys, literal defaults, stored generated columns, a text column's `= ANY (ARRAY[…])` check as
+`choice()`, checks, unique and primary keys, single-column foreign keys, and btree, partial, brin,
+hash, gist and gin indexes, with every expression as `Schema::expressions()` calls. Anything else, a
+function, trigger, view, another type, `ON UPDATE`, an expression index, a foreign key to a table
+nothing creates, is listed one a line and nothing is written; no SQL is copied through. Settings,
+owners and grants are dropped, and comments and other extensions are notes. `--tables` imports some
+tables of a larger dump; a statement about no chosen table is then a note.
+
 `make:entity <module> <Class> <table> --fields=<name>:<type>,… [--version=<v>]` (#123) writes the
 entity, `<Class>Repository` (`latest(int)`), `Create<Table>Table` and `<Class>ListPage` (GET of the
 table's path, the newest 50 rows as a heading and paragraphs in the framework's atoms), and adds the
