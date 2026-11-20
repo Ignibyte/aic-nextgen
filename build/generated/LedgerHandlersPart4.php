@@ -6,8 +6,10 @@ namespace App\Generated;
 
 use AIC\Broadcast\Application\Broadcasts;
 use AIC\Broadcast\Application\StreamSlots;
+use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
 use App\Ledger\Controller\LedgerFeedStream;
+use App\Ledger\Controller\LedgerMeterPage;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -25,6 +27,8 @@ final readonly class LedgerHandlersPart4
     }
 
     /**
+     * @throws ContainerException When a called constructor or service fails.
+     *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array
@@ -37,6 +41,7 @@ final readonly class LedgerHandlersPart4
 
         return [
             LedgerFeedStream::class => $this->handlerContext->stream(new LedgerFeedStream($broadcasts), 'ledger.feed'),
+            LedgerMeterPage::class => $this->handlerContext->page(new LedgerMeterPage($this->handlerContext->documents())),
         ];
     }
 }

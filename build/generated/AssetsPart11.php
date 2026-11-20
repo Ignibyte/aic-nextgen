@@ -22,16 +22,17 @@ final readonly class AssetsPart11
     {
         return [
             new PublicAsset(
-                'theme_app/theme.page.js',
-                '/assets/4884db0e98549c751c78e6b137183faff8291fa4c3b436737d7da1f4c474c961/themes/'
-                    . 'app/theme.page.js',
-                '4884db0e98549c751c78e6b137183faff8291fa4c3b436737d7da1f4c474c961/themes/app/them'
-                    . 'e.page.js',
-                'text/javascript; charset=utf-8',
-                'd9003339555d52c1d3834a8c732b7b16ca0f3bf32d07da344fc872b7e0cfb35a',
-                243,
-                '/assets/themes/app/theme.page.js',
+                'theme_app/site.css',
+                '/assets/e26938fd2e4bcb6c2844a789bbfb8c3d721dcd0f4005e0e15ce7da390afc13e1/themes/'
+                    . 'app/site.css',
+                'e26938fd2e4bcb6c2844a789bbfb8c3d721dcd0f4005e0e15ce7da390afc13e1/themes/app/site'
+                    . '.css',
+                'text/css; charset=utf-8',
+                'd9e6ad8017058810a16550a8690cc73e515a3452a48e6e3c0339d41f9da38b9d',
+                286,
+                '/assets/themes/app/site.css',
             ),
+            ...(new AssetsPart12())->all(),
         ];
     }
 }

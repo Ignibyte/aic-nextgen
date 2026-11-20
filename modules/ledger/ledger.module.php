@@ -19,6 +19,7 @@ use App\Ledger\Controller\LedgerFeedPost;
 use App\Ledger\Controller\LedgerFeedStream;
 use App\Ledger\Controller\LedgerGuardsApi;
 use App\Ledger\Controller\LedgerLimitedApi;
+use App\Ledger\Controller\LedgerMeterPage;
 use App\Ledger\Controller\LedgerNoticesApi;
 use App\Ledger\Controller\LedgerStandingApi;
 use App\Ledger\Job\LedgerAccountOpenedJob;
@@ -52,4 +53,5 @@ return (new ModuleManifest('ledger'))
     ->permission('ledger.feed', 'Read and post to the ledger feed, which streams each post to every open page.')
     ->route(RouteMethod::Get, '/ledger/feed', LedgerFeedPage::class, needs: 'ledger.feed')
     ->route(RouteMethod::Post, '/ledger/feed', LedgerFeedPost::class, needs: 'ledger.feed')
-    ->route(RouteMethod::Get, '/ledger/feed/events', LedgerFeedStream::class, needs: 'ledger.feed');
+    ->route(RouteMethod::Get, '/ledger/feed/events', LedgerFeedStream::class, needs: 'ledger.feed')
+    ->route(RouteMethod::Get, '/ledger/meter', LedgerMeterPage::class);

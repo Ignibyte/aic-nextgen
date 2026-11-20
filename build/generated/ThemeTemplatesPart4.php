@@ -8,10 +8,10 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
+use App\Theme\Components\ScaffoldCard\ScaffoldCard;
+use App\Theme\Components\ScaffoldGauge\ScaffoldGauge;
 use App\Theme\Components\SiteNav\SiteNav;
 use App\Theme\Components\StockLinks\StockLinks;
-use App\Theme\Components\StockListing\StockListing;
-use App\Theme\Components\Tick\Tick;
 use Override;
 
 /**
@@ -40,12 +40,44 @@ final readonly class ThemeTemplatesPart4 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
+            $component instanceof ScaffoldCard => $this->renderScaffoldCard($component, $renderPass),
+            $component instanceof ScaffoldGauge => $this->renderScaffoldGauge($component, $renderPass),
             $component instanceof SiteNav => $this->renderSiteNav($component, $renderPass),
             $component instanceof StockLinks => $this->renderStockLinks($component, $renderPass),
-            $component instanceof StockListing => $this->renderStockListing($component, $renderPass),
-            $component instanceof Tick => $this->renderTick($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param ScaffoldCard $scaffoldCard The component; its template reads it.
+     * @param RenderPass   $renderPass   The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/ScaffoldCard/scaffold-card.phtml.
+     */
+    private function renderScaffoldCard(ScaffoldCard $scaffoldCard, RenderPass $renderPass): string
+    {
+        $renderPass->open($scaffoldCard);
+        require __DIR__ . '/templates/themes/app/components/ScaffoldCard/scaffold-card.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param ScaffoldGauge $scaffoldGauge The component; its template reads it.
+     * @param RenderPass    $renderPass    The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/ScaffoldGauge/scaffold-gauge.phtml.
+     */
+    private function renderScaffoldGauge(ScaffoldGauge $scaffoldGauge, RenderPass $renderPass): string
+    {
+        $renderPass->open($scaffoldGauge);
+        require __DIR__ . '/templates/themes/app/components/ScaffoldGauge/scaffold-gauge.phtml';
+
+        return $renderPass->close();
     }
 
     /**
@@ -76,38 +108,6 @@ final readonly class ThemeTemplatesPart4 implements ComponentTemplates
     {
         $renderPass->open($stockLinks);
         require __DIR__ . '/templates/themes/app/components/StockLinks/stock-links.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param StockListing $stockListing The component; its template reads it.
-     * @param RenderPass   $renderPass   The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/StockListing/stock-listing.phtml.
-     */
-    private function renderStockListing(StockListing $stockListing, RenderPass $renderPass): string
-    {
-        $renderPass->open($stockListing);
-        require __DIR__ . '/templates/themes/app/components/StockListing/stock-listing.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param Tick       $tick       The component; its template reads it.
-     * @param RenderPass $renderPass The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/Tick/tick.phtml.
-     */
-    private function renderTick(Tick $tick, RenderPass $renderPass): string
-    {
-        $renderPass->open($tick);
-        require __DIR__ . '/templates/themes/app/components/Tick/tick.phtml';
 
         return $renderPass->close();
     }

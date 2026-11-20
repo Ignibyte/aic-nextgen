@@ -2,7 +2,7 @@
 
 Tessera enhances the server-rendered page with navigation, targeted refreshes, form submissions and
 stream updates. Pages remain [Component trees](rendering.md), so a full page and a targeted answer
-render the same data. The server speaks protocol version 2 (Tessera 0.3.1 and later; this app pins 0.4.3; the profiler uses the devtools events and highlight 0.4.0 added); the browser release is pinned separately
+render the same data. The server speaks protocol version 2 (Tessera 0.3.1 and later; this app pins 0.4.6; the profiler uses the devtools events and highlight 0.4.0 added); the browser release is pinned separately
 in app config and published by the build with its exact bytes and checksum.
 
 ## Markers and fragments
@@ -165,7 +165,7 @@ full response, or to its removal as above, never to an independent fragment temp
 
 ## Vocabulary
 
-What Tessera 0.4.3 reads from a page and what it raises, by name (Tessera's `docs/protocol.md`
+What Tessera 0.4.6 reads from a page and what it raises, by name (Tessera's `docs/protocol.md`
 sections 3 and 7.2, `docs/design.md` and its README's events and runtime). `bin/aic code:coverage`
 counts each row in an app's PHP and template files and its theme's scripts, and shows the ones
 AIC's own code and templates write (#232). A `runtime` row is a member of the script API, counted
@@ -190,6 +190,8 @@ in a theme's scripts alone (#271). Keep the table in step when AIC pins another 
 | `data-poll` | attribute | refreshes its target on an interval |
 | `data-prefetch` | attribute | `hover` or `off` for link prefetching |
 | `data-stream` | attribute | opens a stream for the element's life |
+| `data-mount` | attribute | a module script mounted on the element, again after each patch, unmounted before it goes |
+| `data-mount-data` | attribute | the JSON the script's `mount` receives |
 | `data-signals` | attribute | declares signals |
 | `data-computed` | attribute | a signal computed from others |
 | `data-bind` | attribute | binds a field to a signal |

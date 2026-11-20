@@ -223,7 +223,9 @@ has a Theme section.
 
 With the workflow development package installed, `bin/aic make:component <Class>` writes the
 component's template into the theme's `components/<Class>/` and its class into
-`src/Components/<Class>/`, and edits no manifest.
+`src/Components/<Class>/`, and edits no manifest. With `--script` the class holds a JSON `data` string, the
+template's element names `assets/components/<kebab>.js` in `data-mount`, and that script is written too (see
+Component scripts).
 `bin/aic make:page <module> <Class> <path>` writes the controller in the module, routes it in the
 module's manifest, and writes its own view into the theme; `--component=<Class>` reuses a theme
 component instead, and `--layout=<name>` makes the page pick one of the theme's named layouts.
@@ -283,7 +285,25 @@ select it, with one exception: a script named `*.page.js` is a page script (#239
 loads the theme's page scripts after the pinned Tessera script, deferred, in path order, each by
 its canonical URL with `data-track` through `TrackedAssets`, so a fragment answer carries their
 copies and a changed one makes Tessera load the page whole. Any other script a page or component
-must load itself. Every asset shares the same fingerprint and HTTP policy.
+must load itself.
+
+### Component scripts
+
+A component that runs a client library (a chart, a map, an editor) names a module script on its element with
+Tessera's `data-mount` (#315), and passes the script its data as JSON in `data-mount-data`, echoed from a string
+property of the component, so the template's escaping applies and no inline script is needed:
+
+```php
+<div id="meter" data-mount="/assets/themes/app/components/meter.js" data-mount-data="<?= $meter->data ?>"></div>
+```
+
+The script is a module in the theme's `assets/` (hand-written, or written there by the theme's `frontend/` build
+from a library) exporting `mount(element, data)`, which may return a cleanup, and optionally `unmount(element)`.
+Tessera imports it only on a page whose markup names it, mounts it on load and on every element a patch brings,
+mounts it again when the data changes, keeps what the script drew through a morph, and calls the cleanup and
+`unmount` before the element goes. `data-mount` names the script by its public path,
+`/assets/themes/<theme>/<path>.js`, as a literal: the build refuses one that names no script in the theme's
+`assets/`. The script is not a page script, so nothing loads it on a page without the component. Every asset shares the same fingerprint and HTTP policy.
 
 A theme whose stylesheet is built (Tailwind, for one) keeps the build's sources in its own
 `frontend/` folder, as a Drupal theme does: its `package.json`, lockfile and input CSS and

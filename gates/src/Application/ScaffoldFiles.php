@@ -54,6 +54,12 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
     ];
 
     /**
+     * The scaffold's component scripts in the theme's assets (#315), which the overlay hides too: every file starting
+     * so.
+     */
+    public const array SCRIPTS = ['themes/app/assets/components/scaffold-'];
+
+    /**
      * @var array<string, string> The files written, by path.
      */
     private array $written = [];
@@ -157,7 +163,7 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
     private static function hidden(string $path): bool
     {
         return array_any(
-            [self::FOLDER, ...self::THEME, ...self::LAYOUTS],
+            [self::FOLDER, ...self::THEME, ...self::LAYOUTS, ...self::SCRIPTS],
             static fn (string $prefix): bool => str_starts_with($path, $prefix),
         );
     }

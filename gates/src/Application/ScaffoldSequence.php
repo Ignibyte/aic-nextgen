@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 /**
- * The seventeen `bin/aic make:*` lines that make `modules/scaffold/` (#122),
+ * The nineteen `bin/aic make:*` lines that make `modules/scaffold/` (#122),
  * run in order by gate:31 and by anyone regenerating the module: every
- * writer, a page naming its component, a named layout (#157), a page making
+ * writer, a component with a script and a page showing it (#315), a page naming its component, a named layout (#157), a page making
  * its own view in that layout, an entity with its table and list page
  * (#123), that entity's policy (#304), a client of one upstream (#305), and a
  * uuid-keyed entity with every field type (#307), and a pivot relating the
@@ -21,7 +21,9 @@ final readonly class ScaffoldSequence
     public const array LINES = [
         ['make:module', 'scaffold'],
         ['make:component', 'ScaffoldCard'],
+        ['make:component', 'ScaffoldGauge', '--script'],
         ['make:page', 'scaffold', 'ScaffoldPage', '/scaffold', '--component=ScaffoldCard'],
+        ['make:page', 'scaffold', 'ScaffoldGaugePage', '/scaffold/gauge', '--component=ScaffoldGauge'],
         ['make:layout', 'scaffold-solo'],
         ['make:page', 'scaffold', 'ScaffoldAboutPage', '/scaffold/about', '--layout=scaffold-solo'],
         ['make:page', 'scaffold', 'ScaffoldPost', '/scaffold', '--post'],

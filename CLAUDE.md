@@ -19,7 +19,7 @@ The architecture set an app's agent reads, shipped in `ignibyte/aic-framework`, 
 **The profiler (Chad, 2026-11-02).** #229 (the core), #230 (the pages) and #231 (the toolbar) are
 delivered: with `AIC_PROFILER=1` every dynamic request is kept in `aic_profiles`, named in
 `X-AIC-Profile`, readable at `/_profiler`, and every page carries a live toolbar
-([framework/docs/profiler.md](framework/docs/profiler.md)). AIC pins Tessera 0.4.3 (#255). #234 holds it natively: gate:23's
+([framework/docs/profiler.md](framework/docs/profiler.md)). AIC pins Tessera 0.4.6 (#315; 0.4.3 since #255). #234 holds it natively: gate:23's
 `profiled` steps run a second pass with the profiler on and compare each step's recorded profile
 on both sites. #232 delivered `bin/aic code:coverage`, what of AIC and Tessera an app uses; #233 an XML Api
 answer (`XmlResponse`, the fixture's `/stock.xml`). Next: Lotline's aic-demo #25 to #38; the
@@ -167,7 +167,7 @@ operator's `workflow:answer`, the stall rule, the shell's read forms, the php wa
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
 layout (#157), entity (#123), policy (#304), client (#305), relation (#306) and state (#308); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the seventeen make lines (a pivot, #306; a state, #308).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the nineteen make lines (a pivot, #306; a state, #308; a component script, #315).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
@@ -214,6 +214,9 @@ flow, PKCE S256, id token claims checked unsigned until #325), `Authenticator::s
 `Broadcasts::stream()` sends a channel's events after `Last-Event-ID` over `Database::listen()|notification()`, ends each
 connection after `holdSeconds`, and caps open streams site-wide at `streams`, below one worker's handlers, default 7);
 channel access is the route's `needs:`; the fixture's `/ledger/feed`. The framework requires `ext-pdo_pgsql`.
+#315: component scripts: Tessera 0.4.6's `data-mount="/assets/themes/<theme>/<path>.js"` with `data-mount-data` JSON mounts
+a module on the element (on load, after each patch, again on changed data, unmounted before it goes); the build checks the
+path (`MountScripts`); `make:component --script`; the fixture's `/ledger/meter`.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted

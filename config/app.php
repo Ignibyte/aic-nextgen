@@ -49,9 +49,9 @@ $stub = $setting('AIC_UPSTREAM_STUB', 'http://127.0.0.1:8095');
 
 return new AppConfig(
     name: 'AIC nextgen',
-    tessera: new TesseraRelease('0.4.3', [
-        'tessera.csp.iife.js' => 'b08e446935ab6d2177935fc79a939afbd6843ed3fc6eca6f57acc812910fcdd4',
-        'tessera.csp.iife.js.map' => 'a9c4fb509fe2cb5a1671cd7655bfe893e14d91b5db7987fd98a92d7a8a392f8a',
+    tessera: new TesseraRelease('0.4.6', [
+        'tessera.csp.iife.js' => 'f7b238d7538f5a5952df25d319f119b3c40f89aa4d6ef37abf8814b575932cca',
+        'tessera.csp.iife.js.map' => '92e2d0ae35296c6697eadc7fd5184c0ce739e6d6bcb130eac487e438f8e10999',
     ]),
     theme: 'app',
     maxBodyBytes: 16_384,
