@@ -90,6 +90,11 @@ and `make:page <module> <Class> <path> --layout=<name>` passes it; the make refu
 does not ship, and `--layout` with `--post`. It writes no `html--<name>.phtml`; write one by hand
 when a layout needs a document of its own.
 
+`make:mcp-tool <module> <Class>Tool [--needs=<permission>]` (#316) writes an MCP tool in the module's
+`src/Mcp/` with its `<Stem>Input` and `<Stem>Output`, names it `<module>.<kebab stem>`, and, with no
+`--needs`, declares that name as the permission it needs. `composer run build` then writes its schemas
+and adapter into the module's `App\Generated\<Module>Mcp` ([mcp.md](../framework/docs/mcp.md)).
+
 `make:entity <module> <Class> <table> --fields=<name>:<type>,… [--version=<v>]` (#123) writes the
 entity, `<Class>Repository` (`latest(int)`), `Create<Table>Table` and `<Class>ListPage` (GET of the
 table's path, the newest 50 rows as a heading and paragraphs in the framework's atoms), and adds the

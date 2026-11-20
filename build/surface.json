@@ -313,6 +313,14 @@
             "path": "/ledger/meter"
         },
         {
+            "handler": "App\\Ledger\\Controller\\LedgerMcpApi",
+            "kind": "Api",
+            "method": "POST",
+            "module": "ledger",
+            "needs": "ledger.mcp",
+            "path": "/mcp"
+        },
+        {
             "handler": "App\\Note\\Controller\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -782,6 +790,14 @@
                 {
                     "description": "Read and post to the ledger feed, which streams each post to every open page.",
                     "name": "ledger.feed"
+                },
+                {
+                    "description": "Connect an agent to the MCP server at /mcp and read the ledger resources and prompts.",
+                    "name": "ledger.mcp"
+                },
+                {
+                    "description": "Call the ledger.split tool over MCP.",
+                    "name": "ledger.split"
                 }
             ],
             "plugins": [],
@@ -846,6 +862,10 @@
                 {
                     "description": "Create a scaffold task.",
                     "name": "scaffold.scaffold-task.create"
+                },
+                {
+                    "description": "Call the scaffold.scaffold-lookup tool over MCP.",
+                    "name": "scaffold.scaffold-lookup"
                 }
             ],
             "plugins": [],
@@ -1096,6 +1116,30 @@
             "entry": false,
             "folder": "themes/<theme>/src/Components/<Name>",
             "kind": "Component",
+            "method": "",
+            "response": ""
+        },
+        {
+            "contract": "AIC\\Mcp\\Contracts\\McpPrompt",
+            "entry": false,
+            "folder": "Mcp",
+            "kind": "McpPrompt",
+            "method": "",
+            "response": ""
+        },
+        {
+            "contract": "AIC\\Mcp\\Contracts\\McpResource",
+            "entry": false,
+            "folder": "Mcp",
+            "kind": "McpResource",
+            "method": "",
+            "response": ""
+        },
+        {
+            "contract": "AIC\\Mcp\\Contracts\\McpTool",
+            "entry": false,
+            "folder": "Mcp",
+            "kind": "McpTool",
             "method": "",
             "response": ""
         },

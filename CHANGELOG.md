@@ -6,6 +6,18 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **An MCP server on the Api kind** (#316). `AIC\Mcp` answers MCP 2025-06-18's JSON-RPC from one POST
+  route a module owns: `initialize`, `ping`, the tool, resource and prompt lists and calls, `202` with no
+  body for a notification (`ApiAccepted`), and the JSON-RPC errors. A tool is a readonly class in a
+  module's `src/Mcp/` (a new kind folder) marked `#[ToolInfo]`, with `call(<Input>[, Actor]): <Output>`
+  on readonly value classes; the build reads them and writes each tool's input and output JSON schemas,
+  an adapter that checks and decodes the arguments, the output's JSON, and the module's
+  `App\Generated\<Module>Mcp` catalog. Resources (`#[ResourceInfo]`) and prompts (`#[PromptInfo]`) are
+  written the same way. Access is the route's `needs:` (a bearer token's scope) and each entry's own
+  permission; a caller sees and calls only what it may. The build refuses a misnamed or duplicate
+  entry, an undeclared permission and a type no schema states. `bin/aic make:mcp-tool` is gate:31's
+  20th make line; the fixture serves `ledger.split`, a resource and a prompt at `/mcp`, and gate:23
+  steps send JSON bodies (`json:` in a step's form).
 - **Component scripts that mount again after a Tessera patch** (#315). AIC pins Tessera 0.4.6, whose
   `data-mount="URL"` imports a module script only on a page whose markup names it, calls its
   `mount(element, data)` with the element's `data-mount-data` JSON on load and on every element a patch

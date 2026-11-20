@@ -137,9 +137,12 @@ These are not entry points; each has a contract or a name suffix and a folder of
 | Notification | is `AIC\Notification\Contracts\Notification` | `src/Notification/` | something to tell a user, delivered by mail and to the database, each delivery a job |
 | Repository | name ends in `Repository` | `src/Repository/` | reads and writes one entity's table |
 | Form | name ends in `Form` | `src/Form/` | a form's fields and their checks |
+| McpTool | implements `AIC\Mcp\Contracts\McpTool` | `src/Mcp/` | a tool an agent calls over MCP, with a readonly input and output (#316) |
+| McpResource | implements `AIC\Mcp\Contracts\McpResource` | `src/Mcp/` | text an agent reads over MCP, at a URI |
+| McpPrompt | implements `AIC\Mcp\Contracts\McpPrompt` | `src/Mcp/` | messages an agent asks for over MCP, from string arguments |
 
 A class of none of these kinds is plain, and sits in `src/Entity/`, `src/Service/` or
-`src/Form/`. A component is the one kind that never sits in a module: it lives in the theme, its
+`src/Form/`, or in `src/Mcp/` beside the MCP entries whose values it is ([mcp.md](mcp.md)). A component is the one kind that never sits in a module: it lives in the theme, its
 class under `src/Components/<Name>/` and its `*.phtml` under `components/<Name>/`, and the build
 escapes the template into `build/generated/templates/`.
 See [rendering.md](rendering.md) and [templates.md](templates.md) for the complete page contract.

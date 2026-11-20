@@ -120,6 +120,17 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
     }
 
     /**
+     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     *
+     * @return ResponseInterface A `202` with no body.
+     */
+    #[Override]
+    public function accepted(): ResponseInterface
+    {
+        return $this->varied($this->responseBuilder->create(202, 'text/plain; charset=utf-8', ''));
+    }
+
+    /**
      * @param int    $status   A redirect status.
      * @param string $location Where to go.
      *

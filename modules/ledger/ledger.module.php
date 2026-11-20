@@ -19,6 +19,7 @@ use App\Ledger\Controller\LedgerFeedPost;
 use App\Ledger\Controller\LedgerFeedStream;
 use App\Ledger\Controller\LedgerGuardsApi;
 use App\Ledger\Controller\LedgerLimitedApi;
+use App\Ledger\Controller\LedgerMcpApi;
 use App\Ledger\Controller\LedgerMeterPage;
 use App\Ledger\Controller\LedgerNoticesApi;
 use App\Ledger\Controller\LedgerStandingApi;
@@ -54,4 +55,7 @@ return (new ModuleManifest('ledger'))
     ->route(RouteMethod::Get, '/ledger/feed', LedgerFeedPage::class, needs: 'ledger.feed')
     ->route(RouteMethod::Post, '/ledger/feed', LedgerFeedPost::class, needs: 'ledger.feed')
     ->route(RouteMethod::Get, '/ledger/feed/events', LedgerFeedStream::class, needs: 'ledger.feed')
-    ->route(RouteMethod::Get, '/ledger/meter', LedgerMeterPage::class);
+    ->route(RouteMethod::Get, '/ledger/meter', LedgerMeterPage::class)
+    ->permission('ledger.mcp', 'Connect an agent to the MCP server at /mcp and read the ledger resources and prompts.')
+    ->permission('ledger.split', 'Call the ledger.split tool over MCP.')
+    ->route(RouteMethod::Post, '/mcp', LedgerMcpApi::class, needs: 'ledger.mcp');

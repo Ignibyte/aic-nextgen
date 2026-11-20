@@ -110,6 +110,14 @@ none
 | --- | --- |
 | `App\Scaffold\Job\ScaffoldHelloJob` | [modules/scaffold/src/Job/ScaffoldHelloJob.php](../../../modules/scaffold/src/Job/ScaffoldHelloJob.php) |
 
+### `src/Mcp/`
+
+| Class | File |
+| --- | --- |
+| `App\Scaffold\Mcp\ScaffoldLookupInput` | [modules/scaffold/src/Mcp/ScaffoldLookupInput.php](../../../modules/scaffold/src/Mcp/ScaffoldLookupInput.php) |
+| `App\Scaffold\Mcp\ScaffoldLookupOutput` | [modules/scaffold/src/Mcp/ScaffoldLookupOutput.php](../../../modules/scaffold/src/Mcp/ScaffoldLookupOutput.php) |
+| `App\Scaffold\Mcp\ScaffoldLookupTool` | [modules/scaffold/src/Mcp/ScaffoldLookupTool.php](../../../modules/scaffold/src/Mcp/ScaffoldLookupTool.php) |
+
 ### `src/Migration/`
 
 | Class | File |
@@ -152,6 +160,7 @@ none
 - [AIC\Database](../../../framework/docs/systems.md#3-data)
 - [AIC\Entity](../../../framework/docs/systems.md#3-data)
 - [AIC\HttpClient](../../../framework/docs/systems.md#1-http-routing-and-the-kinds)
+- [AIC\Mcp](../../../framework/docs/systems.md#1-http-routing-and-the-kinds)
 - [AIC\Module](../../../framework/docs/systems.md#2-wiring-and-modules)
 - [AIC\Schema](../../../framework/docs/systems.md#3-data)
 

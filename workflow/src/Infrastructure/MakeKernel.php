@@ -7,7 +7,6 @@ namespace AIC\Workflow\Infrastructure;
 use AIC\Controller\Contracts\Command;
 use AIC\Workflow\Application\Make\MakeApiCommand;
 use AIC\Workflow\Application\Make\MakeBlockCommand;
-use AIC\Workflow\Application\Make\MakeClientCommand;
 use AIC\Workflow\Application\Make\MakeCommandCommand;
 use AIC\Workflow\Application\Make\MakeJobCommand;
 use AIC\Workflow\Application\Make\MakeModuleCommand;
@@ -60,7 +59,6 @@ final readonly class MakeKernel
         return [
             'make:api' => new MakeApiCommand($makeRun),
             'make:block' => new MakeBlockCommand($makeRun),
-            'make:client' => new MakeClientCommand($makeRun),
             'make:command' => new MakeCommandCommand($makeRun),
             'make:component' => $themeMakes->component($makeRun),
             'make:job' => new MakeJobCommand($makeRun),
@@ -70,6 +68,7 @@ final readonly class MakeKernel
             'make:policy' => new MakePolicyCommand($makeRun, $projectFiles),
             'make:theme' => $themeMakes->theme($makeRun),
             ...(new VersionedMakes())->commands($makeRun),
+            ...(new IntegrationMakes())->commands($makeRun),
             ...(new ScaffoldMakes($this->root, $projectFiles, $moduleFolders))->commands($makeRun),
         ];
     }

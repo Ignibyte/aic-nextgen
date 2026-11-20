@@ -165,9 +165,9 @@ the gate suite is the dev package `ignibyte/aic-gates`, run by `vendor/bin/aic-g
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
-layout (#157), entity (#123), policy (#304), client (#305), relation (#306) and state (#308); dev-only in
+layout (#157), entity (#123), policy (#304), client (#305), relation (#306), state (#308) and mcp-tool (#316); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the nineteen make lines (a pivot, #306; a state, #308; a component script, #315).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the twenty make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
@@ -217,6 +217,10 @@ channel access is the route's `needs:`; the fixture's `/ledger/feed`. The framew
 #315: component scripts: Tessera 0.4.6's `data-mount="/assets/themes/<theme>/<path>.js"` with `data-mount-data` JSON mounts
 a module on the element (on load, after each patch, again on changed data, unmounted before it goes); the build checks the
 path (`MountScripts`); `make:component --script`; the fixture's `/ledger/meter`.
+#316: an MCP server: a module routes `POST /mcp` to its own Api, which hands it to `AIC\Mcp\Application\McpServer` with
+`App\Generated\<Module>Mcp::catalog()`; tools (`McpTool`, `#[ToolInfo]`, `call(<Input>[, Actor]): <Output>`), resources and
+prompts live in the module's `src/Mcp/`, and the build writes their schemas and adapters; access is the route's `needs:` and
+each entry's permission; `make:mcp-tool`; the fixture's `ledger.split`.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted

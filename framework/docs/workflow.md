@@ -144,6 +144,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:entity` | scaffold an entity, its repository, migration and list page; `--key=uuid` and every field type (#307) |
 | `Command::make:job` | scaffold a Job |
 | `Command::make:layout` | scaffold a named page layout in the theme |
+| `Command::make:mcp-tool` | scaffold an MCP tool with its input and output, and declare the permission it needs (#316) |
 | `Command::make:migration` | scaffold a Migration |
 | `Command::make:module` | scaffold a module |
 | `Command::make:page` | scaffold a Page and declared component template |
