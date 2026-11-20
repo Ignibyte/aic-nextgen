@@ -20,8 +20,11 @@ use App\Scaffold\Controller\ScaffoldPost;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
 use App\Scaffold\Job\ScaffoldHelloJob;
 use App\Scaffold\Migration\AddScaffoldTasksStage;
+use App\Scaffold\Migration\CreateScaffoldBooksTable;
 use App\Scaffold\Migration\CreateScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldItemsTable;
+use App\Scaffold\Migration\CreateScaffoldLoansTable;
+use App\Scaffold\Migration\CreateScaffoldShelvesTable;
 use App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldTasksTable;
 
@@ -43,4 +46,7 @@ return (new ModuleManifest('scaffold'))
     ->migration(CreateScaffoldEventsTable::class)
     ->migration(CreateScaffoldTasksScaffoldEventsTable::class)
     ->migration(AddScaffoldTasksStage::class)
-    ->permission('scaffold.scaffold-lookup', 'Call the scaffold.scaffold-lookup tool over MCP.');
+    ->permission('scaffold.scaffold-lookup', 'Call the scaffold.scaffold-lookup tool over MCP.')
+    ->migration(CreateScaffoldShelvesTable::class)
+    ->migration(CreateScaffoldBooksTable::class)
+    ->migration(CreateScaffoldLoansTable::class);

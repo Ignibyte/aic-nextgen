@@ -854,7 +854,10 @@
                 "App\\Scaffold\\Migration\\CreateScaffoldTasksTable",
                 "App\\Scaffold\\Migration\\CreateScaffoldEventsTable",
                 "App\\Scaffold\\Migration\\CreateScaffoldTasksScaffoldEventsTable",
-                "App\\Scaffold\\Migration\\AddScaffoldTasksStage"
+                "App\\Scaffold\\Migration\\AddScaffoldTasksStage",
+                "App\\Scaffold\\Migration\\CreateScaffoldShelvesTable",
+                "App\\Scaffold\\Migration\\CreateScaffoldBooksTable",
+                "App\\Scaffold\\Migration\\CreateScaffoldLoansTable"
             ],
             "name": "scaffold",
             "namespace": "App\\Scaffold\\",

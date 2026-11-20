@@ -6,6 +6,18 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Baseline migrations from a schema dump** (#318). `bin/aic schema:import <dump.sql> --module=<m>` reads a
+  `pg_dump --schema-only` and writes one `Create<Table>Table` migration per table in Schema's builders, in
+  foreign-key order with consecutive versions, and the manifest's `->migration()` calls, through the make run
+  (the guard, `code.made`, `.aic/made.jsonl`). It reads the column types Schema has, identity, serial and uuid
+  keys, literal defaults, stored generated columns, enum-like checks as `choice()`, checks, primary and unique
+  keys, single-column foreign keys and btree, partial, brin, hash, gist and gin indexes; every expression
+  becomes `Schema::expressions()` calls. Anything Schema cannot state (functions, triggers, views, other
+  types, `ON UPDATE`, expression indexes, a foreign key to a table nothing creates, a cycle, a migration too
+  big for one class) is listed one a line and nothing is written; no SQL is copied through. `--tables`
+  imports part of a dump, `--dry-run` previews. gate:31's 21st make line imports a committed fixture dump
+  (`gates/fixtures/schema-import.sql`) into `scaffold`; the made migrations apply and dump back to the same
+  tables.
 - **An MCP server on the Api kind** (#316). `AIC\Mcp` answers MCP 2025-06-18's JSON-RPC from one POST
   route a module owns: `initialize`, `ping`, the tool, resource and prompt lists and calls, `202` with no
   body for a notification (`ApiAccepted`), and the JSON-RPC errors. A tool is a readonly class in a

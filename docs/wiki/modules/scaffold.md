@@ -47,6 +47,9 @@ none
 - `App\Scaffold\Migration\CreateScaffoldEventsTable`
 - `App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable`
 - `App\Scaffold\Migration\AddScaffoldTasksStage`
+- `App\Scaffold\Migration\CreateScaffoldShelvesTable`
+- `App\Scaffold\Migration\CreateScaffoldBooksTable`
+- `App\Scaffold\Migration\CreateScaffoldLoansTable`
 
 ## Plugins
 
@@ -123,8 +126,11 @@ none
 | Class | File |
 | --- | --- |
 | `App\Scaffold\Migration\AddScaffoldTasksStage` | [modules/scaffold/src/Migration/AddScaffoldTasksStage.php](../../../modules/scaffold/src/Migration/AddScaffoldTasksStage.php) |
+| `App\Scaffold\Migration\CreateScaffoldBooksTable` | [modules/scaffold/src/Migration/CreateScaffoldBooksTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldBooksTable.php) |
 | `App\Scaffold\Migration\CreateScaffoldEventsTable` | [modules/scaffold/src/Migration/CreateScaffoldEventsTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldEventsTable.php) |
 | `App\Scaffold\Migration\CreateScaffoldItemsTable` | [modules/scaffold/src/Migration/CreateScaffoldItemsTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldItemsTable.php) |
+| `App\Scaffold\Migration\CreateScaffoldLoansTable` | [modules/scaffold/src/Migration/CreateScaffoldLoansTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldLoansTable.php) |
+| `App\Scaffold\Migration\CreateScaffoldShelvesTable` | [modules/scaffold/src/Migration/CreateScaffoldShelvesTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldShelvesTable.php) |
 | `App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable` | [modules/scaffold/src/Migration/CreateScaffoldTasksScaffoldEventsTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldTasksScaffoldEventsTable.php) |
 | `App\Scaffold\Migration\CreateScaffoldTasksTable` | [modules/scaffold/src/Migration/CreateScaffoldTasksTable.php](../../../modules/scaffold/src/Migration/CreateScaffoldTasksTable.php) |
 

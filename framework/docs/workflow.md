@@ -157,6 +157,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::module:show` | inspect a module's declarations |
 | `Command::route:list` | inspect routes |
 | `Command::schedule:list` | inspect schedules |
+| `Command::schema:import` | one baseline migration per table of a `pg_dump --schema-only`, or a list of what Schema cannot declare and nothing written (#318) |
 | `Command::workflow:amend` | operator amendment of one frozen spec row |
 | `Command::workflow:answer` | operator response or phase decision |
 | `Command::workflow:ask` | record a question hold |
