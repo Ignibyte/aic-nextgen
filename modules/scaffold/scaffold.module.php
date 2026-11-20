@@ -42,4 +42,5 @@ return (new ModuleManifest('scaffold'))
     ->route(RouteMethod::Get, '/scaffold-events', ScaffoldEventListPage::class)
     ->migration(CreateScaffoldEventsTable::class)
     ->migration(CreateScaffoldTasksScaffoldEventsTable::class)
-    ->migration(AddScaffoldTasksStage::class);
+    ->migration(AddScaffoldTasksStage::class)
+    ->permission('scaffold.scaffold-lookup', 'Call the scaffold.scaffold-lookup tool over MCP.');

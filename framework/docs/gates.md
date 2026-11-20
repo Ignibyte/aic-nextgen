@@ -43,7 +43,8 @@ runs the app's `bin/aic` with those words before it, on each pass and before the
 starts that record afresh (`"console": "inbox:forget gate"`), and a command that fails is a
 difference (#210). A form posts multipart when it starts with
 `multipart:`; a value `@path` uploads that file, relative to the project root
-(`multipart:aic_csrf={csrf}&photo=@tests/fixtures/car.jpg`). A step's path or form may name a published asset as
+(`multipart:aic_csrf={csrf}&photo=@tests/fixtures/car.jpg`), and sends `application/json` when it
+starts with `json:` (#316), the rest its body: `json:{"jsonrpc":"2.0","id":1,"method":"ping"}`. A step's path or form may name a published asset as
 `{asset:<name>}`, its name in `build/assets.json`, which gate:23 replaces with that asset's alias path
 before either site sees the step (#251): `@build{asset:tessera/tessera.csp.iife.js}` uploads the pinned
 script, so a Tessera pin bump changes `config/app.php` and no step. A name the catalog does not list

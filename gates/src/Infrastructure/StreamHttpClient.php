@@ -46,6 +46,8 @@ final readonly class StreamHttpClient implements HttpClient
      */
     private const string MULTIPART = 'multipart:';
 
+    private const string JSON = 'json:';
+
     /**
      * The multipart boundary.
      */
@@ -230,15 +232,20 @@ final readonly class StreamHttpClient implements HttpClient
     }
 
     /**
-     * @param string $form A step's form: urlencoded, or `multipart:` and urlencoded pairs.
+     * @param string $form A step's form: urlencoded, `multipart:` and urlencoded pairs, or `json:` and a JSON body (#316).
      *
      * @return array{string, string} The content type and the body.
      */
     private static function body(string $form): array
     {
-        return str_starts_with($form, self::MULTIPART)
-            ? ['multipart/form-data; boundary=' . self::BOUNDARY, self::multipart(substr($form, strlen(self::MULTIPART)))]
-            : ['application/x-www-form-urlencoded', $form];
+        return match (true) {
+            str_starts_with($form, self::MULTIPART) => [
+                'multipart/form-data; boundary=' . self::BOUNDARY,
+                self::multipart(substr($form, strlen(self::MULTIPART))),
+            ],
+            str_starts_with($form, self::JSON) => ['application/json', substr($form, strlen(self::JSON))],
+            default => ['application/x-www-form-urlencoded', $form],
+        };
     }
 
     /**

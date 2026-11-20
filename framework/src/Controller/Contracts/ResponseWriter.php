@@ -71,6 +71,11 @@ interface ResponseWriter
     public function unchanged(): ResponseInterface;
 
     /**
+     * @return ResponseInterface A `202` with no body: accepted, nothing to answer (an MCP notification, #316).
+     */
+    public function accepted(): ResponseInterface;
+
+    /**
      * @param int    $status   A redirect status.
      * @param string $location Where to go.
      *

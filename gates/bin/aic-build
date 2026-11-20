@@ -49,6 +49,8 @@ use Gates\Application\AssetCatalogBuild;
 use Gates\Application\AssetCatalogSource;
 use Gates\Application\AtomBuild;
 use Gates\Application\BuildOutputs;
+use Gates\Application\McpBuild;
+use Gates\Application\McpSource;
 use Gates\Application\ModuleBuild;
 use Gates\Application\MountScripts;
 use Gates\Application\PresentationBuild;
@@ -112,6 +114,17 @@ try {
     $tessera = (new TesseraBuild($root, $appConfig->tessera, new SystemProcessRunner()))->files();
     $assetCatalog = (new AssetCatalogBuild($root))->plan($tessera, $presentation->theme);
     $generated = $templates + $atoms;
+
+    // The modules' MCP entries (#316) come before the wiring: a controller
+    // takes its module's generated catalog, so the Autowirer reflects it.
+    foreach ((new McpSource())->files((new McpBuild($root))->modules($modules)) as $file => $source) {
+        $path = $root . '/' . BuildPaths::GENERATED . '/' . $file;
+        $generated[$path] = $source;
+
+        if (!$checking && (!is_file($path) || file_get_contents($path) !== $source)) {
+            file_put_contents($path, $source);
+        }
+    }
 
     foreach ($moduleBuild->files($modules) as $file => $source) {
         $generated[$root . '/' . BuildPaths::GENERATED . '/' . $file] = $source;

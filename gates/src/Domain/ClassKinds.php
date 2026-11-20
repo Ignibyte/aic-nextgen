@@ -12,6 +12,9 @@ use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\Stream;
+use AIC\Mcp\Contracts\McpPrompt;
+use AIC\Mcp\Contracts\McpResource;
+use AIC\Mcp\Contracts\McpTool;
 use AIC\Notification\Contracts\Notification;
 use AIC\Schema\Contracts\Migration;
 use Psr\Http\Server\MiddlewareInterface;
@@ -47,7 +50,7 @@ final readonly class ClassKinds
     /**
      * The folders a plain class may sit in.
      */
-    public const array PLAIN_FOLDERS = ['Entity', 'Service', 'Form'];
+    public const array PLAIN_FOLDERS = ['Entity', 'Service', 'Form', 'Mcp'];
 
     /**
      * Every folder `src/` may hold.
@@ -59,6 +62,7 @@ final readonly class ClassKinds
         'Entity',
         'Form',
         'Job',
+        'Mcp',
         'Middleware',
         'Migration',
         'Notification',
@@ -77,6 +81,9 @@ final readonly class ClassKinds
         // A component lives in the theme (#153), never in a module's src/.
         Component::class => ['Component', self::THEME_COMPONENTS],
         Job::class => ['Job', 'Job'],
+        McpPrompt::class => ['McpPrompt', 'Mcp'],
+        McpResource::class => ['McpResource', 'Mcp'],
+        McpTool::class => ['McpTool', 'Mcp'],
         MiddlewareInterface::class => ['Middleware', 'Middleware'],
         Migration::class => ['Migration', 'Migration'],
         Notification::class => ['Notification', 'Notification'],

@@ -4,7 +4,7 @@
         "role:grant gate-auditor account.audit",
         "role:assign gate gate-auditor",
         "token:revoke gate-portal",
-        "token:add gate-portal {password} account.caller",
+        "token:add gate-portal {password} account.caller ledger.mcp ledger.split",
         "role:grant gate-feed ledger.feed",
         "role:assign gate gate-feed",
         "role:assign stub:ada gate-feed"
@@ -1110,6 +1110,204 @@
             "name": "caller, a bearer post skips the CSRF check",
             "method": "POST",
             "path": "/api/caller",
+            "form": "",
+            "header": "Authorization: Bearer {password}",
+            "status": 405,
+            "captures": false
+        },
+        {
+            "name": "mcp, no token",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\"}",
+            "header": "",
+            "status": 403,
+            "captures": false
+        },
+        {
+            "name": "mcp initialize",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"gate\",\"version\":\"1\"}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp, a notification",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",
+            "header": "Authorization: Bearer {password}",
+            "status": 202,
+            "captures": false
+        },
+        {
+            "name": "mcp ping",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":\"p\",\"method\":\"ping\"}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/list",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call ledger.split",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.split\",\"arguments\":{\"amount\":100,\"parts\":3,\"currency\":\"eur\",\"labels\":[\"ada\",\"bo\"],\"memo\":\"lunch\"}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call, the defaults",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.split\",\"arguments\":{\"amount\":7}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call, the tool refuses",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.split\",\"arguments\":{\"amount\":100,\"parts\":0}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call, a field of another type",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.split\",\"arguments\":{\"amount\":\"100\"}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call, a field it does not take",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.split\",\"arguments\":{\"amount\":100,\"tip\":5}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call, a value outside the enum",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":8,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.split\",\"arguments\":{\"amount\":100,\"currency\":\"jpy\"}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call, an unknown tool",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.nothing\"}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp resources/list",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":10,\"method\":\"resources/list\"}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp resources/read",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"resources/read\",\"params\":{\"uri\":\"ledger://currencies\"}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp resources/read, an unknown resource",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":12,\"method\":\"resources/read\",\"params\":{\"uri\":\"ledger://nothing\"}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp prompts/list",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":13,\"method\":\"prompts/list\"}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp prompts/get",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":14,\"method\":\"prompts/get\",\"params\":{\"name\":\"ledger.split-bill\",\"arguments\":{\"amount\":\"4200\",\"people\":\"Ada, Bo\"}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp prompts/get, a required argument missing",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":15,\"method\":\"prompts/get\",\"params\":{\"name\":\"ledger.split-bill\",\"arguments\":{}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp, an unknown method",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":16,\"method\":\"sampling/nothing\"}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp, a body that is not JSON",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:not json",
+            "header": "Authorization: Bearer {password}",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "mcp, a batch",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:[{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\"}]",
+            "header": "Authorization: Bearer {password}",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "mcp, no GET stream",
+            "method": "GET",
+            "path": "/mcp",
             "form": "",
             "header": "Authorization: Bearer {password}",
             "status": 405,

@@ -10,15 +10,17 @@ use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\Stream;
+use AIC\Mcp\Domain\McpToolCall;
 
 use function array_any;
 use function ltrim;
 
 /**
- * The five kinds' methods (#56), and a block's `component()` (#58). Each
- * interface dictates its method's one parameter, so a class that does not
- * need it cannot drop it; gate:10 and gate:11 let such a method leave it
- * unread, and nothing else.
+ * The five kinds' methods (#56), a block's `component()` (#58), and an MCP
+ * tool adapter's `callTool()` (#316), which every generated adapter declares with
+ * the caller whether or not its tool takes one. Each interface dictates its
+ * method's parameters, so a class that does not need one cannot drop it;
+ * gate:10 and gate:11 let such a method leave it unread, and nothing else.
  */
 final readonly class KindMethods
 {
@@ -30,6 +32,7 @@ final readonly class KindMethods
         Block::class => 'component',
         Command::class => 'command',
         Job::class => 'run',
+        McpToolCall::class => 'callTool',
         Page::class => 'page',
         Stream::class => 'stream',
     ];

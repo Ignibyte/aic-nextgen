@@ -6,7 +6,7 @@ app meets first.
 
 | System | Namespaces |
 |---|---|
-| 1. HTTP, routing and the kinds | Http, HttpClient, Routing, Controller, Kernel, Sapi, Config, Console, Profiler |
+| 1. HTTP, routing and the kinds | Http, HttpClient, Routing, Controller, Kernel, Sapi, Config, Console, Profiler, Mcp |
 | 2. Wiring and modules | Container, Module |
 | 3. Data | Database, Schema, Entity |
 | 4. Components | Component |
@@ -49,6 +49,11 @@ app meets first.
   `aic_profiles` and names it in `X-AIC-Profile` (#229). It plugs into three seams with no
   observer by default: `AIC\Kernel\Contracts\RequestObserver`, `AIC\Routing\Contracts\RouteObserver`,
   `AIC\Component\Contracts\RenderObserver` and `AIC\HttpClient\Contracts\OutboundObserver`. See [profiler.md](profiler.md).
+- `AIC\Mcp`: an app's tools, resources and prompts for agents over MCP (#316).
+  `AIC\Mcp\Application\McpServer` answers MCP's JSON-RPC from a module's Api route; the build writes
+  each module's `src/Mcp/` into `App\Generated\<Module>Mcp`, whose `catalog()` the route serves,
+  with every tool's input and output schema. Access is the route's `needs:` and each entry's own
+  permission. See [mcp.md](mcp.md).
 
 See [native.md](native.md) for the compiled server and PHP comparison.
 

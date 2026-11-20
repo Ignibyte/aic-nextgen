@@ -102,6 +102,7 @@ kinds are described in [kinds.md](kinds.md).
 | `src/Migration/` | Migration |
 | `src/Notification/` | Notification |
 | `src/Policy/` | Policy (#304) |
+| `src/Mcp/` | MCP tools, resources and prompts, and their value classes ([mcp.md](mcp.md)) |
 | `src/Repository/` | classes named `…Repository` |
 | `src/Form/` | classes named `…Form`, and plain form helpers |
 | `src/Entity/` | plain classes: entities and values |
