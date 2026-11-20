@@ -6,6 +6,7 @@ namespace AIC\Workflow\Application\Make;
 
 use AIC\Workflow\Application\Make\Source\ComponentSource;
 use AIC\Workflow\Application\Make\Source\ComponentTemplateSource;
+use AIC\Workflow\Application\Make\Source\MountedComponentSource;
 use AIC\Workflow\Domain\Make\MadeFile;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
@@ -24,13 +25,37 @@ final readonly class MakeComponents
      * @param ComponentSource         $componentSource         Writes the class.
      * @param ComponentTemplateSource $componentTemplateSource Writes the template.
      * @param MakeNames               $makeNames               Names the template.
+     * @param MountedComponentSource  $mountedComponentSource  Writes a component with a script (#315).
      */
     public function __construct(
         private MakeTheme $makeTheme,
         private ComponentSource $componentSource = new ComponentSource(),
         private ComponentTemplateSource $componentTemplateSource = new ComponentTemplateSource(),
         private MakeNames $makeNames = new MakeNames(),
+        private MountedComponentSource $mountedComponentSource = new MountedComponentSource(),
     ) {
+    }
+
+    /**
+     * @param string $class The component.
+     * @param string $made  The make that made it, for its docblock and the script's header.
+     *
+     * @throws WorkflowRefusal When the app names no theme.
+     *
+     * @return list<MadeFile> The class with its `title` and JSON `data`, its template, whose element names the
+     *                        script in `data-mount`, and the script in the theme's `assets/components/` (#315).
+     */
+    public function mounted(string $class, string $made): array
+    {
+        $kebab = $this->makeNames->kebab($class);
+        $theme = $this->makeTheme->name();
+        $source = fn (string $file): string => $this->mountedComponentSource->source($file, $class, $kebab, $theme, $made);
+
+        return [
+            new MadeFile($this->classFolder($class) . $class . '.php', $source('mounted.php.tpl')),
+            new MadeFile($this->folder($class) . $kebab . '.phtml', $source('mounted.phtml.tpl')),
+            new MadeFile('themes/' . $theme . '/assets/components/' . $kebab . '.js', $source('mounted.js.tpl')),
+        ];
     }
 
     /**

@@ -10,6 +10,7 @@ use AIC\Module\Application\HandlerContext;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
 use App\Scaffold\Controller\ScaffoldEventListPage;
+use App\Scaffold\Controller\ScaffoldGaugePage;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPost;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
@@ -46,6 +47,7 @@ final readonly class ScaffoldHandlers
             ScaffoldEventListPage::class => $this->handlerContext->page(
                 new ScaffoldEventListPage($this->handlerContext->documents(), new ScaffoldEventRepository($entityStore)),
             ),
+            ScaffoldGaugePage::class => $this->handlerContext->page(new ScaffoldGaugePage($this->handlerContext->documents())),
             ScaffoldPage::class => $this->handlerContext->page(new ScaffoldPage($this->handlerContext->documents())),
             ScaffoldPost::class => $this->handlerContext->page(new ScaffoldPost()),
             ScaffoldTaskListPage::class => $this->handlerContext->page(

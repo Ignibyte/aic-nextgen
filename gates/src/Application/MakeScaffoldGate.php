@@ -48,8 +48,8 @@ final readonly class MakeScaffoldGate
      */
     private const string REGENERATE = 'to make it again: rm -rf modules/scaffold themes/app/components/Scaffold* '
         . 'themes/app/src/Components/Scaffold* themes/app/src/Layouts/Scaffold* themes/app/layouts/page--scaffold* '
-        . 'themes/app/layouts/html--scaffold*; composer run build; '
-        . 'run the seventeen lines of Gates\\Application\\ScaffoldSequence with bin/aic; composer run build.';
+        . 'themes/app/layouts/html--scaffold* themes/app/assets/components/scaffold-*; composer run build; '
+        . 'run the lines of Gates\\Application\\ScaffoldSequence with bin/aic; composer run build.';
 
     /**
      * @param ScaffoldFiles          $scaffoldFiles The overlay the commands write to.
@@ -227,13 +227,13 @@ final readonly class MakeScaffoldGate
     /**
      * @param string $root The project's root.
      *
-     * @return list<string> The committed scaffold layout files (#157).
+     * @return list<string> The committed scaffold layout files (#157) and component scripts (#315).
      */
     private function layouts(string $root): array
     {
         $found = [];
 
-        foreach (ScaffoldFiles::LAYOUTS as $prefix) {
+        foreach ([...ScaffoldFiles::LAYOUTS, ...ScaffoldFiles::SCRIPTS] as $prefix) {
             $matches = glob($root . '/' . $prefix . '*');
             $found = [...$found, ...($matches === false ? [] : $matches)];
         }

@@ -305,6 +305,14 @@
             "path": "/ledger/feed/events"
         },
         {
+            "handler": "App\\Ledger\\Controller\\LedgerMeterPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "",
+            "path": "/ledger/meter"
+        },
+        {
             "handler": "App\\Note\\Controller\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -439,6 +447,14 @@
             "module": "scaffold",
             "needs": "",
             "path": "/scaffold"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldGaugePage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "scaffold",
+            "needs": "",
+            "path": "/scaffold/gauge"
         },
         {
             "handler": "App\\Scaffold\\Controller\\ScaffoldAboutPage",
@@ -854,6 +870,14 @@
                 "path": "themes/app/assets/30-atoms.css"
             },
             {
+                "kind": "Script",
+                "path": "themes/app/assets/components/meter.js"
+            },
+            {
+                "kind": "Script",
+                "path": "themes/app/assets/components/scaffold-gauge.js"
+            },
+            {
                 "kind": "File",
                 "path": "themes/app/assets/favicon.svg"
             },
@@ -911,6 +935,11 @@
                 "source": "themes/app/components/LineList/line-list.phtml"
             },
             {
+                "component": "App\\Theme\\Components\\Meter\\Meter",
+                "generated": "build/generated/templates/themes/app/components/Meter/meter.phtml",
+                "source": "themes/app/components/Meter/meter.phtml"
+            },
+            {
                 "component": "App\\Theme\\Components\\NoteCard\\NoteCard",
                 "generated": "build/generated/templates/themes/app/components/NoteCard/note-card.phtml",
                 "source": "themes/app/components/NoteCard/note-card.phtml"
@@ -934,6 +963,11 @@
                 "component": "App\\Theme\\Components\\ScaffoldCard\\ScaffoldCard",
                 "generated": "build/generated/templates/themes/app/components/ScaffoldCard/scaffold-card.phtml",
                 "source": "themes/app/components/ScaffoldCard/scaffold-card.phtml"
+            },
+            {
+                "component": "App\\Theme\\Components\\ScaffoldGauge\\ScaffoldGauge",
+                "generated": "build/generated/templates/themes/app/components/ScaffoldGauge/scaffold-gauge.phtml",
+                "source": "themes/app/components/ScaffoldGauge/scaffold-gauge.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\SiteNav\\SiteNav",

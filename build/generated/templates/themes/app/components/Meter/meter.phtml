@@ -1,0 +1,4 @@
+<?php declare(strict_types=1); /* Escaped from themes/app/components/Meter/meter.phtml by composer run build; edit that file, never this one. */ ?>
+<div<?= $renderPass->marks() ?>><h2>Meter</h2>
+<?php if ($meter->level > 0): ?><div id="meter" data-mount="/assets/themes/app/components/meter.js" data-mount-data="<?= $renderPass->text($meter->data) ?>"></div>
+<?php endif; ?><p><a id="meter-less" href="/ledger/meter?level=<?= $renderPass->text((string) ($meter->less)) ?>">Less</a> <a id="meter-same" href="/ledger/meter?level=<?= $renderPass->text((string) ($meter->level)) ?>">Same</a> <a id="meter-more" href="/ledger/meter?level=<?= $renderPass->text((string) ($meter->more)) ?>">More</a> <a id="meter-hide" href="/ledger/meter?level=0">Hide</a></p></div>

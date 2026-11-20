@@ -22,15 +22,15 @@ final readonly class AssetsPart7
     {
         return [
             new PublicAsset(
-                'theme_app/favicon.svg',
-                '/assets/4884db0e98549c751c78e6b137183faff8291fa4c3b436737d7da1f4c474c961/themes/'
-                    . 'app/favicon.svg',
-                '4884db0e98549c751c78e6b137183faff8291fa4c3b436737d7da1f4c474c961/themes/app/favi'
-                    . 'con.svg',
-                'image/svg+xml',
-                '7be53ea497c123d3cee7c3e431893bbe93acefa344164ac75b18471408a114c6',
-                240,
-                '/assets/themes/app/favicon.svg',
+                'theme_app/components/meter.js',
+                '/assets/e26938fd2e4bcb6c2844a789bbfb8c3d721dcd0f4005e0e15ce7da390afc13e1/themes/'
+                    . 'app/components/meter.js',
+                'e26938fd2e4bcb6c2844a789bbfb8c3d721dcd0f4005e0e15ce7da390afc13e1/themes/app/comp'
+                    . 'onents/meter.js',
+                'text/javascript; charset=utf-8',
+                'c1fba4378c4760eef99120df75224a546d48e77ccdac09e268161db3c74df181',
+                1_007,
+                '/assets/themes/app/components/meter.js',
             ),
             ...(new AssetsPart8())->all(),
         ];

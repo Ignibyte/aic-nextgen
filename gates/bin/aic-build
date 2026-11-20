@@ -50,6 +50,7 @@ use Gates\Application\AssetCatalogSource;
 use Gates\Application\AtomBuild;
 use Gates\Application\BuildOutputs;
 use Gates\Application\ModuleBuild;
+use Gates\Application\MountScripts;
 use Gates\Application\PresentationBuild;
 use Gates\Application\ProjectProfile;
 use Gates\Application\PublicAssetOrphans;
@@ -93,6 +94,7 @@ try {
     $atoms = (new AtomBuild(new PlainTemplateReader(), $root))->files();
     $modules = $moduleBuild->modules();
     $presentation = (new PresentationBuild($root))->plan($appConfig->theme);
+    (new MountScripts($root, new ThemeAssetInputs($root)))->check($presentation);
     $templateBuild = new TemplateBuild(new PlainTemplateReader(), new TemplateCompiler(), $root, $presentation);
     $templates = $templateBuild->templates();
     $lookups = [];

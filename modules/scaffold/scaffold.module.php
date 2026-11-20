@@ -14,6 +14,7 @@ use App\Scaffold\Command\ScaffoldHello;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
 use App\Scaffold\Controller\ScaffoldEventListPage;
+use App\Scaffold\Controller\ScaffoldGaugePage;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPost;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
@@ -27,6 +28,7 @@ use App\Scaffold\Migration\CreateScaffoldTasksTable;
 return (new ModuleManifest('scaffold'))
     ->requires('site')
     ->route(RouteMethod::Get, '/scaffold', ScaffoldPage::class)
+    ->route(RouteMethod::Get, '/scaffold/gauge', ScaffoldGaugePage::class)
     ->route(RouteMethod::Get, '/scaffold/about', ScaffoldAboutPage::class)
     ->route(RouteMethod::Post, '/scaffold', ScaffoldPost::class)
     ->route(RouteMethod::Get, '/api/scaffold', ScaffoldApi::class)

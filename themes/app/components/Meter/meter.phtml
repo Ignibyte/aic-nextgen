@@ -1,0 +1,6 @@
+<?php /** @var \App\Theme\Components\Meter\Meter $meter */ ?>
+<div><h2>Meter</h2>
+<?php if ($meter->level > 0): ?>
+<div id="meter" data-mount="/assets/themes/app/components/meter.js" data-mount-data="<?= $meter->data ?>"></div>
+<?php endif; ?>
+<p><a id="meter-less" href="/ledger/meter?level=<?= $meter->less ?>">Less</a> <a id="meter-same" href="/ledger/meter?level=<?= $meter->level ?>">Same</a> <a id="meter-more" href="/ledger/meter?level=<?= $meter->more ?>">More</a> <a id="meter-hide" href="/ledger/meter?level=0">Hide</a></p></div>

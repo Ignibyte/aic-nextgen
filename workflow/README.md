@@ -78,7 +78,8 @@ unchanged. A parent-written, changed, stale or duplicate ledger does not replace
 `bin/aic command:list` includes `make:component`, `make:page`, `make:layout`, `make:entity` and `make:theme`. Components live
 in the theme that `config/app.php` names (#153): `make:component <Class>` writes
 `themes/<theme>/components/<Class>/<Class>.php` and its lower-kebab `.phtml`, and edits no
-manifest. A default `make:page` writes its own view there and routes the page in its module's
+manifest; `--script` gives it a JSON `data` string, a template whose element names a module script in
+`data-mount`, and the script, `themes/<theme>/assets/components/<kebab>.js` (#315). A default `make:page` writes its own view there and routes the page in its module's
 manifest; `make:page --component=<Class>` reuses a theme component. The entity generator's list
 page uses this shared writer when that generator is implemented.
 

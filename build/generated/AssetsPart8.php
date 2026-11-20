@@ -22,15 +22,15 @@ final readonly class AssetsPart8
     {
         return [
             new PublicAsset(
-                'theme_app/images/mark.svg',
-                '/assets/4884db0e98549c751c78e6b137183faff8291fa4c3b436737d7da1f4c474c961/themes/'
-                    . 'app/images/mark.svg',
-                '4884db0e98549c751c78e6b137183faff8291fa4c3b436737d7da1f4c474c961/themes/app/imag'
-                    . 'es/mark.svg',
-                'image/svg+xml',
-                '29eae93a6fb6f224591f7dddd9f9a1f76036a189183e3f247e7dd1f573150bd0',
-                111,
-                '/assets/themes/app/images/mark.svg',
+                'theme_app/components/scaffold-gauge.js',
+                '/assets/e26938fd2e4bcb6c2844a789bbfb8c3d721dcd0f4005e0e15ce7da390afc13e1/themes/'
+                    . 'app/components/scaffold-gauge.js',
+                'e26938fd2e4bcb6c2844a789bbfb8c3d721dcd0f4005e0e15ce7da390afc13e1/themes/app/comp'
+                    . 'onents/scaffold-gauge.js',
+                'text/javascript; charset=utf-8',
+                '5f384aef5a656a4a071e9cac3808b8f7c897c9a7af0803842ff4b4ac3400ff97',
+                558,
+                '/assets/themes/app/components/scaffold-gauge.js',
             ),
             ...(new AssetsPart9())->all(),
         ];

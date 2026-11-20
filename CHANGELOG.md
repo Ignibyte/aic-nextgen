@@ -6,6 +6,16 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Component scripts that mount again after a Tessera patch** (#315). AIC pins Tessera 0.4.6, whose
+  `data-mount="URL"` imports a module script only on a page whose markup names it, calls its
+  `mount(element, data)` with the element's `data-mount-data` JSON on load and on every element a patch
+  brings, mounts it again when the data changes, keeps what it drew through a morph, and calls its cleanup
+  and `unmount(element)` before the element goes. A theme component names its script in its template by
+  its public path (`/assets/themes/<theme>/<path>.js`); the build refuses one that names no script in the
+  theme's `assets/`. `bin/aic make:component <Class> --script` writes the class (a title and a JSON
+  `data` string), the template and `assets/components/<kebab>.js`; gate:31 runs it and a page showing it
+  as its 18th and 19th lines. The fixture's `/ledger/meter` draws a meter that way.
+
 - **Real-time push to SSE streams over Postgres LISTEN/NOTIFY** (#314). `AIC\Broadcast`:
   `Broadcaster::publish(Channel, data)`, from a controller or a Job, writes the event to `aic_broadcasts`
   and notifies the Postgres channel `aic_broadcasts` in one statement (joining an open transaction); a

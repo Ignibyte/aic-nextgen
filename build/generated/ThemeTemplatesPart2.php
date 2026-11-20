@@ -11,7 +11,7 @@ use AIC\Component\Exception\UnknownComponent;
 use App\Theme\Components\Greetings\Greetings;
 use App\Theme\Components\Home\Home;
 use App\Theme\Components\LineList\LineList;
-use App\Theme\Components\NoteCard\NoteCard;
+use App\Theme\Components\Meter\Meter;
 use Override;
 
 /**
@@ -43,7 +43,7 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
             $component instanceof Greetings => $this->renderGreetings($component, $renderPass),
             $component instanceof Home => $this->renderHome($component, $renderPass),
             $component instanceof LineList => $this->renderLineList($component, $renderPass),
-            $component instanceof NoteCard => $this->renderNoteCard($component, $renderPass),
+            $component instanceof Meter => $this->renderMeter($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }
@@ -97,17 +97,17 @@ final readonly class ThemeTemplatesPart2 implements ComponentTemplates
     }
 
     /**
-     * @param NoteCard   $noteCard   The component; its template reads it.
+     * @param Meter      $meter      The component; its template reads it.
      * @param RenderPass $renderPass The pass its template writes through.
      *
      * @throws UnknownComponent When a child has no template.
      *
-     * @return string Its markup, from templates/themes/app/components/NoteCard/note-card.phtml.
+     * @return string Its markup, from templates/themes/app/components/Meter/meter.phtml.
      */
-    private function renderNoteCard(NoteCard $noteCard, RenderPass $renderPass): string
+    private function renderMeter(Meter $meter, RenderPass $renderPass): string
     {
-        $renderPass->open($noteCard);
-        require __DIR__ . '/templates/themes/app/components/NoteCard/note-card.phtml';
+        $renderPass->open($meter);
+        require __DIR__ . '/templates/themes/app/components/Meter/meter.phtml';
 
         return $renderPass->close();
     }

@@ -9,6 +9,8 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
+use App\Theme\Components\StockListing\StockListing;
+use App\Theme\Components\Tick\Tick;
 use App\Theme\Components\Ticks\Ticks;
 use Override;
 
@@ -38,9 +40,43 @@ final readonly class ThemeTemplatesPart5 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
+            $component instanceof StockListing => $this->renderStockListing($component, $renderPass),
+            $component instanceof Tick => $this->renderTick($component, $renderPass),
             $component instanceof Ticks => $this->renderTicks($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param StockListing $stockListing The component; its template reads it.
+     * @param RenderPass   $renderPass   The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/StockListing/stock-listing.phtml.
+     */
+    private function renderStockListing(StockListing $stockListing, RenderPass $renderPass): string
+    {
+        $renderPass->open($stockListing);
+        require __DIR__ . '/templates/themes/app/components/StockListing/stock-listing.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param Tick       $tick       The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/Tick/tick.phtml.
+     */
+    private function renderTick(Tick $tick, RenderPass $renderPass): string
+    {
+        $renderPass->open($tick);
+        require __DIR__ . '/templates/themes/app/components/Tick/tick.phtml';
+
+        return $renderPass->close();
     }
 
     /**

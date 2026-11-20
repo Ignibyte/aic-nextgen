@@ -954,6 +954,33 @@
             "captures": false
         },
         {
+            "name": "scaffold gauge, a made component with a script",
+            "method": "GET",
+            "path": "/scaffold/gauge",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger meter, a mounted script with its data",
+            "method": "GET",
+            "path": "/ledger/meter?level=3",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger meter, hidden",
+            "method": "GET",
+            "path": "/ledger/meter?level=0",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "ledger feed, anonymous",
             "method": "GET",
             "path": "/ledger/feed",
