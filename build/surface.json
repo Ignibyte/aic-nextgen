@@ -591,6 +591,12 @@
             "name": "role:unassign"
         },
         {
+            "class": "App\\Scaffold\\Command\\ScaffoldShelvesSeed",
+            "kind": "Command",
+            "module": "scaffold",
+            "name": "scaffold-shelves:seed"
+        },
+        {
             "class": "App\\Scaffold\\Command\\ScaffoldHello",
             "kind": "Command",
             "module": "scaffold",

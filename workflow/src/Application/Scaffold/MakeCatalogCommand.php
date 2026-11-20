@@ -66,6 +66,10 @@ final readonly class MakeCatalogCommand implements Command
             'make:relation <module> <owner_table> <target_table> [--keys=int,int] [--fields=<name>:<type>,…]',
             'a many-to-many pivot table and the relation lines for both sides',
         ],
+        'make:seed' => [
+            'make:seed <module> <Name>Seed <table> --unique=<field> --fields=<name>:<type>,…',
+            'a command saving fixed rows into a table through its own repository, updated on a rerun',
+        ],
         'make:state' => [
             'make:state <module> <table> <field> --states=<a>,<b>,… --transitions=<name>:<a>|<b>><c>[@<permission>],…',
             'a state machine on a field: its enum, its transitions and its migration',

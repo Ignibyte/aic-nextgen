@@ -103,6 +103,12 @@ three plain shapes, each in the folder gate:26 gives its kind (`src/Enum/`, `src
 and extends `RuntimeException`, or `LogicException` or `InvalidArgumentException` when `--extends`
 names it (the SPL roots gate:8 allows); a hierarchy of the module's own is hand work. An interface's name never ends in `Interface`.
 
+`make:seed <module> <Name>Seed <table> --unique=<field> --fields=<name>:<type>,…` (#320) writes a
+seed: the command `<name>:seed` with its rows as a constant, and its own repository, whose `save()`
+upserts by the unique field, so a rerun updates the same rows. `--fields` takes make:entity's types
+and `integer`; the manifest gains `->command()`. gate:8's `aic.seedWrites` keeps every `*Seed`
+command off `AIC\Database` and `AIC\Entity`: it saves through repositories.
+
 `schema:import <dump.sql> --module=<m> [--tables=a,b] [--version=<v>] [--dry-run]` (#318) turns a
 `pg_dump --schema-only` into baseline migrations: one `Create<Table>Table` per table, written after
 the tables its foreign keys reference, with consecutive versions and the manifest's `->migration()`

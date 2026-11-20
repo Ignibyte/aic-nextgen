@@ -10,14 +10,15 @@ use AIC\Workflow\Application\Make\MakeBlockCommand;
 use AIC\Workflow\Application\Make\MakeCommandCommand;
 use AIC\Workflow\Application\Make\MakeJobCommand;
 use AIC\Workflow\Application\Make\MakeRun;
+use AIC\Workflow\Application\Make\MakeSeedCommand;
 use AIC\Workflow\Application\Make\MakeShapeCommand;
 use AIC\Workflow\Domain\Make\MadeShape;
 
 /**
  * The makes that need nothing but the run (#122, #319), composed apart from
  * `MakeKernel` for PHPMD's coupling cap: one entry class each (`make:api`,
- * `make:block`, `make:command`, `make:job`) and the plain PHP shapes
- * (`make:enum`, `make:exception`, `make:interface`).
+ * `make:block`, `make:command`, `make:job`, `make:seed`, #320) and the
+ * plain PHP shapes (`make:enum`, `make:exception`, `make:interface`).
  */
 final readonly class SimpleMakes
 {
@@ -36,6 +37,7 @@ final readonly class SimpleMakes
             'make:exception' => new MakeShapeCommand($makeRun, MadeShape::Exception),
             'make:interface' => new MakeShapeCommand($makeRun, MadeShape::Interface),
             'make:job' => new MakeJobCommand($makeRun),
+            'make:seed' => new MakeSeedCommand($makeRun),
         ];
     }
 }

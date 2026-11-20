@@ -37,7 +37,7 @@ final readonly class ModuleCommands
             (new SiteCommands($this->consoleContext))->byName(),
             (new AccountCommands($this->consoleContext))->byName(),
             (new NoteCommands($this->consoleContext))->byName(),
-            (new ScaffoldCommands())->byName(),
+            (new ScaffoldCommands($this->consoleContext))->byName(),
         );
     }
 }
