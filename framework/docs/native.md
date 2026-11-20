@@ -100,6 +100,30 @@ The emitted status vocabulary is checked against the gate's actual enum:
 
 A class probe is not a complete HTTP scenario. Keep gate:23's whole-site comparison as well.
 
+## Libraries that do not compile
+
+gate:2 keeps an app's runtime `require` to `php`, `ext-*`, `psr/*` and the framework, so a Composer
+library never reaches the compiled site, and many PHP libraries need extensions the fork does not
+have. Today it has ext/xml's SAX parser and XMLWriter on a static libxml2, cURL, PDO and the
+symmetric half of OpenSSL. It has no ZipArchive (a zip is reachable only through `phar://`), no
+SimpleXML or XMLReader, only the small HTML-walking part of DOM, and no `openssl_sign` or
+`openssl_verify` (#325). That rules out PDF, spreadsheet and word-processor libraries, HTML
+sanitizers built on DOM, and most LLM agent libraries.
+
+Where such a need goes depends on when its answer is needed (#317):
+
+| Need | Where it runs | How |
+|---|---|---|
+| inside a request: sanitizing HTML, signing or verifying a token | the compiled site | a bridge in the fork or AIC's own PHP |
+| queued work: a PDF, a spreadsheet, a word-processor file, an LLM agent run | an interpreted worker | a Job in `workers/<name>/` that uses the library |
+
+A worker is a Composer project of its own under `workers/<name>/`. Its Jobs run under PHP, outside
+gate:21 and gate:2, and every other gate holds it. It shares only the queue, Postgres and
+`PrivateFiles` with the site, and no site class names a worker class. The worker root and its gates
+(#335) and the way the site queues work for a worker and reads its result (#336) are not built yet.
+Until they are, an app has no sanctioned place for such a library: write the need in your own PHP,
+or wait for the worker.
+
 ## Whole-site comparison and diagnosis
 
 Gate:23 builds a fresh whole app, serves native and PHP entries beside each other, and executes
