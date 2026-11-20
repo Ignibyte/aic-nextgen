@@ -82,6 +82,11 @@ Every runtime class (everything under `framework/src` and `app`) compiles native
 - Give the compiler its types in code: typed properties, typed returns, small value objects. elephc ignores a plain `array<K, V>` docblock.
 - When elephc rejects or miscompiles a class, restructure the AIC code first. Legal PHP that elephc gets wrong is a compiler carry (the `elephc-carry` skill), with its own ticket.
 
+A library with no native path is not a reason to leave the compiled site (#317). Where it goes depends on when its answer is needed:
+
+- **Inside a request** (sanitizing HTML, signing or verifying a token): native. A bridge in the compiler fork, or AIC's own PHP, whatever the size.
+- **As queued work** (making a PDF, a spreadsheet or a word-processor file; driving an LLM agent library): an interpreted worker. A worker is a Composer project of its own under `workers/<name>/` whose Jobs alone use the library. It runs under PHP, outside gate:21 and gate:2, and every other gate holds it (gate:0 audits its packages). It shares only the queue, Postgres and `PrivateFiles` with the site, and no site class names a worker class. The worker root, its gates and the queue handoff are #335 and #336; until they land, no app code depends on such a library.
+
 ---
 
 ## §4  The workflow
@@ -162,6 +167,7 @@ This Constitution is amended by editing this file through the four phases (`/pip
 
 ### Amendment log
 
+- **2026-11-20 — libraries that do not compile (#317).** §3 gains the rule for a library with no native path, by Chad's decision: native for anything a request waits on, an interpreted worker (`workers/<name>/`, Jobs only, outside gate:21 and gate:2, under every other gate) for queued work such as document generation. Checked against the fork first: no ZipArchive, SimpleXML or XMLReader, DOM only as an HTML-walking subset, asymmetric OpenSSL missing (#325). No gate changed; the worker root and its gate profile are #335, the queue handoff #336, a native HTML sanitizer #337.
 - **2026-11-16 — gate:33, app scaffolds (#300).** §0 gains row 33. Each census rule bites on its planted fixture before the census reads the project; a planted kind whose template returns a string from an `int` method failed gates 8, 9, 13 and 21 by its name, and was removed.
 - **2026-11-06 — pinned gate tools (#282).** §0's tool-version bullet names the non-PHP tools. A clean container following project/README.md found semgrep 1.95.0 pinned where AIC runs 1.156.0, shellcheck unpinned and behind `sudo`, and gate:18 passing with no shellcheck. With the tools pinned in `tools/` and gate:18 failing on a missing binary, the container read `29 passed, 0 deferred` and an agent took a ticket through the workflow (33 gates green, 247 probes passed).
 - **2026-11-06 — the pinned compiler (#281).** §0's tool-version bullet names the compiler. An app made from local splits, with a locally built fork tarball pinned and no other elephc reachable, read `29 passed, 0 deferred` with gates 21 and 23 on `tools/elephc`; a wrong SHA-256 installed nothing (33 gates green, 247 probes passed).

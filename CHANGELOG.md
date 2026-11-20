@@ -181,6 +181,16 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
   [--json]` lists every built-in and app kind. AIC's root carries `scaffolds/poller/` as the
   fixture, and gate:26 admits `scaffolds/` in an app's shell.
 
+### Changed
+
+- **Where a library that does not compile goes** (#317). The Constitution's §3 and `framework/docs/native.md`
+  state the rule for a PHP library with no native path (the fork has no ZipArchive, SimpleXML, XMLReader or full
+  DOM, and no asymmetric OpenSSL): anything a request waits on stays native, through a bridge in the compiler fork
+  or AIC's own PHP, and queued work such as making a PDF, a spreadsheet or a word-processor file runs in an
+  interpreted worker, a Composer project of its own under `workers/<name>/` whose Jobs alone use the library,
+  outside the native and require allow-list gates and under every other gate. No gate changed; the worker itself
+  is not built yet.
+
 ## 0.1.1 — 2026-11-06
 
 ### Fixed

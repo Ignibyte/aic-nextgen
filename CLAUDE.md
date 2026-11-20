@@ -221,6 +221,10 @@ path (`MountScripts`); `make:component --script`; the fixture's `/ledger/meter`.
 `App\Generated\<Module>Mcp::catalog()`; tools (`McpTool`, `#[ToolInfo]`, `call(<Input>[, Actor]): <Output>`), resources and
 prompts live in the module's `src/Mcp/`, and the build writes their schemas and adapters; access is the route's `needs:` and
 each entry's permission; `make:mcp-tool`; the fixture's `ledger.split`.
+#317 (Chad, 2026-11-20): a library with no native path goes native when a request waits on it (a fork bridge or own
+PHP: RSA #325, an HTML sanitizer #337) and to an interpreted worker when it is queued work (document generation, an LLM
+agent library): `workers/<name>/`, its own Composer project, Jobs only, outside gate:21 and gate:2 and under every other
+gate, sharing only the queue, Postgres and `PrivateFiles` (CONSTITUTION §3). The worker root is #335, the handoff #336.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
 the `made` row to the run's `code.made` events; the opt-in house rule `scaffold-only` and `code:coverage --made` read it.
 #119: `bin/aic workflow:probe [--scratch=<dir>] [--keep] [<scenario>…]` replays the engine's planted
