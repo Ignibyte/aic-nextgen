@@ -6,6 +6,7 @@ namespace App\Ledger\Mcp;
 
 use AIC\Mcp\Attribute\ResourceInfo;
 use AIC\Mcp\Contracts\McpResource;
+use App\Ledger\Enum\LedgerCurrency;
 use Override;
 
 /**

@@ -6,10 +6,10 @@ namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
+use App\Site\Contracts\Greeter;
 use App\Site\Controller\GreetingPage;
 use App\Site\Controller\GreetingPost;
 use App\Site\Controller\HomePage;
-use App\Site\Service\Greeter;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**

@@ -6,6 +6,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **make:enum, make:exception and make:interface** (#319). `bin/aic make:enum <module> <Name> --cases=a,b,…
+  [--backed=string|int]` writes a pure or backed enum in `src/Enum/` (a case word such as `on_hold` becomes
+  `OnHold`, backed by its word or by 1, 2, …); `make:exception <module> <Name>Exception
+  [--extends=LogicException|InvalidArgumentException]` a final exception over `RuntimeException` or the named SPL
+  root in `src/Exception/`; `make:interface <module> <Name>` an empty interface in `src/Contracts/`. All three go
+  through the make run, edit no manifest, are listed by `make:catalog`, and are gate:31's 22nd to 24th lines.
+
 - **Baseline migrations from a schema dump** (#318). `bin/aic schema:import <dump.sql> --module=<m>` reads a
   `pg_dump --schema-only` and writes one `Create<Table>Table` migration per table in Schema's builders, in
   foreign-key order with consecutive versions, and the manifest's `->migration()` calls, through the make run
@@ -194,6 +201,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
   fixture, and gate:26 admits `scaffolds/` in an app's shell.
 
 ### Changed
+
+- **Enums, exceptions and interfaces have their own folders** (#319). gate:26 and the surface's kinds table now
+  know three more kinds: an enum (`UnitEnum`) belongs in a module's `src/Enum/`, an exception (`Throwable`) in
+  `src/Exception/`, an interface in `src/Contracts/`, and a plain class in none of them. **Breaking for apps:** an
+  enum, exception or interface kept in `Entity/`, `Service/` or another plain folder now fails gate:26, whose
+  message names the folder to move it to. `make:state` writes its enum in `src/Enum/`. AIC's fixture modules moved
+  their four.
 
 - **Where a library that does not compile goes** (#317). The Constitution's §3 and `framework/docs/native.md`
   state the rule for a PHP library with no native path (the fork has no ZipArchive, SimpleXML, XMLReader or full

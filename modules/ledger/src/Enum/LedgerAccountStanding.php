@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Ledger\Entity;
+namespace App\Ledger\Enum;
 
 /**
  * The states of `ledger_accounts.standing`, made by bin/aic make:state (#308): the

@@ -95,6 +95,14 @@ when a layout needs a document of its own.
 `--needs`, declares that name as the permission it needs. `composer run build` then writes its schemas
 and adapter into the module's `App\Generated\<Module>Mcp` ([mcp.md](../framework/docs/mcp.md)).
 
+`make:enum <module> <Name> --cases=a,b [--backed=string|int]`, `make:exception <module>
+<Name>Exception [--extends=<exception>]` and `make:interface <module> <Name>` (#319) write the
+three plain shapes, each in the folder gate:26 gives its kind (`src/Enum/`, `src/Exception/`,
+`src/Contracts/`), and edit no manifest. Enum cases are lower-case words (`on_hold` becomes
+`OnHold`), a string backing is the word, an int backing the place from 1. A made exception is final
+and extends `RuntimeException`, or `LogicException` or `InvalidArgumentException` when `--extends`
+names it (the SPL roots gate:8 allows); a hierarchy of the module's own is hand work. An interface's name never ends in `Interface`.
+
 `schema:import <dump.sql> --module=<m> [--tables=a,b] [--version=<v>] [--dry-run]` (#318) turns a
 `pg_dump --schema-only` into baseline migrations: one `Create<Table>Table` per table, written after
 the tables its foreign keys reference, with consecutive versions and the manifest's `->migration()`

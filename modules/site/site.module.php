@@ -19,6 +19,7 @@ use App\Site\Block\SiteNavBlock;
 use App\Site\Command\DatabasePing;
 use App\Site\Command\Greet;
 use App\Site\Command\NotificationsForget;
+use App\Site\Contracts\Greeter;
 use App\Site\Controller\GreetingPage;
 use App\Site\Controller\GreetingPost;
 use App\Site\Controller\HealthApi;
@@ -39,7 +40,6 @@ use App\Site\Job\KeptPageJob;
 use App\Site\Migration\CreateSubscribersTable;
 use App\Site\Migration\MakeSubscriberEmailUnique;
 use App\Site\Service\EnglishGreeter;
-use App\Site\Service\Greeter;
 use App\Site\Service\SpanishGreeter;
 use App\Site\Service\Upstream\SiteClients;
 

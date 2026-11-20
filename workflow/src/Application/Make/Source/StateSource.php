@@ -79,6 +79,7 @@ final readonly class StateSource
         return $this->makeTemplates->render('state', 'machine.php.tpl', [
             'calls' => $calls,
             'class' => $names['class'],
+            'enum' => $enum,
             'field' => $place['field'],
             'initial' => $states[0] ?? '',
             'methods' => $methods,

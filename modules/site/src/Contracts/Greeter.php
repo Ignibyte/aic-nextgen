@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Site\Service;
+namespace App\Site\Contracts;
 
 /**
  * A plugin type: something that greets a name. The greeting page lists every

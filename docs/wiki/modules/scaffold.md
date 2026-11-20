@@ -86,6 +86,12 @@ none
 | --- | --- |
 | `App\Scaffold\Command\ScaffoldHello` | [modules/scaffold/src/Command/ScaffoldHello.php](../../../modules/scaffold/src/Command/ScaffoldHello.php) |
 
+### `src/Contracts/`
+
+| Class | File |
+| --- | --- |
+| `App\Scaffold\Contracts\ScaffoldSource` | [modules/scaffold/src/Contracts/ScaffoldSource.php](../../../modules/scaffold/src/Contracts/ScaffoldSource.php) |
+
 ### `src/Controller/`
 
 | Class | File |
@@ -104,8 +110,20 @@ none
 | --- | --- |
 | `App\Scaffold\Entity\ScaffoldEvent` | [modules/scaffold/src/Entity/ScaffoldEvent.php](../../../modules/scaffold/src/Entity/ScaffoldEvent.php) |
 | `App\Scaffold\Entity\ScaffoldTask` | [modules/scaffold/src/Entity/ScaffoldTask.php](../../../modules/scaffold/src/Entity/ScaffoldTask.php) |
-| `App\Scaffold\Entity\ScaffoldTaskStage` | [modules/scaffold/src/Entity/ScaffoldTaskStage.php](../../../modules/scaffold/src/Entity/ScaffoldTaskStage.php) |
 | `App\Scaffold\Entity\ScaffoldTaskStageTransitions` | [modules/scaffold/src/Entity/ScaffoldTaskStageTransitions.php](../../../modules/scaffold/src/Entity/ScaffoldTaskStageTransitions.php) |
+
+### `src/Enum/`
+
+| Class | File |
+| --- | --- |
+| `App\Scaffold\Enum\ScaffoldTaskStage` | [modules/scaffold/src/Enum/ScaffoldTaskStage.php](../../../modules/scaffold/src/Enum/ScaffoldTaskStage.php) |
+| `App\Scaffold\Enum\ScaffoldTone` | [modules/scaffold/src/Enum/ScaffoldTone.php](../../../modules/scaffold/src/Enum/ScaffoldTone.php) |
+
+### `src/Exception/`
+
+| Class | File |
+| --- | --- |
+| `App\Scaffold\Exception\ScaffoldMissingException` | [modules/scaffold/src/Exception/ScaffoldMissingException.php](../../../modules/scaffold/src/Exception/ScaffoldMissingException.php) |
 
 ### `src/Job/`
 

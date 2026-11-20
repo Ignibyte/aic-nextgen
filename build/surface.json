@@ -701,11 +701,11 @@
             "plugins": [
                 {
                     "class": "App\\Site\\Service\\EnglishGreeter",
-                    "type": "App\\Site\\Service\\Greeter"
+                    "type": "App\\Site\\Contracts\\Greeter"
                 },
                 {
                     "class": "App\\Site\\Service\\SpanishGreeter",
-                    "type": "App\\Site\\Service\\Greeter"
+                    "type": "App\\Site\\Contracts\\Greeter"
                 }
             ],
             "prefixes": [],
@@ -1179,6 +1179,22 @@
             "response": ""
         },
         {
+            "contract": "Throwable",
+            "entry": false,
+            "folder": "Exception",
+            "kind": "Exception",
+            "method": "",
+            "response": ""
+        },
+        {
+            "contract": "UnitEnum",
+            "entry": false,
+            "folder": "Enum",
+            "kind": "Enum",
+            "method": "",
+            "response": ""
+        },
+        {
             "contract": "",
             "entry": false,
             "folder": "Form",
@@ -1191,6 +1207,14 @@
             "entry": false,
             "folder": "Repository",
             "kind": "Repository",
+            "method": "",
+            "response": ""
+        },
+        {
+            "contract": "",
+            "entry": false,
+            "folder": "Contracts",
+            "kind": "Interface",
             "method": "",
             "response": ""
         }

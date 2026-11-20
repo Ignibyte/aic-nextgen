@@ -50,6 +50,12 @@ final readonly class MakeCatalogCommand implements Command
             'make:entity <module> <Class> <table> --fields=<name>:<type>,…',
             'an entity with its migration, repository and list page',
         ],
+        'make:enum' => ['make:enum <module> <Name> --cases=<a>,<b>,… [--backed=string|int]', 'an enum in src/Enum/'],
+        'make:exception' => [
+            'make:exception <module> <Name>Exception [--extends=LogicException|InvalidArgumentException]',
+            'an exception in src/Exception/, over RuntimeException unless named',
+        ],
+        'make:interface' => ['make:interface <module> <Name>', 'an interface in src/Contracts/'],
         'make:job' => ['make:job <module> <Class> <name>', 'a queued or scheduled job, done at once'],
         'make:layout' => ['make:layout <name>', 'a named page layout in the theme'],
         'make:migration' => ['make:migration <module> <Class> <table>', 'a migration creating one table'],

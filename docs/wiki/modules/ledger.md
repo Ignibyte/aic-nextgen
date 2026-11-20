@@ -98,9 +98,15 @@ none
 
 | Class | File |
 | --- | --- |
-| `App\Ledger\Entity\LedgerAccountStanding` | [modules/ledger/src/Entity/LedgerAccountStanding.php](../../../modules/ledger/src/Entity/LedgerAccountStanding.php) |
 | `App\Ledger\Entity\LedgerAccountStandingTransitions` | [modules/ledger/src/Entity/LedgerAccountStandingTransitions.php](../../../modules/ledger/src/Entity/LedgerAccountStandingTransitions.php) |
 | `App\Ledger\Entity\LedgerTypes` | [modules/ledger/src/Entity/LedgerTypes.php](../../../modules/ledger/src/Entity/LedgerTypes.php) |
+
+### `src/Enum/`
+
+| Class | File |
+| --- | --- |
+| `App\Ledger\Enum\LedgerAccountStanding` | [modules/ledger/src/Enum/LedgerAccountStanding.php](../../../modules/ledger/src/Enum/LedgerAccountStanding.php) |
+| `App\Ledger\Enum\LedgerCurrency` | [modules/ledger/src/Enum/LedgerCurrency.php](../../../modules/ledger/src/Enum/LedgerCurrency.php) |
 
 ### `src/Form/`
 
@@ -119,7 +125,6 @@ none
 | Class | File |
 | --- | --- |
 | `App\Ledger\Mcp\LedgerCurrenciesResource` | [modules/ledger/src/Mcp/LedgerCurrenciesResource.php](../../../modules/ledger/src/Mcp/LedgerCurrenciesResource.php) |
-| `App\Ledger\Mcp\LedgerCurrency` | [modules/ledger/src/Mcp/LedgerCurrency.php](../../../modules/ledger/src/Mcp/LedgerCurrency.php) |
 | `App\Ledger\Mcp\LedgerSplit` | [modules/ledger/src/Mcp/LedgerSplit.php](../../../modules/ledger/src/Mcp/LedgerSplit.php) |
 | `App\Ledger\Mcp\LedgerSplitInput` | [modules/ledger/src/Mcp/LedgerSplitInput.php](../../../modules/ledger/src/Mcp/LedgerSplitInput.php) |
 | `App\Ledger\Mcp\LedgerSplitPart` | [modules/ledger/src/Mcp/LedgerSplitPart.php](../../../modules/ledger/src/Mcp/LedgerSplitPart.php) |

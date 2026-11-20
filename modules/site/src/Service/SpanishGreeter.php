@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Site\Service;
 
+use App\Site\Contracts\Greeter;
 use Override;
 
 /**

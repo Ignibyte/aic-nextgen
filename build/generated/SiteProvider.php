@@ -6,8 +6,8 @@ namespace App\Generated;
 
 use AIC\Container\Contracts\ServiceProvider;
 use AIC\Container\Contracts\ServiceRegistry;
+use App\Site\Contracts\Greeter;
 use App\Site\Service\EnglishGreeter;
-use App\Site\Service\Greeter;
 use App\Site\Service\SpanishGreeter;
 use Override;
 

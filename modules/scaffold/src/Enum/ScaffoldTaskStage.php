@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Scaffold\Entity;
+namespace App\Scaffold\Enum;
 
 /**
  * The states of `scaffold_tasks.stage`, made by bin/aic make:state (#308): the

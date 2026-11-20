@@ -6,6 +6,7 @@ namespace App\Ledger\Entity;
 
 use AIC\Entity\Domain\StateMachine;
 use AIC\Entity\Domain\Transition;
+use App\Ledger\Enum\LedgerAccountStanding;
 use InvalidArgumentException;
 
 /**

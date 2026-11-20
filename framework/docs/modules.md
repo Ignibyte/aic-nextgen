@@ -105,6 +105,9 @@ kinds are described in [kinds.md](kinds.md).
 | `src/Mcp/` | MCP tools, resources and prompts, and their value classes ([mcp.md](mcp.md)) |
 | `src/Repository/` | classes named `…Repository` |
 | `src/Form/` | classes named `…Form`, and plain form helpers |
+| `src/Enum/` | every enum (#319) |
+| `src/Exception/` | every exception: a class that is `Throwable` |
+| `src/Contracts/` | every interface |
 | `src/Entity/` | plain classes: entities and values |
 | `src/Service/` | plain classes: services and helpers |
 
@@ -252,11 +255,20 @@ for each side's entity type, which the agent adds where the module declares its 
 
 `bin/aic make:state <module> <table> <field> --states=open,closed --transitions=close:open>closed[@permission],…`
 puts a state machine on a field (#308). It writes the backed enum of the states
-(`<Singular><Field>` in `src/Entity/`), the transitions class beside it (`machine()`, one private
+(`<Singular><Field>` in `src/Enum/`), the transitions class in `src/Entity/` (`machine()`, one private
 method per transition, `|` between the states a transition leaves and `@` before the permission it
 needs) and a migration that adds the field as a choice of the states, defaulting to the first. The
 manifest gains the migration; the make prints the field and the `stateMachine:` to add to the entity
 type. A transition is taken with `EntityTransitions::apply()`; nothing writes the field by hand.
+
+Three makes write the plain PHP shapes a module holds, each in its kind's folder, and edit no
+manifest (#319). `bin/aic make:enum <module> <Name> --cases=open,on_hold [--backed=string|int]`
+writes `src/Enum/<Name>.php`, a case for each word (`OnHold`), pure or backed by the word or by its
+place from 1. `bin/aic make:exception <module> <Name>Exception [--extends=LogicException]` writes a
+final exception in `src/Exception/` over `RuntimeException`, or `LogicException` or
+`InvalidArgumentException` when named: the SPL roots gate:8 lets a class extend.
+`bin/aic make:interface <module> <Name>` writes an empty interface in `src/Contracts/`; its name
+never ends in `Interface`. Each made class carries `@api` until the module uses it.
 
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
 (the HTML and page templates), `src/Layouts/Page.php` (four regions: header, content, nav, footer)

@@ -140,6 +140,9 @@ These are not entry points; each has a contract or a name suffix and a folder of
 | McpTool | implements `AIC\Mcp\Contracts\McpTool` | `src/Mcp/` | a tool an agent calls over MCP, with a readonly input and output (#316) |
 | McpResource | implements `AIC\Mcp\Contracts\McpResource` | `src/Mcp/` | text an agent reads over MCP, at a URI |
 | McpPrompt | implements `AIC\Mcp\Contracts\McpPrompt` | `src/Mcp/` | messages an agent asks for over MCP, from string arguments |
+| Enum | is an enum (`UnitEnum`) | `src/Enum/` | a closed set of values, pure or backed; `make:enum` (#319) |
+| Exception | is `Throwable` | `src/Exception/` | what the module throws; `make:exception` |
+| Interface | is an interface | `src/Contracts/` | what the module's implementations share; `make:interface` |
 
 A class of none of these kinds is plain, and sits in `src/Entity/`, `src/Service/` or
 `src/Form/`, or in `src/Mcp/` beside the MCP entries whose values it is ([mcp.md](mcp.md)). A component is the one kind that never sits in a module: it lives in the theme, its

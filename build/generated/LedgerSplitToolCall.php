@@ -11,7 +11,7 @@ use AIC\Mcp\Contracts\McpNullableArguments;
 use AIC\Mcp\Contracts\ToolRefusedException;
 use AIC\Mcp\Domain\McpToolCall;
 use AIC\Mcp\Domain\McpToolInfo;
-use App\Ledger\Mcp\LedgerCurrency;
+use App\Ledger\Enum\LedgerCurrency;
 use App\Ledger\Mcp\LedgerSplitInput;
 use App\Ledger\Mcp\LedgerSplitTool;
 use JsonSerializable;

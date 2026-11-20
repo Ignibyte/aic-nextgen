@@ -6,6 +6,7 @@ namespace {namespace}\Entity;
 
 use AIC\Entity\Domain\StateMachine;
 use AIC\Entity\Domain\Transition;
+use {namespace}\Enum\{enum};
 use InvalidArgumentException;
 
 /**
