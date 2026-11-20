@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace {namespace}\Entity;
+namespace {namespace}\Enum;
 
 /**
  * The states of `{table}.{field}`, made by bin/aic make:state (#308): the

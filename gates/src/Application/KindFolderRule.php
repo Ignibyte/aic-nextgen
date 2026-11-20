@@ -203,7 +203,15 @@ final readonly class KindFolderRule implements ModuleRule
     ): ?BoundaryViolation {
         return $kind[1] === $folder
             ? null
-            : new BoundaryViolation($path, sprintf('%s: %s is a %s; move it to %s%s/.', $path, $class, $kind[0], $source, $kind[1]));
+            : new BoundaryViolation($path, sprintf(
+                '%s: %s is %s %s; move it to %s%s/.',
+                $path,
+                $class,
+                in_array($kind[0][0] ?? '', ['A', 'E', 'I', 'O', 'U'], true) ? 'an' : 'a',
+                $kind[0],
+                $source,
+                $kind[1],
+            ));
     }
 
     /**

@@ -18,6 +18,8 @@ use AIC\Mcp\Contracts\McpTool;
 use AIC\Notification\Contracts\Notification;
 use AIC\Schema\Contracts\Migration;
 use Psr\Http\Server\MiddlewareInterface;
+use Throwable;
+use UnitEnum;
 
 use function array_map;
 use function array_search;
@@ -34,10 +36,12 @@ use function usort;
  * A class's kind and the module folder it belongs in (#26, #94), the one map
  * the surface manifest and gate:26 share. A kind is read from the interface a
  * class implements (a class implements one; were it two, the first by
- * interface name would decide); Repository and Form have no contract,
- * so they are kinds by name suffix; a generated template class belongs beside
- * its component. Anything else is plain, and sits in `src/Entity/`,
- * `src/Service/` or `src/Form/`.
+ * interface name would decide), an enum's `UnitEnum` and an exception's
+ * `Throwable` included (#319); every interface is the Interface kind, in
+ * `src/Contracts/`; Repository and Form have no contract, so they are kinds by
+ * name suffix; a generated template class belongs beside its component.
+ * Anything else is plain, and sits in `src/Entity/`, `src/Service/` or
+ * `src/Form/`.
  */
 final readonly class ClassKinds
 {
@@ -58,8 +62,11 @@ final readonly class ClassKinds
     public const array FOLDERS = [
         'Block',
         'Command',
+        'Contracts',
         'Controller',
         'Entity',
+        'Enum',
+        'Exception',
         'Form',
         'Job',
         'Mcp',
@@ -90,7 +97,14 @@ final readonly class ClassKinds
         Page::class => ['Page', 'Controller'],
         Policy::class => ['Policy', 'Policy'],
         Stream::class => ['Stream', 'Controller'],
+        Throwable::class => ['Exception', 'Exception'],
+        UnitEnum::class => ['Enum', 'Enum'],
     ];
+
+    /**
+     * The kind of every interface a module declares (#319), which no contract marks: its name, then its folder.
+     */
+    private const array INTERFACE_KIND = ['Interface', 'Contracts'];
 
     /**
      * The kinds by class-name suffix, for the shapes with no contract.
@@ -112,13 +126,17 @@ final readonly class ClassKinds
      */
     public function kindOf(string $class): ?array
     {
+        if (interface_exists($class)) {
+            return self::INTERFACE_KIND;
+        }
+
         return $this->byInterface($class) ?? $this->bySuffix($class);
     }
 
     /**
      * @return list<array{string, string, string}> Every kind as kind, contract and folder (#109): the entry kinds first,
-     *                                             in their order, then the others by interface, then the suffix kinds,
-     *                                             whose contract is empty.
+     *                                             in their order, then the others by interface, then the suffix kinds
+     *                                             and the Interface kind, whose contract is empty.
      */
     public function table(): array
     {
@@ -130,7 +148,7 @@ final readonly class ClassKinds
 
         usort($rows, self::compareRows(...));
 
-        return [...$rows, ...array_map(static fn (array $kind): array => [$kind[0], '', $kind[1]], $this->suffixKinds())];
+        return [...$rows, ...array_map(static fn (array $kind): array => [$kind[0], '', $kind[1]], $this->contractless())];
     }
 
     /**
@@ -164,7 +182,7 @@ final readonly class ClassKinds
     {
         $kinds = [];
 
-        foreach ([...array_values(self::BY_INTERFACE), ...$this->suffixKinds()] as $kind) {
+        foreach ([...array_values(self::BY_INTERFACE), ...$this->contractless()] as $kind) {
             if ($kind[1] !== $folder) {
                 continue;
             }
@@ -212,9 +230,10 @@ final readonly class ClassKinds
     }
 
     /**
-     * @return list<array{string, string}> The suffix kinds as kind and folder.
+     * @return list<array{string, string}> The kinds no contract marks as kind and folder: the suffix kinds, then the
+     *                                     Interface kind.
      */
-    private function suffixKinds(): array
+    private function contractless(): array
     {
         $kinds = [];
 
@@ -222,7 +241,7 @@ final readonly class ClassKinds
             $kinds[] = [$suffix, $folder];
         }
 
-        return $kinds;
+        return [...$kinds, self::INTERFACE_KIND];
     }
 
     /**

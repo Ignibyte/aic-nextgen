@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 /**
- * The twenty-one `bin/aic` make lines that make `modules/scaffold/` (#122),
+ * The twenty-four `bin/aic` make lines that make `modules/scaffold/` (#122),
  * run in order by gate:31 and by anyone regenerating the module: every
  * writer, a component with a script and a page showing it (#315), a page
  * naming its component, a named layout (#157), a page making its own view in
@@ -78,6 +78,9 @@ final readonly class ScaffoldSequence
             '--version=2026_11_18_000001_add_scaffold_tasks_stage',
         ],
         ['make:mcp-tool', 'scaffold', 'ScaffoldLookupTool'],
+        ['make:enum', 'scaffold', 'ScaffoldTone', '--cases=calm,loud,on_hold', '--backed=string'],
+        ['make:exception', 'scaffold', 'ScaffoldMissingException', '--extends=LogicException'],
+        ['make:interface', 'scaffold', 'ScaffoldSource'],
         [
             'schema:import',
             'gates/fixtures/schema-import.sql',

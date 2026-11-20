@@ -6,6 +6,7 @@ namespace App\Scaffold\Entity;
 
 use AIC\Entity\Domain\StateMachine;
 use AIC\Entity\Domain\Transition;
+use App\Scaffold\Enum\ScaffoldTaskStage;
 use InvalidArgumentException;
 
 /**

@@ -9,7 +9,7 @@ use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
 use AIC\Module\Attribute\Tagged;
 use App\Generated\ThemeLayoutName;
-use App\Site\Service\Greeter;
+use App\Site\Contracts\Greeter;
 use App\Theme\Components\Greetings\Greetings;
 use InvalidArgumentException;
 use Override;

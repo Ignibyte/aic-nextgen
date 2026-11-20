@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Ledger\Mcp;
+namespace App\Ledger\Enum;
 
 /**
  * A currency the ledger's MCP tool splits amounts in (#316), by its ISO code.

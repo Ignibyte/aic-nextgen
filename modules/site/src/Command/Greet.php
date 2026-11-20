@@ -9,7 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Module\Attribute\Tagged;
-use App\Site\Service\Greeter;
+use App\Site\Contracts\Greeter;
 use InvalidArgumentException;
 use Override;
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Ledger\Mcp;
 
+use App\Ledger\Enum\LedgerCurrency;
+
 /**
  * What `ledger.split` takes (#316). The build writes the tool's input schema
  * from this constructor: each parameter's type, its default and its

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Ledger\Mcp;
 
+use App\Ledger\Enum\LedgerCurrency;
+
 /**
  * What `ledger.split` answers (#316). The build writes the tool's output schema
  * and its JSON from this constructor.

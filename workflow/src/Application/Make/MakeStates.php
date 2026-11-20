@@ -100,7 +100,7 @@ final readonly class MakeStates
         $migration = $this->stateSource->migration($namespace, $names['migration'], $version, $place, $states);
 
         return [
-            new MadeFile($folder . 'Entity/' . $names['enum'] . '.php', $enum),
+            new MadeFile($folder . 'Enum/' . $names['enum'] . '.php', $enum),
             new MadeFile($folder . 'Entity/' . $names['class'] . '.php', $machine),
             new MadeFile($folder . 'Migration/' . $names['migration'] . '.php', $migration),
         ];
