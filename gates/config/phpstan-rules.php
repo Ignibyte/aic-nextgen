@@ -10,6 +10,7 @@ use Gates\PhpStan\PolicyShapeRule;
 use Gates\PhpStan\RenderTreeInputRule;
 use Gates\PhpStan\RuleFactory;
 use Gates\PhpStan\SchemaExpressionRule;
+use Gates\PhpStan\SeedWritesRule;
 use Gates\PhpStan\TaggedServiceTypeRule;
 use Gates\PhpStan\TemplateUsageProvider;
 
@@ -37,6 +38,7 @@ return [
         ControllerReturnTypeRule::class,
         PolicyShapeRule::class,
         SchemaExpressionRule::class,
+        SeedWritesRule::class,
     ],
     'services' => $services,
 ];

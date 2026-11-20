@@ -154,6 +154,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:policy` | scaffold an entity's Policy and declare the permission it asks (#304) |
 | `Command::make:relation` | scaffold a many-to-many pivot's migration and print both sides' relations (#306) |
 | `Command::make:state` | scaffold a state machine: its enum, its transitions class and its column's migration (#308) |
+| `Command::make:seed` | scaffold a seed: a command saving fixed rows through its own repository, updated on a rerun (#320) |
 | `Command::make:scaffold` | start an app kind from an existing one, in a run the operator approved (#299) |
 | `Command::make:theme` | scaffold the site's selected theme |
 | `Command::module:list` | inspect modules |

@@ -13,13 +13,15 @@ use function array_unique;
 use function array_values;
 use function count;
 use function explode;
+use function implode;
 use function in_array;
 use function preg_match;
 
 /**
  * `make:entity`'s `--fields=<name>:<type>,…` (#123): each a lower snake-case column, not `id` or `created_at`, given
  * once, with one of the types the entity store reads: `text`, `numeric`, `date`, `boolean`, `uuid`, `json`,
- * `timestamp`, or `choice(a|b)` with its values (#307).
+ * `timestamp`, or `choice(a|b)` with its values (#307). `make:seed` also takes `integer` (#320), since it writes into
+ * a table it does not create.
  */
 final readonly class MakeFields
 {
@@ -38,14 +40,39 @@ final readonly class MakeFields
      */
     public function parse(string $fields): array
     {
+        return $this->parsed($fields, self::TYPES);
+    }
+
+    /**
+     * @param string $fields What `make:seed`'s `--fields` gave (#320).
+     *
+     * @throws WorkflowRefusal When it names no field, or a field breaks a rule.
+     *
+     * @return non-empty-list<EntityField> The fields, in order; `integer` is a type too.
+     */
+    public function seeded(string $fields): array
+    {
+        return $this->parsed($fields, [...self::TYPES, 'integer']);
+    }
+
+    /**
+     * @param string       $fields What `--fields` gave.
+     * @param list<string> $types  The types a field may take, but `choice`.
+     *
+     * @throws WorkflowRefusal When it names no field, or a field breaks a rule.
+     *
+     * @return non-empty-list<EntityField> The fields, in order.
+     */
+    private function parsed(string $fields, array $types): array
+    {
         if ($fields === '') {
-            throw $this->usage('--fields names no field: give --fields=<name>:<type>,… with types ' . $this->types());
+            throw $this->usage('--fields names no field: give --fields=<name>:<type>,… with types ' . $this->types($types));
         }
 
         $parsed = [];
 
         foreach (explode(',', $fields) as $field) {
-            $entityField = $this->field($field);
+            $entityField = $this->field($field, $types);
 
             if (array_key_exists($entityField->name, $parsed)) {
                 throw $this->usage('the field "' . $entityField->name . '" is given twice');
@@ -58,13 +85,14 @@ final readonly class MakeFields
     }
 
     /**
-     * @param string $field One `<name>:<type>`.
+     * @param string       $field One `<name>:<type>`.
+     * @param list<string> $types The types it may take, but `choice`.
      *
      * @throws WorkflowRefusal When its name or type breaks a rule.
      *
      * @return EntityField It.
      */
-    private function field(string $field): EntityField
+    private function field(string $field, array $types): EntityField
     {
         $parts = explode(':', $field);
         $name = $parts[0];
@@ -75,21 +103,22 @@ final readonly class MakeFields
         }
 
         if (count($parts) !== 2) {
-            throw $this->usage('the field "' . $field . '" needs one type of ' . $this->types());
+            throw $this->usage('the field "' . $field . '" needs one type of ' . $this->types($types));
         }
 
-        return $this->typed($name, $type);
+        return $this->typed($name, $type, $types);
     }
 
     /**
-     * @param string $name The field's name.
-     * @param string $type Its type, as given.
+     * @param string       $name  The field's name.
+     * @param string       $type  Its type, as given.
+     * @param list<string> $types The types it may take, but `choice`.
      *
      * @throws WorkflowRefusal When the type is not one the entity store reads.
      *
      * @return EntityField It.
      */
-    private function typed(string $name, string $type): EntityField
+    private function typed(string $name, string $type, array $types): EntityField
     {
         $choices = $this->choices($type);
 
@@ -97,8 +126,8 @@ final readonly class MakeFields
             return new EntityField($name, 'choice', $choices);
         }
 
-        if (!in_array($type, self::TYPES, true)) {
-            throw $this->usage('the field "' . $name . ':' . $type . '" needs one type of ' . $this->types());
+        if (!in_array($type, $types, true)) {
+            throw $this->usage('the field "' . $name . ':' . $type . '" needs one type of ' . $this->types($types));
         }
 
         return new EntityField($name, $type);
@@ -122,11 +151,13 @@ final readonly class MakeFields
     }
 
     /**
+     * @param list<string> $types The types a field may take, but `choice`.
+     *
      * @return string The types, for a refusal.
      */
-    private function types(): string
+    private function types(array $types): string
     {
-        return 'text, numeric, date, boolean, uuid, json, timestamp or choice(<a>|<b>)';
+        return implode(', ', $types) . ' or choice(<a>|<b>)';
     }
 
     /**

@@ -270,6 +270,16 @@ final exception in `src/Exception/` over `RuntimeException`, or `LogicException`
 `bin/aic make:interface <module> <Name>` writes an empty interface in `src/Contracts/`; its name
 never ends in `Interface`. Each made class carries `@api` until the module uses it.
 
+Demo and reference data is a seed, a command that saves fixed rows and updates them when run again
+(#320); AIC writes no tests, so there are no factories. `bin/aic make:seed <module> <Name>Seed
+<table> --unique=<field> --fields=<name>:<type>,…` writes the command `<name>:seed` in
+`src/Command/`, its rows a constant to replace, and `src/Repository/<Name>SeedRepository.php`, whose
+`save()` upserts one row matched by the unique field and sets `created_at` on the first save; the
+manifest gains `->command()`. `--fields` takes make:entity's types and `integer`. The table must hold
+the field unique, and the entity store refuses a table that records its events or keeps a state. A
+seed writes only through repositories: gate:8's `aic.seedWrites` refuses a command named `*Seed`
+whose constructor takes anything from `AIC\Database` or `AIC\Entity`.
+
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
 (the HTML and page templates), `src/Layouts/Page.php` (four regions: header, content, nav, footer)
 and a stylesheet, then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module

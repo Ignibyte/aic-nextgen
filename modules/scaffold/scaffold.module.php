@@ -11,6 +11,7 @@ use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\RouteMethod;
 use App\Scaffold\Block\ScaffoldBlock;
 use App\Scaffold\Command\ScaffoldHello;
+use App\Scaffold\Command\ScaffoldShelvesSeed;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
 use App\Scaffold\Controller\ScaffoldEventListPage;
@@ -49,4 +50,5 @@ return (new ModuleManifest('scaffold'))
     ->permission('scaffold.scaffold-lookup', 'Call the scaffold.scaffold-lookup tool over MCP.')
     ->migration(CreateScaffoldShelvesTable::class)
     ->migration(CreateScaffoldBooksTable::class)
-    ->migration(CreateScaffoldLoansTable::class);
+    ->migration(CreateScaffoldLoansTable::class)
+    ->command('scaffold-shelves:seed', ScaffoldShelvesSeed::class);

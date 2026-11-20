@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **make:seed** (#320). `bin/aic make:seed <module> <Name>Seed <table> --unique=<field>
+  --fields=<name>:<type>,…` writes a command `<name>:seed` in `src/Command/`, its rows a constant (one example row
+  per field type), and its own repository in `src/Repository/`, whose `save()` upserts a row through
+  `EntityStore::upsert()` matched by the unique field and stamps `created_at` on insert; a rerun updates the same
+  rows. The command refuses any argument with its usage. `--fields` takes make:entity's types and `integer`. A new
+  gate:8 rule, `aic.seedWrites`, refuses a `*Seed` command whose constructor takes anything from `AIC\Database\`
+  or `AIC\Entity\`, so a seed writes only through repositories. gate:31's 25th line seeds `scaffold_shelves`.
+
 - **make:enum, make:exception and make:interface** (#319). `bin/aic make:enum <module> <Name> --cases=a,b,…
   [--backed=string|int]` writes a pure or backed enum in `src/Enum/` (a case word such as `on_hold` becomes
   `OnHold`, backed by its word or by 1, 2, …); `make:exception <module> <Name>Exception

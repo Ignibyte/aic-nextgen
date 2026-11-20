@@ -165,9 +165,9 @@ the gate suite is the dev package `ignibyte/aic-gates`, run by `vendor/bin/aic-g
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
-layout (#157), entity (#123), policy (#304), client (#305), relation (#306), state (#308), mcp-tool (#316) and enum, exception and interface (#319); dev-only in
+layout (#157), entity (#123), policy (#304), client (#305), relation (#306), state (#308), mcp-tool (#316), enum, exception and interface (#319) and seed (#320); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the twenty-four make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the twenty-five make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319; a seed, #320, whose writes gate:8 `aic.seedWrites` holds to repositories).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
