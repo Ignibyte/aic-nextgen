@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace AIC\Module\Application;
 
+use AIC\Config\Domain\AppConfig;
 use AIC\Database\Contracts\Database;
 use AIC\Form\Application\BodyLimitMiddleware;
 use AIC\Form\Application\FormGuardMiddleware;
 use AIC\Http\Application\ResponseBuilder;
+use AIC\Http\Application\WebhookSignatureMiddleware;
 use AIC\Middleware\Application\MiddlewareStep;
 use AIC\Routing\Application\RouteErrorMiddleware;
 use AIC\Session\Application\PostgresSessionStore;
@@ -23,7 +25,8 @@ use function array_reverse;
 /**
  * The framework's middleware stack around the router (#93, from the demo's
  * `AppMiddleware`), outermost first: Tessera's protocol check and redirect
- * rewrite, the request body cap (#196), route errors, the Postgres session,
+ * rewrite, the request body cap (#196), route errors, the webhook signature
+ * check (#321), the Postgres session,
  * the modules' middleware that runs after the session, the form guard,
  * Tessera's write ledger. The order is behaviour: the guard's 403 and 419 and
  * the sign-in redirect depend on it.
@@ -38,12 +41,13 @@ final readonly class FrameworkStack
     /**
      * @param ResponseBuilder $responseBuilder Makes the error responses.
      * @param Database        $database        Holds the sessions and the write ledger.
-     * @param int             $maxBodyBytes    The largest request body taken (#196).
+     * @param AppConfig       $appConfig       The largest request body taken (#196) and the webhooks whose
+     *                                         deliveries are checked (#321).
      */
     public function __construct(
         private ResponseBuilder $responseBuilder,
         private Database $database,
-        private int $maxBodyBytes,
+        private AppConfig $appConfig,
     ) {
     }
 
@@ -72,9 +76,9 @@ final readonly class FrameworkStack
         );
 
         $sessionStep = new MiddlewareStep($sessionMiddleware, $inner);
-
-        $routeErrorStep = new MiddlewareStep(new RouteErrorMiddleware($this->responseBuilder), $sessionStep);
-        $bodyLimitMiddleware = new BodyLimitMiddleware($this->responseBuilder, $this->maxBodyBytes);
+        $webhookStep = new MiddlewareStep(new WebhookSignatureMiddleware($this->appConfig->webhooks, $this->responseBuilder), $sessionStep);
+        $routeErrorStep = new MiddlewareStep(new RouteErrorMiddleware($this->responseBuilder), $webhookStep);
+        $bodyLimitMiddleware = new BodyLimitMiddleware($this->responseBuilder, $this->appConfig->maxBodyBytes);
 
         return $tesseraLayers->edge(new MiddlewareStep($bodyLimitMiddleware, $routeErrorStep));
     }

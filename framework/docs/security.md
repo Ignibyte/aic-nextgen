@@ -34,6 +34,7 @@ get 403, or 419 when a Tessera request header is present. A nonempty honeypot ge
 cannot opt out by returning a different Page response. A request with an `Authorization: Bearer`
 header passes (#313): a browser cannot send that header to another site without a CORS preflight,
 which AIC never answers, and such a request is judged by its token alone (see bearer tokens below).
+So does a webhook delivery whose signature matched (see webhooks below).
 
 `AIC\Form\Contracts\FormToken` defines these checked names:
 
@@ -184,6 +185,24 @@ is met by a user's role or a token's scope alike.
 - **Refusals follow RFC 6750.** `PermissionGate` answers an unknown or revoked token 401 with
   `WWW-Authenticate: Bearer error="invalid_token"`, and a known token without the need 403 with
   `error="insufficient_scope", scope="<need>"`. A request with no token keeps the plain 403.
+
+## Webhooks
+
+Another system posts to a webhook with a body signed by a secret both sides hold (#321).
+`AppConfig::$webhooks` names each one by its path: `new Webhooks(['/hooks/alerts' => new
+Webhook('X-Signature', $setting('AIC_WEBHOOK_ALERTS_SECRET', ''))])`, the secret read from the
+environment in `config/app.php`.
+
+- **The framework checks the signature.** `AIC\Http\Application\WebhookSignatureMiddleware` runs
+  after the route errors and before the session. A POST to a configured path answers 401 unless
+  its header is the hex HMAC-SHA256 of the raw body under the secret, compared in constant time,
+  with or without a `sha256=` prefix (`WebhookScheme::HmacSha256`, the only scheme). A blank
+  secret refuses every delivery.
+- **A verified delivery skips the CSRF check.** It goes on carrying the request attribute
+  `Webhook::ATTRIBUTE`, which only server code can set, and the form guard passes it. A path the
+  config does not name keeps the CSRF check, so a webhook route with no config entry answers 403.
+- **The endpoint answers at once.** The Api `bin/aic make:webhook` writes queues a job with the
+  body and answers 202, so the sender never waits on the work and does not retry a slow one.
 
 ## Sign-in through a provider
 

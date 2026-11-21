@@ -27,12 +27,19 @@ declare(strict_types=1);
  * Broadcast streams (#314): the fixture holds each connection 3 seconds, so
  * gate:23's stream step ends soon and the feed page shows a reconnect
  * often.
+ *
+ * The webhooks (#321): each path a sender posts signed deliveries to, its
+ * signature header and its secret from the environment. gate:23 names the
+ * fixture's secret in AIC_WEBHOOK_STUB_SECRET and signs its deliveries with
+ * it; without it every delivery answers 401.
  */
 
 use AIC\Auth\Domain\OidcProvider;
 use AIC\Auth\Domain\OidcProviders;
 use AIC\Broadcast\Domain\BroadcastConfig;
 use AIC\Config\Domain\AppConfig;
+use AIC\Http\Domain\Webhook;
+use AIC\Http\Domain\Webhooks;
 use AIC\HttpClient\Domain\Upstream;
 use AIC\HttpClient\Domain\Upstreams;
 use AIC\Tessera\Domain\TesseraRelease;
@@ -70,4 +77,7 @@ return new AppConfig(
         ),
     ]),
     broadcast: new BroadcastConfig(holdSeconds: 3),
+    webhooks: new Webhooks([
+        '/scaffold/delivery' => new Webhook('X-Signature', $setting('AIC_WEBHOOK_STUB_SECRET', '')),
+    ]),
 );

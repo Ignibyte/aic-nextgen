@@ -7,8 +7,10 @@ namespace App\Generated;
 use AIC\Container\Exception\ContainerException;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
+use AIC\Queue\Application\PostgresQueue;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
+use App\Scaffold\Controller\ScaffoldDeliveryWebhook;
 use App\Scaffold\Controller\ScaffoldEventListPage;
 use App\Scaffold\Controller\ScaffoldGaugePage;
 use App\Scaffold\Controller\ScaffoldPage;
@@ -44,6 +46,9 @@ final readonly class ScaffoldHandlers
         return [
             ScaffoldAboutPage::class => $this->handlerContext->page(new ScaffoldAboutPage($this->handlerContext->documents())),
             ScaffoldApi::class => $this->handlerContext->api(new ScaffoldApi()),
+            ScaffoldDeliveryWebhook::class => $this->handlerContext->api(
+                new ScaffoldDeliveryWebhook(new PostgresQueue($this->handlerContext->database())),
+            ),
             ScaffoldEventListPage::class => $this->handlerContext->page(
                 new ScaffoldEventListPage($this->handlerContext->documents(), new ScaffoldEventRepository($entityStore)),
             ),

@@ -14,11 +14,13 @@ use App\Scaffold\Command\ScaffoldHello;
 use App\Scaffold\Command\ScaffoldShelvesSeed;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
+use App\Scaffold\Controller\ScaffoldDeliveryWebhook;
 use App\Scaffold\Controller\ScaffoldEventListPage;
 use App\Scaffold\Controller\ScaffoldGaugePage;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPost;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
+use App\Scaffold\Job\ScaffoldDeliveryWebhookJob;
 use App\Scaffold\Job\ScaffoldHelloJob;
 use App\Scaffold\Migration\AddScaffoldTasksStage;
 use App\Scaffold\Migration\CreateScaffoldBooksTable;
@@ -51,4 +53,6 @@ return (new ModuleManifest('scaffold'))
     ->migration(CreateScaffoldShelvesTable::class)
     ->migration(CreateScaffoldBooksTable::class)
     ->migration(CreateScaffoldLoansTable::class)
-    ->command('scaffold-shelves:seed', ScaffoldShelvesSeed::class);
+    ->command('scaffold-shelves:seed', ScaffoldShelvesSeed::class)
+    ->route(RouteMethod::Post, '/scaffold/delivery', ScaffoldDeliveryWebhook::class)
+    ->job('scaffold-delivery-webhook', ScaffoldDeliveryWebhookJob::class);

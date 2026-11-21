@@ -68,10 +68,13 @@ final readonly class HandlerContexts
         return $this->root;
     }
 
-    /** @return int The largest request body the app takes (#196), before any module provider runs. */
-    public function maxBodyBytes(): int
+    /**
+     * @return AppConfig The app's settings, before any module provider runs: the framework stack reads the request
+     *                   body cap (#196) and the webhooks (#321) from it.
+     */
+    public function appConfig(): AppConfig
     {
-        return $this->appConfig->maxBodyBytes;
+        return $this->appConfig;
     }
 
     /**

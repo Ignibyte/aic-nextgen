@@ -30,7 +30,9 @@ use const PHP_BINARY;
  * port is not enough, since another Postgres on the host accepts connections
  * and refuses the app. The ports are free local ports, asked of the kernel:
  * one for each site and one for the stub upstream (#305), which both sites
- * reach through AIC_UPSTREAM_STUB with the token `stub-token`.
+ * reach through AIC_UPSTREAM_STUB with the token `stub-token`. Both sites
+ * take the stub webhook's deliveries signed with AIC_WEBHOOK_STUB_SECRET,
+ * `stub-webhook-secret` (#321).
  */
 final readonly class LocalNativeSiteSetup
 {
@@ -74,6 +76,7 @@ final readonly class LocalNativeSiteSetup
         $stubPort = self::freePort();
         $env['AIC_UPSTREAM_STUB'] = 'http://127.0.0.1:' . $stubPort;
         $env['AIC_UPSTREAM_STUB_TOKEN'] = 'stub-token';
+        $env['AIC_WEBHOOK_STUB_SECRET'] = 'stub-webhook-secret';
 
         return new NativeSiteSetup($env, $database, $reachable, self::freePort(), self::freePort(), $this->maxBodyBytes($root), $stubPort);
     }

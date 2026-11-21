@@ -503,6 +503,14 @@
             "module": "scaffold",
             "needs": "",
             "path": "/scaffold-events"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldDeliveryWebhook",
+            "kind": "Api",
+            "method": "POST",
+            "module": "scaffold",
+            "needs": "",
+            "path": "/scaffold/delivery"
         }
     ],
     "commands": [
@@ -669,6 +677,12 @@
             "kind": "Job",
             "module": "framework",
             "name": "notify"
+        },
+        {
+            "class": "App\\Scaffold\\Job\\ScaffoldDeliveryWebhookJob",
+            "kind": "Job",
+            "module": "scaffold",
+            "name": "scaffold-delivery-webhook"
         },
         {
             "class": "App\\Scaffold\\Job\\ScaffoldHelloJob",

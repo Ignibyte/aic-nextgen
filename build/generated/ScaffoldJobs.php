@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Controller\Contracts\Job;
+use App\Scaffold\Job\ScaffoldDeliveryWebhookJob;
 use App\Scaffold\Job\ScaffoldHelloJob;
 
 /**
@@ -19,6 +20,7 @@ final readonly class ScaffoldJobs
     public function byName(): array
     {
         return [
+            'scaffold-delivery-webhook' => new ScaffoldDeliveryWebhookJob(),
             'scaffold-hello' => new ScaffoldHelloJob(),
         ];
     }

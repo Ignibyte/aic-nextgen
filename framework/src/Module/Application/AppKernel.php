@@ -43,7 +43,7 @@ final readonly class AppKernel
         $dynamicApplication = new DynamicApplication(
             $handlerContexts,
             $webWiring,
-            new FrameworkStack($responseBuilder, $database, $handlerContexts->maxBodyBytes()),
+            new FrameworkStack($responseBuilder, $database, $handlerContexts->appConfig()),
             $webPresentation,
         );
         $publicBoundary = new PublicBoundary($responseBuilder);

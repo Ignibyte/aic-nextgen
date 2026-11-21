@@ -6,6 +6,7 @@ namespace AIC\Config\Domain;
 
 use AIC\Auth\Domain\OidcProviders;
 use AIC\Broadcast\Domain\BroadcastConfig;
+use AIC\Http\Domain\Webhooks;
 use AIC\HttpClient\Domain\Upstreams;
 use AIC\Tessera\Domain\TesseraRelease;
 use InvalidArgumentException;
@@ -38,6 +39,8 @@ final readonly class AppConfig
      * @param OidcProviders   $oidc         The OpenID Connect providers people sign in through, by name (#313),
      *                                      each client secret read from the environment here.
      * @param BroadcastConfig $broadcast    How broadcast streams use the site's workers (#314).
+     * @param Webhooks        $webhooks     The webhooks the app takes, by path (#321), each secret read from the
+     *                                      environment here.
      *
      * @throws InvalidArgumentException When the name is blank or the cap is below one byte.
      */
@@ -49,6 +52,7 @@ final readonly class AppConfig
         public Upstreams $upstreams = new Upstreams(),
         public OidcProviders $oidc = new OidcProviders(),
         public BroadcastConfig $broadcast = new BroadcastConfig(),
+        public Webhooks $webhooks = new Webhooks(),
     ) {
         if (trim($name) === '') {
             throw new InvalidArgumentException('AppConfig: the application name must not be blank.');
