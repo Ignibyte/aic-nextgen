@@ -54,12 +54,19 @@ Quote dynamic attribute values. Render child Components and Regions only in elem
 
 The framework atoms are declared under `framework/templates/components/` in four groups: text,
 controls, forms, and the data atoms (#230), which are `AIC\Component\Domain\Table`, `Tabs`,
-`Timeline`, `CodeBlock`, `Stack` and `FilterForm`, plus the profiler's own document,
+`Timeline`, `CodeBlock`, `Stack`, `FilterForm`, `FilterBar` and `Pager`, plus the profiler's own document,
 `AIC\Profiler\Domain\ProfilerLayout`. A data atom's value classes (`TableRow`, `TableCell`, `Tab`,
 `TimelineSegment`) are plain values its template reads. `Table`'s optional `alignments` (#240)
 (`list<TableAlign>`, by column position) puts `class="aic-align-end"` on an end column's
 header and cells; the framework ships no atom stylesheet, so the theme styles that class (the
-profiler styles its own in `ProfilerStyles`). `GuardFields`, in the forms group, is the CSRF field and the
+profiler styles its own in `ProfilerStyles`). A list page (#324) draws three of them: `Table`'s optional `sorts`
+(`array<int, TableSort>`, by position) links a column's header to the rows sorted by it and writes
+`aria-sort` from its `TableSortOrder`; `FilterBar` is a GET form (`aic-filter-bar`) of `FilterField`s,
+each a search box or, with `FilterOption`s, a select, keeping the values in `kept` as hidden inputs;
+`Pager` (`aic-pager`) is a `nav` of the page before, where the list stands and the page after.
+`AIC\Component\Application\ListQueries`, `ListParts` and `ListRows` read a list's query string into
+`ListChoice`, `ListSort` and `ListPlace` values, make the header links, the selects and the pager, and
+cut a sorted page of an `EntityQuery`. `GuardFields`, in the forms group, is the CSRF field and the
 honeypot (#246): `Form` renders it first, and a theme template that writes its own `<form>` renders
 one inside. A source-package
 build uses the same reader to write their escaped copies and lookup under

@@ -9,6 +9,8 @@ use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
 use AIC\Profiler\Domain\ProfilerDebug;
+use AIC\Profiler\Domain\ProfilerLayout;
+use AIC\Profiler\Domain\ProfilerToolbar;
 use Override;
 
 /**
@@ -29,9 +31,43 @@ final readonly class AtomTemplatesPart7 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
+            $component instanceof ProfilerLayout => $this->renderProfilerLayout($component, $renderPass),
+            $component instanceof ProfilerToolbar => $this->renderProfilerToolbar($component, $renderPass),
             $component instanceof ProfilerDebug => $this->renderProfilerDebug($component, $renderPass),
             default => throw new UnknownComponent($component::class),
         };
+    }
+
+    /**
+     * @param ProfilerLayout $profilerLayout The component; its template reads it.
+     * @param RenderPass     $renderPass     The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from profiler-layout.phtml.
+     */
+    private function renderProfilerLayout(ProfilerLayout $profilerLayout, RenderPass $renderPass): string
+    {
+        $renderPass->open($profilerLayout);
+        require __DIR__ . '/profiler-layout.phtml';
+
+        return $renderPass->close();
+    }
+
+    /**
+     * @param ProfilerToolbar $profilerToolbar The component; its template reads it.
+     * @param RenderPass      $renderPass      The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from profiler-toolbar.phtml.
+     */
+    private function renderProfilerToolbar(ProfilerToolbar $profilerToolbar, RenderPass $renderPass): string
+    {
+        $renderPass->open($profilerToolbar);
+        require __DIR__ . '/profiler-toolbar.phtml';
+
+        return $renderPass->close();
     }
 
     /**

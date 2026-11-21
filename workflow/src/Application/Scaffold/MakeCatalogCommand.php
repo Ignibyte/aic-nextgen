@@ -62,6 +62,10 @@ final readonly class MakeCatalogCommand implements Command
         'make:interface' => ['make:interface <module> <Name>', 'an interface in src/Contracts/'],
         'make:job' => ['make:job <module> <Class> <name>', 'a queued or scheduled job, done at once'],
         'make:layout' => ['make:layout <name>', 'a named page layout in the theme'],
+        'make:list-page' => [
+            'make:list-page <module> <Name>ListPage <table> <path> --fields=<name>:<type>,… --filters=<field>,… [--sort=<field>,…]',
+            'a GET page listing a table: a filter bar, sortable columns and pages, in framework atoms',
+        ],
         'make:migration' => ['make:migration <module> <Class> <table>', 'a migration creating one table'],
         'make:module' => ['make:module <module> [--requires=a,b]', 'a module with its manifest'],
         'make:page' => ['make:page <module> <Class> <path> [--component=<C>] [--layout=<name>] [--post]', 'a page at a route'],

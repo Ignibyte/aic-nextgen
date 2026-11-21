@@ -1,0 +1,2 @@
+<?php declare(strict_types=1); /* Escaped from framework/templates/components/pager.phtml by composer run build; edit that file, never this one. */ ?>
+<nav<?= $renderPass->marks() ?> class="aic-pager" aria-label="Pages"><?php if ($pager->previous !== ''): ?><a href="<?= $renderPass->text($pager->previous) ?>" rel="prev">Previous</a><?php endif; ?><span><?= $renderPass->text($pager->label) ?></span><?php if ($pager->next !== ''): ?><a href="<?= $renderPass->text($pager->next) ?>" rel="next">Next</a><?php endif; ?></nav>

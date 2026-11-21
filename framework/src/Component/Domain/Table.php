@@ -10,16 +10,19 @@ use AIC\Component\Contracts\Component;
  * A table of text (#230): a head of column names and rows of cells, each cell
  * text or a link. With `poll` set, Tessera refreshes it from that URL every
  * five seconds. A column named in `alignments` as `TableAlign::End` sits at
- * the cell's end, its header included (#240).
+ * the cell's end, its header included (#240). A column with a `TableSort`
+ * in `sorts` links its header to the rows sorted by it, and says how they are
+ * ordered now with `aria-sort` (#324).
  */
 final readonly class Table implements Component
 {
     /**
-     * @param list<string>     $head       The column names.
-     * @param list<TableRow>   $rows       The rows, in order.
-     * @param string           $caption    What the table shows; empty for none.
-     * @param string           $poll       The same-origin URL Tessera refreshes it from every five seconds; empty for none.
-     * @param list<TableAlign> $alignments Each column's alignment, by position; a column without one starts.
+     * @param list<string>          $head       The column names.
+     * @param list<TableRow>        $rows       The rows, in order.
+     * @param string                $caption    What the table shows; empty for none.
+     * @param string                $poll       The same-origin URL Tessera refreshes it from every five seconds; empty for none.
+     * @param list<TableAlign>      $alignments Each column's alignment, by position; a column without one starts.
+     * @param array<int, TableSort> $sorts      The sortable columns' headers, by position.
      */
     public function __construct(
         public array $head,
@@ -27,6 +30,7 @@ final readonly class Table implements Component
         public string $caption = '',
         public string $poll = '',
         public array $alignments = [],
+        public array $sorts = [],
     ) {
     }
 }

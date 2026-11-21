@@ -7,11 +7,11 @@ namespace AIC\Component\Application\Templates;
 use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
+use AIC\Component\Domain\FilterBar;
 use AIC\Component\Domain\FilterForm;
+use AIC\Component\Domain\Pager;
 use AIC\Component\Domain\Stack;
 use AIC\Component\Exception\UnknownComponent;
-use AIC\Profiler\Domain\ProfilerLayout;
-use AIC\Profiler\Domain\ProfilerToolbar;
 use Override;
 
 /**
@@ -42,8 +42,8 @@ final readonly class AtomTemplatesPart6 implements ComponentTemplates
         return match (true) {
             $component instanceof Stack => $this->renderStack($component, $renderPass),
             $component instanceof FilterForm => $this->renderFilterForm($component, $renderPass),
-            $component instanceof ProfilerLayout => $this->renderProfilerLayout($component, $renderPass),
-            $component instanceof ProfilerToolbar => $this->renderProfilerToolbar($component, $renderPass),
+            $component instanceof FilterBar => $this->renderFilterBar($component, $renderPass),
+            $component instanceof Pager => $this->renderPager($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }
@@ -81,33 +81,33 @@ final readonly class AtomTemplatesPart6 implements ComponentTemplates
     }
 
     /**
-     * @param ProfilerLayout $profilerLayout The component; its template reads it.
-     * @param RenderPass     $renderPass     The pass its template writes through.
+     * @param FilterBar  $filterBar  The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
      *
      * @throws UnknownComponent When a child has no template.
      *
-     * @return string Its markup, from profiler-layout.phtml.
+     * @return string Its markup, from filter-bar.phtml.
      */
-    private function renderProfilerLayout(ProfilerLayout $profilerLayout, RenderPass $renderPass): string
+    private function renderFilterBar(FilterBar $filterBar, RenderPass $renderPass): string
     {
-        $renderPass->open($profilerLayout);
-        require __DIR__ . '/profiler-layout.phtml';
+        $renderPass->open($filterBar);
+        require __DIR__ . '/filter-bar.phtml';
 
         return $renderPass->close();
     }
 
     /**
-     * @param ProfilerToolbar $profilerToolbar The component; its template reads it.
-     * @param RenderPass      $renderPass      The pass its template writes through.
+     * @param Pager      $pager      The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
      *
      * @throws UnknownComponent When a child has no template.
      *
-     * @return string Its markup, from profiler-toolbar.phtml.
+     * @return string Its markup, from pager.phtml.
      */
-    private function renderProfilerToolbar(ProfilerToolbar $profilerToolbar, RenderPass $renderPass): string
+    private function renderPager(Pager $pager, RenderPass $renderPass): string
     {
-        $renderPass->open($profilerToolbar);
-        require __DIR__ . '/profiler-toolbar.phtml';
+        $renderPass->open($pager);
+        require __DIR__ . '/pager.phtml';
 
         return $renderPass->close();
     }

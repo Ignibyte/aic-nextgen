@@ -12,7 +12,7 @@ use function ucwords;
 /**
  * One column `make:entity` writes (#123): its snake-case name and its type, `text`, `numeric`, `date`, `boolean`, or
  * since #307 `uuid`, `json`, `timestamp` or `choice` with its values, with what each type becomes in the entity, the
- * repository and the migration.
+ * repository and the migration, and since #324 in a list page's row.
  */
 final readonly class EntityField
 {
@@ -35,6 +35,34 @@ final readonly class EntityField
     public function property(): string
     {
         return lcfirst(str_replace('_', '', ucwords($this->name, '_')));
+    }
+
+    /**
+     * @return string Its PHP type in a list page's row (#324): `int`, `bool` or `string`.
+     */
+    public function phpType(): string
+    {
+        return match ($this->type) {
+            'integer' => 'int',
+            'boolean' => 'bool',
+            default => 'string',
+        };
+    }
+
+    /**
+     * @return string How a list page's repository reads it from a row (#324), such as `$row->int('capacity')`.
+     */
+    public function read(): string
+    {
+        return '$row->' . $this->phpType() . "('" . $this->name . "')";
+    }
+
+    /**
+     * @return string Its name in words, such as `due on`.
+     */
+    public function words(): string
+    {
+        return str_replace('_', ' ', $this->name);
     }
 
     /**

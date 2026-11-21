@@ -9,6 +9,7 @@ use AIC\Workflow\Application\Make\MakeApiCommand;
 use AIC\Workflow\Application\Make\MakeBlockCommand;
 use AIC\Workflow\Application\Make\MakeCommandCommand;
 use AIC\Workflow\Application\Make\MakeJobCommand;
+use AIC\Workflow\Application\Make\MakeListPageCommand;
 use AIC\Workflow\Application\Make\MakePageActionCommand;
 use AIC\Workflow\Application\Make\MakeRun;
 use AIC\Workflow\Application\Make\MakeSeedCommand;
@@ -40,6 +41,7 @@ final readonly class SimpleMakes
             'make:exception' => new MakeShapeCommand($makeRun, MadeShape::Exception),
             'make:interface' => new MakeShapeCommand($makeRun, MadeShape::Interface),
             'make:job' => new MakeJobCommand($makeRun),
+            'make:list-page' => new MakeListPageCommand($makeRun),
             'make:page-action' => new MakePageActionCommand($makeRun),
             'make:seed' => new MakeSeedCommand($makeRun),
             'make:webhook' => new MakeWebhookCommand($makeRun),

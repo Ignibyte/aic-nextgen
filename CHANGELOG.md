@@ -6,6 +6,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **make:list-page** (#324). `bin/aic make:list-page <module> <Name>ListPage <table> <path> --fields=<name>:<type>,…
+  --filters=<field>,… [--sort=<field>,…] [--key=id] [--per-page=25]` writes six files: the GET Page, its query value
+  and the reader that fills it from the query string, a repository, a row and a view. The view draws a `FilterBar`
+  (a search box for a text filter, a select for a choice or boolean one, the sort kept as a hidden field), a `Table`
+  whose sortable heads link `sort=<c>` and `sort=-<c>` and carry `aria-sort`, and a `Pager` that keeps the filters
+  and the sort. Unknown or out-of-range values fall back to the defaults. The framework gains the atoms `FilterBar`
+  (`FilterField`, `FilterOption`), `Pager` and `Table::$sorts` (`TableSort`, `TableSortOrder`), styled through
+  `aic-*` classes by the app theme and `make:theme`'s stylesheet, and the helpers `ListQueries`, `ListParts` and
+  `ListRows` (`ListSort`, `ListChoice`, `ListPlace`) that hold the generic logic. gate:31's 29th line makes
+  `/scaffold/books`; gate:23 asks for it plain, filtered, sorted descending on page 2, and with unknown values.
+
 - **make:export** (#323). `bin/aic make:export <module> <Name>Export <path> [--days=7] [--format=csv]` writes six
   files: a POST Page that stores an export and queues its job, then answers 303 to `<path>/<uuid>`; a Stream at
   `<path>/{id:uuid}` that answers 404 until the file is written, then the CSV through `PrivateFiles::download()`,

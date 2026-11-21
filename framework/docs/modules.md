@@ -312,6 +312,21 @@ query. A link is anyone's who holds it: the make prints that the routes need a p
 `needs:` when an export is not everyone's, and the gate:23 steps to add. Another format waits on an
 interpreted worker ([native.md](native.md#libraries-that-do-not-compile)).
 
+A table someone searches, sorts and pages through is a list page (#324). `bin/aic make:list-page
+<module> <Name>ListPage <table> <path> --fields=<name>:<type>,… --filters=<field>,… [--sort=<field>,…]
+[--key=id] [--per-page=25]` writes the Page at the path, its `<Name>ListQuery` and `<Name>ListQueries`
+in `src/Form/` (what the query string asks for, read by `AIC\Component\Application\ListQueries`), its
+own `<Name>ListRepository`, its `<Name>ListRow` in `src/Entity/` and its `<Name>ListView` in
+`src/Service/`; the manifest gains the route. The page draws the framework atoms `FilterBar`, `Table`
+with sortable heads and `Pager` ([templates.md](templates.md)), which the theme styles. A text filter
+searches its field, a choice or boolean one takes one of its values (`yes` or `no`); the first `--sort`
+field is the default order, a header link turns it around, and the key ends every sort, so no row
+repeats or goes missing between pages. A value the list does not know reads as its default. Each
+made file names the page in its classes and methods, so list pages over different tables stay apart
+under phpcpd; two over one table, or sharing three filters, are copies, and the gate says so. The
+make prints that the route needs a protected prefix and `needs:` when not everyone may read the
+table, and the gate:23 steps to add.
+
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
 (the HTML and page templates), `src/Layouts/Page.php` (four regions: header, content, nav, footer)
 and a stylesheet, then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module

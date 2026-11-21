@@ -535,6 +535,14 @@
             "module": "scaffold",
             "needs": "",
             "path": "/scaffold/exports/{id:uuid}"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldBookListPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "scaffold",
+            "needs": "",
+            "path": "/scaffold/books"
         }
     ],
     "commands": [
