@@ -519,6 +519,22 @@
             "module": "scaffold",
             "needs": "",
             "path": "/scaffold/scaffold-pin"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldShelfExportPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "scaffold",
+            "needs": "",
+            "path": "/scaffold/exports"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldShelfExportDownload",
+            "kind": "Stream",
+            "method": "GET",
+            "module": "scaffold",
+            "needs": "",
+            "path": "/scaffold/exports/{id:uuid}"
         }
     ],
     "commands": [
@@ -697,6 +713,18 @@
             "kind": "Job",
             "module": "scaffold",
             "name": "scaffold-hello"
+        },
+        {
+            "class": "App\\Scaffold\\Job\\ScaffoldShelfExportJob",
+            "kind": "Job",
+            "module": "scaffold",
+            "name": "scaffold-shelf-export"
+        },
+        {
+            "class": "App\\Scaffold\\Job\\ScaffoldShelfExportPruneJob",
+            "kind": "Job",
+            "module": "scaffold",
+            "name": "scaffold-shelf-export-prune"
         }
     ],
     "schedules": [
@@ -705,6 +733,12 @@
             "job": "demo",
             "module": "site",
             "name": "demo-every-minute"
+        },
+        {
+            "cadence": "15 4 * * *",
+            "job": "scaffold-shelf-export-prune",
+            "module": "scaffold",
+            "name": "scaffold-shelf-export-prune"
         }
     ],
     "modules": [
@@ -885,7 +919,8 @@
                 "App\\Scaffold\\Migration\\AddScaffoldTasksStage",
                 "App\\Scaffold\\Migration\\CreateScaffoldShelvesTable",
                 "App\\Scaffold\\Migration\\CreateScaffoldBooksTable",
-                "App\\Scaffold\\Migration\\CreateScaffoldLoansTable"
+                "App\\Scaffold\\Migration\\CreateScaffoldLoansTable",
+                "App\\Scaffold\\Migration\\CreateScaffoldShelfExportsTable"
             ],
             "name": "scaffold",
             "namespace": "App\\Scaffold\\",

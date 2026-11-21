@@ -298,6 +298,20 @@ Tessera submit the region in place ([tessera.md](tessera.md#forms-redirects-and-
 refused, the form again with its field marked, as 422. The make prints where the page places the
 view's `components()` and the gate:23 steps to add.
 
+A report a visitor asks for and downloads later is a queued export (#323). `bin/aic make:export
+<module> <Name>Export <path> [--days=7] [--format=csv]` writes a POST Page at the path
+(`<Name>ExportPost`) and the Stream that sends one at `<path>/{id:uuid}` (`<Name>ExportDownload`) in
+`src/Controller/`, the job `<name>-export` that writes the CSV to the private files and the job
+`<name>-export-prune` in `src/Job/`, `<Name>ExportRepository` and the migration of the table
+`<name>_exports` and its view `<name>_export_states`; the manifest gains both routes, both jobs, a
+schedule queuing the prune at 04:15 UTC daily, and the migration. The POST stores an export under a
+uuid the database makes, queues its job and answers 303 to its download, which is 404 until the job
+has written the file and again once the export is past its days by the database's clock. The prune
+deletes each such export's file, then its row. The job's header and rows stand in for the module's
+query. A link is anyone's who holds it: the make prints that the routes need a protected prefix and
+`needs:` when an export is not everyone's, and the gate:23 steps to add. Another format waits on an
+interpreted worker ([native.md](native.md#libraries-that-do-not-compile)).
+
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
 (the HTML and page templates), `src/Layouts/Page.php` (four regions: header, content, nav, footer)
 and a stylesheet, then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module

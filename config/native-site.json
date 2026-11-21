@@ -1377,6 +1377,43 @@
             "captures": false
         },
         {
+            "name": "export, queued",
+            "method": "POST",
+            "path": "/scaffold/exports",
+            "form": "aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": true
+        },
+        {
+            "name": "export, not written yet",
+            "method": "GET",
+            "path": "{location}",
+            "form": "",
+            "header": "",
+            "status": 404,
+            "captures": false
+        },
+        {
+            "name": "export, downloaded after the worker ran",
+            "method": "GET",
+            "path": "{location}",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false,
+            "work": true
+        },
+        {
+            "name": "export, not one",
+            "method": "GET",
+            "path": "/scaffold/exports/00000000-0000-0000-0000-000000000000",
+            "form": "",
+            "header": "",
+            "status": 404,
+            "captures": false
+        },
+        {
             "name": "ledger feed stream, a token without ledger.feed",
             "method": "GET",
             "path": "/ledger/feed/events",

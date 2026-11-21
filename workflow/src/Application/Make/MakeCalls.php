@@ -79,6 +79,17 @@ final readonly class MakeCalls
     }
 
     /**
+     * @param string $name The schedule's name, and the job it queues (`make:export`, #323).
+     * @param string $cron When it runs, five cron fields in UTC.
+     *
+     * @return ManifestCall `->schedule('<name>', '<name>', [], '<cron>')`.
+     */
+    public function schedule(string $name, string $cron): ManifestCall
+    {
+        return new ManifestCall("->schedule('" . $name . "', '" . $name . "', [], '" . $cron . "')", []);
+    }
+
+    /**
      * @param ManifestCall $first  A call.
      * @param ManifestCall $second The call after it.
      *

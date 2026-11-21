@@ -20,14 +20,19 @@ use App\Scaffold\Controller\ScaffoldGaugePage;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPinAction;
 use App\Scaffold\Controller\ScaffoldPost;
+use App\Scaffold\Controller\ScaffoldShelfExportDownload;
+use App\Scaffold\Controller\ScaffoldShelfExportPost;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
 use App\Scaffold\Job\ScaffoldDeliveryWebhookJob;
 use App\Scaffold\Job\ScaffoldHelloJob;
+use App\Scaffold\Job\ScaffoldShelfExportJob;
+use App\Scaffold\Job\ScaffoldShelfExportPruneJob;
 use App\Scaffold\Migration\AddScaffoldTasksStage;
 use App\Scaffold\Migration\CreateScaffoldBooksTable;
 use App\Scaffold\Migration\CreateScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldItemsTable;
 use App\Scaffold\Migration\CreateScaffoldLoansTable;
+use App\Scaffold\Migration\CreateScaffoldShelfExportsTable;
 use App\Scaffold\Migration\CreateScaffoldShelvesTable;
 use App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldTasksTable;
@@ -57,4 +62,10 @@ return (new ModuleManifest('scaffold'))
     ->command('scaffold-shelves:seed', ScaffoldShelvesSeed::class)
     ->route(RouteMethod::Post, '/scaffold/delivery', ScaffoldDeliveryWebhook::class)
     ->job('scaffold-delivery-webhook', ScaffoldDeliveryWebhookJob::class)
-    ->route(RouteMethod::Post, '/scaffold/scaffold-pin', ScaffoldPinAction::class);
+    ->route(RouteMethod::Post, '/scaffold/scaffold-pin', ScaffoldPinAction::class)
+    ->route(RouteMethod::Post, '/scaffold/exports', ScaffoldShelfExportPost::class)
+    ->route(RouteMethod::Get, '/scaffold/exports/{id:uuid}', ScaffoldShelfExportDownload::class)
+    ->job('scaffold-shelf-export', ScaffoldShelfExportJob::class)
+    ->job('scaffold-shelf-export-prune', ScaffoldShelfExportPruneJob::class)
+    ->schedule('scaffold-shelf-export-prune', 'scaffold-shelf-export-prune', [], '15 4 * * *')
+    ->migration(CreateScaffoldShelfExportsTable::class);

@@ -36,7 +36,7 @@ final readonly class ModuleJobs
         return array_merge(
             (new SiteJobs($this->consoleContext))->byName(),
             (new LedgerJobs($this->consoleContext))->byName(),
-            (new ScaffoldJobs())->byName(),
+            (new ScaffoldJobs($this->consoleContext))->byName(),
         );
     }
 }

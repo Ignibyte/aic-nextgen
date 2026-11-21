@@ -121,6 +121,14 @@ line, which the agent adds: the framework checks the signature at that path. `--
 gate:23 steps, and edits nothing else. `--on` must be a GET route some manifest declares, with no
 parameters; a name not ending in `Action`, `Action` alone or a region not in lower case is refused.
 
+`make:export <module> <Name>Export <path> [--days=7] [--format=csv] [--version=<v>]` (#323) writes the
+POST Page that stores an export and queues `<name>-export`, its download Stream at `<path>/{id:uuid}`,
+the write job, the prune job, `<Name>ExportRepository` and `Create<Name>ExportsTable` (the table and the
+view saying which exports are past their days); the manifest gains both routes, both jobs, the prune's
+daily schedule and the migration. It prints who may download and the gate:23 steps. A name not ending
+in `Export`, `Export` alone, a path with a parameter, `--days` outside 1 to 365 or a format but `csv` is
+refused.
+
 `schema:import <dump.sql> --module=<m> [--tables=a,b] [--version=<v>] [--dry-run]` (#318) turns a
 `pg_dump --schema-only` into baseline migrations: one `Create<Table>Table` per table, written after
 the tables its foreign keys reference, with consecutive versions and the manifest's `->migration()`

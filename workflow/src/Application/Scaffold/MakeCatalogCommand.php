@@ -55,6 +55,10 @@ final readonly class MakeCatalogCommand implements Command
             'make:exception <module> <Name>Exception [--extends=LogicException|InvalidArgumentException]',
             'an exception in src/Exception/, over RuntimeException unless named',
         ],
+        'make:export' => [
+            'make:export <module> <Name>Export <path> [--days=7] [--format=csv]',
+            'a queued CSV export: a POST page queuing it, its job, its download and a daily prune',
+        ],
         'make:interface' => ['make:interface <module> <Name>', 'an interface in src/Contracts/'],
         'make:job' => ['make:job <module> <Class> <name>', 'a queued or scheduled job, done at once'],
         'make:layout' => ['make:layout <name>', 'a named page layout in the theme'],
