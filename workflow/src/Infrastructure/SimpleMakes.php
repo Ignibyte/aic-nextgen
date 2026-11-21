@@ -12,12 +12,14 @@ use AIC\Workflow\Application\Make\MakeJobCommand;
 use AIC\Workflow\Application\Make\MakeRun;
 use AIC\Workflow\Application\Make\MakeSeedCommand;
 use AIC\Workflow\Application\Make\MakeShapeCommand;
+use AIC\Workflow\Application\Make\MakeWebhookCommand;
 use AIC\Workflow\Domain\Make\MadeShape;
 
 /**
  * The makes that need nothing but the run (#122, #319), composed apart from
  * `MakeKernel` for PHPMD's coupling cap: one entry class each (`make:api`,
- * `make:block`, `make:command`, `make:job`, `make:seed`, #320) and the
+ * `make:block`, `make:command`, `make:job`, `make:seed`, #320, `make:webhook`,
+ * #321) and the
  * plain PHP shapes (`make:enum`, `make:exception`, `make:interface`).
  */
 final readonly class SimpleMakes
@@ -38,6 +40,7 @@ final readonly class SimpleMakes
             'make:interface' => new MakeShapeCommand($makeRun, MadeShape::Interface),
             'make:job' => new MakeJobCommand($makeRun),
             'make:seed' => new MakeSeedCommand($makeRun),
+            'make:webhook' => new MakeWebhookCommand($makeRun),
         ];
     }
 }

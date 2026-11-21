@@ -109,6 +109,12 @@ upserts by the unique field, so a rerun updates the same rows. `--fields` takes 
 and `integer`; the manifest gains `->command()`. gate:8's `aic.seedWrites` keeps every `*Seed`
 command off `AIC\Database` and `AIC\Entity`: it saves through repositories.
 
+`make:webhook <module> <Name>Webhook <path> [--scheme=hmac-sha256]` (#321) writes a POST Api that
+queues `<name>-webhook` with the delivery's body and answers 202, its `<Name>Payload` value and the
+`<Name>WebhookJob`; the manifest gains the route and the job. It prints the `config/app.php` webhook
+line, which the agent adds: the framework checks the signature at that path. `--scheme` takes only
+`hmac-sha256`; a name not ending in `Webhook`, `Webhook` alone or a bad path is refused.
+
 `schema:import <dump.sql> --module=<m> [--tables=a,b] [--version=<v>] [--dry-run]` (#318) turns a
 `pg_dump --schema-only` into baseline migrations: one `Create<Table>Table` per table, written after
 the tables its foreign keys reference, with consecutive versions and the manifest's `->migration()`

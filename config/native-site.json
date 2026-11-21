@@ -1314,6 +1314,33 @@
             "captures": false
         },
         {
+            "name": "webhook, unsigned",
+            "method": "POST",
+            "path": "/scaffold/delivery",
+            "form": "json:{\"id\":1}",
+            "header": "",
+            "status": 401,
+            "captures": false
+        },
+        {
+            "name": "webhook, a wrong signature",
+            "method": "POST",
+            "path": "/scaffold/delivery",
+            "form": "json:{\"id\":1}",
+            "header": "X-Signature: sha256=0000000000000000000000000000000000000000000000000000000000000000",
+            "status": 401,
+            "captures": false
+        },
+        {
+            "name": "webhook, signed",
+            "method": "POST",
+            "path": "/scaffold/delivery",
+            "form": "json:{\"id\":1}",
+            "header": "X-Signature: sha256=8f16ea4385bde629b05662d4d1ce9fa11c18ad12bb4a9966b7d1173ae5fca2d3",
+            "status": 202,
+            "captures": false
+        },
+        {
             "name": "ledger feed stream, a token without ledger.feed",
             "method": "GET",
             "path": "/ledger/feed/events",

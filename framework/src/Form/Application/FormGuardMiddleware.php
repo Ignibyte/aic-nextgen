@@ -7,6 +7,7 @@ namespace AIC\Form\Application;
 use AIC\Form\Contracts\FormToken;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Http\Domain\BearerCredential;
+use AIC\Http\Domain\Webhook;
 use AIC\Session\Application\RequestSession;
 use AIC\Tessera\Domain\TesseraRequest;
 use InvalidArgumentException;
@@ -27,7 +28,8 @@ use function in_array;
  * controller can skip it. It runs after SessionMiddleware. A request with
  * a bearer token (#313) passes: a browser cannot send that header to another
  * site without a CORS preflight, and such a request is judged by its token
- * alone, never by the session's user.
+ * alone, never by the session's user. So does a webhook delivery whose
+ * signature `WebhookSignatureMiddleware` verified (#321).
  */
 final readonly class FormGuardMiddleware implements MiddlewareInterface
 {
@@ -88,11 +90,13 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
     /**
      * @param ServerRequestInterface $serverRequest The request.
      *
-     * @return bool Whether it is unsafe and judged by its session, not by a bearer token.
+     * @return bool Whether it is unsafe and judged by its session, not by a bearer token or a webhook signature (#321).
      */
     private function guards(ServerRequestInterface $serverRequest): bool
     {
-        return in_array($serverRequest->getMethod(), self::UNSAFE, true) && !$this->bearerCredential->present($serverRequest);
+        return in_array($serverRequest->getMethod(), self::UNSAFE, true)
+            && !$this->bearerCredential->present($serverRequest)
+            && $serverRequest->getAttribute(Webhook::ATTRIBUTE) === null;
     }
 
     /**

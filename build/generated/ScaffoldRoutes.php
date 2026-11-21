@@ -8,6 +8,7 @@ use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
+use App\Scaffold\Controller\ScaffoldDeliveryWebhook;
 use App\Scaffold\Controller\ScaffoldEventListPage;
 use App\Scaffold\Controller\ScaffoldGaugePage;
 use App\Scaffold\Controller\ScaffoldPage;
@@ -36,6 +37,7 @@ final readonly class ScaffoldRoutes
             ->post('/scaffold', ScaffoldPost::class)
             ->get('/api/scaffold', ScaffoldApi::class)
             ->get('/scaffold-tasks', ScaffoldTaskListPage::class)
-            ->get('/scaffold-events', ScaffoldEventListPage::class);
+            ->get('/scaffold-events', ScaffoldEventListPage::class)
+            ->post('/scaffold/delivery', ScaffoldDeliveryWebhook::class);
     }
 }

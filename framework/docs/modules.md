@@ -280,6 +280,15 @@ the field unique, and the entity store refuses a table that records its events o
 seed writes only through repositories: gate:8's `aic.seedWrites` refuses a command named `*Seed`
 whose constructor takes anything from `AIC\Database` or `AIC\Entity`.
 
+A webhook another system posts to is a POST Api (#321). `bin/aic make:webhook <module>
+<Name>Webhook <path> [--scheme=hmac-sha256]` writes it in `src/Controller/`, the delivery's value
+`<Name>Payload` in `src/Service/` and the job `<name>-webhook` in `src/Job/` as `<Name>WebhookJob`;
+the manifest gains the route and the job. The Api queues the job with the raw body and answers 202.
+The make prints the `config/app.php` line naming the path, the signature header and the secret's
+environment variable: the framework checks every delivery's signature there, and until the line is
+added the route keeps the CSRF check and refuses every delivery
+([security.md](security.md#webhooks)).
+
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
 (the HTML and page templates), `src/Layouts/Page.php` (four regions: header, content, nav, footer)
 and a stylesheet, then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module

@@ -75,6 +75,10 @@ final readonly class MakeCatalogCommand implements Command
             'a state machine on a field: its enum, its transitions and its migration',
         ],
         'make:theme' => ['make:theme <name>', 'a theme'],
+        'make:webhook' => [
+            'make:webhook <module> <Name>Webhook <path> [--scheme=hmac-sha256]',
+            'a signed POST endpoint that queues a job and answers 202, its delivery value and the job',
+        ],
     ];
 
     /**

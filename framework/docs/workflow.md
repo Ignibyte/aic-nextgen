@@ -157,6 +157,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:seed` | scaffold a seed: a command saving fixed rows through its own repository, updated on a rerun (#320) |
 | `Command::make:scaffold` | start an app kind from an existing one, in a run the operator approved (#299) |
 | `Command::make:theme` | scaffold the site's selected theme |
+| `Command::make:webhook` | scaffold a signed webhook: a POST Api queueing its job, the delivery's value and the job (#321) |
 | `Command::module:list` | inspect modules |
 | `Command::module:show` | inspect a module's declarations |
 | `Command::route:list` | inspect routes |

@@ -6,6 +6,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Signed webhooks and make:webhook** (#321). `AppConfig::$webhooks` maps a path to a `Webhook` (the signature
+  header, the secret, `WebhookScheme::HmacSha256`). `WebhookSignatureMiddleware`, in the framework stack between
+  the route errors and the session, answers 401 to a POST on a configured path unless the header is the
+  HMAC-SHA256 of the raw body under the secret (hex, an optional `sha256=`); a blank secret refuses every
+  delivery. A verified delivery is marked, and `FormGuardMiddleware` skips the CSRF check for it; a path the config
+  does not name keeps the check, so an unconfigured webhook fails closed. `bin/aic make:webhook <module>
+  <Name>Webhook <path> [--scheme=hmac-sha256]` writes a POST Api that queues `<name>-webhook` with the body and
+  answers 202, the body's value in `src/Service/` and the job, adds the route and the job, and prints the
+  config/app.php line. gate:31's 26th line makes `/scaffold/delivery`; gate:23 sends it unsigned, wrongly signed
+  and signed under a fixture secret.
+
 - **make:seed** (#320). `bin/aic make:seed <module> <Name>Seed <table> --unique=<field>
   --fields=<name>:<type>,…` writes a command `<name>:seed` in `src/Command/`, its rows a constant (one example row
   per field type), and its own repository in `src/Repository/`, whose `save()` upserts a row through
