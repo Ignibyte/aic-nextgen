@@ -1414,6 +1414,42 @@
             "captures": false
         },
         {
+            "name": "books list",
+            "method": "GET",
+            "path": "/scaffold/books",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "books list, filtered by title and retired",
+            "method": "GET",
+            "path": "/scaffold/books?title=Dune&retired=no",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "books list, by price descending, page 2",
+            "method": "GET",
+            "path": "/scaffold/books?sort=-price&page=2",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "books list, values it does not know",
+            "method": "GET",
+            "path": "/scaffold/books?sort=bogus&page=x&retired=maybe&title=",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "ledger feed stream, a token without ledger.feed",
             "method": "GET",
             "path": "/ledger/feed/events",

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 /**
- * The twenty-eight `bin/aic` make lines that make `modules/scaffold/` (#122),
+ * The twenty-nine `bin/aic` make lines that make `modules/scaffold/` (#122),
  * run in order by gate:31 and by anyone regenerating the module: every
  * writer, a component with a script and a page showing it (#315), a page
  * naming its component, a named layout (#157), a page making its own view in
@@ -15,8 +15,9 @@ namespace Gates\Application;
  * machine on the first entity (#308), an MCP tool (#316), an enum, an
  * exception and an interface (#319), three tables imported from a committed
  * pg_dump (#318), a seed of one of them (#320), a signed webhook (#321), an
- * action on the first page that answers its region (#322) and a queued CSV
- * export with its download and prune (#323).
+ * action on the first page that answers its region (#322), a queued CSV
+ * export with its download and prune (#323) and a filtered, sorted and paged
+ * list of the imported books (#324).
  */
 final readonly class ScaffoldSequence
 {
@@ -107,6 +108,16 @@ final readonly class ScaffoldSequence
             'ScaffoldShelfExport',
             '/scaffold/exports',
             '--version=2026_11_20_000000_create_scaffold_shelf_exports_table',
+        ],
+        [
+            'make:list-page',
+            'scaffold',
+            'ScaffoldBookListPage',
+            'scaffold_books',
+            '/scaffold/books',
+            '--fields=title:text,pages:integer,price:numeric,retired:boolean',
+            '--filters=title,retired',
+            '--sort=title,pages,price',
         ],
     ];
 }

@@ -14,6 +14,7 @@ use App\Scaffold\Command\ScaffoldHello;
 use App\Scaffold\Command\ScaffoldShelvesSeed;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
+use App\Scaffold\Controller\ScaffoldBookListPage;
 use App\Scaffold\Controller\ScaffoldDeliveryWebhook;
 use App\Scaffold\Controller\ScaffoldEventListPage;
 use App\Scaffold\Controller\ScaffoldGaugePage;
@@ -68,4 +69,5 @@ return (new ModuleManifest('scaffold'))
     ->job('scaffold-shelf-export', ScaffoldShelfExportJob::class)
     ->job('scaffold-shelf-export-prune', ScaffoldShelfExportPruneJob::class)
     ->schedule('scaffold-shelf-export-prune', 'scaffold-shelf-export-prune', [], '15 4 * * *')
-    ->migration(CreateScaffoldShelfExportsTable::class);
+    ->migration(CreateScaffoldShelfExportsTable::class)
+    ->route(RouteMethod::Get, '/scaffold/books', ScaffoldBookListPage::class);

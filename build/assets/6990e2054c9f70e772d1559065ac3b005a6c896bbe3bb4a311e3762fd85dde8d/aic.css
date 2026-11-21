@@ -227,6 +227,27 @@ time {
     overflow: hidden;
 }
 
+.aic-filter-bar,
+.aic-pager {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--aic-space) * 0.75);
+    align-items: center;
+    margin: var(--aic-space) 0;
+}
+
+.aic-table th[aria-sort] a {
+    color: inherit;
+}
+
+.aic-table th[aria-sort="ascending"] a::after {
+    content: " \2191";
+}
+
+.aic-table th[aria-sort="descending"] a::after {
+    content: " \2193";
+}
+
 /* themes/app/assets/site.css */
 /* The site module's nav block (SiteNavBlock): its links in a row, the current one in bold. */
 

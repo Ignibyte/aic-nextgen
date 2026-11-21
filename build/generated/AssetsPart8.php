@@ -23,9 +23,9 @@ final readonly class AssetsPart8
         return [
             new PublicAsset(
                 'theme_app/components/scaffold-gauge.js',
-                '/assets/e26938fd2e4bcb6c2844a789bbfb8c3d721dcd0f4005e0e15ce7da390afc13e1/themes/'
+                '/assets/6990e2054c9f70e772d1559065ac3b005a6c896bbe3bb4a311e3762fd85dde8d/themes/'
                     . 'app/components/scaffold-gauge.js',
-                'e26938fd2e4bcb6c2844a789bbfb8c3d721dcd0f4005e0e15ce7da390afc13e1/themes/app/comp'
+                '6990e2054c9f70e772d1559065ac3b005a6c896bbe3bb4a311e3762fd85dde8d/themes/app/comp'
                     . 'onents/scaffold-gauge.js',
                 'text/javascript; charset=utf-8',
                 '5f384aef5a656a4a071e9cac3808b8f7c897c9a7af0803842ff4b4ac3400ff97',

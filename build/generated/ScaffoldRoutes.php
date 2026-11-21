@@ -8,6 +8,7 @@ use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
+use App\Scaffold\Controller\ScaffoldBookListPage;
 use App\Scaffold\Controller\ScaffoldDeliveryWebhook;
 use App\Scaffold\Controller\ScaffoldEventListPage;
 use App\Scaffold\Controller\ScaffoldGaugePage;
@@ -44,6 +45,7 @@ final readonly class ScaffoldRoutes
             ->post('/scaffold/delivery', ScaffoldDeliveryWebhook::class)
             ->post('/scaffold/scaffold-pin', ScaffoldPinAction::class)
             ->post('/scaffold/exports', ScaffoldShelfExportPost::class)
-            ->get('/scaffold/exports/{id:uuid}', ScaffoldShelfExportDownload::class);
+            ->get('/scaffold/exports/{id:uuid}', ScaffoldShelfExportDownload::class)
+            ->get('/scaffold/books', ScaffoldBookListPage::class);
     }
 }

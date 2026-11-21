@@ -23,9 +23,9 @@ final readonly class AssetsPart7
         return [
             new PublicAsset(
                 'theme_app/components/meter.js',
-                '/assets/e26938fd2e4bcb6c2844a789bbfb8c3d721dcd0f4005e0e15ce7da390afc13e1/themes/'
+                '/assets/6990e2054c9f70e772d1559065ac3b005a6c896bbe3bb4a311e3762fd85dde8d/themes/'
                     . 'app/components/meter.js',
-                'e26938fd2e4bcb6c2844a789bbfb8c3d721dcd0f4005e0e15ce7da390afc13e1/themes/app/comp'
+                '6990e2054c9f70e772d1559065ac3b005a6c896bbe3bb4a311e3762fd85dde8d/themes/app/comp'
                     . 'onents/meter.js',
                 'text/javascript; charset=utf-8',
                 'c1fba4378c4760eef99120df75224a546d48e77ccdac09e268161db3c74df181',

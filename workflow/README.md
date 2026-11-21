@@ -129,6 +129,14 @@ daily schedule and the migration. It prints who may download and the gate:23 ste
 in `Export`, `Export` alone, a path with a parameter, `--days` outside 1 to 365 or a format but `csv` is
 refused.
 
+`make:list-page <module> <Name>ListPage <table> <path> --fields=<name>:<type>,… --filters=<field>,…
+[--sort=<field>,…] [--key=id] [--per-page=25]` (#324) writes a GET Page, its query value and reader in
+`src/Form/`, its repository, its row and its view, over the framework's list atoms; the manifest gains
+the route. It prints who may read the list and the gate:23 steps. A name not ending in `ListPage`, a
+name before it longer than 20 characters, a path with a parameter, no filter, a filter or sort naming
+no field, a filter that is not text, choice or boolean, more than 16 fields or 6 filters, or
+`--per-page` outside 1 to 200 is refused.
+
 `schema:import <dump.sql> --module=<m> [--tables=a,b] [--version=<v>] [--dry-run]` (#318) turns a
 `pg_dump --schema-only` into baseline migrations: one `Create<Table>Table` per table, written after
 the tables its foreign keys reference, with consecutive versions and the manifest's `->migration()`
