@@ -14,6 +14,8 @@ use App\Scaffold\Controller\ScaffoldGaugePage;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPinAction;
 use App\Scaffold\Controller\ScaffoldPost;
+use App\Scaffold\Controller\ScaffoldShelfExportDownload;
+use App\Scaffold\Controller\ScaffoldShelfExportPost;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
 
 /**
@@ -40,6 +42,8 @@ final readonly class ScaffoldRoutes
             ->get('/scaffold-tasks', ScaffoldTaskListPage::class)
             ->get('/scaffold-events', ScaffoldEventListPage::class)
             ->post('/scaffold/delivery', ScaffoldDeliveryWebhook::class)
-            ->post('/scaffold/scaffold-pin', ScaffoldPinAction::class);
+            ->post('/scaffold/scaffold-pin', ScaffoldPinAction::class)
+            ->post('/scaffold/exports', ScaffoldShelfExportPost::class)
+            ->get('/scaffold/exports/{id:uuid}', ScaffoldShelfExportDownload::class);
     }
 }

@@ -144,6 +144,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:entity` | scaffold an entity, its repository, migration and list page; `--key=uuid` and every field type (#307) |
 | `Command::make:enum` | scaffold an enum in the module's `src/Enum/`, pure or backed (#319) |
 | `Command::make:exception` | scaffold a final exception over an SPL root, in `src/Exception/` (#319) |
+| `Command::make:export` | scaffold a queued CSV export: the POST page queuing it, its job, its download and a daily prune (#323) |
 | `Command::make:interface` | scaffold an empty interface in the module's `src/Contracts/` (#319) |
 | `Command::make:job` | scaffold a Job |
 | `Command::make:layout` | scaffold a named page layout in the theme |

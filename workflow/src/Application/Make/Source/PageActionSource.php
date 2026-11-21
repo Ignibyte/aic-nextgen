@@ -10,9 +10,6 @@ use AIC\Workflow\Domain\Make\MadeFile;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function lcfirst;
-use function max;
-use function str_pad;
-use function strlen;
 
 /**
  * Renders what `make:page-action` writes (#322): the POST page in
@@ -28,10 +25,12 @@ final readonly class PageActionSource
     /**
      * @param MakeTemplates $makeTemplates Renders the action's `*.tpl` files.
      * @param MakeNames     $makeNames     Words and kebab case for the form.
+     * @param DocParams     $docParams     Pads the action's `@param` lines.
      */
     public function __construct(
         private MakeTemplates $makeTemplates = new MakeTemplates(),
         private MakeNames $makeNames = new MakeNames(),
+        private DocParams $docParams = new DocParams(),
     ) {
     }
 
@@ -77,7 +76,7 @@ final readonly class PageActionSource
     {
         return [
             'id' => $this->makeNames->kebab($stem),
-            'params' => self::params($stem),
+            'params' => $this->params($stem),
             'step' => $stem . 'Step',
             'stepVariable' => lcfirst($stem) . 'Step',
             'title' => $this->makeNames->words($stem),
@@ -91,21 +90,13 @@ final readonly class PageActionSource
      *
      * @return string The action's constructor `@param` lines, aligned as Pint aligns them.
      */
-    private static function params(string $stem): string
+    private function params(string $stem): string
     {
         $rows = [
             [$stem . 'Step', '$' . lcfirst($stem) . 'Step', 'Runs the action.'],
             [$stem . 'View', '$' . lcfirst($stem) . 'View', "The region's form."],
             ['TesseraRequests', '$tesseraRequests', 'Reads whether Tessera sent the request.'],
         ];
-        $type = max(strlen($rows[0][0]), strlen($rows[2][0]));
-        $name = max(strlen($rows[0][1]), strlen($rows[2][1]));
-        $params = '';
-
-        foreach ($rows as [$class, $variable, $what]) {
-            $params .= '     * @param ' . str_pad($class, $type) . ' ' . str_pad($variable, $name) . ' ' . $what . "\n";
-        }
-
-        return $params;
+        return $this->docParams->lines($rows);
     }
 }

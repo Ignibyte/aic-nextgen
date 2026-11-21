@@ -6,6 +6,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **make:export** (#323). `bin/aic make:export <module> <Name>Export <path> [--days=7] [--format=csv]` writes six
+  files: a POST Page that stores an export and queues its job, then answers 303 to `<path>/<uuid>`; a Stream at
+  `<path>/{id:uuid}` that answers 404 until the file is written, then the CSV through `PrivateFiles::download()`,
+  and 404 again once the export is past its days; the job that writes the file; a prune job, scheduled daily at
+  04:15, that deletes each expired export's file and then its row; a repository; and a migration with the table
+  (uuid keys made by the database) and a view that decides expiry by the database's clock. Only `csv` is made;
+  another format is refused with a pointer to an interpreted worker (#317). The make adds both routes, both jobs,
+  the schedule and the migration, and prints the gate:23 steps and a note that a download link works for whoever
+  holds it. gate:31's 28th line makes `/scaffold/exports`; gate:23 queues an export, finds it 404, runs the worker
+  and downloads it.
+
 - **make:page-action** (#322). `bin/aic make:page-action <module> <Name>Action --on=<path> [--region=content]`
   writes a POST Page at `<path>/<kebab name>` in `src/Controller/`, its step in `src/Service/` (the one call,
   returning a refusal reason or nothing) and its view in `src/Service/` (the region's form: an alert and the field

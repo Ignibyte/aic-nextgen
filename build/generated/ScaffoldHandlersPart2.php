@@ -7,7 +7,10 @@ namespace App\Generated;
 use AIC\Container\Exception\ContainerException;
 use AIC\Form\Application\FormTokens;
 use AIC\Module\Application\HandlerContext;
+use AIC\Storage\Application\PrivateFiles;
 use App\Scaffold\Controller\ScaffoldPinAction;
+use App\Scaffold\Controller\ScaffoldShelfExportDownload;
+use App\Scaffold\Controller\ScaffoldShelfExportPost;
 use App\Scaffold\Service\ScaffoldPinStep;
 use App\Scaffold\Service\ScaffoldPinView;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -33,10 +36,20 @@ final readonly class ScaffoldHandlersPart2
      */
     public function byId(): array
     {
+        $scaffoldHandlerServices = new ScaffoldHandlerServices($this->handlerContext);
         $scaffoldPinView = new ScaffoldPinView($this->handlerContext->documents(), new FormTokens());
 
         return [
             ScaffoldPinAction::class => $this->handlerContext->page(new ScaffoldPinAction(new ScaffoldPinStep(), $scaffoldPinView)),
+            ScaffoldShelfExportDownload::class => $this->handlerContext->stream(
+                new ScaffoldShelfExportDownload(
+                    $scaffoldHandlerServices->scaffoldShelfExportRepository(),
+                    new PrivateFiles($this->handlerContext->roots()->root()),
+                ),
+            ),
+            ScaffoldShelfExportPost::class => $this->handlerContext->page(
+                new ScaffoldShelfExportPost($scaffoldHandlerServices->scaffoldShelfExportRepository()),
+            ),
         ];
     }
 }
