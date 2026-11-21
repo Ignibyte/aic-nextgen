@@ -24,8 +24,8 @@ use function substr;
  * for `make:module`, not there), a route, command or job some manifest
  * already declares, a command the framework (from the surface) or the
  * workflow already has, a page or block in a module that does not require
- * `site`, a `--component` that is not there, and a target that is there
- * already. Each is a refusal (exit 1), so nothing is written.
+ * `site`, a `--component` that is not there, a route it needs that no
+ * manifest declares (#322), and a target that is there already. Each is a refusal (exit 1), so nothing is written.
  */
 final readonly class MakePlanner
 {
@@ -141,11 +141,12 @@ final readonly class MakePlanner
     /**
      * @param MakeRecipe $makeRecipe The make.
      *
-     * @throws WorkflowRefusal When a manifest declares what it claims, or the framework or workflow has its command.
+     * @throws WorkflowRefusal When a manifest declares what it claims, the framework or workflow has its command, or no
+     *                         manifest declares a route it needs.
      */
     private function claims(MakeRecipe $makeRecipe): void
     {
-        if ($makeRecipe->claims === []) {
+        if ($makeRecipe->claims === [] && $makeRecipe->routes === []) {
             return;
         }
 
@@ -153,6 +154,23 @@ final readonly class MakePlanner
 
         foreach ($makeRecipe->claims as $claim) {
             $this->claim($claim, $declared);
+        }
+
+        $this->needed($makeRecipe->routes, $declared);
+    }
+
+    /**
+     * @param list<string>          $routes   Routes the make needs, such as `route GET /notes` (#322).
+     * @param array<string, string> $declared Every one the manifests declare, each with its manifest.
+     *
+     * @throws WorkflowRefusal When no manifest declares one.
+     */
+    private function needed(array $routes, array $declared): void
+    {
+        foreach ($routes as $route) {
+            if (!array_key_exists($route, $declared)) {
+                throw new WorkflowRefusal('no manifest declares the ' . $route . ' this make answers for; make that page first.');
+            }
         }
     }
 

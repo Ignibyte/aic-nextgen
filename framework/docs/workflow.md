@@ -151,6 +151,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:migration` | scaffold a Migration |
 | `Command::make:module` | scaffold a module |
 | `Command::make:page` | scaffold a Page and declared component template |
+| `Command::make:page-action` | scaffold a page's POST action: one call, the region in place or 303, the form again as 422 (#322) |
 | `Command::make:policy` | scaffold an entity's Policy and declare the permission it asks (#304) |
 | `Command::make:relation` | scaffold a many-to-many pivot's migration and print both sides' relations (#306) |
 | `Command::make:state` | scaffold a state machine: its enum, its transitions class and its column's migration (#308) |

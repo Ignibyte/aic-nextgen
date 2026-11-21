@@ -115,6 +115,12 @@ queues `<name>-webhook` with the delivery's body and answers 202, its `<Name>Pay
 line, which the agent adds: the framework checks the signature at that path. `--scheme` takes only
 `hmac-sha256`; a name not ending in `Webhook`, `Webhook` alone or a bad path is refused.
 
+`make:page-action <module> <Name>Action --on=<path> [--region=content]` (#322) writes a POST Page at
+`<path>/<kebab name>`, its `<Name>Step` (the one call, answering a refusal or nothing) and its
+`<Name>View` (the region's form); the manifest gains the route. It prints where the view goes and the
+gate:23 steps, and edits nothing else. `--on` must be a GET route some manifest declares, with no
+parameters; a name not ending in `Action`, `Action` alone or a region not in lower case is refused.
+
 `schema:import <dump.sql> --module=<m> [--tables=a,b] [--version=<v>] [--dry-run]` (#318) turns a
 `pg_dump --schema-only` into baseline migrations: one `Create<Table>Table` per table, written after
 the tables its foreign keys reference, with consecutive versions and the manifest's `->migration()`

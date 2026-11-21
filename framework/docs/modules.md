@@ -289,6 +289,15 @@ environment variable: the framework checks every delivery's signature there, and
 added the route keeps the CSRF check and refuses every delivery
 ([security.md](security.md#webhooks)).
 
+A button or form on a page posts to an action, a POST Page beside it (#322). `bin/aic
+make:page-action <module> <Name>Action --on=<path> [--region=content]` writes it at `<path>/<kebab
+name>` in `src/Controller/`, the one call it runs as `<Name>Step` and the region's form as
+`<Name>View` in `src/Service/`; the manifest gains the route. Some manifest must route `GET <path>`
+already. The step answers why it refused or nothing. Done, the action answers 303 to the page, or to a
+Tessera submit the region in place ([tessera.md](tessera.md#forms-redirects-and-write-identifiers));
+refused, the form again with its field marked, as 422. The make prints where the page places the
+view's `components()` and the gate:23 steps to add.
+
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
 (the HTML and page templates), `src/Layouts/Page.php` (four regions: header, content, nav, footer)
 and a stylesheet, then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module

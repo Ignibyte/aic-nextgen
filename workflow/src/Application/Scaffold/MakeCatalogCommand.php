@@ -61,6 +61,10 @@ final readonly class MakeCatalogCommand implements Command
         'make:migration' => ['make:migration <module> <Class> <table>', 'a migration creating one table'],
         'make:module' => ['make:module <module> [--requires=a,b]', 'a module with its manifest'],
         'make:page' => ['make:page <module> <Class> <path> [--component=<C>] [--layout=<name>] [--post]', 'a page at a route'],
+        'make:page-action' => [
+            'make:page-action <module> <Name>Action --on=<path> [--region=content]',
+            'a POST page for a button or form on a page: one call, the region in place or 303, the form again as 422',
+        ],
         'make:policy' => ['make:policy <module> <Entity>', "an entity's policy and the permission its create action asks"],
         'make:relation' => [
             'make:relation <module> <owner_table> <target_table> [--keys=int,int] [--fields=<name>:<type>,…]',

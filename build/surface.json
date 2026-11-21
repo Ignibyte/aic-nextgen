@@ -511,6 +511,14 @@
             "module": "scaffold",
             "needs": "",
             "path": "/scaffold/delivery"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldPinAction",
+            "kind": "Page",
+            "method": "POST",
+            "module": "scaffold",
+            "needs": "",
+            "path": "/scaffold/scaffold-pin"
         }
     ],
     "commands": [

@@ -1341,6 +1341,42 @@
             "captures": false
         },
         {
+            "name": "page action, refused",
+            "method": "POST",
+            "path": "/scaffold/scaffold-pin",
+            "form": "value=&aic_csrf={csrf}",
+            "header": "",
+            "status": 422,
+            "captures": false
+        },
+        {
+            "name": "page action, done",
+            "method": "POST",
+            "path": "/scaffold/scaffold-pin",
+            "form": "value=Ada&aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "page action, tessera, done",
+            "method": "POST",
+            "path": "/scaffold/scaffold-pin",
+            "form": "value=Ada&aic_csrf={csrf}",
+            "header": "Tessera-Request: submit\r\nTessera-Protocol: 2\r\nTessera-Layout: app\r\nTessera-Targets: content",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "page action, tessera, refused",
+            "method": "POST",
+            "path": "/scaffold/scaffold-pin",
+            "form": "value=&aic_csrf={csrf}",
+            "header": "Tessera-Request: submit\r\nTessera-Protocol: 2\r\nTessera-Layout: app\r\nTessera-Targets: content",
+            "status": 422,
+            "captures": false
+        },
+        {
             "name": "ledger feed stream, a token without ledger.feed",
             "method": "GET",
             "path": "/ledger/feed/events",
