@@ -6,6 +6,15 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **make:page-action** (#322). `bin/aic make:page-action <module> <Name>Action --on=<path> [--region=content]`
+  writes a POST Page at `<path>/<kebab name>` in `src/Controller/`, its step in `src/Service/` (the one call,
+  returning a refusal reason or nothing) and its view in `src/Service/` (the region's form: an alert and the field
+  marked invalid on a refusal, and the page answer). The action answers 303 to the page for a plain browser, the
+  region in place (200) for a Tessera submit, and the form again (422) on a refusal, either way. `--on` must be a
+  GET route some manifest declares already (`MakeRecipe::$routes`, checked by the planner). The make adds the
+  route and prints where the page places the view and the gate:23 steps to add. gate:31's 27th line makes
+  `/scaffold/scaffold-pin`; gate:23 posts it refused, done, and both again as a Tessera submit.
+
 - **Signed webhooks and make:webhook** (#321). `AppConfig::$webhooks` maps a path to a `Webhook` (the signature
   header, the secret, `WebhookScheme::HmacSha256`). `WebhookSignatureMiddleware`, in the framework stack between
   the route errors and the session, answers 401 to a POST on a configured path unless the header is the

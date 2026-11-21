@@ -108,6 +108,12 @@ receive the HTTP redirect. `AIC\Controller\Domain\PageFullVisit` requests full n
 Missing or stale CSRF data gets 419 for an enhanced request and 403 for an ordinary browser;
 a filled honeypot gets 400. See [security.md](security.md#form-guard).
 
+A button or form on a page posts to an action that answers its region (#322). Tessera submits a
+form to the innermost region holding it unless a `data-target` names another, so the action
+answers `PageDocuments::page()` with that region filled, and `PageDocument::answer()` sends the
+fragment: 200 when done, 422 with the form again when refused. An ordinary browser gets 303 back to
+the page when done, so a reload does not post again. `bin/aic make:page-action` writes that shape.
+
 `AIC\Tessera\Application\TesseraWriteMiddleware` recognizes unsafe requests carrying a write
 identifier, scoped by the session CSRF token. The Postgres ledger records their completed replies, so repeating that write can return
 the recorded result without applying it again. An unfinished write returns 409; a malformed identifier returns 400. Use a fresh identifier

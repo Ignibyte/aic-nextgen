@@ -165,9 +165,9 @@ the gate suite is the dev package `ignibyte/aic-gates`, run by `vendor/bin/aic-g
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
-layout (#157), entity (#123), policy (#304), client (#305), relation (#306), state (#308), mcp-tool (#316), enum, exception and interface (#319), seed (#320) and webhook (#321); dev-only in
+layout (#157), entity (#123), policy (#304), client (#305), relation (#306), state (#308), mcp-tool (#316), enum, exception and interface (#319), seed (#320), webhook (#321) and page-action (#322); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the twenty-six make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319; a seed, #320, whose writes gate:8 `aic.seedWrites` holds to repositories; a signed webhook, #321).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the twenty-seven make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319; a seed, #320, whose writes gate:8 `aic.seedWrites` holds to repositories; a signed webhook, #321; an action answering its region, #322).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
@@ -228,6 +228,8 @@ gate, sharing only the queue, Postgres and `PrivateFiles` (CONSTITUTION §3). Th
 #321: signed webhooks: `AppConfig::$webhooks` (path → `Webhook(header, secret)`, HMAC-SHA256 of the raw body);
 `WebhookSignatureMiddleware` sits before the session, answers 401 on a mismatch or a blank secret, and marks a match,
 which `FormGuardMiddleware` spares the CSRF check; `make:webhook` (a 202 Api queuing the body, its value, the job).
+#322: `make:page-action <module> <Name>Action --on=<path> [--region=content]`: a POST Page, its step (one call, a
+refusal or nothing) and its view (the region's form); 303 for a browser, the region in place for Tessera, 422 refused.
 #318: `bin/aic schema:import <dump.sql> --module=<m> [--tables=…] [--dry-run]` turns a `pg_dump --schema-only` into one
 baseline migration per table in Schema's builders, in foreign-key order, or lists what Schema cannot declare and writes
 nothing (no SQL copied through); gate:31's 21st line imports `gates/fixtures/schema-import.sql`.

@@ -12,6 +12,7 @@ use App\Scaffold\Controller\ScaffoldDeliveryWebhook;
 use App\Scaffold\Controller\ScaffoldEventListPage;
 use App\Scaffold\Controller\ScaffoldGaugePage;
 use App\Scaffold\Controller\ScaffoldPage;
+use App\Scaffold\Controller\ScaffoldPinAction;
 use App\Scaffold\Controller\ScaffoldPost;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
 
@@ -38,6 +39,7 @@ final readonly class ScaffoldRoutes
             ->get('/api/scaffold', ScaffoldApi::class)
             ->get('/scaffold-tasks', ScaffoldTaskListPage::class)
             ->get('/scaffold-events', ScaffoldEventListPage::class)
-            ->post('/scaffold/delivery', ScaffoldDeliveryWebhook::class);
+            ->post('/scaffold/delivery', ScaffoldDeliveryWebhook::class)
+            ->post('/scaffold/scaffold-pin', ScaffoldPinAction::class);
     }
 }
