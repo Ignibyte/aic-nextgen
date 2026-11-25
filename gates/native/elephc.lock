@@ -212,6 +212,48 @@ system_libraries = []
 frameworks = []
 
 [[package]]
+name = "openssl-crypto"
+version = "3.6.4"
+recipe = 1
+dependencies = ["zlib"]
+provides = ["openssl-crypto"]
+
+[package.source]
+url = "https://github.com/openssl/openssl/releases/download/openssl-3.6.4/openssl-3.6.4.tar.gz"
+sha256 = "9bffaa1ad1e07b354c21bd3324ec02fa15579f45a7d0494b3e74bc449b7333ef"
+size = 55003802
+
+[[package.target]]
+name = "macos-aarch64"
+archives = ["lib/libcrypto.a"]
+system_libraries = []
+frameworks = []
+
+[[package.target]]
+name = "ios-arm64"
+archives = ["lib/libcrypto.a"]
+system_libraries = []
+frameworks = []
+
+[[package.target]]
+name = "ios-sim-arm64"
+archives = ["lib/libcrypto.a"]
+system_libraries = []
+frameworks = []
+
+[[package.target]]
+name = "linux-aarch64"
+archives = ["lib/libcrypto.a"]
+system_libraries = []
+frameworks = []
+
+[[package.target]]
+name = "linux-x86_64"
+archives = ["lib/libcrypto.a"]
+system_libraries = []
+frameworks = []
+
+[[package]]
 name = "pcre2"
 version = "10.47"
 recipe = 7

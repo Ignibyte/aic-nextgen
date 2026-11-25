@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Auth\Application;
 
 use AIC\Auth\Contracts\SignInRefusedException;
+use AIC\Auth\Domain\JsonWebKeys;
 use AIC\Auth\Domain\OidcProvider;
 use AIC\Session\Domain\StringMapJson;
 use InvalidArgumentException;
@@ -24,7 +25,8 @@ use function rawurlencode;
  * The authorization code exchanged at a provider's token endpoint (#313),
  * through the app's PSR-18 client: the code, the redirect URI and the PKCE
  * verifier, the client authenticated by HTTP Basic (or by its id alone, for
- * a public client). The answer's `id_token` is what the sign-in reads.
+ * a public client). The answer's `id_token` is what the sign-in reads. The
+ * same client fetches the provider's key set, once per sign-in (#343).
  */
 final readonly class CodeExchange
 {
@@ -74,6 +76,28 @@ final readonly class CodeExchange
         }
 
         return $idToken;
+    }
+
+    /**
+     * @param OidcProvider $oidcProvider The provider.
+     *
+     * @throws SignInRefusedException   When the key set cannot be fetched or read.
+     * @throws InvalidArgumentException When the request cannot be made.
+     *
+     * @return JsonWebKeys The keys its id tokens are signed with.
+     */
+    public function keys(OidcProvider $oidcProvider): JsonWebKeys
+    {
+        $request = $this->requestFactory->createRequest('GET', $oidcProvider->jwksUri)->withHeader('Accept', 'application/json');
+        $response = $this->sent(self::asRequest($request));
+
+        if ($response->getStatusCode() !== 200) {
+            throw new SignInRefusedException(
+                "The sign-in provider's keys could not be fetched (status " . $response->getStatusCode() . ').',
+            );
+        }
+
+        return new JsonWebKeys((string) $response->getBody());
     }
 
     /**
