@@ -8,6 +8,7 @@ use AIC\Controller\Contracts\Command;
 use AIC\Workflow\Application\Make\MakeApiCommand;
 use AIC\Workflow\Application\Make\MakeBlockCommand;
 use AIC\Workflow\Application\Make\MakeCommandCommand;
+use AIC\Workflow\Application\Make\MakeDetailPageCommand;
 use AIC\Workflow\Application\Make\MakeJobCommand;
 use AIC\Workflow\Application\Make\MakeListPageCommand;
 use AIC\Workflow\Application\Make\MakePageActionCommand;
@@ -37,6 +38,7 @@ final readonly class SimpleMakes
             'make:api' => new MakeApiCommand($makeRun),
             'make:block' => new MakeBlockCommand($makeRun),
             'make:command' => new MakeCommandCommand($makeRun),
+            'make:detail-page' => new MakeDetailPageCommand($makeRun),
             'make:enum' => new MakeShapeCommand($makeRun, MadeShape::Enum),
             'make:exception' => new MakeShapeCommand($makeRun, MadeShape::Exception),
             'make:interface' => new MakeShapeCommand($makeRun, MadeShape::Interface),

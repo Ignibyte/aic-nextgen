@@ -129,3 +129,44 @@
 .aic-table th[aria-sort="descending"] a::after {
     content: " \2193";
 }
+
+.aic-description-list {
+    display: grid;
+    grid-template-columns: minmax(8rem, max-content) 1fr;
+    gap: calc(var(--aic-space) * 0.5) var(--aic-space);
+    margin: var(--aic-space) 0;
+}
+
+.aic-description-list div {
+    display: contents;
+}
+
+.aic-description-list dt {
+    color: var(--aic-muted);
+}
+
+.aic-description-list dd {
+    margin: 0;
+    font-family: inherit;
+    overflow-wrap: anywhere;
+}
+
+.aic-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--aic-space) * 0.25);
+    margin: var(--aic-space) 0 0;
+    border-bottom: 1px solid var(--aic-line);
+}
+
+.aic-tabs a {
+    padding: calc(var(--aic-space) * 0.4) calc(var(--aic-space) * 0.75);
+    border-bottom: 2px solid transparent;
+    color: var(--aic-muted);
+    text-decoration: none;
+}
+
+.aic-tabs a[aria-current="page"] {
+    border-bottom-color: var(--aic-accent);
+    color: var(--aic-text);
+}

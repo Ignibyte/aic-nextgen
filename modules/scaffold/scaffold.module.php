@@ -18,6 +18,7 @@ use App\Scaffold\Controller\ScaffoldBookListPage;
 use App\Scaffold\Controller\ScaffoldDeliveryWebhook;
 use App\Scaffold\Controller\ScaffoldEventListPage;
 use App\Scaffold\Controller\ScaffoldGaugePage;
+use App\Scaffold\Controller\ScaffoldNoteDetailPage;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPinAction;
 use App\Scaffold\Controller\ScaffoldPost;
@@ -70,4 +71,5 @@ return (new ModuleManifest('scaffold'))
     ->job('scaffold-shelf-export-prune', ScaffoldShelfExportPruneJob::class)
     ->schedule('scaffold-shelf-export-prune', 'scaffold-shelf-export-prune', [], '15 4 * * *')
     ->migration(CreateScaffoldShelfExportsTable::class)
-    ->route(RouteMethod::Get, '/scaffold/books', ScaffoldBookListPage::class);
+    ->route(RouteMethod::Get, '/scaffold/books', ScaffoldBookListPage::class)
+    ->route(RouteMethod::Get, '/scaffold/notes/{id:int}', ScaffoldNoteDetailPage::class);

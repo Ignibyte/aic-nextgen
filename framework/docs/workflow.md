@@ -141,6 +141,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:client` | scaffold a typed client of one upstream and its reply value (#305) |
 | `Command::make:command` | scaffold a Command |
 | `Command::make:component` | scaffold declared Component data and template; `--script` adds a mounted module script |
+| `Command::make:detail-page` | scaffold one row's detail page, its fields in tabs Tessera swaps in place, over the framework's detail atoms (#341) |
 | `Command::make:entity` | scaffold an entity, its repository, migration and list page; `--key=uuid` and every field type (#307) |
 | `Command::make:enum` | scaffold an enum in the module's `src/Enum/`, pure or backed (#319) |
 | `Command::make:exception` | scaffold a final exception over an SPL root, in `src/Exception/` (#319) |

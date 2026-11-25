@@ -54,7 +54,7 @@ Quote dynamic attribute values. Render child Components and Regions only in elem
 
 The framework atoms are declared under `framework/templates/components/` in four groups: text,
 controls, forms, and the data atoms (#230), which are `AIC\Component\Domain\Table`, `Tabs`,
-`Timeline`, `CodeBlock`, `Stack`, `FilterForm`, `FilterBar` and `Pager`, plus the profiler's own document,
+`Timeline`, `CodeBlock`, `Stack`, `FilterForm`, `FilterBar`, `Pager` and `DescriptionList`, plus the profiler's own document,
 `AIC\Profiler\Domain\ProfilerLayout`. A data atom's value classes (`TableRow`, `TableCell`, `Tab`,
 `TimelineSegment`) are plain values its template reads. `Table`'s optional `alignments` (#240)
 (`list<TableAlign>`, by column position) puts `class="aic-align-end"` on an end column's
@@ -66,7 +66,10 @@ each a search box or, with `FilterOption`s, a select, keeping the values in `kep
 `Pager` (`aic-pager`) is a `nav` of the page before, where the list stands and the page after.
 `AIC\Component\Application\ListQueries`, `ListParts` and `ListRows` read a list's query string into
 `ListChoice`, `ListSort` and `ListPlace` values, make the header links, the selects and the pager, and
-cut a sorted page of an `EntityQuery`. `GuardFields`, in the forms group, is the CSRF field and the
+cut a sorted page of an `EntityQuery`. A detail page (#341) draws `DescriptionList`
+(`aic-description-list`), a `dl` of `DescriptionItem` terms and details, each pair in a `div`, beside
+`Tabs`; `AIC\Component\Application\DetailRows` and `DetailParts` find its row and make its tabs, panel
+and values. `GuardFields`, in the forms group, is the CSRF field and the
 honeypot (#246): `Form` renders it first, and a theme template that writes its own `<form>` renders
 one inside. A source-package
 build uses the same reader to write their escaped copies and lookup under

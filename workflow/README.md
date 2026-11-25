@@ -137,6 +137,15 @@ name before it longer than 20 characters, a path with a parameter, no filter, a 
 no field, a filter that is not text, choice or boolean, more than 16 fields or 6 filters, or
 `--per-page` outside 1 to 200 is refused.
 
+`make:detail-page <module> <Name>DetailPage <table> <path> --fields=<name>:<type>,…
+[--tabs=<tab>:<field>+<field>,…] [--key=id] [--uuid]` (#341) writes a GET Page at `<path>/{id:int}`
+(`{id:uuid}` with `--uuid`), its repository and its view, over the framework's detail parts; the
+manifest gains the route. The first field is the heading; without `--tabs` one tab, `details`, holds
+every field. It prints who may read the page and the gate:23 steps. A name not ending in `DetailPage`,
+a name before it longer than 20 characters, a path with a parameter or `/`, more than 16 fields or 8
+tabs, a tab that is not a lower-case word or repeats, or a tab naming no field or one not in
+`--fields` is refused.
+
 `schema:import <dump.sql> --module=<m> [--tables=a,b] [--version=<v>] [--dry-run]` (#318) turns a
 `pg_dump --schema-only` into baseline migrations: one `Create<Table>Table` per table, written after
 the tables its foreign keys reference, with consecutive versions and the manifest's `->migration()`

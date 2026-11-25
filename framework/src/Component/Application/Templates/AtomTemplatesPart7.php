@@ -7,6 +7,7 @@ namespace AIC\Component\Application\Templates;
 use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
+use AIC\Component\Domain\DescriptionList;
 use AIC\Component\Exception\UnknownComponent;
 use AIC\Profiler\Domain\ProfilerDebug;
 use AIC\Profiler\Domain\ProfilerLayout;
@@ -31,11 +32,28 @@ final readonly class AtomTemplatesPart7 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
+            $component instanceof DescriptionList => $this->renderDescriptionList($component, $renderPass),
             $component instanceof ProfilerLayout => $this->renderProfilerLayout($component, $renderPass),
             $component instanceof ProfilerToolbar => $this->renderProfilerToolbar($component, $renderPass),
             $component instanceof ProfilerDebug => $this->renderProfilerDebug($component, $renderPass),
             default => throw new UnknownComponent($component::class),
         };
+    }
+
+    /**
+     * @param DescriptionList $descriptionList The component; its template reads it.
+     * @param RenderPass      $renderPass      The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from description-list.phtml.
+     */
+    private function renderDescriptionList(DescriptionList $descriptionList, RenderPass $renderPass): string
+    {
+        $renderPass->open($descriptionList);
+        require __DIR__ . '/description-list.phtml';
+
+        return $renderPass->close();
     }
 
     /**
