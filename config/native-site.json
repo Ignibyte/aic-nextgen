@@ -1459,6 +1459,15 @@
             "captures": false
         },
         {
+            "name": "loans list, an entity over an imported table",
+            "method": "GET",
+            "path": "/scaffold-loans",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "books list",
             "method": "GET",
             "path": "/scaffold/books",

@@ -37,17 +37,22 @@ final readonly class MakeEntities
      *
      * @throws WorkflowRefusal When a built-in template is missing (#301).
      *
-     * @return list<MadeFile> The entity, the repository, the migration and the list page.
+     * @return list<MadeFile> The entity, the repository, the migration (none over an existing table, #338) and the list
+     *                        page.
      */
     public function files(EntityPlan $entityPlan): array
     {
         $module = 'modules/' . $entityPlan->module . '/src/';
         $class = $entityPlan->class;
 
+        $migration = $entityPlan->existing
+            ? []
+            : [new MadeFile($module . 'Migration/' . $entityPlan->migration() . '.php', $this->migration($entityPlan))];
+
         return [
             new MadeFile($module . 'Entity/' . $class . '.php', $this->entitySource->source($entityPlan)),
             new MadeFile($module . 'Repository/' . $class . 'Repository.php', $this->repositorySource->source($entityPlan)),
-            new MadeFile($module . 'Migration/' . $entityPlan->migration() . '.php', $this->migration($entityPlan)),
+            ...$migration,
             new MadeFile($module . 'Controller/' . $class . 'ListPage.php', $this->listPageSource->source($entityPlan)),
         ];
     }

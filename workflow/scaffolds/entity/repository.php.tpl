@@ -56,8 +56,7 @@ final readonly class {class}Repository
     private function {variable}Type(): EntityType
     {
         return new EntityType('{table}', 'id', [
-{fields}            new Field('created_at', FieldType::CreatedAt),
-        ]{keyType});
+{fields}        ]{keyType});
     }
 
     /**

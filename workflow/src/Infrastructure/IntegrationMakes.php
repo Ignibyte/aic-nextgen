@@ -18,8 +18,9 @@ use AIC\Workflow\Application\UtcTime;
 /**
  * The makes for what an app exchanges with other systems: `make:client`, a
  * client of an upstream API (#305), `make:mcp-tool`, a tool an agent calls
- * over MCP (#316), and `schema:import`, the migrations of an existing
- * database's schema (#318).
+ * over MCP (#316), `schema:import`, the migrations of an existing
+ * database's schema (#318), and `make:entity` (#123), here since it reads a
+ * table's columns from the migration that creates it (#338).
  */
 final readonly class IntegrationMakes
 {
@@ -45,6 +46,7 @@ final readonly class IntegrationMakes
 
         return [
             'make:client' => new MakeClientCommand($makeRun),
+            'make:entity' => (new EntityMakes())->command($makeRun, $makeVersions, $moduleTables, $this->projectFiles),
             'make:mcp-tool' => new MakeMcpToolCommand($makeRun),
             'schema:import' => new SchemaImportCommand($makeRun, new SchemaImports($this->projectFiles, $moduleTables, $makeVersions)),
         ];

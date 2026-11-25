@@ -9,7 +9,9 @@ use AIC\Component\Application\DetailRows;
 use AIC\Container\Exception\ContainerException;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
+use App\Scaffold\Controller\ScaffoldLoanListPage;
 use App\Scaffold\Controller\ScaffoldNoteDetailPage;
+use App\Scaffold\Repository\ScaffoldLoanRepository;
 use App\Scaffold\Repository\ScaffoldNoteDetailRepository;
 use App\Scaffold\Service\ScaffoldNoteDetailView;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -36,10 +38,14 @@ final readonly class ScaffoldHandlersPart4
     public function byId(): array
     {
         $detailParts = new DetailParts();
-        $detailRows = new DetailRows(new EntityStore($this->handlerContext->database()));
-        $scaffoldNoteDetailView = new ScaffoldNoteDetailView(new ScaffoldNoteDetailRepository($detailRows), $detailParts);
+        $entityStore = new EntityStore($this->handlerContext->database());
+        $scaffoldNoteDetailRepository = new ScaffoldNoteDetailRepository(new DetailRows($entityStore));
+        $scaffoldNoteDetailView = new ScaffoldNoteDetailView($scaffoldNoteDetailRepository, $detailParts);
 
         return [
+            ScaffoldLoanListPage::class => $this->handlerContext->page(
+                new ScaffoldLoanListPage($this->handlerContext->documents(), new ScaffoldLoanRepository($entityStore)),
+            ),
             ScaffoldNoteDetailPage::class => $this->handlerContext->page(
                 new ScaffoldNoteDetailPage($this->handlerContext->documents(), $detailParts, $scaffoldNoteDetailView),
             ),

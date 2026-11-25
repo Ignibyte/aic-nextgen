@@ -12,13 +12,15 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function count;
 use function rtrim;
+use function str_contains;
 use function str_replace;
 use function strlen;
 use function substr;
 
 /**
  * The tables the modules' migrations already create (#318), read from each migration `build/surface.json` lists,
- * so an imported foreign key may reference one; and how many migrations a module has, against gate:26's 15 a folder.
+ * so an imported foreign key may reference one; how many migrations a module has, against gate:26's 15 a folder; and
+ * the migration that creates a table and those that alter it (#338).
  */
 final readonly class ModuleTables
 {
@@ -43,15 +45,35 @@ final readonly class ModuleTables
     {
         $tables = [];
 
-        foreach ($this->view()->modules as $surfaceModule) {
-            foreach ($surfaceModule->migrations as $migration) {
-                $short = substr($migration, strlen(rtrim($surfaceModule->namespace, '\\') . '\\'));
-                $path = 'modules/' . $surfaceModule->name . '/src/' . str_replace('\\', '/', $short) . '.php';
-                $tables = [...$tables, ...self::regexColumn("/->create\\('([a-z0-9_]+)'\\)/", $this->projectFiles->read($path) ?? '', 1)];
-            }
+        foreach ($this->files() as $path) {
+            $tables = [...$tables, ...self::regexColumn("/->create\\('([a-z0-9_]+)'\\)/", $this->projectFiles->read($path) ?? '', 1)];
         }
 
         return $tables;
+    }
+
+    /**
+     * @param string $table A table.
+     *
+     * @throws WorkflowRefusal When build/surface.json is missing.
+     *
+     * @return string The migration that creates it (#338), relative to the project; empty when none does.
+     */
+    public function creator(string $table): string
+    {
+        return $this->naming('create', $table)[0] ?? '';
+    }
+
+    /**
+     * @param string $table A table.
+     *
+     * @throws WorkflowRefusal When build/surface.json is missing.
+     *
+     * @return list<string> The migrations that alter it (#338), relative to the project.
+     */
+    public function alterers(string $table): array
+    {
+        return $this->naming('alter', $table);
     }
 
     /**
@@ -68,6 +90,48 @@ final readonly class ModuleTables
         return $surfaceModule === null
             ? 0
             : count($surfaceModule->migrations);
+    }
+
+    /**
+     * @param string $verb  `create` or `alter`.
+     * @param string $table A table.
+     *
+     * @throws WorkflowRefusal When build/surface.json is missing.
+     *
+     * @return list<string> The migrations that call `$schema-><verb>('<table>')`, in the surface's order.
+     */
+    private function naming(string $verb, string $table): array
+    {
+        $named = [];
+
+        foreach ($this->files() as $path) {
+            if (!(str_contains($this->projectFiles->read($path) ?? '', '->' . $verb . "('" . $table . "')"))) {
+                continue;
+            }
+
+            $named[] = $path;
+        }
+
+        return $named;
+    }
+
+    /**
+     * @throws WorkflowRefusal When build/surface.json is missing.
+     *
+     * @return list<string> Every module migration's file, relative to the project, in the surface's order.
+     */
+    private function files(): array
+    {
+        $files = [];
+
+        foreach ($this->view()->modules as $surfaceModule) {
+            foreach ($surfaceModule->migrations as $migration) {
+                $short = substr($migration, strlen(rtrim($surfaceModule->namespace, '\\') . '\\'));
+                $files[] = 'modules/' . $surfaceModule->name . '/src/' . str_replace('\\', '/', $short) . '.php';
+            }
+        }
+
+        return $files;
     }
 
     /**

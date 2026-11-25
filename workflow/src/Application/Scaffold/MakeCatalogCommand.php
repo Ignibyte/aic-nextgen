@@ -51,8 +51,8 @@ final readonly class MakeCatalogCommand implements Command
             'a GET page showing one row at <path>/{id}: its fields in tabs Tessera swaps in place, in framework atoms',
         ],
         'make:entity' => [
-            'make:entity <module> <Class> <table> --fields=<name>:<type>,…',
-            'an entity with its migration, repository and list page',
+            'make:entity <module> <Class> <table> (--fields=<name>:<type>,… | --existing)',
+            'an entity with its migration, repository and list page; over an existing table, read from its migration',
         ],
         'make:enum' => ['make:enum <module> <Name> --cases=<a>,<b>,… [--backed=string|int]', 'an enum in src/Enum/'],
         'make:exception' => [

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 /**
- * The thirty-one `bin/aic` make lines that make `modules/scaffold/` (#122),
+ * The thirty-two `bin/aic` make lines that make `modules/scaffold/` (#122),
  * run in order by gate:31 and by anyone regenerating the module: every
  * writer, a component with a script and a page showing it (#315), a page
  * naming its component, a named layout (#157), a page making its own view in
@@ -17,8 +17,9 @@ namespace Gates\Application;
  * pg_dump (#318) and a fourth in the types a Laravel schema writes (#339), a seed of one of them (#320), a signed webhook (#321), an
  * action on the first page that answers its region (#322), a queued CSV
  * export with its download and prune (#323), a filtered, sorted and paged
- * list of the imported books (#324) and a detail page of the note module's
- * notes in two tabs (#341).
+ * list of the imported books (#324), a detail page of the note module's
+ * notes in two tabs (#341) and an entity over the imported loans, its fields
+ * read from their migration (#338).
  */
 final readonly class ScaffoldSequence
 {
@@ -136,5 +137,6 @@ final readonly class ScaffoldSequence
             '--fields=title:text,body:text',
             '--tabs=summary:title,body:body',
         ],
+        ['make:entity', 'scaffold', 'ScaffoldLoan', 'scaffold_loans', '--existing'],
     ];
 }

@@ -16,7 +16,8 @@ use function str_replace;
 use function strlen;
 
 /**
- * The entity `make:entity` writes (#123): one readonly property per field, and its row as one line for its list.
+ * The entity `make:entity` writes (#123): one readonly property per field, `int` and nullable ones over an existing
+ * table (#338), and its row as one line for its list.
  */
 final readonly class EntitySource
 {
@@ -63,9 +64,7 @@ final readonly class EntitySource
         $width = $this->width($fields);
 
         foreach ($fields as $field) {
-            $type = $field->isBoolean()
-                ? 'bool'
-                : 'string';
+            $type = ($field->nullable ? '?' : '') . $field->phpType();
             $params .= '     * @param ' . str_pad($type, $width['type']) . ' ' . str_pad('$' . $field->property(), $width['name'])
                 . ' The ' . $field->name . " column.\n";
             $properties .= '        public ' . $type . ' $' . $field->property() . ",\n";
@@ -85,9 +84,12 @@ final readonly class EntitySource
      */
     private function part(EntityField $entityField, string $separator): string
     {
-        $value = $entityField->isBoolean()
-            ? '($this->' . $entityField->property() . " ? 'yes' : 'no')"
-            : '$this->' . $entityField->property();
+        $property = '$this->' . $entityField->property();
+        $value = match (true) {
+            $entityField->isBoolean() => '(' . $property . " ? 'yes' : 'no')",
+            $entityField->nullable => '(' . $property . " ?? '')",
+            default => $property,
+        };
 
         return "'" . $separator . str_replace('_', ' ', $entityField->name) . ": ' . " . $value;
     }
@@ -103,7 +105,7 @@ final readonly class EntitySource
         $name = 0;
 
         foreach ($fields as $field) {
-            $type = max($type, $field->isBoolean() ? 4 : 6);
+            $type = max($type, strlen(($field->nullable ? '?' : '') . $field->phpType()));
             $name = max($name, strlen($field->property()) + 1);
         }
 

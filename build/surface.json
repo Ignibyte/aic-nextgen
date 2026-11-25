@@ -551,6 +551,14 @@
             "module": "scaffold",
             "needs": "",
             "path": "/scaffold/notes/{id:int}"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldLoanListPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "scaffold",
+            "needs": "",
+            "path": "/scaffold-loans"
         }
     ],
     "commands": [
