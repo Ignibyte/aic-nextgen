@@ -208,7 +208,8 @@ CTEs and conditions on computed columns are #329; the compiled PDO's `text[]` pa
 #313: bearer tokens and OIDC sign-in: `aic_api_tokens` (SHA-256 only; `bin/aic token:add|list|revoke`), scopes are
 permissions, so `needs:` takes a token's scope (never `signed-in`); a bearer request is judged by its token alone (no CSRF
 check, no sign-in redirect; 401 `invalid_token`, 403 `insufficient_scope`). `AppConfig::$oidc` providers, `OidcSignIn` (code
-flow, PKCE S256, id token claims checked unsigned until #325), `Authenticator::signInAs()`; the fixture's `/api/caller` and
+flow, PKCE S256, the id token's RS256/ES256 signature checked against the provider's `jwksUri` keys since #343, then its
+claims), `Authenticator::signInAs()`; the fixture's `/api/caller` and
 `/sign-in/oidc` against gate:23's stub provider. The token endpoint is #331.
 #314: real-time push: `AIC\Broadcast` (`Broadcaster::publish(Channel, data)` writes `aic_broadcasts` and `pg_notify`s;
 `Broadcasts::stream()` sends a channel's events after `Last-Event-ID` over `Database::listen()|notification()`, ends each

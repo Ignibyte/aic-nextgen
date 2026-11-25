@@ -208,22 +208,29 @@ environment in `config/app.php`.
 
 `AIC\Auth\Application\OidcSignIn` signs a person in through an OpenID Connect provider such as
 Keycloak, by the authorization code flow with PKCE (#313). `AppConfig::$oidc` names the providers
-(`AIC\Auth\Domain\OidcProviders` of `OidcProvider`: issuer, authorization and token endpoints, client
-id and secret, callback, scopes). Each URL is https, or http on a loopback host for a local stub; an
-empty secret is a public client. A callback written as a path joins the request's origin.
+(`AIC\Auth\Domain\OidcProviders` of `OidcProvider`: issuer, authorization and token endpoints, the
+key set's `jwksUri`, client id and secret, callback, scopes, and the `algorithms` its id tokens are
+signed with, `RS256` (the default), `ES256` or both). Each URL is https, or http on a loopback host for
+a local stub; an empty secret is a public client. A callback written as a path joins the request's
+origin.
 
 - `start($request, $name)` keeps a fresh state, nonce and S256 verifier in the session and answers
   `AIC\Controller\Domain\ProviderRedirect`, the one page response that leaves the site, and only for a
   configured authorization endpoint. Start it from a POST, so the form guard keeps another site from
   starting a sign-in in a visitor's session.
 - `finish($request)` clears what start kept, checks the state, exchanges the code through the app's
-  PSR-18 client (`AIC\Auth\Application\CodeExchange`, HTTP Basic for a confidential client) and
-  checks the id token's claims with `AIC\Auth\Domain\IdTokenClaims`: issuer, audience (and `azp`),
-  expiry and nonce. It answers an `OidcIdentity` (provider, subject, email) or throws
+  PSR-18 client (`AIC\Auth\Application\CodeExchange`, HTTP Basic for a confidential client), checks
+  the id token's signature and then its claims with `AIC\Auth\Domain\IdTokenClaims`: issuer, audience
+  (and `azp`), expiry and nonce. It answers an `OidcIdentity` (provider, subject, email) or throws
   `AIC\Auth\Contracts\SignInRefusedException` with a reason for the person.
-- The signature is not checked yet: the token comes straight from the token endpoint over TLS,
-  which OpenID Connect Core 3.1.3.7 item 6 accepts in its place. RS256 needs asymmetric openssl in
-  the compiler (#325).
+- The signature (#343): `CodeExchange::keys()` fetches the provider's JSON Web Key Set once per
+  sign-in, so a rotated key is seen at once. `AIC\Auth\Application\IdTokenSignature` refuses `alg:
+  none` and any algorithm the provider does not declare, takes the key the header's `kid` names (or the
+  one key of the algorithm's type), and verifies the signature with `openssl_verify` and SHA-256: RSA
+  PKCS#1 v1.5 for RS256, ECDSA on P-256 for ES256. `AIC\Auth\Domain\PublicKeyDer` builds the key's
+  PEM from its JWK components and an ES256 signature's DER from its `r` and `s`, since the compiled
+  site has no `openssl_pkey_new` from components. The compiled site links elephc's `openssl-crypto`
+  package for it, pinned in ignibyte/aic-gates' `native/elephc.toml`.
 - Who the identity is in the app is the caller's decision; `Authenticator::signInAs($request,
   $userId)` regenerates the session and signs that id in. The fixture signs in `<provider>:<subject>`.
 

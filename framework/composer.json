@@ -18,6 +18,7 @@
     "require": {
         "php": "^8.5",
         "ext-curl": "*",
+        "ext-openssl": "*",
         "ext-pdo": "*",
         "ext-pdo_pgsql": "*",
         "psr/container": "^2.0",

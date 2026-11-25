@@ -22,10 +22,8 @@ use function strtr;
 /**
  * The claims of an id token (#313), read from its payload and checked as
  * OpenID Connect Core 3.1.3.7 asks: the issuer, the audience (and `azp` when
- * there are several), the expiry and the nonce. The signature is not
- * checked: the client took the token straight from the provider's token
- * endpoint over TLS, which 3.1.3.7 item 6 accepts in its place; RS256 waits
- * on asymmetric openssl in the compiler (#325).
+ * there are several), the expiry and the nonce. The sign-in reads them only
+ * after `IdTokenSignature` has checked the token's signature (#343).
  */
 final readonly class IdTokenClaims
 {

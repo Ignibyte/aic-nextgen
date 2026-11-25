@@ -6,6 +6,16 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **OIDC id token signatures** (#343). A sign-in through a provider now checks the id token's signature before its
+  claims: `CodeExchange::keys()` fetches the provider's JSON Web Key Set, and `IdTokenSignature` refuses `alg: none`
+  and any algorithm the provider does not declare, takes the key the header's `kid` names, and verifies RS256 or
+  ES256 with `openssl_verify`, natively as under PHP. `OidcProvider` takes `jwksUri` (required, after
+  `tokenEndpoint`) and `algorithms` (default `['RS256']`): a breaking change for any config that names a provider.
+  `PublicKeyDer` builds the key's PEM from its JWK components. The framework requires `ext-openssl`, and
+  ignibyte/aic-gates pins elephc's `openssl-crypto` 3.6.4. gate:23's stub provider makes its keys per run, serves
+  them at `/oidc/jwks` and signs its tokens; the browser test signs in with RS256 and ES256 and sees a tampered and an
+  unsigned token refused.
+
 - **make:detail-page** (#341). `bin/aic make:detail-page <module> <Name>DetailPage <table> <path>
   --fields=<name>:<type>,… [--tabs=<tab>:<field>+<field>,…] [--key=id] [--uuid]` writes three files: a GET Page at
   `<path>/{id:int}` (or `{id:uuid}`), a repository and a view. The page heads with the first field and shows the

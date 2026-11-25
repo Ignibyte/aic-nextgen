@@ -28,8 +28,8 @@ use function time;
  * Sign-in through an OpenID Connect provider (#313), by the authorization
  * code flow with PKCE (S256). `start()` keeps a fresh state, nonce and
  * verifier in the session and sends the browser to the provider; `finish()`,
- * on the callback, checks the state, exchanges the code and checks the id
- * token's claims. Each sign-in is used once: finishing clears what start
+ * on the callback, checks the state, exchanges the code, checks the id
+ * token's signature against the provider's keys (#343) and then its claims. Each sign-in is used once: finishing clears what start
  * kept, whatever the outcome. Who the identity is in the app, and signing
  * them in, is the caller's (`Authenticator::signInAs()`).
  */
@@ -47,16 +47,18 @@ final readonly class OidcSignIn
     ];
 
     /**
-     * @param OidcProviders  $oidcProviders  The providers `config/app.php` names.
-     * @param CodeExchange   $codeExchange   The token endpoint call.
-     * @param RandomTokens   $randomTokens   Makes the state, the nonce and the verifier.
-     * @param RequestSession $requestSession The request's session.
+     * @param OidcProviders    $oidcProviders    The providers `config/app.php` names.
+     * @param CodeExchange     $codeExchange     The token endpoint and key set calls.
+     * @param RandomTokens     $randomTokens     Makes the state, the nonce and the verifier.
+     * @param RequestSession   $requestSession   The request's session.
+     * @param IdTokenSignature $idTokenSignature Checks the id token's signature.
      */
     public function __construct(
         private OidcProviders $oidcProviders,
         private CodeExchange $codeExchange,
         private RandomTokens $randomTokens = new RandomTokens(),
         private RequestSession $requestSession = new RequestSession(),
+        private IdTokenSignature $idTokenSignature = new IdTokenSignature(),
     ) {
     }
 
@@ -93,7 +95,8 @@ final readonly class OidcSignIn
     /**
      * @param ServerRequestInterface $serverRequest The callback, with its session.
      *
-     * @throws SignInRefusedException When the state does not match, the provider refused, or the id token fails a check.
+     * @throws SignInRefusedException When the state does not match, the provider refused, or the id token's signature or a
+     *                                claim fails its check.
      * @throws LogicException         When the request carries no session.
      *
      * @return OidcIdentity Who the provider signed in.
@@ -122,6 +125,7 @@ final readonly class OidcSignIn
 
         $oidcProvider = $this->oidcProviders->provider($kept['provider']);
         $idToken = $this->codeExchange->idToken($oidcProvider, self::query($serverRequest, 'code'), $kept['redirect'], $kept['verifier']);
+        $this->idTokenSignature->check($idToken, $oidcProvider, $this->codeExchange->keys($oidcProvider));
 
         return (new IdTokenClaims($idToken))->identity($oidcProvider, $kept['provider'], $kept['nonce'], time());
     }
