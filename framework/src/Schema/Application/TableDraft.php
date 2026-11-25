@@ -243,7 +243,7 @@ final readonly class TableDraft implements TableBuilder
     #[Override]
     public function foreignKey(string $column, string $table, string $foreignColumn, OnDelete $onDelete): self
     {
-        $this->constraintDraft->foreignKey($column, $table, $foreignColumn, $onDelete);
+        $this->constraintDraft->foreignKey([$column], $table, [$foreignColumn], $onDelete);
 
         return $this;
     }

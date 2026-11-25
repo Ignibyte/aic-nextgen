@@ -190,7 +190,7 @@ final readonly class ImportPlanner
                 continue;
             }
 
-            $findings[] = $importedTable->name . ': the foreign key on ' . $importedForeignKey->column . ' references '
+            $findings[] = $importedTable->name . ': the foreign key on ' . implode(', ', $importedForeignKey->columns) . ' references '
                 . $importedForeignKey->table . ", which neither the import nor a module's migration creates";
         }
 

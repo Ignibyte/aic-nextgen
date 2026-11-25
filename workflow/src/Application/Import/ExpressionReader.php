@@ -14,8 +14,8 @@ use function count;
 
 /**
  * A deparsed Postgres expression, as pg_dump writes a check, a partial index's `WHERE`, a default or a generated
- * column, read into `Schema::expressions()` calls (#318): `OR`, `AND`, `NOT`, the six comparisons, `IS [NOT] NULL`
- * and `= ANY (ARRAY[…])` here, the terms in `TermReader`.
+ * column, read into `Schema::expressions()` calls (#318): `OR`, `AND`, `NOT`, the six comparisons, `IS [NOT] NULL`,
+ * `IS TRUE`, `~` (#344) and `= ANY (ARRAY[…])` here, the terms in `TermReader`.
  */
 final readonly class ExpressionReader
 {
@@ -30,10 +30,12 @@ final readonly class ExpressionReader
     ];
 
     /**
-     * @param TermReader $termReader Reads the terms.
+     * @param TermReader      $termReader      Reads the terms.
+     * @param ConditionValues $conditionValues Makes a condition a value and a value a condition (#344).
      */
     public function __construct(
         private TermReader $termReader = new TermReader(),
+        private ConditionValues $conditionValues = new ConditionValues(),
     ) {
     }
 
@@ -49,7 +51,7 @@ final readonly class ExpressionReader
         $codeNode = $this->expression($tokenCursor);
         $tokenCursor->end();
 
-        return $this->asPredicate($codeNode);
+        return $this->conditionValues->asPredicate($codeNode);
     }
 
     /**
@@ -61,11 +63,7 @@ final readonly class ExpressionReader
      */
     public function term(TokenCursor $tokenCursor): CodeNode
     {
-        $codeNode = $this->termReader->sum($tokenCursor, $this->grouped(...));
-
-        return $codeNode instanceof CodeCall && $codeNode->isPredicate()
-            ? throw new UnsupportedSql('a predicate stands where a value belongs')
-            : $codeNode;
+        return $this->conditionValues->asTerm($this->termReader->sum($tokenCursor, $this->grouped(...)));
     }
 
     /**
@@ -129,7 +127,7 @@ final readonly class ExpressionReader
     private function negation(TokenCursor $tokenCursor): CodeNode
     {
         return $tokenCursor->accept('not')
-            ? new CodeCall('not', [$this->asPredicate($this->negation($tokenCursor))])
+            ? new CodeCall('not', [$this->conditionValues->asPredicate($this->negation($tokenCursor))])
             : $this->comparison($tokenCursor);
     }
 
@@ -144,23 +142,25 @@ final readonly class ExpressionReader
     {
         $codeNode = $this->termReader->sum($tokenCursor, $this->grouped(...));
 
-        if ($tokenCursor->accept('is', 'not', 'null')) {
-            return new CodeCall('not', [new CodeCall('isNull', [$this->asTerm($codeNode)])]);
-        }
+        return match (true) {
+            $tokenCursor->accept('is', 'not', 'null') => new CodeCall('not', [$this->isNull($codeNode)]),
+            $tokenCursor->accept('is', 'null') => $this->isNull($codeNode),
+            $tokenCursor->accept('is', 'true') => $this->conditionValues->known($codeNode),
+            $tokenCursor->accept('~') => new CodeCall('matches', [$this->conditionValues->asTerm($codeNode), $this->pattern($tokenCursor)]),
+            $tokenCursor->accept('=', 'any') => $this->oneOf($tokenCursor, $codeNode),
+            $tokenCursor->accept('<>', 'all') => new CodeCall('not', [$this->oneOf($tokenCursor, $codeNode)]),
+            default => $this->compared($tokenCursor, $codeNode),
+        };
+    }
 
-        if ($tokenCursor->accept('is', 'null')) {
-            return new CodeCall('isNull', [$this->asTerm($codeNode)]);
-        }
-
-        if ($tokenCursor->accept('=', 'any')) {
-            return $this->oneOf($tokenCursor, $codeNode);
-        }
-
-        if ($tokenCursor->accept('<>', 'all')) {
-            return new CodeCall('not', [$this->oneOf($tokenCursor, $codeNode)]);
-        }
-
-        return $this->compared($tokenCursor, $codeNode);
+    /**
+     * @param CodeNode $codeNode A term.
+     *
+     * @return CodeCall `isNull(…)`.
+     */
+    private function isNull(CodeNode $codeNode): CodeCall
+    {
+        return new CodeCall('isNull', [$this->conditionValues->asTerm($codeNode)]);
     }
 
     /**
@@ -177,11 +177,32 @@ final readonly class ExpressionReader
             if ($tokenCursor->accept($sign)) {
                 $right = $this->termReader->sum($tokenCursor, $this->grouped(...));
 
-                return new CodeCall('compare', [$this->asTerm($codeNode), new CodeValue('Operator::' . $operator), $this->asTerm($right)]);
+                return new CodeCall('compare', [
+                    $this->conditionValues->asTerm($codeNode),
+                    new CodeValue('Operator::' . $operator),
+                    $this->conditionValues->asTerm($right),
+                ]);
             }
         }
 
         return $codeNode;
+    }
+
+    /**
+     * @param TokenCursor $tokenCursor After `~`.
+     *
+     * @throws UnsupportedSql When the pattern is not a text literal.
+     *
+     * @return CodeValue The pattern, as PHP.
+     */
+    private function pattern(TokenCursor $tokenCursor): CodeValue
+    {
+        $codeNode = $this->termReader->sum($tokenCursor, $this->grouped(...));
+        $pattern = $codeNode instanceof CodeCall && $codeNode->method === 'text'
+            ? $codeNode->valueArgument(0)
+            : null;
+
+        return $pattern ?? throw new UnsupportedSql('a match against something other than a text literal has no Schema expression');
     }
 
     /**
@@ -202,7 +223,7 @@ final readonly class ExpressionReader
             throw new UnsupportedSql('= ANY over something other than ARRAY[…] has no Schema expression');
         }
 
-        return new CodeCall('oneOf', [$this->asTerm($codeNode), $values]);
+        return new CodeCall('oneOf', [$this->conditionValues->asTerm($codeNode), $values]);
     }
 
     /**
@@ -222,7 +243,7 @@ final readonly class ExpressionReader
         $predicates = [];
 
         foreach ($parts as $part) {
-            $predicates = [...$predicates, ...$this->flattened($method, $this->asPredicate($part))];
+            $predicates = [...$predicates, ...$this->flattened($method, $this->conditionValues->asPredicate($part))];
         }
 
         return new CodeCall($method, [new CodeList($predicates)]);
@@ -243,39 +264,5 @@ final readonly class ExpressionReader
         return $nested instanceof CodeList
             ? $nested->items
             : [$codeCall];
-    }
-
-    /**
-     * @param CodeNode $codeNode A node where a predicate belongs.
-     *
-     * @throws UnsupportedSql When it is a term other than a column, which reads as `column = true`.
-     *
-     * @return CodeCall The predicate.
-     */
-    private function asPredicate(CodeNode $codeNode): CodeCall
-    {
-        if ($codeNode instanceof CodeCall && $codeNode->isPredicate()) {
-            return $codeNode;
-        }
-
-        if ($codeNode instanceof CodeCall && $codeNode->method === 'column') {
-            return new CodeCall('compare', [$codeNode, new CodeValue('Operator::Equal'), new CodeCall('boolean', [new CodeValue('true')])]);
-        }
-
-        throw new UnsupportedSql('a value stands where a condition belongs');
-    }
-
-    /**
-     * @param CodeNode $codeNode A node where a term belongs.
-     *
-     * @throws UnsupportedSql When it is a predicate.
-     *
-     * @return CodeNode The term.
-     */
-    private function asTerm(CodeNode $codeNode): CodeNode
-    {
-        return $codeNode instanceof CodeCall && $codeNode->isPredicate()
-            ? throw new UnsupportedSql('a condition stands where a value belongs')
-            : $codeNode;
     }
 }

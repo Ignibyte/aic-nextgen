@@ -65,13 +65,14 @@ final class ConstraintDraft
     private array $methodIndexes = [];
 
     /**
-     * @param list<string> $columns Columns whose values, taken together, no two rows share.
+     * @param list<string> $columns    Columns whose values, taken together, no two rows share.
+     * @param bool         $nullsEqual Whether two nulls are the same value (#344).
      *
      * @throws InvalidArgumentException When the list is empty.
      */
-    public function unique(array $columns): void
+    public function unique(array $columns, bool $nullsEqual = false): void
     {
-        $this->uniques[] = new ColumnGroup($columns);
+        $this->uniques[] = new ColumnGroup($columns, $nullsEqual);
     }
 
     /**
@@ -85,16 +86,18 @@ final class ConstraintDraft
     }
 
     /**
-     * @param string   $column        The referring column.
-     * @param string   $table         The table it refers to.
-     * @param string   $foreignColumn The column it refers to there.
-     * @param OnDelete $onDelete      What deleting the row it refers to does here.
+     * @param list<string> $columns        The referring columns, in order.
+     * @param string       $table          The table they refer to.
+     * @param list<string> $foreignColumns The columns they refer to there, in the same order.
+     * @param OnDelete     $onDelete       What deleting the row they refer to does here.
      *
-     * @throws InvalidArgumentException When a name is not an identifier.
+     * @throws InvalidArgumentException When a name is not an identifier, there are no columns, or the two lists differ in
+     *                                  length.
      */
-    public function foreignKey(string $column, string $table, string $foreignColumn, OnDelete $onDelete): void
+    public function foreignKey(array $columns, string $table, array $foreignColumns, OnDelete $onDelete): void
     {
-        $this->foreignKeys[] = new ForeignKey(new Identifier($column), new Identifier($table), new Identifier($foreignColumn), $onDelete);
+        $foreignKey = new ForeignKey($this->names($columns), new Identifier($table), $this->names($foreignColumns), $onDelete);
+        $this->foreignKeys[] = $foreignKey;
     }
 
     /**
@@ -144,5 +147,23 @@ final class ConstraintDraft
             $this->partialIndexes,
             $this->methodIndexes,
         );
+    }
+
+    /**
+     * @param list<string> $columns Columns, perhaps another table's.
+     *
+     * @throws InvalidArgumentException When one is not an identifier.
+     *
+     * @return list<string> Them, each an identifier.
+     */
+    private function names(array $columns): array
+    {
+        $names = [];
+
+        foreach ($columns as $column) {
+            $names[] = (new Identifier($column))->value;
+        }
+
+        return $names;
     }
 }

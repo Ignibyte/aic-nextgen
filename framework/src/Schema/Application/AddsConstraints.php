@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Schema\Application;
 
 use AIC\Schema\Contracts\IndexMethod;
+use AIC\Schema\Contracts\OnDelete;
 use AIC\Schema\Contracts\Predicate;
 use InvalidArgumentException;
 use Override;
@@ -106,6 +107,41 @@ trait AddsConstraints
     public function indexUsing(array $columns, IndexMethod $indexMethod): static
     {
         $this->constraintDraft->methodIndex($columns, $indexMethod);
+
+        return $this;
+    }
+
+    /**
+     * @param list<string> $columns Columns whose values, taken together, no two rows share, two nulls counted as the
+     *                              same value (#344).
+     *
+     * @throws InvalidArgumentException When the list is empty.
+     *
+     * @return static The builder.
+     */
+    #[Override]
+    public function uniqueWithNulls(array $columns): static
+    {
+        $this->constraintDraft->unique($columns, true);
+
+        return $this;
+    }
+
+    /**
+     * @param list<string> $columns        The referring columns, in order (#344); one column takes `foreignKey()`.
+     * @param string       $table          The table they refer to.
+     * @param list<string> $foreignColumns The columns they refer to there, its primary key or a unique constraint's.
+     * @param OnDelete     $onDelete       What deleting the row they refer to does here.
+     *
+     * @throws InvalidArgumentException When a name is not an identifier, there are no columns, or the two lists differ
+     *                                  in length.
+     *
+     * @return static The builder.
+     */
+    #[Override]
+    public function references(array $columns, string $table, array $foreignColumns, OnDelete $onDelete): static
+    {
+        $this->constraintDraft->foreignKey($columns, $table, $foreignColumns, $onDelete);
 
         return $this;
     }

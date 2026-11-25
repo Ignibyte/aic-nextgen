@@ -6,6 +6,15 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The rest of a Laravel schema in schema:import** (#344). `Schema::expressions()` gains `Functions`: `trim`, `round`,
+  `coalesce`, `countPresent` (`num_nonnulls`), `jsonKind`, `jsonLength`, `truth` (a condition as a value, so two
+  compare) and `matches` (a regular expression). Both builders take `uniqueWithNulls()` (`UNIQUE NULLS NOT DISTINCT`)
+  and `references()`, a foreign key over several columns, on an existing table too. schema:import reads all of them,
+  `IS TRUE` and a named NOT NULL; translates `character(n)` to `string(n)` and `double precision` to `numeric(30, 15)`,
+  with a note each; and leaves out a `COPY` block's rows and `setval`. On the real 250-table dump the refusals fell
+  from 170 to 34: triggers, functions, a view, extension types, `inet`, expression indexes, `CASE`, and a reference
+  cycle among 27 tables (#349). gate:31's 33rd line imports two fixture tables in these forms.
+
 - **Queries over queries** (#329). `EntityQuery::derived()` makes a `DerivedQuery` over the query's rows: conditions, a
   case-insensitive search and order on any column the query reads, a window's rank, a JSON value and a similarity (as a
   number) included, with a page and a count. `Output` keeps and names its columns, or gives a fixed text.

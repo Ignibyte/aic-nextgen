@@ -11,7 +11,7 @@ use function in_array;
  */
 final readonly class CodeCall implements CodeNode
 {
-    private const array PREDICATES = ['compare', 'isNull', 'oneOf', 'all', 'any', 'not'];
+    private const array PREDICATES = ['compare', 'isNull', 'oneOf', 'all', 'any', 'not', 'matches'];
 
     /**
      * @param string         $method    The `Expressions` method.

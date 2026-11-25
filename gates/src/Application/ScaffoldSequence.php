@@ -102,6 +102,13 @@ final readonly class ScaffoldSequence
             '--version=2026_11_25_000000',
         ],
         [
+            'schema:import',
+            'gates/fixtures/schema-import.sql',
+            '--module=scaffold',
+            '--tables=scaffold_permits,scaffold_permit_stamps',
+            '--version=2026_11_25_000001',
+        ],
+        [
             'make:seed',
             'scaffold',
             'ScaffoldShelvesSeed',

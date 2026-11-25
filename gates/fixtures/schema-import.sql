@@ -304,6 +304,133 @@ ALTER TABLE ONLY public.scaffold_loans
 
 
 --
+-- Name: scaffold_permits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scaffold_permits (
+    id bigint NOT NULL,
+    code character(8) NOT NULL,
+    zone text CONSTRAINT scaffold_permits_zone_not_null NOT NULL,
+    holder text,
+    latitude double precision,
+    fee numeric(8,2) NOT NULL,
+    areas jsonb NOT NULL,
+    closed_at timestamp with time zone,
+    closed_by text,
+    contact_email text,
+    contact_phone text,
+    decision text,
+    CONSTRAINT scaffold_permits_closed_whole CHECK (((closed_at IS NULL) = (closed_by IS NULL))),
+    CONSTRAINT scaffold_permits_code_shape CHECK ((code ~ '^[A-Z]{2}[0-9]{6}$'::text)),
+    CONSTRAINT scaffold_permits_areas_listed CHECK (((jsonb_typeof(areas) = 'array'::text) AND (jsonb_array_length(areas) >= 1))),
+    CONSTRAINT scaffold_permits_contact_given CHECK ((num_nonnulls(contact_email, contact_phone) >= 1)),
+    CONSTRAINT scaffold_permits_decided CHECK (((decision IS NOT NULL) = COALESCE((zone = 'restricted'::text), false))),
+    CONSTRAINT scaffold_permits_fee_in_cents CHECK ((fee = round(fee, 2))),
+    CONSTRAINT scaffold_permits_fee_known CHECK (((fee >= (0)::numeric) IS TRUE)),
+    CONSTRAINT scaffold_permits_holder_present CHECK (((holder IS NULL) OR (btrim(holder) <> ''::text)))
+);
+
+
+--
+-- Name: scaffold_permits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.scaffold_permits ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.scaffold_permits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: scaffold_permit_stamps; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scaffold_permit_stamps (
+    id bigint NOT NULL,
+    permit_id bigint NOT NULL,
+    permit_zone text NOT NULL,
+    batch text
+);
+
+
+--
+-- Name: scaffold_permit_stamps_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.scaffold_permit_stamps ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.scaffold_permit_stamps_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Data for Name: scaffold_permits; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.scaffold_permits (id, code, zone) FROM stdin;
+1	AB123456	it's "open"; $$
+\.
+
+
+SELECT pg_catalog.setval('public.scaffold_permits_id_seq', 1, true);
+
+
+--
+-- Name: scaffold_permits scaffold_permits_id_zone_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scaffold_permits
+    ADD CONSTRAINT scaffold_permits_id_zone_key UNIQUE (id, zone);
+
+
+--
+-- Name: scaffold_permits scaffold_permits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scaffold_permits
+    ADD CONSTRAINT scaffold_permits_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: scaffold_permit_stamps scaffold_permit_stamps_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scaffold_permit_stamps
+    ADD CONSTRAINT scaffold_permit_stamps_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: scaffold_permit_stamps scaffold_permit_stamps_batch_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scaffold_permit_stamps
+    ADD CONSTRAINT scaffold_permit_stamps_batch_key UNIQUE NULLS NOT DISTINCT (permit_id, batch);
+
+
+--
+-- Name: scaffold_permit_stamps_batch_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX scaffold_permit_stamps_batch_idx ON public.scaffold_permit_stamps USING btree (batch);
+
+
+--
+-- Name: scaffold_permit_stamps scaffold_permit_stamps_permit_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scaffold_permit_stamps
+    ADD CONSTRAINT scaffold_permit_stamps_permit_fkey FOREIGN KEY (permit_id, permit_zone) REFERENCES public.scaffold_permits(id, zone) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 

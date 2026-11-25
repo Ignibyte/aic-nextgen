@@ -28,6 +28,8 @@ use function str_replace;
  */
 final readonly class PostgresExpressions implements Expressions
 {
+    use PostgresFunctions;
+
     /**
      * @param string $name A column of the table the declaration is on.
      *

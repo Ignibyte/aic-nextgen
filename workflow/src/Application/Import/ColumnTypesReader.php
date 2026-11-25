@@ -36,7 +36,17 @@ final readonly class ColumnTypesReader
         '/^bigint$/' => ['bigInteger', ''],
         '/^boolean$/' => ['boolean', ''],
         '/^character varying\\((\\d+)\\)$/' => ['string', ''],
+        '/^character\\((\\d+)\\)$/' => [
+            'string',
+            ' is a blank-padded character; it becomes string(), which keeps each value as written: move its values without'
+            . ' the padding.',
+        ],
         '/^date$/' => ['date', ''],
+        '/^double precision$/' => [
+            'numeric',
+            ' is double precision; it becomes numeric(30, 15), exact: a value past 15 whole digits does not fit, and its'
+            . ' places past 15 are rounded.',
+        ],
         '/^integer$/' => ['integer', ''],
         '/^json$/' => ['jsonb', ' is json; it becomes jsonb(), the JSON AIC reads, which keeps no whitespace or repeated key.'],
         '/^jsonb$/' => ['jsonb', ''],
@@ -51,6 +61,9 @@ final readonly class ColumnTypesReader
         '/^timestamp(?:\\(([0-5])\\)|\\(6\\))? with time zone$/' => ['timestampTz', ''],
         '/^uuid$/' => ['uuid', ''],
     ];
+
+    /** The arguments of a translation whose spelling has none (#344). */
+    private const array ARGUMENTS = ['double precision' => '30, 15'];
 
     /**
      * @param TokenCursor $tokenCursor At the type, which is read.
@@ -67,7 +80,9 @@ final readonly class ColumnTypesReader
             $matches = [];
 
             if (preg_match($pattern, $spelled, $matches) === 1) {
-                return new ImportedType($method, implode(', ', array_slice($matches, 1)), $spelled, $note);
+                $arguments = self::ARGUMENTS[$spelled] ?? implode(', ', array_slice($matches, 1));
+
+                return new ImportedType($method, $arguments, $spelled, $note);
             }
         }
 
