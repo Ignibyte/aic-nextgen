@@ -43,6 +43,7 @@ final readonly class TablePreparer
         $findings = [];
 
         foreach ($importedTable->columns as $importedColumn) {
+            $this->note($dumpFacts, $importedTable->name . '.' . $importedColumn->name, [$importedColumn->importedType->note]);
             $finding = $this->key($importedTable, $importedColumn, $dumpFacts);
             $findings = $finding === ''
                 ? $findings

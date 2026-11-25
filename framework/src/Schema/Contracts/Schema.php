@@ -53,6 +53,11 @@ interface Schema
     public function expressions(): Expressions;
 
     /**
+     * @return Defaults The common defaults, `now()` and a jsonb literal (#339).
+     */
+    public function defaults(): Defaults;
+
+    /**
      * Refuses every UPDATE, DELETE and TRUNCATE of the table (#310), as a trigger the dialect generates: an audit
      * trail or a ledger. A refused write fails with SQLSTATE 23001.
      *

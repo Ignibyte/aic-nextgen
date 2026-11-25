@@ -96,7 +96,10 @@ The development engine and its guard are described in [workflow.md](workflow.md)
     it lacks. `types()->generated(type, term)` is a stored generated column, added with `column()` or
     `addColumn()` and never retyped into; nothing writes one (the database refuses with SQLSTATE 428C9).
     `types()->defaulted(type, term)` gives a column a default (#308), so a required column joins a
-    table with rows.
+    table with rows. `Schema::defaults()` gives the common ones (#339): `now()` and `json(text)`, a
+    checked JSON document as a jsonb literal; `AIC\Schema\Application\PostgresDefaults` is the one
+    other class that makes a `Term`. `types()->timestampTz(precision)` keeps 0 to 6 digits of the
+    seconds' fraction (`timestamptz(p)`); 6, the default, writes plain `timestamptz`.
   - Guards (#310), as triggers the DDL generates: `Schema::appendOnly(table)` refuses every UPDATE,
     DELETE and TRUNCATE (an audit trail, a ledger); `Schema::finalOnce(table, columns)` refuses
     changing a listed column once it holds a value and deleting a row where one does (a decision

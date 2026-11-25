@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Laravel-shaped schemas in schema:import** (#339). `types()->timestampTz(precision)` keeps 0 to 6 digits of the
+  seconds' fraction (6, the default, still writes `timestamptz`, so no migration changes), and `Schema::defaults()`
+  gives `now()` and `json()`, a checked jsonb literal. schema:import reads `timestamp(p) with time zone`, a default
+  of `CURRENT_TIMESTAMP` or `now()` and a text cast to jsonb (`'[]'::jsonb`), and translates `timestamp without time
+  zone` to `timestampTz()`, `json` to `jsonb()` and `smallint` to `integer()`, with a note per column. On a real
+  250-table Laravel dump the import's refusals fell from 1,078 to 170, and from every table to 78; the rest is #344.
+  gate:31's 22nd line imports a fixture table in these types.
+
 - **OIDC id token signatures** (#343). A sign-in through a provider now checks the id token's signature before its
   claims: `CodeExchange::keys()` fetches the provider's JSON Web Key Set, and `IdTokenSignature` refuses `alg: none`
   and any algorithm the provider does not declare, takes the key the header's `kid` names, and verifies RS256 or

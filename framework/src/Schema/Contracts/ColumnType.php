@@ -21,7 +21,8 @@ final readonly class ColumnType
     /**
      * @param LogicalType  $logicalType The type.
      * @param int          $length      A String's longest value or a Numeric's precision; 0 for the other types.
-     * @param int          $scale       A Numeric's digits after the point; 0 for the other types.
+     * @param int          $scale       A Numeric's digits after the point, or a TimestampTz's fractional seconds' digits,
+     *                                  0 to 6 (#339); 0 for the other types.
      * @param list<string> $choices     A Choice's values (#307), each 1 to 63 letters, digits, `_`, `.`, `:` or `-`,
      *                                  none twice; empty for the other types.
      * @param Term|null    $generatedAs What a generated column holds (#310), from `ColumnTypes::generated()`;
@@ -47,7 +48,8 @@ final readonly class ColumnType
                 LogicalType::String => 'A string column has a positive length.',
                 LogicalType::Numeric => 'A numeric column takes a precision of 1 to 1000 and a scale of 0 to the precision.',
                 LogicalType::Choice => 'A choice column takes one or more distinct values of 1 to 63 letters, digits, _, ., : or -.',
-                LogicalType::BigIdentity, LogicalType::Text, LogicalType::TimestampTz, LogicalType::Integer,
+                LogicalType::TimestampTz => "A timestamp column keeps 0 to 6 digits of its seconds' fraction.",
+                LogicalType::BigIdentity, LogicalType::Text, LogicalType::Integer,
                 LogicalType::BigInteger, LogicalType::Date, LogicalType::Boolean, LogicalType::Uuid, LogicalType::UuidKey,
                 LogicalType::Jsonb => 'Only a string or a numeric column has a size, and only a choice column has values.',
             });
@@ -104,14 +106,23 @@ final readonly class ColumnType
     }
 
     /**
+     * @return bool Whether a Numeric's precision is 1 to 1000 and its scale 0 to the precision.
+     */
+    private function numericFits(): bool
+    {
+        return $this->length >= 1 && $this->length <= 1_000 && $this->scale >= 0 && $this->scale <= $this->length;
+    }
+
+    /**
      * @return bool Whether the length and the scale fit the type.
      */
     private function fits(): bool
     {
         return match ($this->logicalType) {
             LogicalType::String => $this->length >= 1 && $this->scale === 0,
-            LogicalType::Numeric => $this->length >= 1 && $this->length <= 1_000 && $this->scale >= 0 && $this->scale <= $this->length,
-            LogicalType::BigIdentity, LogicalType::Text, LogicalType::TimestampTz, LogicalType::Integer,
+            LogicalType::Numeric => $this->numericFits(),
+            LogicalType::TimestampTz => $this->length === 0 && in_array($this->scale, [0, 1, 2, 3, 4, 5, 6], true),
+            LogicalType::BigIdentity, LogicalType::Text, LogicalType::Integer,
             LogicalType::BigInteger, LogicalType::Date, LogicalType::Boolean, LogicalType::Uuid, LogicalType::UuidKey,
             LogicalType::Jsonb, LogicalType::Choice => $this->length === 0 && $this->scale === 0,
         };

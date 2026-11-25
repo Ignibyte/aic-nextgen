@@ -156,7 +156,11 @@ hash, gist and gin indexes, with every expression as `Schema::expressions()` cal
 function, trigger, view, another type, `ON UPDATE`, an expression index, a foreign key to a table
 nothing creates, is listed one a line and nothing is written; no SQL is copied through. Settings,
 owners and grants are dropped, and comments and other extensions are notes. `--tables` imports some
-tables of a larger dump; a statement about no chosen table is then a note.
+tables of a larger dump; a statement about no chosen table is then a note. The types a Laravel schema
+writes on nearly every table are read too (#339): `timestamp(p) with time zone` as `timestampTz(p)`, a
+default of `CURRENT_TIMESTAMP` or `now()` and of a text cast to jsonb (`'[]'::jsonb`) through
+`Schema::defaults()`, and three translations, each printed as a note with the column: `timestamp without
+time zone` becomes `timestampTz()`, `json` becomes `jsonb()` and `smallint` becomes `integer()`.
 
 `make:entity <module> <Class> <table> --fields=<name>:<type>,… [--version=<v>]` (#123) writes the
 entity, `<Class>Repository` (`latest(int)`), `Create<Table>Table` and `<Class>ListPage` (GET of the

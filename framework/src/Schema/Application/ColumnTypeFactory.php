@@ -74,14 +74,16 @@ final readonly class ColumnTypeFactory implements ColumnTypes
     }
 
     /**
-     * @throws InvalidArgumentException When a constructed value or argument is invalid.
+     * @param int $precision Its fractional seconds' digits, 0 to 6 (#339); 6 by default.
      *
-     * @return ColumnType A point in time with its time zone.
+     * @throws InvalidArgumentException When the precision is outside 0 to 6.
+     *
+     * @return ColumnType A point in time with its time zone, the precision held as the scale.
      */
     #[Override]
-    public function timestampTz(): ColumnType
+    public function timestampTz(int $precision = 6): ColumnType
     {
-        return new ColumnType(LogicalType::TimestampTz, 0, 0);
+        return new ColumnType(LogicalType::TimestampTz, 0, $precision);
     }
 
     /**

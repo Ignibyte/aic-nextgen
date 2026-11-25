@@ -27,7 +27,16 @@ final readonly class TermReader
 {
     private const array ARITHMETIC = ['+' => 'Plus', '-' => 'Minus', '*' => 'Times', '/' => 'DividedBy'];
 
-    private const array KEPT_CASTS = ['text', 'character varying', 'numeric', 'integer', 'bigint', 'text[]', 'character varying[]'];
+    private const array KEPT_CASTS = [
+        'text',
+        'character varying',
+        'numeric',
+        'integer',
+        'bigint',
+        'smallint',
+        'text[]',
+        'character varying[]',
+    ];
 
     /**
      * @param PhpLiteral $phpLiteral Writes string literals.

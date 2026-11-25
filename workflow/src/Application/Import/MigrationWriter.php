@@ -38,6 +38,7 @@ final readonly class MigrationWriter
     private const array USES = [
         ['Arithmetic', 'Arithmetic::'],
         ['ColumnTypes', 'ColumnTypes $'],
+        ['Defaults', 'Defaults $'],
         ['Expressions', 'Expressions $'],
         ['IndexMethod', 'IndexMethod::'],
         ['Migration', ''],
@@ -196,6 +197,9 @@ final readonly class MigrationWriter
         $parameters = [['TableBuilder', 'tableBuilder', 'The table.', '$tableBuilder']];
         $parameters = str_contains($body, '$columnTypes')
             ? [...$parameters, ['ColumnTypes', 'columnTypes', 'Its column types.', '$schema->types()']]
+            : $parameters;
+        $parameters = str_contains($body, '$defaults')
+            ? [...$parameters, ['Defaults', 'defaults', 'Its common defaults.', '$schema->defaults()']]
             : $parameters;
         $parameters = str_contains($body, '$expressions')
             ? [...$parameters, ['Expressions', 'expressions', 'Its terms and predicates.', '$schema->expressions()']]
