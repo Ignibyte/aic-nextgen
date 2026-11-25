@@ -46,6 +46,10 @@ final readonly class MakeCatalogCommand implements Command
         'make:client' => ['make:client <module> <Name>', 'a typed client of one upstream API and its reply value'],
         'make:command' => ['make:command <module> <Class> <name>', 'a console command'],
         'make:component' => ['make:component <Class>', 'a theme component with its template'],
+        'make:detail-page' => [
+            'make:detail-page <module> <Name>DetailPage <table> <path> --fields=<name>:<type>,… [--tabs=<tab>:<field>+<field>,…] [--uuid]',
+            'a GET page showing one row at <path>/{id}: its fields in tabs Tessera swaps in place, in framework atoms',
+        ],
         'make:entity' => [
             'make:entity <module> <Class> <table> --fields=<name>:<type>,…',
             'an entity with its migration, repository and list page',

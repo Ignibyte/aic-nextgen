@@ -543,6 +543,14 @@
             "module": "scaffold",
             "needs": "",
             "path": "/scaffold/books"
+        },
+        {
+            "handler": "App\\Scaffold\\Controller\\ScaffoldNoteDetailPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "scaffold",
+            "needs": "",
+            "path": "/scaffold/notes/{id:int}"
         }
     ],
     "commands": [

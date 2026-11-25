@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 /**
- * The twenty-nine `bin/aic` make lines that make `modules/scaffold/` (#122),
+ * The thirty `bin/aic` make lines that make `modules/scaffold/` (#122),
  * run in order by gate:31 and by anyone regenerating the module: every
  * writer, a component with a script and a page showing it (#315), a page
  * naming its component, a named layout (#157), a page making its own view in
@@ -16,8 +16,9 @@ namespace Gates\Application;
  * exception and an interface (#319), three tables imported from a committed
  * pg_dump (#318), a seed of one of them (#320), a signed webhook (#321), an
  * action on the first page that answers its region (#322), a queued CSV
- * export with its download and prune (#323) and a filtered, sorted and paged
- * list of the imported books (#324).
+ * export with its download and prune (#323), a filtered, sorted and paged
+ * list of the imported books (#324) and a detail page of the note module's
+ * notes in two tabs (#341).
  */
 final readonly class ScaffoldSequence
 {
@@ -118,6 +119,15 @@ final readonly class ScaffoldSequence
             '--fields=title:text,pages:integer,price:numeric,retired:boolean',
             '--filters=title,retired',
             '--sort=title,pages,price',
+        ],
+        [
+            'make:detail-page',
+            'scaffold',
+            'ScaffoldNoteDetailPage',
+            'notes',
+            '/scaffold/notes',
+            '--fields=title:text,body:text',
+            '--tabs=summary:title,body:body',
         ],
     ];
 }

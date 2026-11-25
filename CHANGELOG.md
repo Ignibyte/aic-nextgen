@@ -6,6 +6,16 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **make:detail-page** (#341). `bin/aic make:detail-page <module> <Name>DetailPage <table> <path>
+  --fields=<name>:<type>,… [--tabs=<tab>:<field>+<field>,…] [--key=id] [--uuid]` writes three files: a GET Page at
+  `<path>/{id:int}` (or `{id:uuid}`), a repository and a view. The page heads with the first field and shows the
+  open tab's fields as terms and values; `?tab=` opens a tab, and a tab's link swaps only the tabs and the panel
+  under Tessera. A key no row has answers 404. The made files hold constants only; the framework gains the atom
+  `DescriptionList` (`DescriptionItem`) and `DetailRows` and `DetailParts`, which read the row and draw it, so a
+  list page and a detail page over one table do not copy each other. The app theme and `make:theme`'s stylesheet
+  style the list and, for the first time, `Tabs`. gate:31's 30th line makes `/scaffold/notes/{id}` over the note
+  module's notes; gate:23 asks for each tab, a tab it does not know, a tab refreshed in place and a missing note.
+
 - **make:list-page** (#324). `bin/aic make:list-page <module> <Name>ListPage <table> <path> --fields=<name>:<type>,…
   --filters=<field>,… [--sort=<field>,…] [--key=id] [--per-page=25]` writes six files: the GET Page, its query value
   and the reader that fills it from the query string, a repository, a row and a view. The view draws a `FilterBar`

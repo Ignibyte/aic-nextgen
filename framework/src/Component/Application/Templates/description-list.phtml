@@ -1,0 +1,2 @@
+<?php declare(strict_types=1); /* Escaped from framework/templates/components/description-list.phtml by composer run build; edit that file, never this one. */ ?>
+<dl<?= $renderPass->marks() ?> class="aic-description-list"><?php foreach ($descriptionList->items as $descriptionItem): ?><div><dt><?= $renderPass->text($descriptionItem->term) ?></dt><dd><?= $renderPass->text($descriptionItem->details) ?></dd></div><?php endforeach; ?></dl>

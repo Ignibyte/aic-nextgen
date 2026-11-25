@@ -23,13 +23,13 @@ final readonly class AssetsPart6
         return [
             new PublicAsset(
                 'theme_app/30-atoms.css',
-                '/assets/6990e2054c9f70e772d1559065ac3b005a6c896bbe3bb4a311e3762fd85dde8d/themes/'
+                '/assets/bc2c03d35b460b256a7ae394859ac00724081af4260a33e43778972dca575eb1/themes/'
                     . 'app/30-atoms.css',
-                '6990e2054c9f70e772d1559065ac3b005a6c896bbe3bb4a311e3762fd85dde8d/themes/app/30-a'
+                'bc2c03d35b460b256a7ae394859ac00724081af4260a33e43778972dca575eb1/themes/app/30-a'
                     . 'toms.css',
                 'text/css; charset=utf-8',
-                '2b676cb74443e64adf147663505aad02bc81de2875cdc09edecbb41c94ed63ac',
-                2_476,
+                'f496f44f3ad5af8addf1e889aeca87b22ef0465a3049f5b12fdaa3d19d9fcadd',
+                3_354,
                 '/assets/themes/app/30-atoms.css',
             ),
             ...(new AssetsPart7())->all(),

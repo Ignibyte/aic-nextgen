@@ -34,6 +34,7 @@ final readonly class ModuleHandlersPart3
         return array_merge(
             (new ScaffoldHandlersPart2($this->handlerContext))->byId(),
             (new ScaffoldHandlersPart3($this->handlerContext))->byId(),
+            (new ScaffoldHandlersPart4($this->handlerContext))->byId(),
         );
     }
 }

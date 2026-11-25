@@ -12,6 +12,7 @@ use App\Scaffold\Controller\ScaffoldBookListPage;
 use App\Scaffold\Controller\ScaffoldDeliveryWebhook;
 use App\Scaffold\Controller\ScaffoldEventListPage;
 use App\Scaffold\Controller\ScaffoldGaugePage;
+use App\Scaffold\Controller\ScaffoldNoteDetailPage;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPinAction;
 use App\Scaffold\Controller\ScaffoldPost;
@@ -46,6 +47,7 @@ final readonly class ScaffoldRoutes
             ->post('/scaffold/scaffold-pin', ScaffoldPinAction::class)
             ->post('/scaffold/exports', ScaffoldShelfExportPost::class)
             ->get('/scaffold/exports/{id:uuid}', ScaffoldShelfExportDownload::class)
-            ->get('/scaffold/books', ScaffoldBookListPage::class);
+            ->get('/scaffold/books', ScaffoldBookListPage::class)
+            ->get('/scaffold/notes/{id:int}', ScaffoldNoteDetailPage::class);
     }
 }

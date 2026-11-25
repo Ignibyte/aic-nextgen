@@ -327,6 +327,19 @@ under phpcpd; two over one table, or sharing three filters, are copies, and the 
 make prints that the route needs a protected prefix and `needs:` when not everyone may read the
 table, and the gate:23 steps to add.
 
+One row of a table is a detail page (#341). `bin/aic make:detail-page <module> <Name>DetailPage
+<table> <path> --fields=<name>:<type>,… [--tabs=<tab>:<field>+<field>,…] [--key=id] [--uuid]` writes
+the Page at `<path>/{id:int}` (`{id:uuid}` with `--uuid`), its `<Name>DetailRepository` and its
+`<Name>DetailView` in `src/Service/`; the manifest gains the route. The page heads with the first
+field and shows the open tab's fields as a `DescriptionList`; `?tab=` opens a tab, the first when it
+names none, and the tabs and the panel are one anchored part (`@<name>-tab`), so a tab's link swaps
+only that part under Tessera. A key no row has is 404. The made files hold the fields, the tabs and
+the terms as constants; `AIC\Component\Application\DetailRows` reads the row through a read-only
+entity type (a choice as its text) and `DetailParts` makes the tab, the tabs, the panel and each value
+(a boolean as yes or no, a null as empty). So a list page and a detail page over one table stay apart
+under phpcpd. Without `--tabs` one tab, `details`, holds every field. The make prints that the route
+needs a protected prefix and `needs:` when not everyone may read the table, and the gate:23 steps.
+
 For an app without a theme, run `bin/aic make:theme <name>`. It writes `themes/<name>/layouts/`
 (the HTML and page templates), `src/Layouts/Page.php` (four regions: header, content, nav, footer)
 and a stylesheet, then prints the `config/app.php`, Composer and PHPCS lines to add. No favicon or feature module

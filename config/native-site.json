@@ -882,6 +882,51 @@
             "captures": false
         },
         {
+            "name": "note detail, the first tab",
+            "method": "GET",
+            "path": "/scaffold{note}",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "note detail, the body tab",
+            "method": "GET",
+            "path": "/scaffold{note}?tab=body",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "note detail, a tab it does not know",
+            "method": "GET",
+            "path": "/scaffold{note}?tab=nope",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "note detail, a tab refreshed in place",
+            "method": "GET",
+            "path": "/scaffold{note}?tab=body",
+            "form": "",
+            "header": "Tessera-Request: refresh\r\nTessera-Protocol: 2\r\nTessera-Layout: app\r\nTessera-Targets: @scaffold-note-tab",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "note detail, no such note",
+            "method": "GET",
+            "path": "/scaffold/notes/0",
+            "form": "",
+            "header": "",
+            "status": 404,
+            "captures": false
+        },
+        {
             "name": "stock, bad price",
             "method": "POST",
             "path": "/stock",
