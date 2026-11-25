@@ -73,12 +73,12 @@ final readonly class LocalNativeSiteSetup
 
         $reachable = $this->answers($root, $env);
 
-        $stubPort = self::freePort();
+        [$stubPort, $phpPort, $nativePort] = self::freePorts();
         $env['AIC_UPSTREAM_STUB'] = 'http://127.0.0.1:' . $stubPort;
         $env['AIC_UPSTREAM_STUB_TOKEN'] = 'stub-token';
         $env['AIC_WEBHOOK_STUB_SECRET'] = 'stub-webhook-secret';
 
-        return new NativeSiteSetup($env, $database, $reachable, self::freePort(), self::freePort(), $this->maxBodyBytes($root), $stubPort);
+        return new NativeSiteSetup($env, $database, $reachable, $phpPort, $nativePort, $this->maxBodyBytes($root), $stubPort);
     }
 
     /**
@@ -121,21 +121,57 @@ final readonly class LocalNativeSiteSetup
     }
 
     /**
-     * @return int A local port nothing listens on, as the kernel picks it.
+     * Asks the kernel for three free ports at once: every socket stays open
+     * until all three are read, so no two ports are the same (#340). A socket
+     * that cannot open or name itself falls back to 18090, 18091 or 18092.
+     *
+     * @return array{int, int, int} The stub's port, the PHP site's and the native site's.
      */
-    private static function freePort(): int
+    private static function freePorts(): array
     {
-        $server = stream_socket_server('tcp://127.0.0.1:0');
+        $stub = stream_socket_server('tcp://127.0.0.1:0');
+        $php = stream_socket_server('tcp://127.0.0.1:0');
+        $native = stream_socket_server('tcp://127.0.0.1:0');
 
-        if (!is_resource($server)) {
-            return 18_090;
+        $ports = [
+            self::portOf(is_resource($stub) ? stream_socket_get_name($stub, false) : false, 18_090),
+            self::portOf(is_resource($php) ? stream_socket_get_name($php, false) : false, 18_091),
+            self::portOf(is_resource($native) ? stream_socket_get_name($native, false) : false, 18_092),
+        ];
+
+        self::closeAll([$stub, $php, $native]);
+
+        return $ports;
+    }
+
+    /**
+     * @param list<false|resource> $servers The sockets drawn, a failed one as false.
+     */
+    private static function closeAll(array $servers): void
+    {
+        foreach ($servers as $server) {
+            if (!is_resource($server)) {
+                continue;
+            }
+
+            fclose($server);
         }
+    }
 
-        $name = stream_socket_get_name($server, false);
-        fclose($server);
+    /**
+     * @param false|string $name     A listening socket's local name, `127.0.0.1:<port>`.
+     * @param int          $fallback The port when the name holds none.
+     *
+     * @return int The port in the name, or the fallback.
+     */
+    private static function portOf(false|string $name, int $fallback): int
+    {
+        $port = is_string($name)
+            ? (int) (self::regexMatch('/:(\\d+)$/', $name)[1] ?? 0)
+            : 0;
 
-        return is_string($name)
-            ? (int) (self::regexMatch('/:(\\d+)$/', $name)[1] ?? 18_090)
-            : 18_090;
+        return $port > 0
+            ? $port
+            : $fallback;
     }
 }

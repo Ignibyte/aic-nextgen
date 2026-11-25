@@ -267,6 +267,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
   outside the native and require allow-list gates and under every other gate. No gate changed; the worker itself
   is not built yet.
 
+### Fixed
+
+- **gate:23's three ports are distinct** (#340). The stub upstream and the two sites each asked the
+  kernel for a free port and closed the socket before the next ask, so two of them could get the
+  same port: in one probe sweep the stub took the native site's port and every native step answered
+  the stub's 404. The three sockets now stay open until all three ports are read.
+
 ## 0.1.1 — 2026-11-06
 
 ### Fixed

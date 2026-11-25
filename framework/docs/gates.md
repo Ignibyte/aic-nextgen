@@ -76,7 +76,8 @@ gate:23 also serves a stub upstream beside the two sites (#305): PHP's built-in 
 ignibyte/aic-gates' `bin/gate-native-site-stub.php`, with four workers, on a free port both sites
 know as `AIC_UPSTREAM_STUB` (and `AIC_UPSTREAM_STUB_TOKEN`, `stub-token`). It answers `/echo`,
 `/status/201`, `/status/503` and a `/slow` that takes half a second, so an app's steps can call an
-upstream with fixed answers.
+upstream with fixed answers. The stub and the two sites take three distinct free ports, drawn
+from the kernel with every socket held open until all three are read (#340).
 
 `config/native-site.json` may also hold `profiled`, steps written as `steps` are (#234). After the
 plain pass and its browser run, gate:23 restarts both sites from the same build with
