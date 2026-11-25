@@ -159,8 +159,17 @@ The development engine and its guard are described in [workflow.md](workflow.md)
     rows whose field is among another table's values, a subquery. `AIC\Entity\Application\EntityTrees`
     reads a tree a type keeps in a Reference to itself, `descendants(type, parentField, key)` and
     `ancestors(...)`, each row with its `depth`, live rows only, stopping at depth 64. A lock around
-    a callable is `PostgresLocks::around()` (#312). Unions, named CTEs and conditions on a computed
-    column come later (#329).
+    a callable is `PostgresLocks::around()` (#312).
+  - Queries over queries (#329): `EntityQuery::derived(outputs)` makes a `DerivedQuery` over the
+    query's rows, read as a named subquery. It takes `where`, `search`, `orderBy`,
+    `orderByDescending`, `limit` and `offset` on any column the query reads, a computed one included (a
+    rank of 1, a similarity of `0.55` or more, a JSON value containing a text), and answers `rows()`,
+    `first()` and `count()`, which ignores the page. `outputs` keeps and names the columns: `new
+    Output(name, column)`, or `new Output(name, '', text)` for a fixed text. `unionAll(other)` and
+    `unionDistinct(other)` join two derived queries whose columns have the same names, order and types,
+    each side's own conditions, order and limit kept. A join's columns are `prefix_field` here.
+    `withValuesOf(field, derivedQuery, column)` keeps an entity query's rows whose field is among a derived
+    query's values. `Contains` and `Similar` compare a field in its own query, not here.
   - Lifecycle (#309): an `EntityType` takes `lifecycle: new Lifecycle(audited, deletedAt, listeners)`.
     Each write to an observed type (audited, or with a `Listener`) records its `EntityEvent` (Created,
     Updated, Deleted, Restored, Purged) for every row it changed, in the write's transaction: the

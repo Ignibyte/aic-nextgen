@@ -203,8 +203,9 @@ moves it in one guarded UPDATE recorded as `Transitioned`; `TransitionRefusedExc
 `holdForTransaction`, `around`, `tryAround`), `RateLimiter` and `RateLimitMiddleware` (429, `Retry-After`; `RateLimits` from a
 module factory), unlogged tables (`TableBuilder::unlogged()`), `bin/aic cache:prune|rate:reset`, the job `aic-cache-prune`.
 #311: query forms: `EntityQuery::withColumns([Window, JsonValue, Similarity])`, `withValuesIn()` (a subquery),
-`Comparison::Contains|EqualsIgnoringCase|Similar`, `EntityTrees::descendants|ancestors` (recursive, depth 64); unions, named
-CTEs and conditions on computed columns are #329; the compiled PDO's `text[]` parameter defect is #330.
+`Comparison::Contains|EqualsIgnoringCase|Similar`, `EntityTrees::descendants|ancestors` (recursive, depth 64).
+#329: `EntityQuery::derived([Output, …])` makes a `DerivedQuery` over the query's rows (`where`, `search`, order, page, `count`
+on any column, computed ones included; `unionAll()`, `unionDistinct()` over aligned columns); `withValuesOf()` reads one from another.
 #313: bearer tokens and OIDC sign-in: `aic_api_tokens` (SHA-256 only; `bin/aic token:add|list|revoke`), scopes are
 permissions, so `needs:` takes a token's scope (never `signed-in`); a bearer request is judged by its token alone (no CSRF
 check, no sign-in redirect; 401 `invalid_token`, 403 `insufficient_scope`). `AppConfig::$oidc` providers, `OidcSignIn` (code

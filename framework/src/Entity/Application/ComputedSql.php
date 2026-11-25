@@ -49,15 +49,13 @@ final readonly class ComputedSql
      *
      * @throws InvalidArgumentException When its field is not a Json field, or its alias is a column.
      *
-     * @return string `, <field> #>> '{<path>}' AS <alias>`: the path written as a literal, its keys being letters,
-     *                digits and `_` (`JsonValue` checks them), since the compiled site's PDO sends a `text[]`
-     *                parameter in a form Postgres misreads (#330).
+     * @return string `, <field> #>> ?::text[] AS <alias>`, its path bound as `{a,b}` (`JsonValue` checks its keys).
      */
     public function jsonColumn(JsonValue $jsonValue): string
     {
-        $path = "'{" . implode(',', $jsonValue->path) . "}'";
+        $field = $this->typedField($jsonValue->field, FieldType::Json);
 
-        return ', ' . $this->typedField($jsonValue->field, FieldType::Json) . ' #>> ' . $path . ' AS ' . $this->alias($jsonValue->alias);
+        return ', ' . $field . ' #>> ?::text[] AS ' . $this->alias($jsonValue->alias);
     }
 
     /**

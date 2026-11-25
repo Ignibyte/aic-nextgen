@@ -15,6 +15,8 @@ use App\Ledger\Controller\LedgerFeedPost;
 use App\Ledger\Entity\LedgerTypes;
 use App\Ledger\Service\LedgerCategories;
 use App\Ledger\Service\LedgerCategoryQueries;
+use App\Ledger\Service\LedgerDerivedQueries;
+use App\Ledger\Service\LedgerTree;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -42,10 +44,12 @@ final readonly class LedgerHandlersPart3
     {
         $entityStore = new EntityStore($this->handlerContext->database());
         $ledgerTypes = new LedgerTypes();
+        $ledgerTree = new LedgerTree($entityStore, $ledgerTypes);
         $ledgerCategories = new LedgerCategories(
             $entityStore,
             new EntityTrees($this->handlerContext->database()),
-            new LedgerCategoryQueries($entityStore, $ledgerTypes),
+            new LedgerCategoryQueries($ledgerTree, $ledgerTypes),
+            new LedgerDerivedQueries($ledgerTree),
             $ledgerTypes,
         );
         $broadcaster = new Broadcaster($this->handlerContext->database(), $this->handlerContext->appConfig());

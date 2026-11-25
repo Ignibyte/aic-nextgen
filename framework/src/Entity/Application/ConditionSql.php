@@ -19,13 +19,13 @@ final readonly class ConditionSql
      * @param string     $column     The column, safe to write into SQL.
      * @param Comparison $comparison How it is compared.
      *
-     * @return string The condition, with one `?` for its value: the operator, or for #311's a cast through text (the
-     *                compiled site's PDO sends a text parameter as text) or a lower case.
+     * @return string The condition, with one `?` for its value: the operator, or for #311's a cast to jsonb or a lower
+     *                case.
      */
     public function compared(string $column, Comparison $comparison): string
     {
         if ($comparison === Comparison::Contains) {
-            return $column . ' @> (?::text)::jsonb';
+            return $column . ' @> ?::jsonb';
         }
 
         if ($comparison === Comparison::EqualsIgnoringCase) {

@@ -9,11 +9,10 @@ use AIC\Entity\Domain\DeletedScope;
 use AIC\Entity\Domain\EntityType;
 use InvalidArgumentException;
 
+use function count;
 use function implode;
 use function in_array;
-use function mb_trim;
 use function str_contains;
-use function strtr;
 
 /**
  * A query's conditions (#184): each a SQL condition over the entity type's own
@@ -127,26 +126,20 @@ final class EntityConditions
      */
     public function search(array $fields, string $text): void
     {
-        if ($fields === []) {
-            throw new InvalidArgumentException('A search names at least one field.');
+        $columns = [];
+
+        foreach ($fields as $field) {
+            $columns[] = $this->column($field);
         }
 
-        $text = mb_trim($text);
+        $searchSql = new SearchSql();
+        $clause = $searchSql->clause($columns, $text);
 
-        if ($text === '') {
+        if ($clause === '') {
             return;
         }
 
-        $pattern = '%' . strtr($text, ['\\' => '\\\\', '%' => '\\%', '_' => '\\_']) . '%';
-        $clauses = [];
-
-        foreach ($fields as $field) {
-            $clauses[] = $this->column($field) . ' ILIKE ?';
-            $this->params[] = $pattern;
-        }
-
-        $group = '(' . implode(' OR ', $clauses) . ')';
-        $this->clauses[] = $group;
+        $this->subquery($clause, $searchSql->params(count($columns), $text));
     }
 
     /**
@@ -196,6 +189,19 @@ final class EntityConditions
 
         $subquery = 'SELECT ' . $entityType->table . '.' . $sourceField . ' FROM ' . $entityType->table . $entityConditions->sql();
         $this->subquery($column . ' IN (' . $subquery . ')', $entityConditions->params());
+    }
+
+    /**
+     * @param string       $field        A field of the entity type.
+     * @param DerivedQuery $derivedQuery A query over another query's rows (#329).
+     * @param string       $column       One of its columns, whose values the field must be among.
+     *
+     * @throws InvalidArgumentException When the type lacks the field, or the derived query the column.
+     */
+    public function valuesOf(string $field, DerivedQuery $derivedQuery, string $column): void
+    {
+        $values = $derivedQuery->valuesSql($column);
+        $this->subquery($this->column($field) . ' IN (' . $values . ')', $derivedQuery->params());
     }
 
     /**

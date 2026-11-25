@@ -7,13 +7,9 @@ namespace AIC\Entity\Application;
 use AIC\Entity\Domain\EntityJoin;
 use AIC\Entity\Domain\EntityType;
 use AIC\Entity\Domain\FieldType;
-use AIC\Entity\Domain\JsonValue;
-use AIC\Entity\Domain\Similarity;
-use AIC\Entity\Domain\Window;
 use InvalidArgumentException;
 
 use function array_any;
-use function count;
 use function explode;
 use function implode;
 use function in_array;
@@ -34,19 +30,8 @@ final class EntityJoins
      */
     private array $joins = [];
 
-    /**
-     * Each relation's count or sum column (#306), as `, (<subquery>) AS <name>`.
-     *
-     * @var list<string>
-     */
-    private array $computed = [];
-
-    /**
-     * The computed columns' bound values, in the order of their marks (#311).
-     *
-     * @var list<string>
-     */
-    private array $computedParams = [];
+    /** The columns it computes past its fields (#306, #311). */
+    private readonly ComputedColumns $computedColumns;
 
     /**
      * @param EntityType $entityType The entity type queried.
@@ -54,6 +39,7 @@ final class EntityJoins
     public function __construct(
         private readonly EntityType $entityType,
     ) {
+        $this->computedColumns = new ComputedColumns($entityType);
     }
 
     /**
@@ -119,41 +105,34 @@ final class EntityJoins
     }
 
     /**
-     * @param string $relation One of the entity type's relations, not Polymorphic.
-     * @param string $field    A field of its target to sum; empty to count the related rows.
-     *
-     * @throws InvalidArgumentException When it has no such relation or field, or the relation cannot be a subquery.
+     * @return ComputedColumns The columns it computes past its fields.
      */
-    public function compute(string $relation, string $field): void
+    public function computed(): ComputedColumns
     {
-        $relationSql = new RelationSql();
-        $this->computed[] = $field === ''
-            ? ', ' . $relationSql->count($this->entityType, $relation) . ' AS ' . $relation . '_count'
-            : ', ' . $relationSql->sum($this->entityType, $relation, $field) . ' AS ' . $relation . '_sum_' . $field;
+        return $this->computedColumns;
     }
 
     /**
-     * @param list<object> $columns Windows, JsonValues and Similarities (#311).
+     * @throws InvalidArgumentException When two columns have one name.
      *
-     * @throws InvalidArgumentException When one is none of these, names a field the type lacks, or its alias is a column.
+     * @return DerivedColumns Every column `selected()` returns, by name, with its type (#329).
      */
-    public function computeColumns(array $columns): void
+    public function outputs(): DerivedColumns
     {
-        $computedSql = new ComputedSql($this->entityType);
-        $computed = $this->windows($computedSql, $columns) + $this->jsonValues($computedSql, $columns)
-            + $this->similarities($computedSql, $columns);
+        $derivedColumns = new DerivedColumns();
+        $derivedColumns->addType($this->entityType, '');
 
-        if ($computed !== count($columns)) {
-            throw new InvalidArgumentException('A computed column is a Window, a JsonValue or a Similarity.');
+        foreach ($this->joins as $join) {
+            $derivedColumns->addType($join->entityType, $join->prefix . '_');
         }
-    }
 
-    /**
-     * @return list<string> The values the selected columns bind, before the conditions' (#311).
-     */
-    public function params(): array
-    {
-        return $this->computedParams;
+        $types = $this->computedColumns->types();
+
+        foreach ($this->computedColumns->names() as $index => $name) {
+            $derivedColumns->add($name, $types[$index] ?? FieldType::Text);
+        }
+
+        return $derivedColumns;
     }
 
     /**
@@ -174,7 +153,7 @@ final class EntityJoins
             $columns = [...$columns, ...self::joined($join)];
         }
 
-        return implode(', ', $columns) . implode('', $this->computed);
+        return implode(', ', $columns) . $this->computedColumns->sql();
     }
 
     /**
@@ -183,76 +162,6 @@ final class EntityJoins
     public function hasAny(): bool
     {
         return $this->joins !== [];
-    }
-
-    /**
-     * @param ComputedSql  $computedSql Renders each.
-     * @param list<object> $columns     The computed columns asked for.
-     *
-     * @throws InvalidArgumentException When a window names a field the type lacks, or its alias is a column.
-     *
-     * @return int How many were windows.
-     */
-    private function windows(ComputedSql $computedSql, array $columns): int
-    {
-        $before = count($this->computed);
-
-        foreach ($columns as $column) {
-            if (!$column instanceof Window) {
-                continue;
-            }
-
-            $this->computed[] = $computedSql->windowColumn($column);
-        }
-
-        return count($this->computed) - $before;
-    }
-
-    /**
-     * @param ComputedSql  $computedSql Renders each.
-     * @param list<object> $columns     The computed columns asked for.
-     *
-     * @throws InvalidArgumentException When a JSON value's field is not a Json field, or its alias is a column.
-     *
-     * @return int How many were JSON values.
-     */
-    private function jsonValues(ComputedSql $computedSql, array $columns): int
-    {
-        $before = count($this->computed);
-
-        foreach ($columns as $column) {
-            if (!$column instanceof JsonValue) {
-                continue;
-            }
-
-            $this->computed[] = $computedSql->jsonColumn($column);
-        }
-
-        return count($this->computed) - $before;
-    }
-
-    /**
-     * @param ComputedSql  $computedSql Renders each.
-     * @param list<object> $columns     The computed columns asked for.
-     *
-     * @throws InvalidArgumentException When a similarity's field is not a Text field, or its alias is a column.
-     *
-     * @return int How many were similarities, each text bound in order.
-     */
-    private function similarities(ComputedSql $computedSql, array $columns): int
-    {
-        $before = count($this->computed);
-
-        foreach ($columns as $column) {
-            if (!$column instanceof Similarity) {
-                continue;
-            }
-
-            $this->computed[] = $computedSql->similarityColumn($column);
-            $this->computedParams[] = $column->text;
-        }
-
-        return count($this->computed) - $before;
     }
 
     /**
