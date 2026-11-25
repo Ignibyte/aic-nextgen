@@ -21,7 +21,8 @@ use function strtolower;
 
 /**
  * The terms of a deparsed Postgres expression (#318): arithmetic, `||`, the casts pg_dump adds, literals, columns,
- * `lower`, `length` and `ARRAY[…]`. A parenthesized group is read by the whole expression reader it is handed.
+ * the functions `FunctionReader` knows and `ARRAY[…]`. A parenthesized group is read by the whole expression reader it
+ * is handed.
  */
 final readonly class TermReader
 {
@@ -30,6 +31,8 @@ final readonly class TermReader
     private const array KEPT_CASTS = [
         'text',
         'character varying',
+        'character',
+        'bpchar',
         'numeric',
         'integer',
         'bigint',
@@ -39,10 +42,12 @@ final readonly class TermReader
     ];
 
     /**
-     * @param PhpLiteral $phpLiteral Writes string literals.
+     * @param PhpLiteral     $phpLiteral     Writes string literals.
+     * @param FunctionReader $functionReader Reads the function calls.
      */
     public function __construct(
         private PhpLiteral $phpLiteral = new PhpLiteral(),
+        private FunctionReader $functionReader = new FunctionReader(),
     ) {
     }
 
@@ -149,9 +154,9 @@ final readonly class TermReader
      * @param TokenCursor                    $tokenCursor At a name.
      * @param Closure(TokenCursor): CodeNode $inner       Reads a function's argument.
      *
-     * @throws UnsupportedSql When the name is a function other than `lower` or `length`, or not a name.
+     * @throws UnsupportedSql When the name is a function no `Expressions` method states, or not a name.
      *
-     * @return CodeNode A column, or `lower(…)` or `length(…)`.
+     * @return CodeNode A column, or a function's call.
      */
     private function named(TokenCursor $tokenCursor, Closure $inner): CodeNode
     {
@@ -162,13 +167,7 @@ final readonly class TermReader
             return $this->call('column', $this->phpLiteral->string($name));
         }
 
-        $method = match (strtolower($name)) {
-            'lower' => 'lower',
-            'length', 'char_length' => 'length',
-            default => throw new UnsupportedSql('the function ' . $name . '() has no Schema expression'),
-        };
-
-        return new CodeCall($method, [$inner($tokenCursor->group())]);
+        return $this->functionReader->read($name, $tokenCursor->group(), $inner);
     }
 
     /**

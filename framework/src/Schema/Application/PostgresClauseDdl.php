@@ -58,7 +58,10 @@ final readonly class PostgresClauseDdl
                 continue;
             }
 
-            $definitions[] = 'UNIQUE (' . implode(', ', $unique->columns) . ')';
+            $nulls = $unique->nullsEqual
+                ? 'NULLS NOT DISTINCT '
+                : '';
+            $definitions[] = 'UNIQUE ' . $nulls . '(' . implode(', ', $unique->columns) . ')';
         }
 
         return $definitions;
@@ -97,7 +100,7 @@ final readonly class PostgresClauseDdl
             OnDelete::SetNull => 'SET NULL',
         };
 
-        return 'FOREIGN KEY (' . $foreignKey->column->value . ') REFERENCES ' . $foreignKey->table->value
-            . ' (' . $foreignKey->foreignColumn->value . ') ON DELETE ' . $onDelete;
+        return 'FOREIGN KEY (' . implode(', ', $foreignKey->columns) . ') REFERENCES ' . $foreignKey->table->value
+            . ' (' . implode(', ', $foreignKey->foreignColumns) . ') ON DELETE ' . $onDelete;
     }
 }

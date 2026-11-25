@@ -10,10 +10,12 @@ use AIC\Workflow\Domain\Import\ColumnKey;
 use AIC\Workflow\Domain\Import\ExpressionMethod;
 use AIC\Workflow\Domain\Import\ImportedCheck;
 use AIC\Workflow\Domain\Import\ImportedColumn;
+use AIC\Workflow\Domain\Import\ImportedForeignKey;
 use AIC\Workflow\Domain\Import\ImportedIndex;
 use AIC\Workflow\Domain\Import\ImportedTable;
 
 use function array_map;
+use function count;
 use function implode;
 use function lcfirst;
 use function str_replace;
@@ -120,14 +122,29 @@ final readonly class MigrationLines
         }
 
         foreach ($importedTable->foreignKeys as $importedForeignKey) {
-            $names = array_map(
-                $this->phpLiteral->string(...),
-                [$importedForeignKey->column, $importedForeignKey->table, $importedForeignKey->foreignColumn],
-            );
-            $lines[] = self::CHAIN . 'foreignKey(' . implode(', ', $names) . ', OnDelete::' . $importedForeignKey->onDelete . ')';
+            $lines[] = $this->foreignKey($importedForeignKey);
         }
 
         return $lines;
+    }
+
+    /**
+     * @param ImportedForeignKey $importedForeignKey A foreign key.
+     *
+     * @return string Its line: `foreignKey()` for one column, `references()` for several (#344).
+     */
+    private function foreignKey(ImportedForeignKey $importedForeignKey): string
+    {
+        $single = count($importedForeignKey->columns) === 1;
+        $names = array_map(
+            fn (array $columns): string => $single ? $this->phpLiteral->string(implode('', $columns)) : $this->names($columns),
+            [$importedForeignKey->columns, $importedForeignKey->foreignColumns],
+        );
+
+        $table = $this->phpLiteral->string($importedForeignKey->table);
+
+        return self::CHAIN . ($single ? 'foreignKey(' : 'references(') . $names[0] . ', ' . $table . ', ' . $names[1]
+            . ', OnDelete::' . $importedForeignKey->onDelete . ')';
     }
 
     /**
@@ -158,8 +175,14 @@ final readonly class MigrationLines
             return [self::CHAIN . 'indexUsing(' . $columns . ', IndexMethod::' . $importedIndex->method . ')', []];
         }
 
+        $kind = match (true) {
+            $importedIndex->nullsEqual => 'uniqueWithNulls(',
+            $importedIndex->unique => 'unique(',
+            default => 'index(',
+        };
+
         return $importedIndex->where === null
-            ? [self::CHAIN . ($importedIndex->unique ? 'unique(' : 'index(') . $columns . ')', []]
+            ? [self::CHAIN . $kind . $columns . ')', []]
             : $this->partial($importedIndex, $importedIndex->where, $columns);
     }
 

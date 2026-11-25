@@ -89,7 +89,12 @@ The development engine and its guard are described in [workflow.md](workflow.md)
     (`compare` with an `Operator`, `isNull`, `oneOf`, `all`, `any`, `not`), each rendered as it is
     built by `AIC\Schema\Application\PostgresExpressions`, the one class that makes a `Term` or a
     `Predicate` (gate:8, `aic.schemaExpression`); a text literal doubles its quotes and refuses NUL.
-    Both builders share `TableConstraints`: `unique`, `index`, `check(name, predicate)` (the
+    The functions of `AIC\Schema\Contracts\Functions` are part of it (#344): the terms `trim`, `round`,
+    `coalesce`, `countPresent` (how many terms are not null), `jsonKind`, `jsonLength` and `truth` (a
+    predicate as a value, so two conditions compare), and the predicate `matches` (a regular expression).
+    Both builders share `TableConstraints`: `unique`, `uniqueWithNulls` (two nulls are the same value),
+    `references(columns, table, foreignColumns, OnDelete)` (a foreign key over several columns (#344); one
+    column takes a new table's `foreignKey`), `index`, `check(name, predicate)` (the
     constraint `<table>_<name>`), `indexWhere(columns, predicate)`, `uniqueWhere(columns, predicate)`
     and `indexUsing(columns, IndexMethod)` (`Hash`, `Gin`, `Gist`, `Brin`, `Trigram` with the
     migration's `extension('pg_trgm')`, `JsonPath`); a created table refuses one that names a column

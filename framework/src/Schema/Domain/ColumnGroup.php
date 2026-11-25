@@ -14,12 +14,14 @@ use function implode;
 final readonly class ColumnGroup
 {
     /**
-     * @param list<string> $columns The columns' names.
+     * @param list<string> $columns    The columns' names.
+     * @param bool         $nullsEqual Whether a unique constraint takes two nulls as the same value (#344).
      *
      * @throws InvalidArgumentException When there are none.
      */
     public function __construct(
         public array $columns,
+        public bool $nullsEqual = false,
     ) {
         if ($columns === []) {
             throw new InvalidArgumentException('A unique constraint or an index names a column.');

@@ -945,6 +945,8 @@
                 "App\\Scaffold\\Migration\\CreateScaffoldBooksTable",
                 "App\\Scaffold\\Migration\\CreateScaffoldLoansTable",
                 "App\\Scaffold\\Migration\\CreateScaffoldVisitsTable",
+                "App\\Scaffold\\Migration\\CreateScaffoldPermitsTable",
+                "App\\Scaffold\\Migration\\CreateScaffoldPermitStampsTable",
                 "App\\Scaffold\\Migration\\CreateScaffoldShelfExportsTable"
             ],
             "name": "scaffold",

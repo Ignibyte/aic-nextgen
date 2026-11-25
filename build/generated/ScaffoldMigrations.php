@@ -10,6 +10,8 @@ use App\Scaffold\Migration\CreateScaffoldBooksTable;
 use App\Scaffold\Migration\CreateScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldItemsTable;
 use App\Scaffold\Migration\CreateScaffoldLoansTable;
+use App\Scaffold\Migration\CreateScaffoldPermitsTable;
+use App\Scaffold\Migration\CreateScaffoldPermitStampsTable;
 use App\Scaffold\Migration\CreateScaffoldShelfExportsTable;
 use App\Scaffold\Migration\CreateScaffoldShelvesTable;
 use App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable;
@@ -37,6 +39,8 @@ final readonly class ScaffoldMigrations
             new CreateScaffoldBooksTable(),
             new CreateScaffoldLoansTable(),
             new CreateScaffoldVisitsTable(),
+            new CreateScaffoldPermitsTable(),
+            new CreateScaffoldPermitStampsTable(),
             new CreateScaffoldShelfExportsTable(),
         ];
     }

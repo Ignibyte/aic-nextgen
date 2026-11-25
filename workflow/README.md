@@ -151,7 +151,7 @@ tabs, a tab that is not a lower-case word or repeats, or a tab naming no field o
 the tables its foreign keys reference, with consecutive versions and the manifest's `->migration()`
 calls, through the same make run. It reads the column types Schema has, identity, serial and uuid
 keys, literal defaults, stored generated columns, a text column's `= ANY (ARRAY[…])` check as
-`choice()`, checks, unique and primary keys, single-column foreign keys, and btree, partial, brin,
+`choice()`, checks, unique and primary keys, foreign keys, and btree, partial, brin,
 hash, gist and gin indexes, with every expression as `Schema::expressions()` calls. Anything else, a
 function, trigger, view, another type, `ON UPDATE`, an expression index, a foreign key to a table
 nothing creates, is listed one a line and nothing is written; no SQL is copied through. Settings,
@@ -160,7 +160,14 @@ tables of a larger dump; a statement about no chosen table is then a note. The t
 writes on nearly every table are read too (#339): `timestamp(p) with time zone` as `timestampTz(p)`, a
 default of `CURRENT_TIMESTAMP` or `now()` and of a text cast to jsonb (`'[]'::jsonb`) through
 `Schema::defaults()`, and three translations, each printed as a note with the column: `timestamp without
-time zone` becomes `timestampTz()`, `json` becomes `jsonb()` and `smallint` becomes `integer()`.
+time zone` becomes `timestampTz()`, `json` becomes `jsonb()` and `smallint` becomes `integer()`. It
+also reads (#344) `btrim`, `round`, `coalesce`, `num_nonnulls`, `jsonb_typeof`, `jsonb_array_length`, `~`, `IS
+TRUE`, a condition used as a value, a named NOT NULL, a foreign key over several columns and `UNIQUE NULLS
+NOT DISTINCT`; translates `character(n)` to `string(n)` and `double precision` to `numeric(30, 15)`, each
+with a note; and leaves out a `COPY` block's rows and `setval`, which are data. Still refused: a trigger or
+function (declare `appendOnly()` or `finalOnce()`, or keep the rule in code), a view, an index on an
+expression (index a generated column), `CASE` (its order of evaluation is not `AND`'s), a type of an
+extension, `inet`, and tables that reference each other in a cycle.
 
 `make:entity <module> <Class> <table> --fields=<name>:<type>,… [--version=<v>]` (#123) writes the
 entity, `<Class>Repository` (`latest(int)`), `Create<Table>Table` and `<Class>ListPage` (GET of the

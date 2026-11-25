@@ -10,6 +10,7 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 use Closure;
 
 use function array_key_exists;
+use function array_map;
 use function array_slice;
 use function count;
 use function implode;
@@ -22,6 +23,17 @@ use function strtoupper;
  */
 final readonly class DumpStatements
 {
+    /** The first words of each statement that is a deploy's, or sets a sequence where its rows are (#344). */
+    private const array IGNORED = [
+        ['set'],
+        ['select', 'pg_catalog', '.', 'set_config'],
+        ['select', 'pg_catalog', '.', 'setval'],
+        ['grant'],
+        ['revoke'],
+        ['comment', 'on', 'extension'],
+        ['alter', 'default', 'privileges'],
+    ];
+
     /**
      * @param DumpLexer   $dumpLexer   Splits the dump.
      * @param TableReader $tableReader Reads `CREATE TABLE`.
@@ -93,12 +105,8 @@ final readonly class DumpStatements
         };
 
         return [
-            [['set'], $ignored],
-            [['select', 'pg_catalog', '.', 'set_config'], $ignored],
-            [['grant'], $ignored],
-            [['revoke'], $ignored],
-            [['comment', 'on', 'extension'], $ignored],
-            [['alter', 'default', 'privileges'], $ignored],
+            ...array_map(static fn (array $words): array => [$words, $ignored], self::IGNORED),
+            [['copy'], fn (TokenCursor $tokenCursor) => $this->copied($tokenCursor, $dumpFacts)],
             [['comment', 'on'], fn (TokenCursor $tokenCursor) => $this->comment($tokenCursor, $dumpFacts)],
             [['create', 'extension'], fn (TokenCursor $tokenCursor) => $this->extension($tokenCursor, $dumpFacts)],
             [['create', 'table'], fn (TokenCursor $tokenCursor) => $this->table($tokenCursor, false, $dumpFacts)],
@@ -145,6 +153,17 @@ final readonly class DumpStatements
 
         $declare = "\$schema->extension('" . $name . "')";
         $dumpFacts->note('the extension ' . $name . ' is not declared: a migration that needs it says ' . $declare . '.');
+    }
+
+    /**
+     * @param TokenCursor $tokenCursor After `COPY`; the lexer has left its rows out.
+     * @param DumpFacts   $dumpFacts   Takes the note.
+     *
+     * @throws UnsupportedSql When it names no table.
+     */
+    private function copied(TokenCursor $tokenCursor, DumpFacts $dumpFacts): void
+    {
+        $dumpFacts->note('the rows of ' . $tokenCursor->table() . ' (COPY) are data, not schema: they are not imported.');
     }
 
     /**

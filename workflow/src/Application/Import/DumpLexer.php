@@ -15,12 +15,14 @@ use function substr;
 
 /**
  * The tokens of a `pg_dump --schema-only` (#318), split into statements at each `;`: words, quoted identifiers,
- * strings, numbers, symbols and dollar-quoted bodies. Whitespace, `--` comments and psql's `\restrict` lines go.
+ * strings, numbers, symbols and dollar-quoted bodies. Whitespace, `--` comments, psql's `\restrict` lines and the rows
+ * after a `COPY … FROM stdin;` (#344) go.
  */
 final readonly class DumpLexer
 {
     /** Each token's kind and pattern, tried in this order: a comment before the `-` symbol, a string before a word. */
     private const array PATTERNS = [
+        ['rows', '/\\G(?<=FROM stdin;)\\n(?:.*\\n)*?\\\\\\.(?:\\n|$)/'],
         ['space', '/\\G\\s+/'],
         ['comment', '/\\G--[^\\n]*/'],
         ['meta', '/\\G\\\\[^\\n]*/'],
@@ -126,7 +128,7 @@ final readonly class DumpLexer
      * @param string $kind The kind.
      * @param string $text The text.
      *
-     * @return DumpToken|null The token; null for whitespace, a comment or a psql line.
+     * @return DumpToken|null The token; null for whitespace, a comment, a psql line or a COPY's rows.
      */
     private function token(string $kind, string $text): ?DumpToken
     {

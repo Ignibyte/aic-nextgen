@@ -9,9 +9,10 @@ use InvalidArgumentException;
 /**
  * The typed expressions a migration declares checks, partial indexes and
  * generated columns with (#310), from `Schema::expressions()`. Each answer is
- * already rendered by the dialect, so a module writes no SQL.
+ * already rendered by the dialect, so a module writes no SQL. `Functions`
+ * (#344) are part of it.
  */
-interface Expressions
+interface Expressions extends Functions
 {
     /**
      * @param string $name A column of the table the declaration is on.

@@ -143,6 +143,7 @@ final readonly class TableReader
         return match (true) {
             $tokenCursor->accept('not', 'null') => $importedColumn->notNull(),
             $tokenCursor->accept('null') => $importedColumn,
+            $tokenCursor->accept('constraint') => $this->named($tokenCursor, $importedColumn),
             $tokenCursor->accept('default', 'gen_random_uuid', '(', ')') => $importedColumn->withKey(ColumnKey::UuidKey),
             $tokenCursor->accept('default') => $importedColumn->withDefault($this->defaultTerm($tokenCursor)),
             $tokenCursor->accept('generated', 'always', 'as') => $this->generated($tokenCursor, $importedColumn),
@@ -150,6 +151,22 @@ final readonly class TableReader
                 'the column ' . $importedColumn->name . ' says "' . $tokenCursor->rest() . '", which Schema does not declare',
             ),
         };
+    }
+
+    /**
+     * @param TokenCursor    $tokenCursor    After `CONSTRAINT`.
+     * @param ImportedColumn $importedColumn The column so far.
+     *
+     * @throws UnsupportedSql When the constraint is not `NOT NULL`.
+     *
+     * @return ImportedColumn The column, not null; the constraint's name is not kept (#344).
+     */
+    private function named(TokenCursor $tokenCursor, ImportedColumn $importedColumn): ImportedColumn
+    {
+        $tokenCursor->name();
+        $tokenCursor->expect('not', 'null');
+
+        return $importedColumn->notNull();
     }
 
     /**

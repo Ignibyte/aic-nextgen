@@ -6,10 +6,11 @@ namespace AIC\Workflow\Application\Import;
 
 use AIC\Workflow\Domain\Import\ColumnKey;
 use AIC\Workflow\Domain\Import\ImportedForeignKey;
+use AIC\Workflow\Domain\Import\ImportedIndex;
 use AIC\Workflow\Domain\Import\ImportedTable;
 use AIC\Workflow\Exception\UnsupportedSql;
 
-use function count;
+use function implode;
 
 /**
  * An `ALTER TABLE` of a schema dump (#318): a primary key, a unique constraint, a foreign key or a check added, an
@@ -124,7 +125,9 @@ final readonly class AlterReader
         $tokenCursor->name();
         $changed = match (true) {
             $tokenCursor->accept('primary', 'key') => $importedTable->withPrimary($tokenCursor->names()),
-            $tokenCursor->accept('unique', 'nulls') => throw new UnsupportedSql('UNIQUE NULLS NOT DISTINCT has no Schema declaration'),
+            $tokenCursor->accept('unique', 'nulls', 'not', 'distinct') => $importedTable->withIndex(
+                new ImportedIndex($tokenCursor->names(), '', true, null, true),
+            ),
             $tokenCursor->accept('unique') => $importedTable->withUnique($tokenCursor->names()),
             $tokenCursor->accept('foreign', 'key') => $this->withForeignKey($tokenCursor, $importedTable, $dumpFacts),
             default => throw new UnsupportedSql('the constraint "' . $tokenCursor->rest() . '" has no Schema declaration'),
@@ -156,7 +159,7 @@ final readonly class AlterReader
      * @param string      $table       The table.
      * @param DumpFacts   $dumpFacts   For the note when it has no `ON DELETE`.
      *
-     * @throws UnsupportedSql When it spans columns, acts on update, is deferrable or matches other than simply.
+     * @throws UnsupportedSql When it acts on update, is deferrable or matches other than simply.
      *
      * @return ImportedForeignKey The foreign key.
      */
@@ -167,10 +170,6 @@ final readonly class AlterReader
         $foreignTable = $tokenCursor->table();
         $foreignColumns = $tokenCursor->names();
 
-        if (count($columns) !== 1 || count($foreignColumns) !== 1) {
-            throw new UnsupportedSql('a foreign key over more than one column has no Schema declaration');
-        }
-
         if ($tokenCursor->accept('on', 'update')) {
             throw new UnsupportedSql('ON UPDATE ' . $tokenCursor->rest() . ' has no Schema declaration');
         }
@@ -178,11 +177,11 @@ final readonly class AlterReader
         $onDelete = $this->onDelete($tokenCursor);
 
         if ($onDelete === '') {
-            $dumpFacts->note($table . '.' . $columns[0] . ' has no ON DELETE (NO ACTION); it becomes OnDelete::Restrict.');
+            $dumpFacts->note($table . '.' . implode(', ', $columns) . ' has no ON DELETE (NO ACTION); it becomes OnDelete::Restrict.');
             $onDelete = 'Restrict';
         }
 
-        return new ImportedForeignKey($columns[0], $foreignTable, $foreignColumns[0], $onDelete);
+        return new ImportedForeignKey($columns, $foreignTable, $foreignColumns, $onDelete);
     }
 
     /**

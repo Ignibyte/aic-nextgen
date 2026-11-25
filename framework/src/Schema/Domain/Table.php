@@ -150,24 +150,28 @@ final readonly class Table
                 continue;
             }
 
-            $this->check('a foreign key', [$foreignKey->column->value], $names);
+            $this->check('a foreign key', $foreignKey->columns, $names);
             $this->checkSetNull($foreignKey);
         }
     }
 
     /**
-     * @param ForeignKey $foreignKey One of the table's foreign keys, its column present.
+     * @param ForeignKey $foreignKey One of the table's foreign keys, its columns present.
      *
-     * @throws InvalidArgumentException When it sets its column null and the column is required.
+     * @throws InvalidArgumentException When it sets its columns null and one is required.
      */
     private function checkSetNull(ForeignKey $foreignKey): void
     {
-        $column = $foreignKey->column->value;
+        if ($foreignKey->onDelete !== OnDelete::SetNull) {
+            return;
+        }
 
-        if ($foreignKey->onDelete === OnDelete::SetNull && !$this->nullable($column)) {
-            throw new InvalidArgumentException(
-                'Table ' . $this->name->value . ': ' . $column . ' is required, so its foreign key cannot set it null.',
-            );
+        foreach ($foreignKey->columns as $column) {
+            if (!$this->nullable($column)) {
+                throw new InvalidArgumentException(
+                    'Table ' . $this->name->value . ': ' . $column . ' is required, so its foreign key cannot set it null.',
+                );
+            }
         }
     }
 
