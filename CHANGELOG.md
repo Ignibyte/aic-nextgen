@@ -305,6 +305,13 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **05-timeout waits for a killed worker to finish dying** (#345). The probe scenario read the owned workers once, right
+  after `LocalProcess::run()` returned. SIGKILL is asynchronous: a killed task closes its pipes, which ends the runner's
+  drain, before it becomes a zombie, so on a busy box it was still runnable and read as a survivor, and a full sweep
+  failed a step. `lifecycle.php` now polls until no owned worker is live, for at most 1.5 s (the workers sleep 8 s, so
+  one no signal reached still fails), keeps the first read beside the settled one, and takes a process that exits
+  during the read as gone.
+
 - **gate:23's three ports are distinct** (#340). The stub upstream and the two sites each asked the
   kernel for a free port and closed the socket before the next ask, so two of them could get the
   same port: in one probe sweep the stub took the native site's port and every native step answered
