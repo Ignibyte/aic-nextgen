@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Queries over queries** (#329). `EntityQuery::derived()` makes a `DerivedQuery` over the query's rows: conditions, a
+  case-insensitive search and order on any column the query reads, a window's rank, a JSON value and a similarity (as a
+  number) included, with a page and a count. `Output` keeps and names its columns, or gives a fixed text.
+  `unionAll()` and `unionDistinct()` join two whose columns have the same names, order and types, each side's own
+  conditions, order and limit kept, and `withValuesOf()` keeps an entity query's rows whose field is among a derived
+  query's values. A JSON path and a `Contains` document are bound directly again, as the compiled PDO sends them as text
+  since the compiler's #330 carry. The ledger's `/ledger/categories` shows each form.
+
 - **make:entity over an existing table** (#338). `bin/aic make:entity <module> <Class> <table> --existing` reads the
   table's columns from the module migration that creates it (the imported baseline or any other), without running
   it, and writes the entity, its repository and its list page, with no migration. Each column becomes its field: an

@@ -15,7 +15,7 @@ use function array_reverse;
 
 /**
  * GET /ledger/categories' work (#311): a tree of four categories, read
- * through the query forms (LedgerCategoryQueries) and walked down from its
+ * through the query forms (LedgerCategoryQueries, LedgerDerivedQueries) and walked down from its
  * root and up from a leaf. It deletes the tree, so it leaves the table as it
  * found it.
  */
@@ -25,12 +25,14 @@ final readonly class LedgerCategories
      * @param EntityStore           $entityStore           The entity store.
      * @param EntityTrees           $entityTrees           Walks the tree.
      * @param LedgerCategoryQueries $ledgerCategoryQueries Reads it through the query forms.
+     * @param LedgerDerivedQueries  $ledgerDerivedQueries  Reads it through queries over queries (#329).
      * @param LedgerTypes           $ledgerTypes           The ledger's entity types.
      */
     public function __construct(
         private EntityStore $entityStore,
         private EntityTrees $entityTrees,
         private LedgerCategoryQueries $ledgerCategoryQueries,
+        private LedgerDerivedQueries $ledgerDerivedQueries,
         private LedgerTypes $ledgerTypes,
     ) {
     }
@@ -54,7 +56,9 @@ final readonly class LedgerCategories
         try {
             $lines = [...$this->ledgerCategoryQueries->computed($keys), ...$this->ledgerCategoryQueries->matched($keys)];
 
-            return new LedgerLines('steps', [...$lines, ...$this->walked($root, $petty)]);
+            $derived = [...$this->ledgerDerivedQueries->computed($keys), ...$this->ledgerDerivedQueries->joined($keys)];
+
+            return new LedgerLines('steps', [...$lines, ...$derived, ...$this->walked($root, $petty)]);
         } finally {
             foreach (array_reverse($keys) as $key) {
                 $this->entityStore->delete($categories, $key);

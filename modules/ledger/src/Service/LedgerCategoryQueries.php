@@ -5,16 +5,8 @@ declare(strict_types=1);
 namespace App\Ledger\Service;
 
 use AIC\Database\Contracts\QueryException;
-use AIC\Database\Contracts\Rows;
-use AIC\Entity\Application\EntityQuery;
-use AIC\Entity\Application\EntityStore;
 use AIC\Entity\Domain\Comparison;
 use AIC\Entity\Domain\Condition;
-use AIC\Entity\Domain\Direction;
-use AIC\Entity\Domain\JsonValue;
-use AIC\Entity\Domain\Similarity;
-use AIC\Entity\Domain\Window;
-use AIC\Entity\Domain\WindowFunction;
 use App\Ledger\Entity\LedgerTypes;
 use InvalidArgumentException;
 
@@ -26,11 +18,11 @@ use InvalidArgumentException;
 final readonly class LedgerCategoryQueries
 {
     /**
-     * @param EntityStore $entityStore The entity store.
+     * @param LedgerTree  $ledgerTree  Queries the tree's rows.
      * @param LedgerTypes $ledgerTypes The ledger's entity types.
      */
     public function __construct(
-        private EntityStore $entityStore,
+        private LedgerTree $ledgerTree,
         private LedgerTypes $ledgerTypes,
     ) {
     }
@@ -45,11 +37,7 @@ final readonly class LedgerCategoryQueries
      */
     public function computed(array $keys): array
     {
-        $rows = $this->tree($keys)->withColumns([
-            new Window('sibling_rank', WindowFunction::RowNumber, ['parent_id'], 'name', Direction::Ascending),
-            new JsonValue('kind', 'traits', ['kind']),
-            new Similarity('likeness', 'name', 'cash'),
-        ])->orderBy('name')->rows();
+        $rows = $this->ledgerTree->ranked($keys)->orderBy('name')->rows();
         $lines = [];
 
         foreach ($rows as $row) {
@@ -71,54 +59,16 @@ final readonly class LedgerCategoryQueries
     public function matched(array $keys): array
     {
         $categories = $this->ledgerTypes->categories();
-        $entityQuery = $this->tree($keys)->where('traits', '{"tags": ["bank"]}', Comparison::Contains);
-        $named = $this->tree($keys)->where('name', 'CASH', Comparison::EqualsIgnoringCase);
-        $alike = $this->tree($keys)->where('name', 'cash', Comparison::Similar);
-        $parents = $this->tree($keys)->withValuesIn('id', $categories, 'parent_id', [new Condition('name', 'Petty cash')]);
+        $entityQuery = $this->ledgerTree->query($keys)->where('traits', '{"tags": ["bank"]}', Comparison::Contains);
+        $named = $this->ledgerTree->query($keys)->where('name', 'CASH', Comparison::EqualsIgnoringCase);
+        $alike = $this->ledgerTree->query($keys)->where('name', 'cash', Comparison::Similar);
+        $parents = $this->ledgerTree->query($keys)->withValuesIn('id', $categories, 'parent_id', [new Condition('name', 'Petty cash')]);
 
         return [
-            'tagged bank: ' . self::names($entityQuery->orderBy('name')->rows()),
-            'named CASH, any case: ' . self::names($named->orderBy('name')->rows()),
-            'alike "cash": ' . self::names($alike->orderBy('name')->rows()),
-            'parent of Petty cash: ' . self::names($parents->orderBy('name')->rows()),
+            'tagged bank: ' . $this->ledgerTree->values($entityQuery->orderBy('name')->rows(), 'name'),
+            'named CASH, any case: ' . $this->ledgerTree->values($named->orderBy('name')->rows(), 'name'),
+            'alike "cash": ' . $this->ledgerTree->values($alike->orderBy('name')->rows(), 'name'),
+            'parent of Petty cash: ' . $this->ledgerTree->values($parents->orderBy('name')->rows(), 'name'),
         ];
-    }
-
-    /**
-     * @param list<int> $keys The tree's keys.
-     *
-     * @throws InvalidArgumentException When a condition is declared wrongly.
-     *
-     * @return EntityQuery A query over the tree's rows alone.
-     */
-    private function tree(array $keys): EntityQuery
-    {
-        $conditions = [];
-
-        foreach ($keys as $key) {
-            $conditions[] = new Condition('id', $key);
-        }
-
-        return $this->entityStore->query($this->ledgerTypes->categories())->whereAny($conditions);
-    }
-
-    /**
-     * @param Rows $rows Categories.
-     *
-     * @throws QueryException When a row lacks its name.
-     *
-     * @return string Their names, joined.
-     */
-    private static function names(Rows $rows): string
-    {
-        $names = '';
-
-        foreach ($rows as $row) {
-            $names .= ($names === '' ? '' : ', ') . $row->string('name');
-        }
-
-        return $names === ''
-            ? 'none'
-            : $names;
     }
 }

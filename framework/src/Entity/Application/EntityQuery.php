@@ -26,6 +26,7 @@ use InvalidArgumentException;
 final readonly class EntityQuery
 {
     use QueryForms;
+    use QueryPages;
 
     /** The tables joined through reference fields (#190). */
     private EntityJoins $entityJoins;
@@ -159,34 +160,6 @@ final readonly class EntityQuery
     }
 
     /**
-     * @param int $count How many rows it returns at most.
-     *
-     * @throws InvalidArgumentException When the count is below 1.
-     *
-     * @return self The query.
-     */
-    public function limit(int $count): self
-    {
-        $this->entityPaging->limit($count);
-
-        return $this;
-    }
-
-    /**
-     * @param int $count How many matching rows it skips, in its order.
-     *
-     * @throws InvalidArgumentException When the count is negative.
-     *
-     * @return self The query.
-     */
-    public function offset(int $count): self
-    {
-        $this->entityPaging->offset($count);
-
-        return $this;
-    }
-
-    /**
      * @param string $relation One of the entity type's relations, not Polymorphic.
      *
      * @throws InvalidArgumentException When it has no such relation, or the relation cannot be counted.
@@ -195,7 +168,7 @@ final readonly class EntityQuery
      */
     public function withCount(string $relation): self
     {
-        $this->entityJoins->compute($relation, '');
+        $this->entityJoins->computed()->relation($relation, '');
 
         return $this;
     }
@@ -210,7 +183,7 @@ final readonly class EntityQuery
      */
     public function withSum(string $relation, string $field): self
     {
-        $this->entityJoins->compute($relation, $field);
+        $this->entityJoins->computed()->relation($relation, $field);
 
         return $this;
     }
@@ -262,10 +235,7 @@ final readonly class EntityQuery
      */
     public function rows(): Rows
     {
-        $sql = 'SELECT ' . $this->entityJoins->selected() . ' FROM ' . $this->entityJoins->from()
-            . $this->entityConditions->sql() . $this->entityPaging->sql($this->entityType->table);
-
-        return $this->database->fetchAll($sql, [...$this->entityJoins->params(), ...$this->entityConditions->params()]);
+        return $this->database->fetchAll($this->selectSql(), $this->selectParams());
     }
 
     /**

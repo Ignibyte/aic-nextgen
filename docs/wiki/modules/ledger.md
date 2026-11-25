@@ -157,6 +157,7 @@ none
 | `App\Ledger\Service\LedgerCache` | [modules/ledger/src/Service/LedgerCache.php](../../../modules/ledger/src/Service/LedgerCache.php) |
 | `App\Ledger\Service\LedgerCategories` | [modules/ledger/src/Service/LedgerCategories.php](../../../modules/ledger/src/Service/LedgerCategories.php) |
 | `App\Ledger\Service\LedgerCategoryQueries` | [modules/ledger/src/Service/LedgerCategoryQueries.php](../../../modules/ledger/src/Service/LedgerCategoryQueries.php) |
+| `App\Ledger\Service\LedgerDerivedQueries` | [modules/ledger/src/Service/LedgerDerivedQueries.php](../../../modules/ledger/src/Service/LedgerDerivedQueries.php) |
 | `App\Ledger\Service\LedgerGuards` | [modules/ledger/src/Service/LedgerGuards.php](../../../modules/ledger/src/Service/LedgerGuards.php) |
 | `App\Ledger\Service\LedgerHistory` | [modules/ledger/src/Service/LedgerHistory.php](../../../modules/ledger/src/Service/LedgerHistory.php) |
 | `App\Ledger\Service\LedgerLimits` | [modules/ledger/src/Service/LedgerLimits.php](../../../modules/ledger/src/Service/LedgerLimits.php) |
@@ -164,6 +165,7 @@ none
 | `App\Ledger\Service\LedgerNotices` | [modules/ledger/src/Service/LedgerNotices.php](../../../modules/ledger/src/Service/LedgerNotices.php) |
 | `App\Ledger\Service\LedgerStanding` | [modules/ledger/src/Service/LedgerStanding.php](../../../modules/ledger/src/Service/LedgerStanding.php) |
 | `App\Ledger\Service\LedgerTrail` | [modules/ledger/src/Service/LedgerTrail.php](../../../modules/ledger/src/Service/LedgerTrail.php) |
+| `App\Ledger\Service\LedgerTree` | [modules/ledger/src/Service/LedgerTree.php](../../../modules/ledger/src/Service/LedgerTree.php) |
 
 ## Uses
 

@@ -7,12 +7,13 @@ namespace AIC\Entity\Application;
 use AIC\Entity\Domain\Condition;
 use AIC\Entity\Domain\DeletedScope;
 use AIC\Entity\Domain\EntityType;
+use AIC\Entity\Domain\Output;
 use InvalidArgumentException;
 
 /**
- * The query calls of #309 and #311, in a trait so `EntityQuery` keeps its
- * size: the deleted rows a query sees, computed columns, and a filter by
- * another table's values.
+ * The query calls of #309, #311 and #329, in a trait so `EntityQuery` keeps
+ * its size: the deleted rows a query sees, computed columns, a filter by
+ * another table's or query's values, and a query over the query's rows.
  */
 trait QueryForms
 {
@@ -25,7 +26,7 @@ trait QueryForms
      */
     public function withColumns(array $columns): self
     {
-        $this->entityJoins->computeColumns($columns);
+        $this->entityJoins->computed()->add($columns);
 
         return $this;
     }
@@ -63,5 +64,53 @@ trait QueryForms
         $this->entityConditions->scope($deletedScope);
 
         return $this;
+    }
+
+    /**
+     * @param string       $field        A field of the queried type.
+     * @param DerivedQuery $derivedQuery A query over another query's rows (#329), its order and limit kept.
+     * @param string       $column       One of its columns, whose values the field must be among.
+     *
+     * @throws InvalidArgumentException When the type lacks the field, or the derived query the column.
+     *
+     * @return self The query, keeping the rows whose field holds a value the derived query's rows hold.
+     */
+    public function withValuesOf(string $field, DerivedQuery $derivedQuery, string $column): self
+    {
+        $this->entityConditions->valuesOf($field, $derivedQuery, $column);
+
+        return $this;
+    }
+
+    /**
+     * @param list<Output> $outputs The columns its rows have, in order; none for every column this query reads.
+     *
+     * @throws InvalidArgumentException When an output reads a column this query does not, or two have one name.
+     *
+     * @return DerivedQuery A query over this query's rows (#329): conditions and order on any column, a computed one
+     *                      included, and unions with another's.
+     */
+    public function derived(array $outputs = []): DerivedQuery
+    {
+        $derivedSource = new DerivedSource($this->selectSql(), $this->selectParams(), $this->entityJoins->outputs());
+
+        return new DerivedQuery($this->database, $derivedSource->project($outputs));
+    }
+
+    /**
+     * @return string The query's SELECT.
+     */
+    private function selectSql(): string
+    {
+        return 'SELECT ' . $this->entityJoins->selected() . ' FROM ' . $this->entityJoins->from()
+            . $this->entityConditions->sql() . $this->entityPaging->sql($this->entityType->table);
+    }
+
+    /**
+     * @return list<string|int> Its values, in the order of their marks.
+     */
+    private function selectParams(): array
+    {
+        return [...$this->entityJoins->computed()->params(), ...$this->entityConditions->params()];
     }
 }
