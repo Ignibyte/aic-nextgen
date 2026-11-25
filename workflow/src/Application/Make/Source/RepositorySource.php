@@ -37,15 +37,19 @@ final readonly class RepositorySource
 
         foreach ($entityPlan->fields as $entityField) {
             $fields .= '            ' . $entityField->field() . ",\n";
-            $reads .= '            $row->' . ($entityField->isBoolean() ? 'bool' : 'string') . "('" . $entityField->name . "'),\n";
+            $reads .= '            ' . $entityField->read() . ",\n";
         }
+
+        $fields .= $entityPlan->createdAt
+            ? "            new Field('created_at', FieldType::CreatedAt),\n"
+            : '';
 
         return $this->makeTemplates->render('entity', 'repository.php.tpl', [
             'class' => $entityPlan->class,
             'fields' => $fields,
             'keyType' => $entityPlan->uuidKey ? ', keyType: FieldType::Uuid' : '',
             'namespace' => $entityPlan->namespace,
-            'order' => $entityPlan->uuidKey ? 'created_at' : 'id',
+            'order' => $entityPlan->order(),
             'reads' => $reads,
             'table' => $entityPlan->table,
             'variable' => $entityPlan->variable(),

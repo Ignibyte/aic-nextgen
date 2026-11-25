@@ -168,6 +168,11 @@ table's path, the newest 50 rows as a heading and paragraphs in the framework's 
 route and the migration in one manifest edit. Types are `text`, `numeric`, `date` and `boolean`; a
 field named `id` or `created_at`, a repeated field or an unknown type is a usage refusal. Each body
 names its entity, so two made entities share no phpcpd run unless about five fields in a row match.
+`make:entity <module> <Class> <table> --existing` (#338) reads the table's columns from the module
+migration that creates it, with php-parser (`AIC\Workflow\Parsing\MigrationColumns`: the builder
+chains on `$schema->create()` or a `$tableBuilder`), and writes the entity, the repository and the
+list page without a migration. It refuses `--fields`, `--key` and `--version` beside it, a table no
+migration creates, a key other than one `id` identity or uuid key, and a nullable boolean.
 
 `bin/aic make:theme <name> --dry-run --json` previews the first theme: `src/Layouts/Page.php` with
 four regions, the HTML and page templates in `layouts/` and real CSS. It prints the `config/app.php`, Composer

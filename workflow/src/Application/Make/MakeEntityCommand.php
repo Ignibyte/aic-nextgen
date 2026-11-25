@@ -7,37 +7,32 @@ namespace AIC\Workflow\Application\Make;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
-use AIC\Workflow\Application\Console\ConsoleArguments;
 use AIC\Workflow\Domain\Console\CommandUsage;
 use AIC\Workflow\Domain\Console\ParsedArguments;
-use AIC\Workflow\Domain\Make\EntityPlan;
 use AIC\Workflow\Domain\Make\MakeRecipe;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use InvalidArgumentException;
 use Override;
 
+use function array_key_exists;
+
 /**
  * `bin/aic make:entity <module> <Class> <table> --fields=<name>:<type>,… [--version=<v>]` (#123): a reachable table
  * slice in the module: the entity, its repository, its migration and a list page of the newest rows. One manifest
- * edit routes the page and runs the migration; a lone entity would be unused.
+ * edit routes the page and runs the migration; a lone entity would be unused. With `--existing` (#338) the table is one
+ * a module migration creates already: its columns are read from that migration, and no migration is made.
  */
 final readonly class MakeEntityCommand implements Command
 {
     /**
-     * @param MakeRun      $makeRun      The run.
-     * @param MakeVersions $makeVersions The migration's version.
-     * @param MakeEntities $makeEntities Writes the files.
-     * @param MakeNames    $makeNames    The rules.
-     * @param MakeFields   $makeFields   Reads `--fields`.
-     * @param MakeCalls    $makeCalls    The route and migration calls.
+     * @param MakeRun          $makeRun          The run.
+     * @param FieldEntities    $fieldEntities    `--fields`: the table typed by the line, with its migration.
+     * @param ExistingEntities $existingEntities `--existing`: a table a module migration creates already (#338).
      */
     public function __construct(
         private MakeRun $makeRun,
-        private MakeVersions $makeVersions,
-        private MakeEntities $makeEntities = new MakeEntities(),
-        private MakeNames $makeNames = new MakeNames(),
-        private MakeFields $makeFields = new MakeFields(),
-        private MakeCalls $makeCalls = new MakeCalls(),
+        private FieldEntities $fieldEntities,
+        private ExistingEntities $existingEntities,
     ) {
     }
 
@@ -55,8 +50,9 @@ final readonly class MakeEntityCommand implements Command
             $commandInput,
             new CommandUsage(
                 'make:entity',
-                'make:entity <module> <Class> <table> --fields=<name>:<type>,… [--key=uuid] [--version=<v>] [--dry-run] [--json]',
-                ['dry-run'],
+                'make:entity <module> <Class> <table> (--fields=<name>:<type>,… [--key=uuid] [--version=<v>] | --existing)'
+                    . ' [--dry-run] [--json]',
+                ['dry-run', 'existing'],
                 ['fields', 'key', 'version'],
                 3,
             ),
@@ -67,41 +63,14 @@ final readonly class MakeEntityCommand implements Command
     /**
      * @param ParsedArguments $parsedArguments The line.
      *
-     * @throws WorkflowRefusal When a name or a field breaks a rule.
+     * @throws WorkflowRefusal When a name, a field or the existing table breaks a rule.
      *
-     * @return MakeRecipe The four files, the route and the migration.
+     * @return MakeRecipe The files and the route; with `--fields`, the migration too.
      */
     private function recipe(ParsedArguments $parsedArguments): MakeRecipe
     {
-        $fields = $this->makeFields->parse($parsedArguments->flag('fields'));
-        [$module, $namespace, $class] = $this->makeNames->target('', $parsedArguments);
-        $table = $this->makeNames->word($parsedArguments->positional(2), 'table');
-        $version = $this->makeVersions->version($parsedArguments, 'create_' . $table . '_table');
-        $entityPlan = new EntityPlan($module, $namespace, $class, $table, $version, $fields, $this->uuidKey($parsedArguments));
-        $path = $this->makeNames->path($entityPlan->path());
-        $manifestCall = $this->makeCalls->both(
-            $this->makeCalls->route('Get', $path, $class . 'ListPage', $namespace),
-            $this->makeCalls->classOnly('migration', 'Migration', $entityPlan->migration(), $namespace),
-        );
-
-        return new MakeRecipe($module, $class, $this->makeEntities->files($entityPlan), $manifestCall, ['route GET ' . $path], true);
-    }
-
-    /**
-     * @param ParsedArguments $parsedArguments The line.
-     *
-     * @throws WorkflowRefusal When `--key` names anything but uuid.
-     *
-     * @return bool Whether `--key=uuid` keys the entity by a uuid the database makes (#307); without it, an identity.
-     */
-    private function uuidKey(ParsedArguments $parsedArguments): bool
-    {
-        $key = $parsedArguments->flag('key');
-
-        if ($key !== '' && $key !== 'uuid') {
-            throw new WorkflowRefusal('--key takes uuid, or nothing for an identity key.', ConsoleArguments::USAGE);
-        }
-
-        return $key === 'uuid';
+        return array_key_exists('existing', $parsedArguments->flags)
+            ? $this->existingEntities->recipe($parsedArguments)
+            : $this->fieldEntities->recipe($parsedArguments);
     }
 }

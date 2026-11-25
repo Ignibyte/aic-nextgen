@@ -6,6 +6,14 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **make:entity over an existing table** (#338). `bin/aic make:entity <module> <Class> <table> --existing` reads the
+  table's columns from the module migration that creates it (the imported baseline or any other), without running
+  it, and writes the entity, its repository and its list page, with no migration. Each column becomes its field: an
+  integer foreign key a `Reference`, a uuid one a `Uuid`, a nullable column a nullable property, a not-null
+  `created_at` set at insert. The key must be one `id`, an identity or a uuid key; a nullable boolean is refused, and
+  a migration that alters the table later is named in a note. `make:entity --fields` writes what it wrote before.
+  gate:31's 32nd line makes an entity over the imported `scaffold_loans`; gate:23 reaches `/scaffold-loans`.
+
 - **Laravel-shaped schemas in schema:import** (#339). `types()->timestampTz(precision)` keeps 0 to 6 digits of the
   seconds' fraction (6, the default, still writes `timestamptz`, so no migration changes), and `Schema::defaults()`
   gives `now()` and `json()`, a checked jsonb literal. schema:import reads `timestamp(p) with time zone`, a default

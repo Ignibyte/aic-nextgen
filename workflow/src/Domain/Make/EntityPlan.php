@@ -11,7 +11,7 @@ use function ucwords;
 
 /**
  * What one `make:entity` makes (#123): the entity's class in its module, its table and fields, and the version its
- * migration records.
+ * migration records; or, over a table a migration creates already (#338), the fields read from that migration.
  */
 final readonly class EntityPlan
 {
@@ -23,6 +23,9 @@ final readonly class EntityPlan
      * @param string                      $version   The version its migration records.
      * @param non-empty-list<EntityField> $fields    Its columns but `id` and `created_at`, in order.
      * @param bool                        $uuidKey   Whether `id` is a uuid the database makes (#307), not an identity.
+     * @param bool                        $existing  Whether a module migration creates the table already (#338), so no
+     *                                               migration is made.
+     * @param bool                        $createdAt Whether the table has `created_at`, set at insert; every made table has.
      */
     public function __construct(
         public string $module,
@@ -32,6 +35,8 @@ final readonly class EntityPlan
         public string $version,
         public array $fields,
         public bool $uuidKey = false,
+        public bool $existing = false,
+        public bool $createdAt = true,
     ) {
     }
 
@@ -57,6 +62,17 @@ final readonly class EntityPlan
     public function title(): string
     {
         return ucfirst(str_replace('_', ' ', $this->table));
+    }
+
+    /**
+     * @return string The column the newest rows are found by: `created_at` for a uuid key, when the table has it, and
+     *                the key otherwise.
+     */
+    public function order(): string
+    {
+        return $this->uuidKey && $this->createdAt
+            ? 'created_at'
+            : 'id';
     }
 
     /**

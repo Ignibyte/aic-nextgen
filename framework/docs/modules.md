@@ -246,6 +246,14 @@ every table also has `id` and `created_at`, and `--key=uuid` makes `id` a uuid t
 generates (newest first then by `created_at`). One manifest edit
 routes the page and runs the migration; run `bin/aic migrate` before opening the page.
 
+Over a table a module migration already creates (the imported baseline or any other), `bin/aic
+make:entity <module> <Class> <table> --existing` reads the columns from that migration (#338), never
+running it, and writes the entity, its repository and its list page, with no migration: each column
+becomes its field (an integer foreign key a `Reference`, a uuid one a `Uuid`, a nullable column a
+nullable property read with `stringOrNull()` or `intOrNull()`, a not-null `created_at` set at insert).
+The key must be one `id`, an identity or a uuid key; a nullable boolean is refused. A later migration
+that alters the table is named in a note, as make:entity reads only the one that creates it.
+
 `bin/aic make:relation <module> <owner_table> <target_table> [--keys=int,uuid] [--fields=…]`
 writes the migration of the pivot `<owner>_<target>`: an `id`, each side's key column (the table's
 singular and `_id`; `--keys` gives each side's key type, owner first), the pivot's own fields as

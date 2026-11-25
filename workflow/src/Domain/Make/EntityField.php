@@ -12,20 +12,25 @@ use function ucwords;
 /**
  * One column `make:entity` writes (#123): its snake-case name and its type, `text`, `numeric`, `date`, `boolean`, or
  * since #307 `uuid`, `json`, `timestamp` or `choice` with its values, with what each type becomes in the entity, the
- * repository and the migration, and since #324 in a list page's row.
+ * repository and the migration, and since #324 in a list page's row; since #338, read from a migration, an `integer`,
+ * a `reference` to another table's integer key, and a nullable column.
  */
 final readonly class EntityField
 {
     /**
-     * @param string       $name    Its column, lower snake case.
-     * @param string       $type    `text`, `numeric`, `date`, `boolean`, `uuid`, `json`, `timestamp` or `choice`, and
-     *                              `integer` in a seed (#320).
-     * @param list<string> $choices A choice's values; empty for every other type.
+     * @param string       $name       Its column, lower snake case.
+     * @param string       $type       `text`, `numeric`, `date`, `boolean`, `uuid`, `json`, `timestamp` or `choice`, and
+     *                                 `integer` in a seed (#320) and an existing table's entity, with `reference` (#338).
+     * @param list<string> $choices    A choice's values; empty for every other type.
+     * @param bool         $nullable   Whether it may be null (#338).
+     * @param string       $references The table a `reference` holds the key of (#338); empty for every other type.
      */
     public function __construct(
         public string $name,
         public string $type,
         public array $choices = [],
+        public bool $nullable = false,
+        public string $references = '',
     ) {
     }
 
@@ -38,23 +43,28 @@ final readonly class EntityField
     }
 
     /**
-     * @return string Its PHP type in a list page's row (#324): `int`, `bool` or `string`.
+     * @return string Its PHP type in a list page's row (#324) or an entity (#338): `int`, `bool` or `string`.
      */
     public function phpType(): string
     {
         return match ($this->type) {
-            'integer' => 'int',
+            'integer', 'reference' => 'int',
             'boolean' => 'bool',
             default => 'string',
         };
     }
 
     /**
-     * @return string How a list page's repository reads it from a row (#324), such as `$row->int('capacity')`.
+     * @return string How a repository reads it from a row (#324), such as `$row->int('capacity')`; a nullable one with
+     *                `intOrNull()` or `stringOrNull()` (#338).
      */
     public function read(): string
     {
-        return '$row->' . $this->phpType() . "('" . $this->name . "')";
+        $nullable = $this->nullable
+            ? 'OrNull'
+            : '';
+
+        return '$row->' . $this->phpType() . $nullable . "('" . $this->name . "')";
     }
 
     /**
@@ -74,15 +84,22 @@ final readonly class EntityField
     }
 
     /**
-     * @return string Its `Field` in the repository's entity type, a choice with its values.
+     * @return string Its `Field` in the repository's entity type, a choice with its values, a nullable one and a
+     *                reference with what they say (#338).
      */
     public function field(): string
     {
         $choices = $this->choices === []
             ? ''
             : ', choices: ' . $this->list();
+        $nullable = $this->nullable
+            ? ', nullable: true'
+            : '';
+        $references = $this->references === ''
+            ? ''
+            : ", references: new EntityType('" . $this->references . "', 'id', [])";
 
-        return "new Field('" . $this->name . "', FieldType::" . ucwords($this->type) . $choices . ')';
+        return "new Field('" . $this->name . "', FieldType::" . ucwords($this->type) . $nullable . $references . $choices . ')';
     }
 
     /**

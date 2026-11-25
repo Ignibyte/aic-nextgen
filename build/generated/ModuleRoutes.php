@@ -28,7 +28,8 @@ final readonly class ModuleRoutes
         $routeCollector = (new LedgerRoutes())->add($routeCollector);
         $routeCollector = (new NoteRoutes())->add($routeCollector);
         $routeCollector = (new NoteRoutesPart2())->add($routeCollector);
+        $routeCollector = (new ScaffoldRoutes())->add($routeCollector);
 
-        return (new ScaffoldRoutes())->add($routeCollector);
+        return (new ScaffoldRoutesPart2())->add($routeCollector);
     }
 }
