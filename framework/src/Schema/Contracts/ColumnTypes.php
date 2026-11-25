@@ -41,9 +41,11 @@ interface ColumnTypes
     public function bigInteger(): ColumnType;
 
     /**
+     * @param int $precision Its fractional seconds' digits, 0 to 6 (#339); 6, Postgres's own, by default.
+     *
      * @return ColumnType A point in time with its time zone.
      */
-    public function timestampTz(): ColumnType;
+    public function timestampTz(int $precision = 6): ColumnType;
 
     /**
      * @return ColumnType A calendar date with no time or zone.

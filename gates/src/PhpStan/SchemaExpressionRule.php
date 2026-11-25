@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\PhpStan;
 
+use AIC\Schema\Application\PostgresDefaults;
 use AIC\Schema\Application\PostgresExpressions;
 use AIC\Schema\Contracts\Predicate;
 use AIC\Schema\Contracts\Term;
@@ -16,13 +17,15 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 use function array_intersect;
+use function in_array;
 
 /**
- * Only the expression factory writes a schema declaration's SQL (gate:8,
+ * Only the expression factories write a schema declaration's SQL (gate:8,
  * #310): `new Term` or `new Predicate` anywhere but
- * `AIC\Schema\Application\PostgresExpressions` is refused, through an alias
- * or a class-string held in a variable too, so a module cannot hand a check,
- * a partial index or a generated column raw SQL.
+ * `AIC\Schema\Application\PostgresExpressions` and, since #339, its
+ * defaults `PostgresDefaults` is refused, through an alias or a class-string
+ * held in a variable too, so a module cannot hand a check, a partial index, a
+ * generated column or a default raw SQL.
  *
  * @implements Rule<New_>
  */
@@ -51,14 +54,15 @@ final readonly class SchemaExpressionRule implements Rule
         if (
             array_intersect([Term::class, Predicate::class], (new BuiltClasses())->named($node, $scope)) === []
             || $classReflection !== null
-            && $classReflection->getName() === PostgresExpressions::class
+            && in_array($classReflection->getName(), [PostgresExpressions::class, PostgresDefaults::class], true)
         ) {
             return [];
         }
 
         return [
             RuleErrorBuilder::message(
-                'Only ' . PostgresExpressions::class . ' makes a Term or a Predicate (#310); take them from Schema::expressions().',
+                'Only ' . PostgresExpressions::class . ' and ' . PostgresDefaults::class
+                . ' make a Term or a Predicate (#310); take them from Schema::expressions() or Schema::defaults().',
             )
                 ->identifier('aic.schemaExpression')
                 ->build(),

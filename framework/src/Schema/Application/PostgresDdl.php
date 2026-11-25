@@ -198,7 +198,7 @@ final readonly class PostgresDdl
             LogicalType::BigIdentity => 'bigint GENERATED ALWAYS AS IDENTITY',
             LogicalType::String => 'varchar(' . $columnType->length . ')',
             LogicalType::Text => 'text',
-            LogicalType::TimestampTz => 'timestamptz',
+            LogicalType::TimestampTz => $columnType->scale === 6 ? 'timestamptz' : 'timestamptz(' . $columnType->scale . ')',
             LogicalType::Integer => 'integer',
             LogicalType::BigInteger => 'bigint',
             LogicalType::Date => 'date',

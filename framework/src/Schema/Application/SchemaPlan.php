@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIC\Schema\Application;
 
 use AIC\Schema\Contracts\ColumnTypes;
+use AIC\Schema\Contracts\Defaults;
 use AIC\Schema\Contracts\Expressions;
 use AIC\Schema\Contracts\Schema;
 use AIC\Schema\Contracts\TableAlteration;
@@ -40,22 +41,16 @@ final class SchemaPlan implements Schema
     private array $extensions = [];
 
     /**
-     * The column types its builders and migrations name.
+     * The column types, terms, predicates (#310) and defaults (#339) its migrations declare with.
      */
-    private readonly ColumnTypes $columnTypes;
-
-    /**
-     * The terms and predicates its migrations declare with (#310).
-     */
-    private readonly Expressions $expressions;
+    private readonly SchemaVocabulary $schemaVocabulary;
 
     /**
      * A plan with nothing described yet.
      */
     public function __construct()
     {
-        $this->columnTypes = new ColumnTypeFactory();
-        $this->expressions = new PostgresExpressions();
+        $this->schemaVocabulary = new SchemaVocabulary();
     }
 
     /**
@@ -64,7 +59,16 @@ final class SchemaPlan implements Schema
     #[Override]
     public function expressions(): Expressions
     {
-        return $this->expressions;
+        return $this->schemaVocabulary->expressions;
+    }
+
+    /**
+     * @return Defaults The common defaults, `now()` and a jsonb literal (#339).
+     */
+    #[Override]
+    public function defaults(): Defaults
+    {
+        return $this->schemaVocabulary->defaults;
     }
 
     /**
@@ -97,7 +101,7 @@ final class SchemaPlan implements Schema
     #[Override]
     public function types(): ColumnTypes
     {
-        return $this->columnTypes;
+        return $this->schemaVocabulary->columnTypes;
     }
 
     /**
@@ -113,7 +117,7 @@ final class SchemaPlan implements Schema
         $tableParts = new TableParts(new Identifier($table));
         $this->drafts[] = $tableParts;
 
-        return $tableParts->builder($this->columnTypes);
+        return $tableParts->builder($this->schemaVocabulary->columnTypes);
     }
 
     /**

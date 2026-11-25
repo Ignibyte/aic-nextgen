@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Import;
 
+use AIC\Workflow\Domain\Import\CodeNode;
+use AIC\Workflow\Domain\Import\CodeValue;
 use AIC\Workflow\Domain\Import\ColumnKey;
+use AIC\Workflow\Domain\Import\DumpToken;
+use AIC\Workflow\Domain\Import\DumpTokenKind;
 use AIC\Workflow\Domain\Import\ImportedCheck;
 use AIC\Workflow\Domain\Import\ImportedColumn;
 use AIC\Workflow\Domain\Import\ImportedTable;
@@ -22,10 +26,12 @@ final readonly class TableReader
 {
     /**
      * @param ColumnTypesReader $columnTypesReader Reads the column types.
+     * @param PhpLiteral        $phpLiteral        Writes a jsonb default's text.
      * @param ExpressionReader  $expressionReader  Reads the defaults, generated terms and checks.
      */
     public function __construct(
         private ColumnTypesReader $columnTypesReader = new ColumnTypesReader(),
+        private PhpLiteral $phpLiteral = new PhpLiteral(),
         private ExpressionReader $expressionReader = new ExpressionReader(),
     ) {
     }
@@ -138,12 +144,63 @@ final readonly class TableReader
             $tokenCursor->accept('not', 'null') => $importedColumn->notNull(),
             $tokenCursor->accept('null') => $importedColumn,
             $tokenCursor->accept('default', 'gen_random_uuid', '(', ')') => $importedColumn->withKey(ColumnKey::UuidKey),
-            $tokenCursor->accept('default') => $importedColumn->withDefault($this->expressionReader->term($tokenCursor)),
+            $tokenCursor->accept('default') => $importedColumn->withDefault($this->defaultTerm($tokenCursor)),
             $tokenCursor->accept('generated', 'always', 'as') => $this->generated($tokenCursor, $importedColumn),
             default => throw new UnsupportedSql(
                 'the column ' . $importedColumn->name . ' says "' . $tokenCursor->rest() . '", which Schema does not declare',
             ),
         };
+    }
+
+    /**
+     * @param TokenCursor $tokenCursor After `DEFAULT`.
+     *
+     * @throws UnsupportedSql When the term has something Schema cannot state.
+     *
+     * @return CodeNode The default: `now()` for `CURRENT_TIMESTAMP` or `now()`, and a jsonb literal for a text cast to
+     *                  jsonb, from `Schema::defaults()` (#339); any other term as the expressions state it.
+     */
+    private function defaultTerm(TokenCursor $tokenCursor): CodeNode
+    {
+        if ($tokenCursor->accept('current_timestamp') || $tokenCursor->accept('now', '(', ')')) {
+            return new CodeValue('$defaults->now()');
+        }
+
+        $json = $this->jsonDefault($tokenCursor);
+
+        return $json === ''
+            ? $this->expressionReader->term($tokenCursor)
+            : new CodeValue('$defaults->json(' . $json . ')');
+    }
+
+    /**
+     * @param TokenCursor $tokenCursor After `DEFAULT`.
+     *
+     * @throws UnsupportedSql When a token it has just looked at is not there.
+     *
+     * @return string The JSON as a PHP literal when the default is a text literal cast to jsonb, which is read; empty
+     *                otherwise, and nothing is read.
+     */
+    private function jsonDefault(TokenCursor $tokenCursor): string
+    {
+        $tokens = [$tokenCursor->peek(), $tokenCursor->peek(1), $tokenCursor->peek(2)];
+
+        if (!$tokens[0] instanceof DumpToken || !$tokens[1] instanceof DumpToken || !$tokens[2] instanceof DumpToken) {
+            return '';
+        }
+
+        if (
+            $tokens[0]->dumpTokenKind !== DumpTokenKind::Text
+            || !$tokens[1]->isSymbol('::')
+            || !$tokens[2]->isWord('jsonb')
+        ) {
+            return '';
+        }
+
+        $tokenCursor->next();
+        $tokenCursor->expect('::', 'jsonb');
+
+        return $this->phpLiteral->string($tokens[0]->text);
     }
 
     /**

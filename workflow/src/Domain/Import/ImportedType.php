@@ -17,20 +17,24 @@ final readonly class ImportedType
      * @param string $method    The `ColumnTypes` method.
      * @param string $arguments Its arguments after the name, as PHP: `100`, `8, 2` or empty.
      * @param string $spelled   The type as the dump spells it, for a message.
+     * @param string $note      What the import prints when it translates the type (#339), after the column's name;
+     *                          empty when Schema declares it as it is.
      */
     public function __construct(
         public string $method,
         public string $arguments,
         public string $spelled,
+        public string $note = '',
     ) {
     }
 
     /**
-     * @return bool Whether `TableBuilder` has a method of the same name taking the column's name first.
+     * @return bool Whether `TableBuilder` has a method of the same name taking the column's name first; a
+     *              timestamp's precision is not one of its arguments (#339).
      */
     public function onBuilder(): bool
     {
-        return in_array($this->method, self::BUILDER, true);
+        return in_array($this->method, self::BUILDER, true) && ($this->method !== 'timestampTz' || $this->arguments === '');
     }
 
     /**

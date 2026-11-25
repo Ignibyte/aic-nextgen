@@ -152,6 +152,36 @@ ALTER TABLE ONLY public.scaffold_loans ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: scaffold_visits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scaffold_visits (
+    id bigint NOT NULL,
+    path character varying(255) NOT NULL,
+    hits smallint DEFAULT 0 NOT NULL,
+    tags jsonb DEFAULT '[]'::jsonb NOT NULL,
+    payload json,
+    seen_at timestamp(0) without time zone,
+    created_at timestamp(0) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: scaffold_visits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.scaffold_visits ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.scaffold_visits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: scaffold_books scaffold_books_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -247,6 +277,14 @@ CREATE INDEX scaffold_loans_lent_at_idx ON public.scaffold_loans USING brin (len
 
 ALTER TABLE ONLY public.scaffold_books
     ADD CONSTRAINT scaffold_books_shelf_id_fkey FOREIGN KEY (shelf_id) REFERENCES public.scaffold_shelves(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scaffold_visits scaffold_visits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scaffold_visits
+    ADD CONSTRAINT scaffold_visits_pkey PRIMARY KEY (id);
 
 
 --

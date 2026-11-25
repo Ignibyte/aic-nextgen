@@ -38,6 +38,7 @@ use App\Scaffold\Migration\CreateScaffoldShelfExportsTable;
 use App\Scaffold\Migration\CreateScaffoldShelvesTable;
 use App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldTasksTable;
+use App\Scaffold\Migration\CreateScaffoldVisitsTable;
 
 return (new ModuleManifest('scaffold'))
     ->requires('site')
@@ -61,6 +62,7 @@ return (new ModuleManifest('scaffold'))
     ->migration(CreateScaffoldShelvesTable::class)
     ->migration(CreateScaffoldBooksTable::class)
     ->migration(CreateScaffoldLoansTable::class)
+    ->migration(CreateScaffoldVisitsTable::class)
     ->command('scaffold-shelves:seed', ScaffoldShelvesSeed::class)
     ->route(RouteMethod::Post, '/scaffold/delivery', ScaffoldDeliveryWebhook::class)
     ->job('scaffold-delivery-webhook', ScaffoldDeliveryWebhookJob::class)
