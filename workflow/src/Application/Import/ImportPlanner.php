@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Application\Import;
 
-use AIC\Workflow\Domain\Import\ImportedForeignKey;
 use AIC\Workflow\Domain\Import\ImportedTable;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
-use function array_any;
-use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -19,17 +16,19 @@ use function in_array;
 
 /**
  * Which of a dump's tables an import writes, and in what order (#318): those `--tables` names (every table without
- * it), each ready to write, after the tables its foreign keys reference. Every finding on a chosen table, and every
- * statement about no table when the whole dump is imported, refuses the import, listed one a line; a statement about
- * no table under `--tables` is a note.
+ * it), each ready to write, after the tables its foreign keys reference, a cycle broken by `ReferenceCycles` (#349).
+ * Every finding on a chosen table, and every statement about no table when the whole dump is imported, refuses the
+ * import, listed one a line; a statement about no table under `--tables` is a note.
  */
 final readonly class ImportPlanner
 {
     /**
-     * @param TablePreparer $tablePreparer Readies each table.
+     * @param TablePreparer   $tablePreparer   Readies each table.
+     * @param ReferenceCycles $referenceCycles Orders them, deferring the keys that close a cycle (#349).
      */
     public function __construct(
         private TablePreparer $tablePreparer = new TablePreparer(),
+        private ReferenceCycles $referenceCycles = new ReferenceCycles(),
     ) {
     }
 
@@ -46,11 +45,12 @@ final readonly class ImportPlanner
     {
         $chosen = $this->chosen($dumpFacts, $selection);
         [$prepared, $findings] = $this->prepared($dumpFacts, $chosen, $existing);
-        [$ordered, $cycle] = $this->ordered($prepared);
+        [$ordered, $notes] = $this->referenceCycles->order($prepared);
         $findings = [...$this->findings($dumpFacts, $chosen, $selection !== []), ...$findings];
-        $findings = $cycle === []
-            ? $findings
-            : [...$findings, implode(', ', $cycle) . ' reference each other in a cycle, which one migration each cannot create'];
+
+        foreach ($notes as $note) {
+            $dumpFacts->note($note);
+        }
 
         if ($findings !== []) {
             throw new WorkflowRefusal(
@@ -195,45 +195,5 @@ final readonly class ImportPlanner
         }
 
         return $findings;
-    }
-
-    /**
-     * @param array<string, ImportedTable> $tables The tables, by name.
-     *
-     * @return array{list<ImportedTable>, list<string>} The tables each after those it references, and the tables left
-     *                                                  in a cycle (none when every one is placed).
-     */
-    private function ordered(array $tables): array
-    {
-        $ordered = [];
-
-        while ($tables !== []) {
-            $ready = $this->ready($tables);
-
-            if ($ready === []) {
-                return [$ordered, array_keys($tables)];
-            }
-
-            foreach ($ready as $name => $importedTable) {
-                $ordered[] = $importedTable;
-                unset($tables[$name]);
-            }
-        }
-
-        return [$ordered, []];
-    }
-
-    /**
-     * @param array<string, ImportedTable> $tables The tables not placed yet, by name.
-     *
-     * @return array<string, ImportedTable> Those whose foreign keys reference none of them but themselves.
-     */
-    private function ready(array $tables): array
-    {
-        return array_filter($tables, static fn (ImportedTable $importedTable): bool => !array_any(
-            $importedTable->foreignKeys,
-            static fn (ImportedForeignKey $importedForeignKey): bool => $importedForeignKey->table !== $importedTable->name
-                && array_key_exists($importedForeignKey->table, $tables),
-        ));
     }
 }

@@ -10,10 +10,12 @@ use AIC\Workflow\Domain\Console\SurfaceView;
 use AIC\Workflow\Domain\RegexCaptures;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
+use function array_filter;
 use function count;
 use function rtrim;
 use function str_contains;
 use function str_replace;
+use function str_starts_with;
 use function strlen;
 use function substr;
 
@@ -81,15 +83,17 @@ final readonly class ModuleTables
      *
      * @throws WorkflowRefusal When build/surface.json is missing.
      *
-     * @return int How many migrations it has.
+     * @return int How many migrations it has: those the surface lists whose files are there, so gate:31's replay,
+     *             which reads the finished module's surface, counts what its lines have made so far (#349).
      */
     public function migrations(string $module): int
     {
-        $surfaceModule = $this->view()->module($module);
+        $folder = 'modules/' . $module . '/';
 
-        return $surfaceModule === null
-            ? 0
-            : count($surfaceModule->migrations);
+        return count(array_filter(
+            $this->files(),
+            fn (string $path): bool => str_starts_with($path, $folder) && $this->projectFiles->read($path) !== null,
+        ));
     }
 
     /**

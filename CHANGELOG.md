@@ -6,6 +6,15 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Reference cycles in schema:import** (#349). When no table is left whose foreign keys all point at tables already
+  placed, the importer defers one key that closes a cycle, a nullable one first, and goes on. The key is added by
+  `$schema->alter(<table>)->references(…)` at the end of the migration of the later of its two tables, or goes back into
+  its own table's create when its target was placed first after all. Each deferred key is a note; a cycle where no key
+  may be null also says its tables take no row until one may. The module's migration count now reads the files that
+  exist, so gate:31's replay counts what it has made so far. On the real 250-table dump the refusals fell from 34 to
+  33, none of them a cycle; four keys are deferred, all nullable. gate:31's 34th line imports two fixture tables that
+  reference each other.
+
 - **The rest of a Laravel schema in schema:import** (#344). `Schema::expressions()` gains `Functions`: `trim`, `round`,
   `coalesce`, `countPresent` (`num_nonnulls`), `jsonKind`, `jsonLength`, `truth` (a condition as a value, so two
   compare) and `matches` (a regular expression). Both builders take `uniqueWithNulls()` (`UNIQUE NULLS NOT DISTINCT`)

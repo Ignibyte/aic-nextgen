@@ -23,10 +23,10 @@ use function substr_count;
 use function ucwords;
 
 /**
- * One imported table's migration (#318): `describe()` creates the table and hands it to helpers of at most 14 chain
- * lines (columns, then keys, constraints and indexes), and each expression too long for its line is a method of its
- * own, so every function fits PHPCS's 20 lines. A table whose class would pass PHPMD's 15 methods or 300 lines is
- * refused, named.
+ * One imported table's migration (#318): `describe()` creates the table, hands it to helpers of at most 14 chain lines
+ * (columns, then keys, constraints and indexes) and adds the keys of earlier tables that wait for it (#349); each
+ * expression too long for its line is a method of its own, so every function fits PHPCS's 20 lines. A table whose
+ * class would pass PHPMD's 15 methods or 300 lines is refused, named.
  */
 final readonly class MigrationWriter
 {
@@ -54,11 +54,13 @@ final readonly class MigrationWriter
      * @param MigrationLines $migrationLines The chain lines.
      * @param CallPrinter    $callPrinter    Prints the long expressions.
      * @param MakeTemplates  $makeTemplates  Renders the class.
+     * @param DescribeLines  $describeLines  Writes `describe()`'s body.
      */
     public function __construct(
         private MigrationLines $migrationLines = new MigrationLines(),
         private CallPrinter $callPrinter = new CallPrinter(),
         private MakeTemplates $makeTemplates = new MakeTemplates(),
+        private DescribeLines $describeLines = new DescribeLines(),
     ) {
     }
 
@@ -78,19 +80,23 @@ final readonly class MigrationWriter
         [$columns, $columnMethods] = $this->columns($importedTable);
         [$constraints, $constraintMethods] = $this->migrationLines->constraints($importedTable);
         $stem = lcfirst(str_replace('_', '', ucwords($importedTable->name, '_')));
-        $helpers = [...$this->helpers($stem . 'Columns', $columns), ...$this->helpers($stem . 'Constraints', $this->grouped($constraints))];
+        $helpers = [
+            ...$this->helpers($stem . 'Columns', $columns),
+            ...$this->helpers($stem . 'Constraints', $this->grouped($constraints)),
+        ];
         $expressions = array_map($this->expression(...), [...$columnMethods, ...$constraintMethods]);
         $methods = implode('', [...array_map(static fn (array $helper): string => $helper[1], $helpers), ...$expressions]);
 
         $count = count($helpers) + count($expressions) + 2;
+        $describe = $this->describeLines->body($importedTable, $helpers);
 
         return $this->checked($count, $this->makeTemplates->render('schema-import', 'migration.php.tpl', [
             'class' => $class,
-            'describe' => $this->describe($importedTable, $helpers),
+            'describe' => $describe,
             'methods' => $methods,
             'namespace' => $namespace,
             'table' => $importedTable->name,
-            'uses' => $this->uses($methods),
+            'uses' => $this->uses($describe . $methods),
             'version' => $version,
         ]));
     }
@@ -287,26 +293,7 @@ final readonly class MigrationWriter
     }
 
     /**
-     * @param ImportedTable               $importedTable The table.
-     * @param list<array{string, string}> $helpers       The helpers.
-     *
-     * @return string `describe()`'s body.
-     */
-    private function describe(ImportedTable $importedTable, array $helpers): string
-    {
-        $lines = $importedTable->needsTrigrams()
-            ? ["        \$schema->extension('pg_trgm');"]
-            : [];
-        $unlogged = $importedTable->unlogged
-            ? '->unlogged()'
-            : '';
-        $lines[] = "        \$tableBuilder = \$schema->create('" . $importedTable->name . "')" . $unlogged . ';';
-
-        return implode("\n", [...$lines, ...array_map(static fn (array $helper): string => $helper[0], $helpers)]);
-    }
-
-    /**
-     * @param string $methods The class's private methods.
+     * @param string $methods `describe()`'s body and the class's private methods.
      *
      * @return string The imports the class needs, sorted.
      */
