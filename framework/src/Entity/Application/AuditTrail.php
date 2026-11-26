@@ -35,7 +35,7 @@ final readonly class AuditTrail
     public function history(EntityType $entityType, int|string $key): Rows
     {
         return $this->database->fetchAll(
-            'SELECT event, actor, changes::text AS changes, recorded_at FROM aic_entity_audit'
+            'SELECT event, actor, changes, recorded_at FROM aic_entity_audit'
                 . ' WHERE entity = ? AND entity_key = ? ORDER BY id',
             [$entityType->table, (string) $key],
         );

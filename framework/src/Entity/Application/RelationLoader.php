@@ -102,7 +102,7 @@ final readonly class RelationLoader
                 continue;
             }
 
-            $columns[] = $pivot->table . '.' . $column . $pivot->read($column) . ' AS pivot_' . $column;
+            $columns[] = $pivot->table . '.' . $column . ' AS pivot_' . $column;
         }
 
         $join = $target->table . ' ON ' . $target->table . '.' . $target->key . ' = ' . $pivot->table . '.' . $relation->otherKey;

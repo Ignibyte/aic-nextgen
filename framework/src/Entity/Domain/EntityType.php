@@ -87,23 +87,6 @@ final readonly class EntityType
     }
 
     /**
-     * @param string $column One of its columns.
-     *
-     * @return string How a query reads it: `::text` for a Json field (#307), so every driver hands back Postgres's own
-     *                text of the document; empty for any other.
-     */
-    public function read(string $column): string
-    {
-        foreach ($this->fields as $field) {
-            if ($field instanceof Field && $field->name === $column && $field->type === FieldType::Json) {
-                return '::text';
-            }
-        }
-
-        return '';
-    }
-
-    /**
      * @return list<string> The key, then every field's column, in order.
      */
     public function columns(): array
