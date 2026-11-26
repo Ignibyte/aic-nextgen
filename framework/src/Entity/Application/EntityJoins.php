@@ -136,17 +136,15 @@ final class EntityJoins
     }
 
     /**
-     * @return string The columns a row returns: the entity type's, then each joined type's as `prefix_column`; a
-     *                Json field as Postgres's text of it, the same under PHP and natively (#307); then each count or
-     *                sum over a relation (#306) and each computed column (#311).
+     * @return string The columns a row returns: the entity type's, then each joined type's as `prefix_column`; then
+     *                each count or sum over a relation (#306) and each computed column (#311).
      */
     public function selected(): string
     {
         $columns = [];
 
         foreach ($this->entityType->columns() as $column) {
-            $read = $this->entityType->read($column);
-            $columns[] = $this->entityType->table . '.' . $column . ($read === '' ? '' : $read . ' AS ' . $column);
+            $columns[] = $this->entityType->table . '.' . $column;
         }
 
         foreach ($this->joins as $join) {
@@ -181,15 +179,14 @@ final class EntityJoins
     /**
      * @param EntityJoin $entityJoin A join.
      *
-     * @return list<string> Its type's columns, each as `prefix_column`, a Json field as its text.
+     * @return list<string> Its type's columns, each as `prefix_column`.
      */
     private static function joined(EntityJoin $entityJoin): array
     {
         $columns = [];
 
         foreach ($entityJoin->entityType->columns() as $column) {
-            $read = $entityJoin->entityType->read($column);
-            $columns[] = $entityJoin->prefix . '.' . $column . $read . ' AS ' . $entityJoin->prefix . '_' . $column;
+            $columns[] = $entityJoin->prefix . '.' . $column . ' AS ' . $entityJoin->prefix . '_' . $column;
         }
 
         return $columns;

@@ -11,7 +11,6 @@ use function array_key_exists;
 use function is_bool;
 use function is_int;
 use function is_string;
-use function preg_match;
 
 /**
  * One result row, its values narrowed to scalars or null when it was read. A
@@ -154,21 +153,9 @@ final readonly class Row
         }
 
         try {
-            return new DateTimeImmutable(self::fullOffset($text));
+            return new DateTimeImmutable($text);
         } catch (Throwable $throwable) {
             throw new QueryException("The row's column " . $column . ' is not a point in time.', 0, $throwable);
         }
-    }
-
-    /**
-     * @param string $text A timestamptz as Postgres writes it, `2026-11-17 08:30:00+00`.
-     *
-     * @return string It with a whole-hour offset written out, `+00:00`, the form the compiled site parses.
-     */
-    private static function fullOffset(string $text): string
-    {
-        return preg_match('/[+-]\\d{2}$/', $text) === 1
-            ? $text . ':00'
-            : $text;
     }
 }
