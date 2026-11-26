@@ -35,7 +35,7 @@ Read the first three before you plan a change; the rest when the change touches 
 12. [deploy.md](deploy.md): the two runtimes, what a deploy sets, FrankenPHP and php-fpm.
 13. [profiler.md](profiler.md): what `AIC_PROFILER=1` records for each request, and where.
 14. [http-client.md](http-client.md): calling upstream APIs: the client, the pool, retries, upstreams in config, make:client.
-15. [mcp.md](mcp.md): serving tools, resources and prompts to agents over MCP: the endpoint, the entries, schemas, access, make:mcp-tool.
+15. [mcp.md](mcp.md): serving tools, resources and prompts to agents over MCP: the endpoint, the entries, schemas, access, the make:mcp-* commands.
 
 ## Where things are
 

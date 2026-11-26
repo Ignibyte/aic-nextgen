@@ -124,12 +124,17 @@ none
 
 | Class | File |
 | --- | --- |
+| `App\Ledger\Mcp\LedgerAccountsResource` | [modules/ledger/src/Mcp/LedgerAccountsResource.php](../../../modules/ledger/src/Mcp/LedgerAccountsResource.php) |
+| `App\Ledger\Mcp\LedgerCategoriesResource` | [modules/ledger/src/Mcp/LedgerCategoriesResource.php](../../../modules/ledger/src/Mcp/LedgerCategoriesResource.php) |
+| `App\Ledger\Mcp\LedgerCategorizePrompt` | [modules/ledger/src/Mcp/LedgerCategorizePrompt.php](../../../modules/ledger/src/Mcp/LedgerCategorizePrompt.php) |
 | `App\Ledger\Mcp\LedgerCurrenciesResource` | [modules/ledger/src/Mcp/LedgerCurrenciesResource.php](../../../modules/ledger/src/Mcp/LedgerCurrenciesResource.php) |
+| `App\Ledger\Mcp\LedgerExplainPrompt` | [modules/ledger/src/Mcp/LedgerExplainPrompt.php](../../../modules/ledger/src/Mcp/LedgerExplainPrompt.php) |
 | `App\Ledger\Mcp\LedgerSplit` | [modules/ledger/src/Mcp/LedgerSplit.php](../../../modules/ledger/src/Mcp/LedgerSplit.php) |
 | `App\Ledger\Mcp\LedgerSplitInput` | [modules/ledger/src/Mcp/LedgerSplitInput.php](../../../modules/ledger/src/Mcp/LedgerSplitInput.php) |
 | `App\Ledger\Mcp\LedgerSplitPart` | [modules/ledger/src/Mcp/LedgerSplitPart.php](../../../modules/ledger/src/Mcp/LedgerSplitPart.php) |
 | `App\Ledger\Mcp\LedgerSplitPrompt` | [modules/ledger/src/Mcp/LedgerSplitPrompt.php](../../../modules/ledger/src/Mcp/LedgerSplitPrompt.php) |
 | `App\Ledger\Mcp\LedgerSplitTool` | [modules/ledger/src/Mcp/LedgerSplitTool.php](../../../modules/ledger/src/Mcp/LedgerSplitTool.php) |
+| `App\Ledger\Mcp\LedgerStandingResource` | [modules/ledger/src/Mcp/LedgerStandingResource.php](../../../modules/ledger/src/Mcp/LedgerStandingResource.php) |
 
 ### `src/Migration/`
 

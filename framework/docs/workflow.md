@@ -150,6 +150,8 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:job` | scaffold a Job |
 | `Command::make:list-page` | scaffold a filtered, sorted and paged list of a table's rows over the framework's list atoms (#324) |
 | `Command::make:layout` | scaffold a named page layout in the theme |
+| `Command::make:mcp-prompt` | scaffold an MCP prompt with one argument, and declare the permission it needs (#334) |
+| `Command::make:mcp-resource` | scaffold an MCP resource at `<module>://<name>`, and declare the permission it needs (#334) |
 | `Command::make:mcp-tool` | scaffold an MCP tool with its input and output, and declare the permission it needs (#316) |
 | `Command::make:migration` | scaffold a Migration |
 | `Command::make:module` | scaffold a module |

@@ -165,9 +165,9 @@ the gate suite is the dev package `ignibyte/aic-gates`, run by `vendor/bin/aic-g
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
-layout (#157), entity (#123), policy (#304), client (#305), relation (#306), state (#308), mcp-tool (#316), enum, exception and interface (#319), seed (#320), webhook (#321), page-action (#322), export (#323), list-page (#324) and detail-page (#341); dev-only in
+layout (#157), entity (#123), policy (#304), client (#305), relation (#306), state (#308), mcp-tool (#316), mcp-resource and mcp-prompt (#334), enum, exception and interface (#319), seed (#320), webhook (#321), page-action (#322), export (#323), list-page (#324) and detail-page (#341); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the thirty-four make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319; a seed, #320, whose writes gate:8 `aic.seedWrites` holds to repositories; a signed webhook, #321; an action answering its region, #322; a queued export, #323; a filtered list, #324; a detail page in tabs, #341; a Laravel-typed table import, #339; an entity over an imported table, #338; checks, a composite key and nulls-equal uniques, #344; a reference cycle, #349).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the thirty-six make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319; a seed, #320, whose writes gate:8 `aic.seedWrites` holds to repositories; a signed webhook, #321; an action answering its region, #322; a queued export, #323; a filtered list, #324; a detail page in tabs, #341; a Laravel-typed table import, #339; an entity over an imported table, #338; checks, a composite key and nulls-equal uniques, #344; a reference cycle, #349; an MCP resource and prompt, #334).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
@@ -223,6 +223,8 @@ path (`MountScripts`); `make:component --script`; the fixture's `/ledger/meter`.
 `App\Generated\<Module>Mcp::catalog()`; tools (`McpTool`, `#[ToolInfo]`, `call(<Input>[, Actor]): <Output>`), resources and
 prompts live in the module's `src/Mcp/`, and the build writes their schemas and adapters; access is the route's `needs:` and
 each entry's permission; `make:mcp-tool`; the fixture's `ledger.split`.
+#334: `make:mcp-resource`, `make:mcp-prompt`; past seven entries `<M>Mcp` chains to `<M>McpPart2` (six each), and a controller
+too large for a handler part of its own builds its composite services in `<M>HandlerServices`; the ledger serves eight entries.
 #317 (Chad, 2026-11-20): a library with no native path goes native when a request waits on it (a fork bridge or own
 PHP: RSA #325, an HTML sanitizer #337) and to an interpreted worker when it is queued work (document generation, an LLM
 agent library): `workers/<name>/`, its own Composer project, Jobs only, outside gate:21 and gate:2 and under every other

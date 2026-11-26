@@ -4,24 +4,19 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
-use AIC\Mcp\Domain\McpCatalog;
 use Gates\Domain\McpModuleSpec;
 use Gates\Domain\McpToolSpec;
 use InvalidArgumentException;
 
-use function array_keys;
 use function explode;
-use function implode;
-use function max;
 use function sprintf;
-use function str_repeat;
 use function strlen;
-use function strtr;
 
 /**
  * Writes what the build makes of the modules' MCP entries (#316): for each
  * module with any, `App\Generated\<Module>Mcp`, built with an adapter per entry
- * and giving the `McpCatalog` an endpoint serves; and the adapters, a tool's
+ * and giving the `McpCatalog` an endpoint serves (in parts past seven entries,
+ * #334); and the adapters, a tool's
  * `<Tool>Call` and `<Tool>Result`, a resource's `<Resource>Read`, a prompt's
  * `<Prompt>Get`, each built with its entry.
  */
@@ -29,48 +24,23 @@ final readonly class McpSource
 {
     private const int LINE_LIMIT = 140;
 
-    private const string CATALOG = <<<'PHP'
-        final readonly class {class}
-        {
-            /**
-        {params}
-             */
-            public function __construct(
-        {properties}
-            ) {
-            }
-
-            /**
-             * @return McpCatalog The module's tools, resources and prompts, each in its adapter.
-             */
-            public function catalog(): McpCatalog
-            {
-                return new McpCatalog(
-                    [{tools}],
-                    [{resources}],
-                    [{prompts}],
-                );
-            }
-        }
-        PHP;
-
     /**
-     * @param PhpClassFile     $phpClassFile     Emits checked generated source.
      * @param McpCode          $mcpCode          The code pieces.
      * @param McpCallSource    $mcpCallSource    Writes a tool's adapter.
      * @param McpResultSource  $mcpResultSource  Writes a tool's result.
      * @param McpSchemaSource  $mcpSchemaSource  Writes a value class's schema.
      * @param McpAdapterSource $mcpAdapterSource Writes a resource's adapter.
      * @param McpPromptSource  $mcpPromptSource  Writes a prompt's adapter.
+     * @param McpCatalogParts  $mcpCatalogParts  Writes the catalog, in parts past seven entries (#334).
      */
     public function __construct(
-        private PhpClassFile $phpClassFile = new PhpClassFile(),
         private McpCode $mcpCode = new McpCode(),
         private McpCallSource $mcpCallSource = new McpCallSource(),
         private McpResultSource $mcpResultSource = new McpResultSource(),
         private McpSchemaSource $mcpSchemaSource = new McpSchemaSource(),
         private McpAdapterSource $mcpAdapterSource = new McpAdapterSource(),
         private McpPromptSource $mcpPromptSource = new McpPromptSource(),
+        private McpCatalogParts $mcpCatalogParts = new McpCatalogParts(),
     ) {
     }
 
@@ -109,7 +79,7 @@ final readonly class McpSource
     private function entries(McpModuleSpec $mcpModuleSpec): array
     {
         $from = 'modules/' . $mcpModuleSpec->moduleDefinition->name . '/src/Mcp/';
-        $files = [$mcpModuleSpec->moduleDefinition->studlyName() . 'Mcp.php' => $this->catalog($mcpModuleSpec, $from)];
+        $files = $this->mcpCatalogParts->files($mcpModuleSpec, $from);
 
         foreach ($mcpModuleSpec->tools as $mcpToolSpec) {
             foreach ($this->tool($mcpToolSpec, $from) as $name => $source) {
@@ -152,118 +122,6 @@ final readonly class McpSource
         }
 
         return $files;
-    }
-
-    /**
-     * @param McpModuleSpec $mcpModuleSpec A module's entries.
-     * @param string        $from          Its `src/Mcp/`.
-     *
-     * @throws InvalidArgumentException When imports conflict.
-     *
-     * @return string The catalog's file.
-     */
-    private function catalog(McpModuleSpec $mcpModuleSpec, string $from): string
-    {
-        [$tools, $resources, $prompts] = $this->adapters($mcpModuleSpec);
-        $entries = [...$tools, ...$resources, ...$prompts];
-        $source = strtr(self::CATALOG, [
-            '{class}' => $mcpModuleSpec->moduleDefinition->studlyName() . 'Mcp',
-            '{params}' => implode("\n", $this->params(array_keys($entries))),
-            '{prompts}' => $this->listed($prompts),
-            '{properties}' => implode("\n", $this->properties(array_keys($entries))),
-            '{resources}' => $this->listed($resources),
-            '{tools}' => $this->listed($tools),
-        ]);
-        $docblock = $this->phpClassFile->generated($from, "the module's MCP catalog (#316).")
-            . "\n * It is API for the module's MCP endpoint, which a module may add after its tools.\n *\n * @api";
-
-        $classes = [McpCatalog::class, ...array_keys($entries)];
-
-        return $this->phpClassFile->file('App\\Generated', $classes, [], $docblock, $source);
-    }
-
-    /**
-     * @param McpModuleSpec $mcpModuleSpec A module's entries.
-     *
-     * @return array{array<string, string>, array<string, string>, array<string, string>} Each tool's, resource's and
-     *                                                                                    prompt's adapter class, by the entry's class.
-     */
-    private function adapters(McpModuleSpec $mcpModuleSpec): array
-    {
-        $tools = [];
-        $resources = [];
-        $prompts = [];
-
-        foreach ($mcpModuleSpec->tools as $mcpToolSpec) {
-            $tools[$mcpToolSpec->class] = $this->mcpCode->short($mcpToolSpec->class) . 'Call';
-        }
-
-        foreach (array_keys($mcpModuleSpec->resources) as $class) {
-            $resources[$class] = $this->mcpCode->short($class) . 'Read';
-        }
-
-        foreach (array_keys($mcpModuleSpec->prompts) as $class) {
-            $prompts[$class] = $this->mcpCode->short($class) . 'Get';
-        }
-
-        return [$tools, $resources, $prompts];
-    }
-
-    /**
-     * @param list<string> $entries The entries' classes.
-     *
-     * @return list<string> The constructor's `@param` lines, aligned.
-     */
-    private function params(array $entries): array
-    {
-        $width = 0;
-
-        foreach ($entries as $entry) {
-            $width = max($width, strlen($this->mcpCode->short($entry)));
-        }
-
-        $params = [];
-
-        foreach ($entries as $entry) {
-            $short = $this->mcpCode->short($entry);
-            $pad = str_repeat(' ', $width - strlen($short));
-            $variable = $this->mcpCode->variable($short);
-            $params[] = sprintf('     * @param %s%s $%s%s An entry, for its adapter.', $short, $pad, $variable, $pad);
-        }
-
-        return $params;
-    }
-
-    /**
-     * @param list<string> $entries The entries' classes.
-     *
-     * @return list<string> The constructor's promoted properties.
-     */
-    private function properties(array $entries): array
-    {
-        $properties = [];
-
-        foreach ($entries as $entry) {
-            $properties[] = sprintf('        private %s $%s,', $this->mcpCode->short($entry), $this->mcpCode->variable($entry));
-        }
-
-        return $properties;
-    }
-
-    /**
-     * @param array<string, string> $adapters Each entry's adapter class, by the entry's class.
-     *
-     * @return string The adapters, each built with its entry, for a list literal.
-     */
-    private function listed(array $adapters): string
-    {
-        $built = [];
-
-        foreach ($adapters as $entry => $adapter) {
-            $built[] = 'new ' . $adapter . '($this->' . $this->mcpCode->variable($entry) . ')';
-        }
-
-        return implode(', ', $built);
     }
 
     /**

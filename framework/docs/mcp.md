@@ -119,6 +119,10 @@ the result's text, with `isError`, so the agent can correct itself.
 
 `bin/aic make:mcp-tool <module> <Name> [--needs=<permission>]` writes a tool, its input and its
 output, and, with no `--needs`, declares `<module>.<name>` as the tool's permission.
+`bin/aic make:mcp-resource <module> <Name>Resource [--needs=<permission>]` writes a Markdown resource at
+`<module>://<name>`, and `bin/aic make:mcp-prompt <module> <Name>Prompt [--needs=<permission>]` a prompt
+named `<module>.<name>` with one argument; each declares `<module>.<name>` as its permission with no
+`--needs` (#334).
 
 ## Resources and prompts
 
@@ -139,7 +143,10 @@ refusal names the class and the rule.
 
 ## Limits
 
-One module's catalog is built in the endpoint's handler, so the endpoint, the server, the caller's
-roles and tokens and every entry with its services count toward PHPMD's coupling of 15 for one
-generated handler class; the build says so when a module's entries pass it (#334). Each list is whole,
+Past seven entries the build writes the catalog in parts (#334): `<Module>Mcp` holds six and takes
+`<Module>McpPart2`, which holds the next six and so on, each part's entries joined after its own with
+`with()`, so the endpoint still takes `<Module>Mcp`. When the endpoint's handler, with the server and
+every entry's services, would pass PHPMD's coupling of 15, the build makes those services in the
+module's `<Module>HandlerServices` and the handler calls one method for each. A module's `src/Mcp/`
+still holds 15 files at most (gate:26): a tool takes three, a resource or a prompt one. Each list is whole,
 with no cursor, and nothing announces a change to it; a tool reports no progress while it runs (#333).

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 /**
- * The thirty-four `bin/aic` make lines that make `modules/scaffold/` (#122),
+ * The thirty-six `bin/aic` make lines that make `modules/scaffold/` (#122),
  * run in order by gate:31 and by anyone regenerating the module: every
  * writer, a component with a script and a page showing it (#315), a page
  * naming its component, a named layout (#157), a page making its own view in
@@ -20,8 +20,9 @@ namespace Gates\Application;
  * (#322), a queued CSV export with its download and prune (#323), a
  * filtered, sorted and paged list of the imported books (#324), a detail
  * page of the note module's notes in two tabs (#341), an entity over the
- * imported loans, its fields read from their migration (#338), and two
- * imported tables that reference each other in a cycle (#349).
+ * imported loans, its fields read from their migration (#338), two
+ * imported tables that reference each other in a cycle (#349), and an MCP
+ * resource and prompt beside the tool (#334).
  */
 final readonly class ScaffoldSequence
 {
@@ -154,5 +155,7 @@ final readonly class ScaffoldSequence
             '--tables=scaffold_crews,scaffold_shifts',
             '--version=2026_11_25_000003',
         ],
+        ['make:mcp-resource', 'scaffold', 'ScaffoldGuideResource'],
+        ['make:mcp-prompt', 'scaffold', 'ScaffoldAskPrompt'],
     ];
 }

@@ -6,6 +6,15 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **make:mcp-resource and make:mcp-prompt; MCP catalogs of any size** (#334). `bin/aic make:mcp-resource <module>
+  <Class>Resource` writes a Markdown resource at `<module>://<name>` and `bin/aic make:mcp-prompt <module> <Class>Prompt`
+  a prompt with one argument, each declaring its permission unless `--needs` names one; `make:catalog` lists them with
+  `make:mcp-tool`. A module with many MCP entries now builds: the catalog writes one adapter per line, past seven entries
+  `<Module>Mcp` holds six and chains to `<Module>McpPart2`, and an endpoint whose handler would pass PHPMD's coupling
+  builds its server and entries in the module's `<Module>HandlerServices`, one call each. A services class that calls an
+  earlier one taking the context now takes it too. The ledger fixture serves eight entries, two of them reading its rows;
+  gate:31's 35th and 36th lines make a resource and a prompt.
+
 - **Reference cycles in schema:import** (#349). When no table is left whose foreign keys all point at tables already
   placed, the importer defers one key that closes a cycle, a nullable one first, and goes on. The key is added by
   `$schema->alter(<table>)->references(…)` at the end of the migration of the later of its two tables, or goes back into

@@ -174,6 +174,8 @@ none
 
 | Class | File |
 | --- | --- |
+| `App\Scaffold\Mcp\ScaffoldAskPrompt` | [modules/scaffold/src/Mcp/ScaffoldAskPrompt.php](../../../modules/scaffold/src/Mcp/ScaffoldAskPrompt.php) |
+| `App\Scaffold\Mcp\ScaffoldGuideResource` | [modules/scaffold/src/Mcp/ScaffoldGuideResource.php](../../../modules/scaffold/src/Mcp/ScaffoldGuideResource.php) |
 | `App\Scaffold\Mcp\ScaffoldLookupInput` | [modules/scaffold/src/Mcp/ScaffoldLookupInput.php](../../../modules/scaffold/src/Mcp/ScaffoldLookupInput.php) |
 | `App\Scaffold\Mcp\ScaffoldLookupOutput` | [modules/scaffold/src/Mcp/ScaffoldLookupOutput.php](../../../modules/scaffold/src/Mcp/ScaffoldLookupOutput.php) |
 | `App\Scaffold\Mcp\ScaffoldLookupTool` | [modules/scaffold/src/Mcp/ScaffoldLookupTool.php](../../../modules/scaffold/src/Mcp/ScaffoldLookupTool.php) |

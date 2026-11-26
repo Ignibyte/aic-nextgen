@@ -94,6 +94,10 @@ when a layout needs a document of its own.
 `src/Mcp/` with its `<Stem>Input` and `<Stem>Output`, names it `<module>.<kebab stem>`, and, with no
 `--needs`, declares that name as the permission it needs. `composer run build` then writes its schemas
 and adapter into the module's `App\Generated\<Module>Mcp` ([mcp.md](../framework/docs/mcp.md)).
+`make:mcp-resource <module> <Class>Resource` and `make:mcp-prompt <module> <Class>Prompt`, each with
+`[--needs=<permission>]` (#334), write a resource at `<module>://<kebab stem>` (Markdown, its text a
+placeholder) or a prompt named `<module>.<kebab stem>` with one `topic` argument, and, with no
+`--needs`, declare `<module>.<kebab stem>` as the permission. `make:catalog` lists all three.
 
 `make:enum <module> <Name> --cases=a,b [--backed=string|int]`, `make:exception <module>
 <Name>Exception [--extends=<exception>]` and `make:interface <module> <Name>` (#319) write the

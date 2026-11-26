@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Mcp\Domain\McpCatalog;
+use App\Scaffold\Mcp\ScaffoldAskPrompt;
+use App\Scaffold\Mcp\ScaffoldGuideResource;
 use App\Scaffold\Mcp\ScaffoldLookupTool;
 
 /**
@@ -17,10 +19,14 @@ use App\Scaffold\Mcp\ScaffoldLookupTool;
 final readonly class ScaffoldMcp
 {
     /**
-     * @param ScaffoldLookupTool $scaffoldLookupTool An entry, for its adapter.
+     * @param ScaffoldLookupTool    $scaffoldLookupTool    An entry, for its adapter.
+     * @param ScaffoldGuideResource $scaffoldGuideResource An entry, for its adapter.
+     * @param ScaffoldAskPrompt     $scaffoldAskPrompt     An entry, for its adapter.
      */
     public function __construct(
         private ScaffoldLookupTool $scaffoldLookupTool,
+        private ScaffoldGuideResource $scaffoldGuideResource,
+        private ScaffoldAskPrompt $scaffoldAskPrompt,
     ) {
     }
 
@@ -30,9 +36,15 @@ final readonly class ScaffoldMcp
     public function catalog(): McpCatalog
     {
         return new McpCatalog(
-            [new ScaffoldLookupToolCall($this->scaffoldLookupTool)],
-            [],
-            [],
+            [
+                new ScaffoldLookupToolCall($this->scaffoldLookupTool),
+            ],
+            [
+                new ScaffoldGuideResourceRead($this->scaffoldGuideResource),
+            ],
+            [
+                new ScaffoldAskPromptGet($this->scaffoldAskPrompt),
+            ],
         );
     }
 }

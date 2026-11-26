@@ -84,4 +84,6 @@ return (new ModuleManifest('scaffold'))
     ->route(RouteMethod::Get, '/scaffold/notes/{id:int}', ScaffoldNoteDetailPage::class)
     ->route(RouteMethod::Get, '/scaffold-loans', ScaffoldLoanListPage::class)
     ->migration(CreateScaffoldCrewsTable::class)
-    ->migration(CreateScaffoldShiftsTable::class);
+    ->migration(CreateScaffoldShiftsTable::class)
+    ->permission('scaffold.scaffold-guide', 'Read the scaffold://scaffold-guide resource over MCP.')
+    ->permission('scaffold.scaffold-ask', 'Get the scaffold.scaffold-ask prompt over MCP.');
