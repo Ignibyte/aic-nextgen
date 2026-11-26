@@ -171,20 +171,22 @@ final readonly class Psr7ResponseWriter implements EventWriter, ResponseWriter
 
     /**
      * @param int                         $status        The status.
-     * @param string                      $document      An `XmlDocument`, serialized (#233).
+     * @param string                      $mediaType     Its `Content-Type`.
+     * @param string                      $body          The document, serialized: XML (#233) or encoded JSON (#332).
      * @param ServerRequestInterface|null $serverRequest The request whose `If-None-Match` it answers (#269).
      *
      * @throws InvalidArgumentException When a response field is invalid.
      *
-     * @return ResponseInterface The response, `application/xml; charset=utf-8`; given a request, a 200 to GET or HEAD
-     *                           tagged, or 304.
+     * @return ResponseInterface The response; given a request, a 200 to GET or HEAD tagged, or 304.
      */
     #[Override]
-    public function xml(int $status, string $document, ?ServerRequestInterface $serverRequest = null): ResponseInterface
-    {
-        $response = $this->responseBuilder->create($status, 'application/xml; charset=utf-8', $document);
-
-        return $this->conditional($response, $document, $serverRequest);
+    public function encoded(
+        int $status,
+        string $mediaType,
+        string $body,
+        ?ServerRequestInterface $serverRequest = null,
+    ): ResponseInterface {
+        return $this->conditional($this->responseBuilder->create($status, $mediaType, $body), $body, $serverRequest);
     }
 
     /**

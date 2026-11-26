@@ -9,6 +9,7 @@ use AIC\Mcp\Contracts\McpArgumentException;
 use AIC\Mcp\Domain\McpCatalog;
 use AIC\Mcp\Domain\McpErrorReply;
 use AIC\Mcp\Domain\McpInitializeResult;
+use AIC\Mcp\Domain\McpJson;
 use AIC\Mcp\Domain\McpProtocolException;
 use AIC\Mcp\Domain\McpReply;
 use AIC\Mcp\Domain\McpRequest;
@@ -21,7 +22,8 @@ use function in_array;
 /**
  * The methods an MCP server answers (#316): `initialize` (agreeing a protocol
  * version), `ping`, the three lists (each holding only what the caller may
- * use) and the three calls, which `McpCalls` answers.
+ * use) and the three calls, which `McpCalls` answers. It writes each reply as
+ * JSON text, so a tool call's stored output is answered as it was (#332).
  */
 final readonly class McpMethods
 {
@@ -32,12 +34,14 @@ final readonly class McpMethods
     public const array VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
     /**
-     * @param McpLists $mcpLists The lists.
      * @param McpCalls $mcpCalls The calls.
+     * @param McpLists $mcpLists The lists.
+     * @param McpJson  $mcpJson  Writes the reply.
      */
     public function __construct(
+        private McpCalls $mcpCalls,
         private McpLists $mcpLists = new McpLists(),
-        private McpCalls $mcpCalls = new McpCalls(),
+        private McpJson $mcpJson = new McpJson(),
     ) {
     }
 
@@ -48,7 +52,8 @@ final readonly class McpMethods
      * @param Actor      $actor      Who asks.
      * @param string     $name       The app's name, which `initialize` gives.
      *
-     * @return JsonSerializable Its result, or its error: one the server named, the arguments', or an internal one.
+     * @return string Its result, or its error: one the server named, the arguments', or an internal one, encoded; a
+     *                tool call's reply is written around the call's encoded output (#332).
      */
     public function reply(
         int|string $id,
@@ -56,15 +61,23 @@ final readonly class McpMethods
         McpCatalog $mcpCatalog,
         Actor $actor,
         string $name,
-    ): JsonSerializable {
+    ): string {
         try {
-            return new McpReply($id, $this->result($mcpRequest, $mcpCatalog, $actor, $name));
+            if ($mcpRequest->method() === 'tools/call') {
+                return $this->mcpJson->reply($id, $this->mcpCalls->call($mcpRequest, $mcpCatalog, $actor)->text());
+            }
+
+            return $this->mcpJson->encode(new McpReply($id, $this->result($mcpRequest, $mcpCatalog, $actor, $name)));
         } catch (McpProtocolException $mcpProtocolException) {
-            return new McpErrorReply($id, $mcpProtocolException->getCode(), $mcpProtocolException->getMessage());
+            return $this->mcpJson->encode(new McpErrorReply($id, $mcpProtocolException->getCode(), $mcpProtocolException->getMessage()));
         } catch (McpArgumentException $mcpArgumentException) {
-            return new McpErrorReply($id, McpProtocolException::INVALID_PARAMS, 'Invalid params: ' . $mcpArgumentException->getMessage());
+            $why = 'Invalid params: ' . $mcpArgumentException->getMessage();
+
+            return $this->mcpJson->encode(new McpErrorReply($id, McpProtocolException::INVALID_PARAMS, $why));
         } catch (RuntimeException) {
-            return new McpErrorReply($id, McpProtocolException::INTERNAL_ERROR, 'Internal error: the server could not answer.');
+            $why = 'Internal error: the server could not answer.';
+
+            return $this->mcpJson->encode(new McpErrorReply($id, McpProtocolException::INTERNAL_ERROR, $why));
         }
     }
 
@@ -94,7 +107,6 @@ final readonly class McpMethods
             'tools/list' => $this->mcpLists->visible('tools', $mcpCatalog->toolInfos(), $actor),
             'resources/list' => $this->mcpLists->visible('resources', $mcpCatalog->resourceInfos(), $actor),
             'prompts/list' => $this->mcpLists->visible('prompts', $mcpCatalog->promptInfos(), $actor),
-            'tools/call' => $this->mcpCalls->call($mcpRequest, $mcpCatalog, $actor),
             'resources/read' => $this->mcpCalls->read($mcpRequest, $mcpCatalog, $actor),
             'prompts/get' => $this->mcpCalls->prompt($mcpRequest, $mcpCatalog, $actor),
             default => throw new McpProtocolException(

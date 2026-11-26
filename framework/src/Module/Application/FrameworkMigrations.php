@@ -10,6 +10,7 @@ use AIC\Auth\Domain\EnablePgcrypto;
 use AIC\Broadcast\Domain\CreateBroadcastTable;
 use AIC\Cache\Domain\CreateCacheTables;
 use AIC\Entity\Domain\CreateEntityAuditTable;
+use AIC\Mcp\Domain\CreateMcpCallsTable;
 use AIC\Notification\Domain\AddNotificationInbox;
 use AIC\Notification\Domain\CreateNotificationsTable;
 use AIC\OAuth\Domain\CreateOAuthTables;
@@ -46,6 +47,7 @@ final readonly class FrameworkMigrations
             new CreateTokensTable(),
             new CreateBroadcastTable(),
             new CreateOAuthTables(),
+            new CreateMcpCallsTable(),
         ];
     }
 }

@@ -9,6 +9,7 @@ use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Contracts\ApiResponse;
 use AIC\Controller\Domain\ApiAccepted;
 use AIC\Controller\Domain\JsonResponse;
+use AIC\Controller\Domain\JsonText;
 use AIC\Database\Contracts\QueryException;
 use AIC\Mcp\Domain\McpCatalog;
 use AIC\Mcp\Domain\McpErrorReply;
@@ -30,12 +31,12 @@ final readonly class McpServer
     /**
      * @param Actors     $actors     Who asks, from the request's bearer token or session.
      * @param AppConfig  $appConfig  The app's settings, for the name `initialize` gives.
-     * @param McpMethods $mcpMethods The methods.
+     * @param McpMethods $mcpMethods The methods, whose tool calls go through the capability registry (#332).
      */
     public function __construct(
         private Actors $actors,
         private AppConfig $appConfig,
-        private McpMethods $mcpMethods = new McpMethods(),
+        private McpMethods $mcpMethods,
     ) {
     }
 
@@ -63,6 +64,6 @@ final readonly class McpServer
 
         $actor = $this->actors->actor($serverRequest);
 
-        return new JsonResponse($this->mcpMethods->reply($id, $mcpRequest, $mcpCatalog, $actor, $this->appConfig->name));
+        return new JsonText($this->mcpMethods->reply($id, $mcpRequest, $mcpCatalog, $actor, $this->appConfig->name));
     }
 }

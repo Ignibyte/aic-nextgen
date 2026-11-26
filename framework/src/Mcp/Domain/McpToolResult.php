@@ -4,42 +4,41 @@ declare(strict_types=1);
 
 namespace AIC\Mcp\Domain;
 
-use JsonSerializable;
-use Override;
-
-use function json_encode;
-
 /**
- * The answer to `tools/call` (#316): the tool's output as structured content
- * and, for a client that reads only text, the same JSON as text; or, when the
- * tool refused, its reason as text with `isError`.
+ * The answer to `tools/call` (#316), as JSON text around a capability's
+ * result (#332): the tool's output as structured content and, for a client
+ * that reads only text, the same JSON as text; or, when the tool refused, its
+ * reason as text with `isError`. A dry run adds `_meta: {"aic/dryRun": true}`.
+ * Written as text so a replayed call answers the stored output's bytes.
  */
-final readonly class McpToolResult implements JsonSerializable
+final readonly class McpToolResult
 {
     /**
-     * @param JsonSerializable|null $jsonSerializable The tool's output; null when it refused.
-     * @param string                $refusal          Why it refused.
+     * @param CapabilityResult $capabilityResult What the call answered.
+     * @param McpJson          $mcpJson          Encodes the parts.
      */
     public function __construct(
-        private ?JsonSerializable $jsonSerializable,
-        private string $refusal = '',
+        private CapabilityResult $capabilityResult,
+        private McpJson $mcpJson = new McpJson(),
     ) {
     }
 
     /**
-     * @return array<string, bool|JsonSerializable|list<array{type: string, text: string}>> The result.
+     * @return string The result, encoded.
      */
-    #[Override]
-    public function jsonSerialize(): array
+    public function text(): string
     {
-        if (!$this->jsonSerializable instanceof JsonSerializable) {
-            return ['content' => [['type' => 'text', 'text' => $this->refusal]], 'isError' => true];
+        $capabilityResult = $this->capabilityResult;
+        $meta = $capabilityResult->dryRun
+            ? ',"_meta":{"aic/dryRun":true}'
+            : '';
+
+        if ($capabilityResult->callOutcome !== CallOutcome::Done) {
+            return '{"content":[{"type":"text","text":' . $this->mcpJson->text($capabilityResult->refusal) . '}],"isError":true'
+                . $meta . '}';
         }
 
-        return [
-            'content' => [['type' => 'text', 'text' => (string) json_encode($this->jsonSerializable)]],
-            'isError' => false,
-            'structuredContent' => $this->jsonSerializable,
-        ];
+        return '{"content":[{"type":"text","text":' . $this->mcpJson->text($capabilityResult->output) . '}],"isError":false,'
+            . '"structuredContent":' . $capabilityResult->output . $meta . '}';
     }
 }

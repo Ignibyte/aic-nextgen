@@ -12,7 +12,10 @@
         "client:add gate-service {password} account.caller",
         "client:revoke gate-desk",
         "client:add gate-desk - account.audit ledger.mcp --redirect=http://127.0.0.1:7777/callback",
-        "role:assign stub:ada gate-auditor"
+        "role:assign stub:ada gate-auditor",
+        "role:grant gate-assistant ledger.split",
+        "role:assign gate gate-assistant",
+        "role:assign stub:ada gate-assistant"
     ],
     "steps": [
         {
@@ -1103,6 +1106,51 @@
             "captures": false
         },
         {
+            "name": "ledger assistant",
+            "method": "GET",
+            "path": "/ledger/assistant",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger assistant, a dry run",
+            "method": "POST",
+            "path": "/ledger/assistant",
+            "form": "amount=100&parts=3&dry=1&aic_envelope={envelope}&aic_csrf={csrf}",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger assistant, a split",
+            "method": "POST",
+            "path": "/ledger/assistant",
+            "form": "amount=100&parts=3&aic_envelope={envelope}&aic_csrf={csrf}",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger assistant, the same call again",
+            "method": "POST",
+            "path": "/ledger/assistant",
+            "form": "amount=100&parts=3&aic_envelope={envelope}&aic_csrf={csrf}",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger assistant, not whole numbers",
+            "method": "POST",
+            "path": "/ledger/assistant",
+            "form": "amount=ten&parts=3&aic_envelope={envelope}&aic_csrf={csrf}",
+            "header": "",
+            "status": 422,
+            "captures": false
+        },
+        {
             "name": "ledger feed stream, one hold after an id past every post",
             "method": "GET",
             "path": "/ledger/feed/events",
@@ -1233,6 +1281,42 @@
             "method": "POST",
             "path": "/mcp",
             "form": "json:{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.split\",\"arguments\":{\"amount\":100,\"parts\":0}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call, a dry run",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.split\",\"arguments\":{\"amount\":100,\"parts\":3},\"_meta\":{\"aic/dryRun\":true}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call, a call id",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.split\",\"arguments\":{\"amount\":10,\"parts\":4},\"_meta\":{\"aic/callId\":\"gate-split-1\"}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call, the call id again",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":8,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.split\",\"arguments\":{\"amount\":999,\"parts\":2},\"_meta\":{\"aic/callId\":\"gate-split-1\"}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call, a malformed call id",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.split\",\"arguments\":{\"amount\":1},\"_meta\":{\"aic/callId\":\"two words\"}}}",
             "header": "Authorization: Bearer {password}",
             "status": 200,
             "captures": false

@@ -108,12 +108,61 @@ final readonly class McpRequest
      */
     public function arguments(): McpArguments
     {
+        return new McpArguments($this->argumentText());
+    }
+
+    /**
+     * @throws McpProtocolException When `arguments` is there and not an object (-32602).
+     *
+     * @return string The `arguments` object's JSON; `{}` when it is absent (#332).
+     */
+    public function argumentText(): string
+    {
         $mcpProtocolException = new McpProtocolException(
             'Invalid params: "arguments" must be an object.',
             McpProtocolException::INVALID_PARAMS,
         );
 
-        return new McpArguments($this->member($this->params, 'arguments', $mcpProtocolException));
+        return $this->member($this->params, 'arguments', $mcpProtocolException);
+    }
+
+    /**
+     * @param string $name A key of `params._meta`, such as `aic/callId` (#332).
+     *
+     * @return string Its value when it is a string; empty otherwise.
+     */
+    public function metaText(string $name): string
+    {
+        $params = json_decode($this->params, true);
+
+        if (
+            !is_array($params)
+            || !array_key_exists('_meta', $params)
+            || !is_array($params['_meta'])
+            || !array_key_exists($name, $params['_meta'])
+        ) {
+            return '';
+        }
+
+        return is_string($params['_meta'][$name])
+            ? $params['_meta'][$name]
+            : '';
+    }
+
+    /**
+     * @param string $name A key of `params._meta`, such as `aic/dryRun` (#332).
+     *
+     * @return bool Whether it is `true`.
+     */
+    public function metaFlag(string $name): bool
+    {
+        $params = json_decode($this->params, true);
+
+        if (!is_array($params) || !array_key_exists('_meta', $params) || !is_array($params['_meta'])) {
+            return false;
+        }
+
+        return array_key_exists($name, $params['_meta']) && $params['_meta'][$name] === true;
     }
 
     /**

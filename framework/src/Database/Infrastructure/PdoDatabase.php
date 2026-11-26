@@ -37,6 +37,12 @@ final class PdoDatabase implements Database
     private array $connection = [];
 
     /**
+     * The savepoints open inside the transaction (#332): a begin inside an open
+     * transaction sets `aic_<n>`, and its commit or roll back ends that one.
+     */
+    private int $savepoints = 0;
+
+    /**
      * @param DatabaseConfig $databaseConfig Where the database is.
      * @param PdoRows        $pdoRows        Narrows each fetched row.
      */
@@ -127,12 +133,20 @@ final class PdoDatabase implements Database
     }
 
     /**
-     * @throws QueryException When a transaction cannot begin.
+     * @throws QueryException When a transaction or savepoint cannot begin.
      */
     #[Override]
     public function beginTransaction(): void
     {
         try {
+            if ($this->inTransaction()) {
+                $this->pdo()->exec('SAVEPOINT aic_' . $this->savepoints);
+                $this->savepoints += 1;
+
+                return;
+            }
+
+            $this->savepoints = 0;
             $this->pdo()->beginTransaction();
         } catch (PDOException $pdoException) {
             throw self::failure($pdoException);
@@ -146,6 +160,13 @@ final class PdoDatabase implements Database
     public function commit(): void
     {
         try {
+            if ($this->savepoints > 0) {
+                $this->savepoints -= 1;
+                $this->pdo()->exec('RELEASE SAVEPOINT aic_' . $this->savepoints);
+
+                return;
+            }
+
             $this->pdo()->commit();
         } catch (PDOException $pdoException) {
             throw self::failure($pdoException);
@@ -159,6 +180,14 @@ final class PdoDatabase implements Database
     public function rollBack(): void
     {
         try {
+            if ($this->savepoints > 0) {
+                $this->savepoints -= 1;
+                $this->pdo()->exec('ROLLBACK TO SAVEPOINT aic_' . $this->savepoints);
+                $this->pdo()->exec('RELEASE SAVEPOINT aic_' . $this->savepoints);
+
+                return;
+            }
+
             $this->pdo()->rollBack();
         } catch (PDOException $pdoException) {
             throw self::failure($pdoException);
