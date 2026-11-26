@@ -23,7 +23,9 @@ use function array_values;
  * into parts builds them once, in its generated `<M>HandlerServices`, so no
  * two parts open with the same statements and gate:14 finds no clone between
  * them. A leaf (built from roots or nothing) stays in place: it is one short
- * call wherever it is built.
+ * call wherever it is built. A controller too large for a part of its own (an
+ * MCP Api over many entries, #334) has every composite service it takes
+ * built there too, so its part calls one method per argument.
  */
 final readonly class HandlerSharing
 {
@@ -48,6 +50,28 @@ final readonly class HandlerSharing
             $hoisted = array_key_exists($class, $objects) && self::composite($objects[$class])
                 ? self::hoisted($objects[$class], $hoisted)
                 : $hoisted;
+        }
+
+        return array_values($hoisted);
+    }
+
+    /**
+     * @param list<WiredObject> $shared    The shared services, from `shared()`.
+     * @param list<WiredObject> $oversized The controllers that alone do not fit a part.
+     *
+     * @return list<WiredObject> The shared services, then each composite service the oversized controllers take and
+     *                           what it is built from, each once, a service after those it takes.
+     */
+    public function withOversized(array $shared, array $oversized): array
+    {
+        $hoisted = [];
+
+        foreach ($shared as $wiredObject) {
+            $hoisted[$wiredObject->class] = $wiredObject;
+        }
+
+        foreach ($oversized as $controller) {
+            $hoisted = self::composites($controller, $hoisted);
         }
 
         return array_values($hoisted);
@@ -90,6 +114,23 @@ final readonly class HandlerSharing
     }
 
     /**
+     * @param WiredObject                $wiredObject An object of the graph.
+     * @param array<string, WiredObject> $hoisted     The services hoisted so far, in build order.
+     *
+     * @return array<string, WiredObject> Those, then each composite service it takes and what that is built from.
+     */
+    private static function composites(WiredObject $wiredObject, array $hoisted): array
+    {
+        foreach ($wiredObject->arguments as $argument) {
+            $hoisted = self::composite($argument)
+                ? self::hoisted($argument, $hoisted)
+                : $hoisted;
+        }
+
+        return $hoisted;
+    }
+
+    /**
      * @param WiredObject                $wiredObject A shared service.
      * @param array<string, WiredObject> $hoisted     The services hoisted so far, in build order.
      *
@@ -101,12 +142,7 @@ final readonly class HandlerSharing
             return $hoisted;
         }
 
-        foreach ($wiredObject->arguments as $argument) {
-            $hoisted = self::composite($argument)
-                ? self::hoisted($argument, $hoisted)
-                : $hoisted;
-        }
-
+        $hoisted = self::composites($wiredObject, $hoisted);
         $hoisted[$wiredObject->class] = $wiredObject;
 
         return $hoisted;

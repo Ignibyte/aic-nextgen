@@ -9,16 +9,19 @@ use AIC\Workflow\Application\Import\ModuleTables;
 use AIC\Workflow\Application\Import\SchemaImportCommand;
 use AIC\Workflow\Application\Import\SchemaImports;
 use AIC\Workflow\Application\Make\MakeClientCommand;
+use AIC\Workflow\Application\Make\MakeMcpEntryCommand;
 use AIC\Workflow\Application\Make\MakeMcpToolCommand;
 use AIC\Workflow\Application\Make\MakeRun;
 use AIC\Workflow\Application\Make\MakeVersions;
 use AIC\Workflow\Application\ProjectFiles;
 use AIC\Workflow\Application\UtcTime;
+use AIC\Workflow\Domain\Make\McpEntryKind;
 
 /**
  * The makes for what an app exchanges with other systems: `make:client`, a
  * client of an upstream API (#305), `make:mcp-tool`, a tool an agent calls
- * over MCP (#316), `schema:import`, the migrations of an existing
+ * over MCP (#316), `make:mcp-resource` and `make:mcp-prompt`, what it reads
+ * and asks for there (#334), `schema:import`, the migrations of an existing
  * database's schema (#318), and `make:entity` (#123), here since it reads a
  * table's columns from the migration that creates it (#338).
  */
@@ -47,6 +50,8 @@ final readonly class IntegrationMakes
         return [
             'make:client' => new MakeClientCommand($makeRun),
             'make:entity' => (new EntityMakes())->command($makeRun, $makeVersions, $moduleTables, $this->projectFiles),
+            'make:mcp-prompt' => new MakeMcpEntryCommand($makeRun, McpEntryKind::Prompt),
+            'make:mcp-resource' => new MakeMcpEntryCommand($makeRun, McpEntryKind::Resource),
             'make:mcp-tool' => new MakeMcpToolCommand($makeRun),
             'schema:import' => new SchemaImportCommand($makeRun, new SchemaImports($this->projectFiles, $moduleTables, $makeVersions)),
         ];

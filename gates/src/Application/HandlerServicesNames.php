@@ -10,6 +10,7 @@ use Gates\Domain\WiringRoots;
 use InvalidArgumentException;
 
 use function array_any;
+use function array_intersect;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -107,7 +108,7 @@ final readonly class HandlerServicesNames
                 continue;
             }
 
-            $construction = $this->construction($moduleDefinition, $chunk, $index, $wiringRoots);
+            $construction = $this->construction($moduleDefinition, $chunks, $index, $wiringRoots);
             $lines[] = '        ' . $this->local($moduleDefinition, $index) . ' = ' . $construction . ';';
             $classes[] = $this->fqcn($moduleDefinition, $index);
         }
@@ -131,13 +132,32 @@ final readonly class HandlerServicesNames
     }
 
     /**
-     * @param list<WiredObject> $chunk A class's services.
+     * @param list<list<WiredObject>> $chunks The shared services by class.
+     * @param int                     $index  A class's place.
      *
-     * @return bool Whether building any of them reads the context.
+     * @return bool Whether it takes the context: building one of its services reads it, or calls an earlier class
+     *              that takes it (#334).
      */
-    public function rooted(array $chunk): bool
+    public function rooted(array $chunks, int $index): bool
     {
-        return array_any($chunk, static fn (WiredObject $wiredObject): bool => $wiredObject->readsRoots());
+        $chunk = $chunks[$index] ?? [];
+
+        if (array_any($chunk, static fn (WiredObject $wiredObject): bool => $wiredObject->readsRoots())) {
+            return true;
+        }
+
+        $earlier = [];
+
+        foreach (array_keys(array_slice($chunks, 0, $index)) as $other) {
+            $earlier = $this->rooted($chunks, $other)
+                ? [...$earlier, ...array_map(static fn (WiredObject $wiredObject): string => $wiredObject->class, $chunks[$other])]
+                : $earlier;
+        }
+
+        return array_any(
+            $chunk,
+            static fn (WiredObject $wiredObject): bool => array_intersect($wiredObject->services(), $earlier) !== [],
+        );
     }
 
     /**
@@ -159,25 +179,25 @@ final readonly class HandlerServicesNames
         return match ($writtenIn) {
             null => $this->local($moduleDefinition, $index),
             $index => '$this',
-            default => '(' . $this->construction($moduleDefinition, $chunks[$index] ?? [], $index, $wiringRoots) . ')',
+            default => '(' . $this->construction($moduleDefinition, $chunks, $index, $wiringRoots) . ')',
         };
     }
 
     /**
-     * @param ModuleDefinition  $moduleDefinition The module.
-     * @param list<WiredObject> $chunk            A class's services.
-     * @param int               $index            Its place.
-     * @param WiringRoots       $wiringRoots      The web side's roots.
+     * @param ModuleDefinition        $moduleDefinition The module.
+     * @param list<list<WiredObject>> $chunks           The shared services by class.
+     * @param int                     $index            The class's place.
+     * @param WiringRoots             $wiringRoots      The web side's roots.
      *
-     * @return string Its construction, handed the context when it reads one.
+     * @return string Its construction, handed the context when it takes one.
      */
     private function construction(
         ModuleDefinition $moduleDefinition,
-        array $chunk,
+        array $chunks,
         int $index,
         WiringRoots $wiringRoots,
     ): string {
-        $context = $this->rooted($chunk)
+        $context = $this->rooted($chunks, $index)
             ? '$this->' . $wiringRoots->property
             : '';
 
@@ -193,9 +213,9 @@ final readonly class HandlerServicesNames
     private function readsAny(array $chunks, array $taken): bool
     {
         return array_any(
-            $chunks,
-            fn (array $chunk): bool => $this->rooted($chunk)
-                && array_any($chunk, static fn (WiredObject $wiredObject): bool => in_array($wiredObject->class, $taken, true)),
+            array_keys($chunks),
+            fn (int $index): bool => $this->rooted($chunks, $index)
+                && array_any($chunks[$index], static fn (WiredObject $wiredObject): bool => in_array($wiredObject->class, $taken, true)),
         );
     }
 

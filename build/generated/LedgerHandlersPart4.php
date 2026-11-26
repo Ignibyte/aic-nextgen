@@ -9,7 +9,9 @@ use AIC\Broadcast\Application\StreamSlots;
 use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
 use App\Ledger\Controller\LedgerFeedStream;
+use App\Ledger\Controller\LedgerMcpApi;
 use App\Ledger\Controller\LedgerMeterPage;
+use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -27,12 +29,15 @@ final readonly class LedgerHandlersPart4
     }
 
     /**
-     * @throws ContainerException When a called constructor or service fails.
+     * @throws ContainerException       When a called constructor or service fails.
+     * @throws InvalidArgumentException When a called constructor or service fails.
      *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array
     {
+        $ledgerHandlerServices = new LedgerHandlerServices($this->handlerContext);
+        $ledgerHandlerServicesPart2 = new LedgerHandlerServicesPart2($this->handlerContext);
         $broadcasts = new Broadcasts(
             $this->handlerContext->database(),
             $this->handlerContext->appConfig(),
@@ -41,6 +46,10 @@ final readonly class LedgerHandlersPart4
 
         return [
             LedgerFeedStream::class => $this->handlerContext->stream(new LedgerFeedStream($broadcasts), 'ledger.feed'),
+            LedgerMcpApi::class => $this->handlerContext->api(
+                new LedgerMcpApi($ledgerHandlerServices->mcpServer(), $ledgerHandlerServicesPart2->ledgerMcp()),
+                'ledger.mcp',
+            ),
             LedgerMeterPage::class => $this->handlerContext->page(new LedgerMeterPage($this->handlerContext->documents())),
         ];
     }

@@ -961,6 +961,14 @@
                 {
                     "description": "Call the scaffold.scaffold-lookup tool over MCP.",
                     "name": "scaffold.scaffold-lookup"
+                },
+                {
+                    "description": "Read the scaffold://scaffold-guide resource over MCP.",
+                    "name": "scaffold.scaffold-guide"
+                },
+                {
+                    "description": "Get the scaffold.scaffold-ask prompt over MCP.",
+                    "name": "scaffold.scaffold-ask"
                 }
             ],
             "plugins": [],

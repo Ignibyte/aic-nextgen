@@ -1287,6 +1287,15 @@
             "captures": false
         },
         {
+            "name": "mcp resources/read, the standing read from the entity type",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":21,\"method\":\"resources/read\",\"params\":{\"uri\":\"ledger://standing\"}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "mcp resources/read, an unknown resource",
             "method": "POST",
             "path": "/mcp",
@@ -1309,6 +1318,15 @@
             "method": "POST",
             "path": "/mcp",
             "form": "json:{\"jsonrpc\":\"2.0\",\"id\":14,\"method\":\"prompts/get\",\"params\":{\"name\":\"ledger.split-bill\",\"arguments\":{\"amount\":\"4200\",\"people\":\"Ada, Bo\"}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp prompts/get, an optional argument given",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":22,\"method\":\"prompts/get\",\"params\":{\"name\":\"ledger.categorize\",\"arguments\":{\"entry\":\"train tickets\",\"amount\":\"1250\"}}}",
             "header": "Authorization: Bearer {password}",
             "status": 200,
             "captures": false

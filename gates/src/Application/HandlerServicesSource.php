@@ -103,7 +103,7 @@ final readonly class HandlerServicesSource
         $calls = $this->handlerServicesNames->calls($moduleDefinition, $chunks, $index, $wiringRoots);
         $chunk = $chunks[$index] ?? [];
         [$methods, $classes] = $this->methods($chunk, $calls, $wiringRoots);
-        $rooted = $this->handlerServicesNames->rooted($chunk);
+        $rooted = $this->handlerServicesNames->rooted($chunks, $index);
         $body = strtr(self::TEMPLATE, [
             '{class}' => $moduleDefinition->studlyName() . $this->handlerServicesNames->kind($index),
             '{constructor}' => $rooted ? $this->constructor($wiringRoots) : '',

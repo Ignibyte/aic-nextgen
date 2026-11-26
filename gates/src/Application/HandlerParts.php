@@ -28,8 +28,9 @@ use function count;
  * take; a request reaches one handler, so a service built in two parts is
  * never shared. A module that needs more than one part builds the services
  * two of its controllers take in `<M>HandlerServices` (#257), which each part
- * calls, so no two parts open with the same statements. `ModuleHandlers`
- * merges every part.
+ * calls, so no two parts open with the same statements; a controller too large
+ * for a part of its own has its composite services built there too (#334).
+ * `ModuleHandlers` merges every part.
  */
 final readonly class HandlerParts
 {
@@ -99,20 +100,39 @@ final readonly class HandlerParts
      *
      * @throws InvalidArgumentException When one controller alone does not fit a class.
      *
-     * @return list<list<WiredObject>> The services its parts share, by the `<M>HandlerServices` class that builds
-     *                                 them; none when one part holds every controller.
+     * @return list<list<WiredObject>> The services its parts share and those of a controller too large for a part,
+     *                                 by the `<M>HandlerServices` class that builds them; none when neither is.
      */
     private function chunks(WiredModule $wiredModule, array $entries): array
     {
+        $controllers = array_map(static fn (ContextEntry $contextEntry): WiredObject => $contextEntry->wiredObject, $entries);
         $shared = count($this->groups($wiredModule, $entries, [], [])) < 2
             ? []
-            : $this->handlerSharing->shared(
-                array_map(static fn (ContextEntry $contextEntry): WiredObject => $contextEntry->wiredObject, $entries),
-            );
+            : $this->handlerSharing->shared($controllers);
+        $shared = $this->handlerSharing->withOversized($shared, $this->oversized($wiredModule, $entries));
 
         return $shared === []
             ? []
             : $this->handlerServicesSource->chunks($wiredModule->module, $shared, $this->wiringContexts->web());
+    }
+
+    /**
+     * @param WiredModule        $wiredModule A module, wired.
+     * @param list<ContextEntry> $entries     Its controllers' entries.
+     *
+     * @return list<WiredObject> The controllers too large for a part of their own, wired (#334).
+     */
+    private function oversized(WiredModule $wiredModule, array $entries): array
+    {
+        $oversized = [];
+
+        foreach ($entries as $entry) {
+            $oversized = $this->fits($wiredModule, 0, [$entry], [], [])
+                ? $oversized
+                : [...$oversized, $entry->wiredObject];
+        }
+
+        return $oversized;
     }
 
     /**
