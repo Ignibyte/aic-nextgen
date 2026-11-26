@@ -12,6 +12,7 @@ use AIC\Cache\Domain\CreateCacheTables;
 use AIC\Entity\Domain\CreateEntityAuditTable;
 use AIC\Notification\Domain\AddNotificationInbox;
 use AIC\Notification\Domain\CreateNotificationsTable;
+use AIC\OAuth\Domain\CreateOAuthTables;
 use AIC\Profiler\Domain\CreateProfilesTable;
 use AIC\Queue\Domain\CreateJobTables;
 use AIC\Schedule\Domain\CreateScheduleRuns;
@@ -44,6 +45,7 @@ final readonly class FrameworkMigrations
             new CreateCacheTables(),
             new CreateTokensTable(),
             new CreateBroadcastTable(),
+            new CreateOAuthTables(),
         ];
     }
 }

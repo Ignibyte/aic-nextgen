@@ -6,6 +6,7 @@ namespace AIC\Access\Application;
 
 use AIC\Controller\Contracts\Command;
 use AIC\Database\Contracts\Database;
+use AIC\OAuth\Application\ClientCommands;
 
 /**
  * Every command of the access system, by name, for the framework's command
@@ -22,13 +23,14 @@ final readonly class AccessCommands
     }
 
     /**
-     * @return array<string, Command> The role and token commands.
+     * @return array<string, Command> The role, token and OAuth client (#331) commands.
      */
     public function byName(): array
     {
         return [
             ...(new RoleCommands($this->database))->byName(),
             ...(new TokenCommands($this->database))->byName(),
+            ...(new ClientCommands($this->database))->byName(),
         ];
     }
 }

@@ -14,7 +14,7 @@ app meets first.
 | 6. Blocks | Block |
 | 7. The browser runtime | Tessera |
 | 8. Form security | Form, Session, Secret |
-| 9. Auth | Auth, Access |
+| 9. Auth | Auth, Access, OAuth |
 | 10. Background work | Queue, Schedule, Notification, Broadcast |
 
 ## 1. HTTP, routing and the kinds
@@ -297,6 +297,14 @@ See [tessera.md](tessera.md) for markers, requests, replies and streams.
   `AIC\Access\Contracts\Policy` answers a `Decision` for one record, or before there is one.
   A bearer token (`aic_api_tokens`, `bin/aic token:*`) is an actor too, its scopes the
   permissions it holds (#313).
+- `AIC\OAuth`: the app as an OAuth 2 authorization server (#331), on when `AppConfig::$oauth`
+  names an issuer. The operator registers clients (`aic_oauth_clients`, `bin/aic client:*`);
+  `POST /oauth/token` issues short-lived access tokens by the client credentials grant and by the
+  authorization code grant with PKCE S256, and `/.well-known/oauth-authorization-server` and
+  `/.well-known/oauth-protected-resource` publish the metadata, all before the session. A module
+  routes the consent page (`/oauth/authorize`) to its own Page over
+  `AIC\OAuth\Application\Authorizations`. An issued token is a bearer token: it reaches routes
+  through `Actors` like an operator's, acting for the person who allowed it.
 
 See [security.md](security.md) for sessions, form guards, uploads, auth and secret handling.
 

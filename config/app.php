@@ -32,6 +32,11 @@ declare(strict_types=1);
  * signature header and its secret from the environment. gate:23 names the
  * fixture's secret in AIC_WEBHOOK_STUB_SECRET and signs its deliveries with
  * it; without it every delivery answers 401.
+ *
+ * The authorization server (#331): the site's own origin as the issuer, so
+ * /oauth/token and the two metadata documents answer, and a route's need
+ * refused to a visitor names the protected resource's metadata. The account
+ * module's /oauth/authorize is the consent page.
  */
 
 use AIC\Auth\Domain\OidcProvider;
@@ -42,6 +47,7 @@ use AIC\Http\Domain\Webhook;
 use AIC\Http\Domain\Webhooks;
 use AIC\HttpClient\Domain\Upstream;
 use AIC\HttpClient\Domain\Upstreams;
+use AIC\OAuth\Domain\OAuthServer;
 use AIC\Tessera\Domain\TesseraRelease;
 
 $setting = static function (string $name, string $default): string {
@@ -82,4 +88,5 @@ return new AppConfig(
     webhooks: new Webhooks([
         '/scaffold/delivery' => new Webhook('X-Signature', $setting('AIC_WEBHOOK_STUB_SECRET', '')),
     ]),
+    oauth: new OAuthServer('https://aic-nextgen.ddev.site:8843'),
 );

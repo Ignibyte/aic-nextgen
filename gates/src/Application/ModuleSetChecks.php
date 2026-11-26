@@ -29,8 +29,8 @@ final readonly class ModuleSetChecks
      * The framework's own command names (`AIC\Module\Application\FrameworkCommands`).
      */
     private const array FRAMEWORK_COMMANDS = [
-        'migrate', 'migrate:status', 'queue:failed', 'queue:retry', 'queue:work', 'role:assign', 'role:grant', 'role:revoke',
-        'role:unassign', 'schedule:run', 'token:add', 'token:list', 'token:revoke',
+        'client:add', 'client:list', 'client:revoke', 'migrate', 'migrate:status', 'queue:failed', 'queue:retry', 'queue:work',
+        'role:assign', 'role:grant', 'role:revoke', 'role:unassign', 'schedule:run', 'token:add', 'token:list', 'token:revoke',
     ];
 
     /**

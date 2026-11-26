@@ -7,7 +7,12 @@
         "token:add gate-portal {password} account.caller ledger.mcp ledger.split",
         "role:grant gate-feed ledger.feed",
         "role:assign gate gate-feed",
-        "role:assign stub:ada gate-feed"
+        "role:assign stub:ada gate-feed",
+        "client:revoke gate-service",
+        "client:add gate-service {password} account.caller",
+        "client:revoke gate-desk",
+        "client:add gate-desk - account.audit ledger.mcp --redirect=http://127.0.0.1:7777/callback",
+        "role:assign stub:ada gate-auditor"
     ],
     "steps": [
         {
@@ -995,7 +1000,7 @@
             "path": "/audit",
             "form": "",
             "header": "",
-            "status": 403,
+            "status": 401,
             "captures": false
         },
         {
@@ -1031,7 +1036,7 @@
             "path": "/ledger/feed",
             "form": "",
             "header": "",
-            "status": 403,
+            "status": 401,
             "captures": false
         },
         {
@@ -1374,6 +1379,240 @@
             "form": "",
             "header": "Authorization: Bearer {password}",
             "status": 405,
+            "captures": false
+        },
+        {
+            "name": "oauth, server metadata",
+            "method": "GET",
+            "path": "/.well-known/oauth-authorization-server",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth, resource metadata",
+            "method": "GET",
+            "path": "/.well-known/oauth-protected-resource",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth, resource metadata for /mcp",
+            "method": "GET",
+            "path": "/.well-known/oauth-protected-resource/mcp",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth token, GET",
+            "method": "GET",
+            "path": "/oauth/token",
+            "form": "",
+            "header": "",
+            "status": 405,
+            "captures": false
+        },
+        {
+            "name": "oauth token, client credentials",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=client_credentials&client_id=gate-service&client_secret={password}&scope=account.caller",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "caller, the issued token",
+            "method": "GET",
+            "path": "/api/caller",
+            "form": "",
+            "header": "Authorization: Bearer {access}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth token, a wrong secret",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=client_credentials&client_id=gate-service&client_secret=not-the-secret",
+            "header": "",
+            "status": 401,
+            "captures": false
+        },
+        {
+            "name": "oauth token, a scope the client does not hold",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=client_credentials&client_id=gate-service&client_secret={password}&scope=account.audit",
+            "header": "",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "oauth token, an unknown grant",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=password&client_id=gate-service&client_secret={password}",
+            "header": "",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "oauth token, a public client asks client credentials",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=client_credentials&client_id=gate-desk",
+            "header": "",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "oauth authorize, the consent page",
+            "method": "GET",
+            "path": "/oauth/authorize?response_type=code&client_id=gate-desk&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&scope=account.audit%20ledger.mcp&state=s1&code_challenge=OekZVEnXsRH8TiRdRr-KPbTynr0gqxNTfKHLLvy5b6M&code_challenge_method=S256",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth authorize, a redirect URI the client did not register",
+            "method": "GET",
+            "path": "/oauth/authorize?response_type=code&client_id=gate-desk&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fother&scope=account.audit%20ledger.mcp&state=s1&code_challenge=OekZVEnXsRH8TiRdRr-KPbTynr0gqxNTfKHLLvy5b6M&code_challenge_method=S256",
+            "form": "",
+            "header": "",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "oauth authorize, no PKCE goes back with the error",
+            "method": "GET",
+            "path": "/oauth/authorize?response_type=code&client_id=gate-desk&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&scope=account.audit%20ledger.mcp&state=s1&code_challenge=OekZVEnXsRH8TiRdRr-KPbTynr0gqxNTfKHLLvy5b6M",
+            "form": "",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "oauth authorize, deny",
+            "method": "POST",
+            "path": "/oauth/authorize",
+            "form": "response_type=code&client_id=gate-desk&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&scope=account.audit%20ledger.mcp&state=s1&code_challenge=OekZVEnXsRH8TiRdRr-KPbTynr0gqxNTfKHLLvy5b6M&code_challenge_method=S256&resource=&decision=deny&aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "oauth authorize, the consent page again",
+            "method": "GET",
+            "path": "/oauth/authorize?response_type=code&client_id=gate-desk&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&scope=account.audit%20ledger.mcp&state=s1&code_challenge=OekZVEnXsRH8TiRdRr-KPbTynr0gqxNTfKHLLvy5b6M&code_challenge_method=S256",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth authorize, allow",
+            "method": "POST",
+            "path": "/oauth/authorize",
+            "form": "response_type=code&client_id=gate-desk&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&scope=account.audit%20ledger.mcp&state=s1&code_challenge=OekZVEnXsRH8TiRdRr-KPbTynr0gqxNTfKHLLvy5b6M&code_challenge_method=S256&resource=&decision=allow&aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "oauth token, the code with a wrong verifier",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=authorization_code&client_id=gate-desk&code={code}&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&code_verifier=gate-verifier-wrong-0123456789-abcdefghijklmnopqrstuv",
+            "header": "",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "oauth authorize, the consent page once more",
+            "method": "GET",
+            "path": "/oauth/authorize?response_type=code&client_id=gate-desk&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&scope=account.audit%20ledger.mcp&state=s1&code_challenge=OekZVEnXsRH8TiRdRr-KPbTynr0gqxNTfKHLLvy5b6M&code_challenge_method=S256",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth authorize, allow again",
+            "method": "POST",
+            "path": "/oauth/authorize",
+            "form": "response_type=code&client_id=gate-desk&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&scope=account.audit%20ledger.mcp&state=s1&code_challenge=OekZVEnXsRH8TiRdRr-KPbTynr0gqxNTfKHLLvy5b6M&code_challenge_method=S256&resource=&decision=allow&aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": false
+        },
+        {
+            "name": "oauth token, the code",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=authorization_code&client_id=gate-desk&code={code}&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&code_verifier=gate-verifier-0123456789-abcdefghijklmnopqrstuvwxyz",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "audit, the code-flow token acts for the person",
+            "method": "GET",
+            "path": "/audit",
+            "form": "",
+            "header": "Authorization: Bearer {access}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp, the code-flow token lacks ledger.mcp",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\"}",
+            "header": "Authorization: Bearer {access}",
+            "status": 403,
+            "captures": false
+        },
+        {
+            "name": "account, a code-flow token never meets signed-in",
+            "method": "GET",
+            "path": "/account",
+            "form": "",
+            "header": "Authorization: Bearer {access}",
+            "status": 403,
+            "captures": false
+        },
+        {
+            "name": "oauth token, the code again",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=authorization_code&client_id=gate-desk&code={code}&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&code_verifier=gate-verifier-0123456789-abcdefghijklmnopqrstuvwxyz",
+            "header": "",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "mcp, a visitor is pointed at the metadata",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\"}",
+            "header": "Cookie: aic_visitor=1",
+            "status": 401,
+            "captures": false
+        },
+        {
+            "name": "mcp, an unknown token is pointed at the metadata",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\"}",
+            "header": "Authorization: Bearer not-a-known-token",
+            "status": 401,
             "captures": false
         },
         {

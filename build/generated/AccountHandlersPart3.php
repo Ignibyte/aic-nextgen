@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
-use AIC\Access\Application\Actors;
-use AIC\Access\Application\BearerTokens;
-use AIC\Access\Application\PostgresRoles;
+use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
+use AIC\OAuth\Application\AuthorizationCodes;
+use AIC\OAuth\Application\Authorizations;
+use AIC\OAuth\Application\OAuthClients;
 use App\Account\Controller\CallerApi;
+use App\Account\Controller\OAuthAuthorizePage;
 use App\Account\Controller\OidcCallbackPage;
 use App\Account\Controller\OidcStartPost;
+use App\Account\Service\Consent;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -30,16 +33,23 @@ final readonly class AccountHandlersPart3
 
     /**
      * @throws InvalidArgumentException When a called constructor or service fails.
+     * @throws ContainerException       When a called constructor or service fails.
      *
      * @return array<string, RequestHandlerInterface> The module's handlers by id.
      */
     public function byId(): array
     {
         $accountHandlerServices = new AccountHandlerServices($this->handlerContext);
-        $actors = new Actors(new PostgresRoles($this->handlerContext->database()), new BearerTokens($this->handlerContext->database()));
+        $authorizations = new Authorizations(
+            $this->handlerContext->appConfig(),
+            new OAuthClients($this->handlerContext->database()),
+            new AuthorizationCodes($this->handlerContext->database()),
+        );
+        $consent = new Consent($this->handlerContext->documents(), $authorizations, $accountHandlerServices->actors());
 
         return [
-            CallerApi::class => $this->handlerContext->api(new CallerApi($actors), 'account.caller'),
+            CallerApi::class => $this->handlerContext->api(new CallerApi($accountHandlerServices->actors()), 'account.caller'),
+            OAuthAuthorizePage::class => $this->handlerContext->page(new OAuthAuthorizePage($consent), 'signed-in'),
             OidcCallbackPage::class => $this->handlerContext->page(
                 new OidcCallbackPage($accountHandlerServices->oidcSignIn(), $accountHandlerServices->authenticator()),
             ),

@@ -7,6 +7,7 @@ namespace AIC\Module\Application;
 use AIC\Database\Contracts\Database;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\Kernel\Application\Kernel;
+use AIC\OAuth\Application\OAuthMount;
 use AIC\Sapi\Contracts\RequestExtractor;
 use InvalidArgumentException;
 
@@ -14,7 +15,9 @@ use InvalidArgumentException;
  * Compose the public boundary around an inert dynamic handler. No user
  * provider, route, handler or session is assembled before StaticAssets decides
  * whether the request belongs to the compiled public catalog, and then
- * PublicFileHandler whether it names a public file (#213).
+ * PublicFileHandler whether it names a public file (#213). The authorization
+ * server's token endpoint and metadata (#331) answer after the observers and
+ * before the session.
  */
 final readonly class AppKernel
 {
@@ -48,8 +51,9 @@ final readonly class AppKernel
         );
         $publicBoundary = new PublicBoundary($responseBuilder);
         $root = $handlerContexts->root();
+        $oauthMount = new OAuthMount();
         $requestHandler = $handlerContexts->observers()->around(
-            $dynamicApplication,
+            $oauthMount->around($dynamicApplication, $handlerContexts->appConfig()->oauth, $database, $responseBuilder),
             $database,
             $responseBuilder,
             $webPresentation->publicAssets,

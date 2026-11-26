@@ -58,8 +58,12 @@ nothing between requests: no `Mcp-Session-Id`, and no GET stream (the router ans
 
 A caller reaches the route through its `needs:`: a person's role, or a bearer token's scope
 (#313), so an agent connects with a token from `bin/aic token:add <name> <secret> ledger.mcp
-ledger.split`. A bearer request skips the CSRF check; a cookie request still needs its token, so a
-page on another site cannot call the endpoint for a signed-in person. Each entry names its own
+ledger.split`, or with one an OAuth client gets from the app's authorization server (#331): with
+`AppConfig::$oauth` on, an anonymous call answers 401 with `resource_metadata`, which an MCP client
+follows to the RFC 9728 and RFC 8414 documents, the consent page and the token endpoint
+([security.md](security.md#oauth)). A bearer request skips the CSRF check, and so does a JSON body,
+which a browser cannot send to another site without a preflight; a form post with a cookie still
+needs its token, so a page on another site cannot call the endpoint for a signed-in person. Each entry names its own
 permission in its attribute, the build checks that some module declares it, and the server shows and
 runs only the entries whose permission the caller has. One the caller lacks is unknown to it.
 

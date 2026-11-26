@@ -18,9 +18,10 @@ use function rawurlencode;
 
 /**
  * Turns an anonymous visitor away from a protected path (#9): 303 to the
- * login page, with the path as `next` so the login can come back. It runs
- * after SessionMiddleware. A bearer request (#313) is not sent to sign in:
- * its route's need judges its token, and a token never meets `signed-in`.
+ * login page, with the path (and its query, #331) as `next` so the login can
+ * come back. It runs after SessionMiddleware. A bearer request (#313) is
+ * not sent to sign in: its route's need judges its token, and a token never
+ * meets `signed-in`.
  */
 final readonly class RequireAuthenticationMiddleware implements MiddlewareInterface
 {
@@ -59,7 +60,8 @@ final readonly class RequireAuthenticationMiddleware implements MiddlewareInterf
             return $handler->handle($request);
         }
 
-        $location = $this->routeAuthConfig->loginPath . '?next=' . rawurlencode($path);
+        $query = $request->getUri()->getQuery();
+        $location = $this->routeAuthConfig->loginPath . '?next=' . rawurlencode($query === '' ? $path : $path . '?' . $query);
 
         $response = $this->responseBuilder->create(303, 'text/plain; charset=utf-8', '');
 

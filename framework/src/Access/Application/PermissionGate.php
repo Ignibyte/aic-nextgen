@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Access\Application;
 
+use AIC\Access\Domain\Actor;
 use AIC\Database\Contracts\QueryException;
 use AIC\Http\Application\ResponseBuilder;
 use InvalidArgumentException;
@@ -19,21 +20,28 @@ use Psr\Http\Server\RequestHandlerInterface;
  * A visitor under a protected prefix was sent to sign in before routing.
  * A bearer caller (#313) is answered as RFC 6750 says: 401 with
  * `error="invalid_token"` for a token no row matches, 403 with
- * `error="insufficient_scope"` for one that lacks the need.
+ * `error="insufficient_scope"` for one that lacks the need. When the app is
+ * an authorization server (#331), a visitor with no token asking for a
+ * permission gets 401 with the protected resource's metadata
+ * (`resource_metadata`, RFC 9728), so an OAuth client finds where to get a
+ * token, and so does an unknown token; a signed-in person still gets 403.
  */
 final readonly class PermissionGate implements RequestHandlerInterface
 {
     /**
-     * @param string                  $need            A declared permission, or `signed-in`.
-     * @param RequestHandlerInterface $requestHandler  The controller's handler.
-     * @param Actors                  $actors          The request's actor.
-     * @param ResponseBuilder         $responseBuilder Makes the 403.
+     * @param string                  $need             A declared permission, or `signed-in`.
+     * @param RequestHandlerInterface $requestHandler   The controller's handler.
+     * @param Actors                  $actors           The request's actor.
+     * @param ResponseBuilder         $responseBuilder  Makes the 403.
+     * @param string                  $resourceMetadata The protected resource's metadata URL; empty when the app is
+     *                                                  no authorization server.
      */
     public function __construct(
         private string $need,
         private RequestHandlerInterface $requestHandler,
         private Actors $actors,
         private ResponseBuilder $responseBuilder,
+        private string $resourceMetadata = '',
     ) {
     }
 
@@ -55,16 +63,41 @@ final readonly class PermissionGate implements RequestHandlerInterface
         }
 
         if (!$actor->bearer) {
-            return $this->refusal(403, 'This needs ' . $this->need . '.');
+            return $this->anonymous($actor);
         }
 
         if ($actor->refused()) {
-            return $this->challenged(401, 'The bearer token is not known.', 'error="invalid_token"');
+            $params = 'error="invalid_token"' . ($this->resourceMetadata === '' ? '' : ', ' . $this->metadata());
+
+            return $this->challenged(401, 'The bearer token is not known.', $params);
         }
 
         $scope = 'error="insufficient_scope", scope="' . $this->need . '"';
 
         return $this->challenged(403, "This token's scopes do not hold " . $this->need . '.', $scope);
+    }
+
+    /**
+     * @param Actor $actor A caller with no bearer token who lacks the need.
+     *
+     * @throws InvalidArgumentException When the refusal cannot be made.
+     *
+     * @return ResponseInterface 403; 401 with the resource's metadata for a visitor when the app is an
+     *                           authorization server and the need is a permission a token can hold.
+     */
+    private function anonymous(Actor $actor): ResponseInterface
+    {
+        return $this->resourceMetadata === '' || $actor->signedIn() || $this->need === Actor::SIGNED_IN
+            ? $this->refusal(403, 'This needs ' . $this->need . '.')
+            : $this->challenged(401, 'This needs ' . $this->need . ', with a bearer token.', $this->metadata());
+    }
+
+    /**
+     * @return string The challenge's `resource_metadata` parameter (RFC 9728 section 5.1).
+     */
+    private function metadata(): string
+    {
+        return 'resource_metadata="' . $this->resourceMetadata . '"';
     }
 
     /**

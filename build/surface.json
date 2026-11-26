@@ -225,6 +225,22 @@
             "path": "/sign-in/oidc/callback"
         },
         {
+            "handler": "App\\Account\\Controller\\OAuthAuthorizePage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "account",
+            "needs": "signed-in",
+            "path": "/oauth/authorize"
+        },
+        {
+            "handler": "App\\Account\\Controller\\OAuthAuthorizePage",
+            "kind": "Page",
+            "method": "POST",
+            "module": "account",
+            "needs": "signed-in",
+            "path": "/oauth/authorize"
+        },
+        {
             "handler": "App\\Ledger\\Controller\\LedgerGuardsApi",
             "kind": "Api",
             "method": "GET",
@@ -569,6 +585,24 @@
             "name": "cache:prune"
         },
         {
+            "class": "AIC\\OAuth\\Application\\ClientAddCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "client:add"
+        },
+        {
+            "class": "AIC\\OAuth\\Application\\ClientListCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "client:list"
+        },
+        {
+            "class": "AIC\\OAuth\\Application\\ClientRevokeCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "client:revoke"
+        },
+        {
             "class": "App\\Site\\Command\\DatabasePing",
             "kind": "Command",
             "module": "site",
@@ -839,7 +873,8 @@
             ],
             "plugins": [],
             "prefixes": [
-                "/account"
+                "/account",
+                "/oauth/authorize"
             ],
             "requires": [
                 "site"
