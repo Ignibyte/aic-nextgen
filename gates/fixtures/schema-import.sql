@@ -431,6 +431,88 @@ ALTER TABLE ONLY public.scaffold_permit_stamps
 
 
 --
+-- Name: scaffold_crews; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scaffold_crews (
+    id bigint NOT NULL,
+    name text NOT NULL,
+    lead_shift_id bigint
+);
+
+
+--
+-- Name: scaffold_crews_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.scaffold_crews ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.scaffold_crews_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: scaffold_shifts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scaffold_shifts (
+    id bigint NOT NULL,
+    crew_id bigint NOT NULL,
+    starts_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: scaffold_shifts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.scaffold_shifts ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.scaffold_shifts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: scaffold_crews scaffold_crews_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scaffold_crews
+    ADD CONSTRAINT scaffold_crews_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: scaffold_shifts scaffold_shifts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scaffold_shifts
+    ADD CONSTRAINT scaffold_shifts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: scaffold_crews scaffold_crews_lead_shift_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scaffold_crews
+    ADD CONSTRAINT scaffold_crews_lead_shift_id_fkey FOREIGN KEY (lead_shift_id) REFERENCES public.scaffold_shifts(id) ON DELETE SET NULL;
+
+
+--
+-- Name: scaffold_shifts scaffold_shifts_crew_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scaffold_shifts
+    ADD CONSTRAINT scaffold_shifts_crew_id_fkey FOREIGN KEY (crew_id) REFERENCES public.scaffold_crews(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 

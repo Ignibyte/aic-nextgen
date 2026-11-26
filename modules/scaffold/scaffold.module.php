@@ -32,6 +32,7 @@ use App\Scaffold\Job\ScaffoldShelfExportJob;
 use App\Scaffold\Job\ScaffoldShelfExportPruneJob;
 use App\Scaffold\Migration\AddScaffoldTasksStage;
 use App\Scaffold\Migration\CreateScaffoldBooksTable;
+use App\Scaffold\Migration\CreateScaffoldCrewsTable;
 use App\Scaffold\Migration\CreateScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldItemsTable;
 use App\Scaffold\Migration\CreateScaffoldLoansTable;
@@ -39,6 +40,7 @@ use App\Scaffold\Migration\CreateScaffoldPermitsTable;
 use App\Scaffold\Migration\CreateScaffoldPermitStampsTable;
 use App\Scaffold\Migration\CreateScaffoldShelfExportsTable;
 use App\Scaffold\Migration\CreateScaffoldShelvesTable;
+use App\Scaffold\Migration\CreateScaffoldShiftsTable;
 use App\Scaffold\Migration\CreateScaffoldTasksScaffoldEventsTable;
 use App\Scaffold\Migration\CreateScaffoldTasksTable;
 use App\Scaffold\Migration\CreateScaffoldVisitsTable;
@@ -80,4 +82,6 @@ return (new ModuleManifest('scaffold'))
     ->migration(CreateScaffoldShelfExportsTable::class)
     ->route(RouteMethod::Get, '/scaffold/books', ScaffoldBookListPage::class)
     ->route(RouteMethod::Get, '/scaffold/notes/{id:int}', ScaffoldNoteDetailPage::class)
-    ->route(RouteMethod::Get, '/scaffold-loans', ScaffoldLoanListPage::class);
+    ->route(RouteMethod::Get, '/scaffold-loans', ScaffoldLoanListPage::class)
+    ->migration(CreateScaffoldCrewsTable::class)
+    ->migration(CreateScaffoldShiftsTable::class);

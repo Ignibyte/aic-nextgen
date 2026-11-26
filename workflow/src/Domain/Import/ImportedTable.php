@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Domain\Import;
 
+use function array_all;
 use function array_any;
 use function array_map;
+use function in_array;
 
 /**
  * A table read from a schema dump (#318), with every fact the dump states about it.
@@ -20,7 +22,9 @@ final readonly class ImportedTable
      * @param list<list<string>>       $uniques     Its unique constraints.
      * @param list<ImportedCheck>      $checks      Its checks.
      * @param list<ImportedIndex>      $indexes     Its indexes.
-     * @param list<ImportedForeignKey> $foreignKeys Its foreign keys.
+     * @param list<ImportedForeignKey> $foreignKeys Its foreign keys, those its create holds.
+     * @param list<DeferredForeignKey> $closes      Keys of earlier tables that reference it in a cycle, which its
+     *                                              migration adds once it exists (#349).
      */
     public function __construct(
         public string $name,
@@ -31,6 +35,7 @@ final readonly class ImportedTable
         public array $checks = [],
         public array $indexes = [],
         public array $foreignKeys = [],
+        public array $closes = [],
     ) {
     }
 
@@ -111,6 +116,7 @@ final readonly class ImportedTable
             $this->checks,
             [...$this->indexes, $importedIndex],
             $this->foreignKeys,
+            $this->closes,
         );
     }
 
@@ -121,6 +127,16 @@ final readonly class ImportedTable
      */
     public function withForeignKey(ImportedForeignKey $importedForeignKey): self
     {
+        return $this->withForeignKeys([...$this->foreignKeys, $importedForeignKey]);
+    }
+
+    /**
+     * @param list<ImportedForeignKey> $foreignKeys The foreign keys its create holds.
+     *
+     * @return self The table with those in place of its own.
+     */
+    public function withForeignKeys(array $foreignKeys): self
+    {
         return new self(
             $this->name,
             $this->unlogged,
@@ -129,7 +145,42 @@ final readonly class ImportedTable
             $this->uniques,
             $this->checks,
             $this->indexes,
-            [...$this->foreignKeys, $importedForeignKey],
+            $foreignKeys,
+            $this->closes,
+        );
+    }
+
+    /**
+     * @param DeferredForeignKey $deferredForeignKey A key of an earlier table that references this one in a cycle.
+     *
+     * @return self The table, its migration adding that key too.
+     */
+    public function withClose(DeferredForeignKey $deferredForeignKey): self
+    {
+        return new self(
+            $this->name,
+            $this->unlogged,
+            $this->columns,
+            $this->primary,
+            $this->uniques,
+            $this->checks,
+            $this->indexes,
+            $this->foreignKeys,
+            [...$this->closes, $deferredForeignKey],
+        );
+    }
+
+    /**
+     * @param ImportedForeignKey $importedForeignKey One of its foreign keys.
+     *
+     * @return bool Whether every column of it may be null.
+     */
+    public function nullable(ImportedForeignKey $importedForeignKey): bool
+    {
+        return array_all(
+            $this->columns,
+            static fn (ImportedColumn $importedColumn): bool => $importedColumn->nullable
+                || !in_array($importedColumn->name, $importedForeignKey->columns, true),
         );
     }
 
@@ -151,6 +202,16 @@ final readonly class ImportedTable
      */
     private function with(array $columns, array $primary, array $uniques, array $checks): self
     {
-        return new self($this->name, $this->unlogged, $columns, $primary, $uniques, $checks, $this->indexes, $this->foreignKeys);
+        return new self(
+            $this->name,
+            $this->unlogged,
+            $columns,
+            $primary,
+            $uniques,
+            $checks,
+            $this->indexes,
+            $this->foreignKeys,
+            $this->closes,
+        );
     }
 }

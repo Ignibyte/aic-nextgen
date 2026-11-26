@@ -167,7 +167,9 @@ NOT DISTINCT`; translates `character(n)` to `string(n)` and `double precision` t
 with a note; and leaves out a `COPY` block's rows and `setval`, which are data. Still refused: a trigger or
 function (declare `appendOnly()` or `finalOnce()`, or keep the rule in code), a view, an index on an
 expression (index a generated column), `CASE` (its order of evaluation is not `AND`'s), a type of an
-extension, `inet`, and tables that reference each other in a cycle.
+extension and `inet`. Tables that reference each other in a cycle import (#349): one foreign key on the
+cycle, a nullable one first, is added by `$schema->alter()` at the end of the later table's migration,
+with a note.
 
 `make:entity <module> <Class> <table> --fields=<name>:<type>,… [--version=<v>]` (#123) writes the
 entity, `<Class>Repository` (`latest(int)`), `Create<Table>Table` and `<Class>ListPage` (GET of the

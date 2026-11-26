@@ -947,7 +947,9 @@
                 "App\\Scaffold\\Migration\\CreateScaffoldVisitsTable",
                 "App\\Scaffold\\Migration\\CreateScaffoldPermitsTable",
                 "App\\Scaffold\\Migration\\CreateScaffoldPermitStampsTable",
-                "App\\Scaffold\\Migration\\CreateScaffoldShelfExportsTable"
+                "App\\Scaffold\\Migration\\CreateScaffoldShelfExportsTable",
+                "App\\Scaffold\\Migration\\CreateScaffoldCrewsTable",
+                "App\\Scaffold\\Migration\\CreateScaffoldShiftsTable"
             ],
             "name": "scaffold",
             "namespace": "App\\Scaffold\\",

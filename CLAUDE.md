@@ -167,7 +167,7 @@ operator's `workflow:answer`, the stall rule, the shell's read forms, the php wa
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
 layout (#157), entity (#123), policy (#304), client (#305), relation (#306), state (#308), mcp-tool (#316), enum, exception and interface (#319), seed (#320), webhook (#321), page-action (#322), export (#323), list-page (#324) and detail-page (#341); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the thirty-three make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319; a seed, #320, whose writes gate:8 `aic.seedWrites` holds to repositories; a signed webhook, #321; an action answering its region, #322; a queued export, #323; a filtered list, #324; a detail page in tabs, #341; a Laravel-typed table import, #339; an entity over an imported table, #338; checks, a composite key and nulls-equal uniques, #344).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the thirty-four make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319; a seed, #320, whose writes gate:8 `aic.seedWrites` holds to repositories; a signed webhook, #321; an action answering its region, #322; a queued export, #323; a filtered list, #324; a detail page in tabs, #341; a Laravel-typed table import, #339; an entity over an imported table, #338; checks, a composite key and nulls-equal uniques, #344; a reference cycle, #349).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
@@ -250,6 +250,8 @@ nothing (no SQL copied through); gate:31's 21st line imports `gates/fixtures/sch
 #344: `Expressions` extends `Functions` (`trim`, `round`, `coalesce`, `countPresent`, `jsonKind`, `jsonLength`, `truth`, `matches`);
 `TableConstraints::uniqueWithNulls()` and `references()` (several columns); schema:import reads them, `IS TRUE` and named NOT NULLs,
 translates `character(n)` and `double precision` with notes, skips COPY rows; gate:31's 33rd line imports `scaffold_permits`.
+#349: schema:import breaks a reference cycle: when no table is ready it defers one key on a cycle (nullable first), added by
+`$schema->alter()->references()` in the later table's migration, with a note; gate:31's 34th line imports `scaffold_crews` and `scaffold_shifts`.
 #338: `make:entity <module> <Class> <table> --existing` reads the table's columns from the module migration that creates it
 (`AIC\Workflow\Parsing\MigrationColumns`, never run) and writes the entity, repository and list page, no migration; gate:31's 32nd line.
 #302: each file a make creates in a run is a row of the committed `.aic/made.jsonl`, walled by the guard and held by
