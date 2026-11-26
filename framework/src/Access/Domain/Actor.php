@@ -10,9 +10,11 @@ use function in_array;
  * Who asks (#304): the signed-in user's id, empty for a visitor, and every
  * permission the roles assigned to that user grant. There is no user entity:
  * the id is what the app's `UserProvider` signed in. A request with a bearer
- * token (#313) is the token's caller instead: no user, the token's name as
- * its client and its scopes as its permissions; an unknown token is a bearer
- * caller with no client.
+ * token (#313) is the token's caller instead: the token's name (or its OAuth
+ * client, #331) as its client and its scopes as its permissions; an unknown
+ * token is a bearer caller with no client. A token issued by the
+ * authorization code grant acts for the person who allowed it and carries
+ * their id, but a token never counts as signed in.
  */
 final readonly class Actor
 {
@@ -22,7 +24,8 @@ final readonly class Actor
     public const string SIGNED_IN = 'signed-in';
 
     /**
-     * @param string       $userId      The signed-in user's id; empty for a visitor and a token's caller.
+     * @param string       $userId      The signed-in user's id, or the person a code-flow token acts for (#331);
+     *                                  empty for a visitor and any other token's caller.
      * @param list<string> $permissions What the user's roles grant, or the token's scopes.
      * @param string       $client      The bearer token's name; empty without one, or for an unknown token.
      * @param bool         $bearer      Whether the request carried a bearer token, known or not.
@@ -36,11 +39,11 @@ final readonly class Actor
     }
 
     /**
-     * @return bool Whether a user is signed in.
+     * @return bool Whether a user is signed in; never for a bearer request.
      */
     public function signedIn(): bool
     {
-        return $this->userId !== '';
+        return $this->userId !== '' && !$this->bearer;
     }
 
     /**

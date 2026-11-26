@@ -34,7 +34,12 @@ get 403, or 419 when a Tessera request header is present. A nonempty honeypot ge
 cannot opt out by returning a different Page response. A request with an `Authorization: Bearer`
 header passes (#313): a browser cannot send that header to another site without a CORS preflight,
 which AIC never answers, and such a request is judged by its token alone (see bearer tokens below).
-So does a webhook delivery whose signature matched (see webhooks below).
+So does a webhook delivery whose signature matched (see webhooks below), and a body sent as
+`application/json` (#331): a browser sends that type to another site only after a CORS preflight,
+which AIC never answers (forms send three other types, and a `no-cors` fetch drops the header). The
+route's need still judges such a request, so an anonymous JSON `POST /mcp` meets the 401 challenge
+rather than the CSRF 403. A form-encoded post without a session's token still fails, so a sign-in
+form stays closed to login CSRF.
 
 `AIC\Form\Contracts\FormToken` defines these checked names:
 
@@ -175,8 +180,8 @@ is met by a user's role or a token's scope alike.
   `user:add` takes a password: 32 visible characters or more, chosen by the operator (`openssl rand
   -hex 32`). `aic_api_tokens` keeps the name, the scopes and the SHA-256 of the value, never the
   value. `bin/aic token:list` shows names and scopes; `bin/aic token:revoke <name>` ends one on the
-  next request. A token lives until it is revoked; a token endpoint (client credentials, the
-  authorization server MCP needs) comes later (#331).
+  next request. A token lives until it is revoked; a short-lived one comes from the authorization
+  server (see OAuth below).
 - **One credential per request.** `AIC\Http\Domain\BearerCredential` finds the token. With one,
   `AIC\Access\Application\Actors` answers the token's actor (`Actor::$client` is its name, its
   scopes are the permissions) and never reads the session's user. `signed-in` is a person's need,
@@ -184,7 +189,52 @@ is met by a user's role or a token's scope alike.
   prefix; its route's need judges it.
 - **Refusals follow RFC 6750.** `PermissionGate` answers an unknown or revoked token 401 with
   `WWW-Authenticate: Bearer error="invalid_token"`, and a known token without the need 403 with
-  `error="insufficient_scope", scope="<need>"`. A request with no token keeps the plain 403.
+  `error="insufficient_scope", scope="<need>"`. A request with no token keeps the plain 403, unless
+  the authorization server is on (see OAuth below).
+
+## OAuth
+
+AIC is its own OAuth 2 authorization server when `AppConfig::$oauth` names an issuer (#331):
+`new OAuthServer('https://example.com')`, https or http on a loopback host, an origin with no path.
+With none it is off and none of this answers. An operator-registered client gets a short-lived
+bearer token by the client credentials grant, or, acting for a signed-in person (an MCP client),
+by the authorization code grant with PKCE.
+
+- **The operator registers clients.** `bin/aic client:add <id> <secret>|- <scope>...
+  [--redirect=<uri>]...` adds one: a secret (32 visible characters or more, kept as its SHA-256) makes
+  it confidential, `-` public, which may only use the code grant. Its scopes are permissions, the most
+  it may ever hold; each redirect URI is compared exactly, https or a loopback http. `client:list`
+  shows them; `client:revoke <id>` removes the client with its codes and tokens.
+- **The token endpoint answers before the session.** `AIC\OAuth\Application\OAuthMount` sits beside
+  the profiler's mount and takes `POST /oauth/token` (form body, no CSRF: the client authenticates
+  itself) and the two metadata documents; everything else passes on. The client authenticates by
+  HTTP Basic or by `client_id` and `client_secret` in the body, not both. `client_credentials`
+  (confidential clients) grants the scopes asked for, all the client's when none are, refusing any
+  it does not hold. `authorization_code` takes the code once, checks the redirect URI and the S256
+  `code_verifier`, and grants what the code holds. The answer is RFC 6749's JSON (`access_token`,
+  `token_type`, `expires_in`, `scope`) with `Cache-Control: no-store`; a refusal is RFC 6749 §5.2's
+  error, `invalid_client` 401 with `WWW-Authenticate: Basic realm="oauth"`.
+- **Tokens and codes are opaque and hashed.** `RandomTokens::fresh()` values, kept as SHA-256 in
+  `aic_oauth_tokens` (`tokenSeconds`, 3600 by default) and `aic_oauth_codes` (`codeSeconds`, 60). No
+  JWT, no refresh token. `BearerTokens` reads both token tables, so an issued token is a bearer
+  token: its actor holds the granted scopes and, for a code-flow token, the person's user id. It never
+  meets `signed-in`, as no token does. An expired one is `invalid_token`.
+- **Discovery.** `GET /.well-known/oauth-authorization-server` is RFC 8414's document and
+  `/.well-known/oauth-protected-resource` RFC 9728's (a path after it names the resource). With
+  OAuth on, `PermissionGate` answers a visitor (no session user, no token) refused a permission need
+  401 with `WWW-Authenticate: Bearer resource_metadata="…"`, and adds the parameter to
+  `invalid_token`; a signed-in person without the permission keeps the 403. This is how an MCP
+  client finds where to sign in.
+- **The consent page is a module's.** It needs a signed-in person, CSRF on the decision and markup,
+  so a module routes `GET` and `POST /oauth/authorize` (under a protected prefix, `needs:
+  'signed-in'`) to its own Page, which hands the request to `AIC\OAuth\Application\Authorizations`.
+  `read()` checks the client and its exact redirect URI and throws `OAuthRefusedException` when
+  either is wrong, so a bad one is shown to the person and never redirected to. A request with any
+  other fault (`response_type`, a missing S256 challenge, a `resource` naming another site) carries
+  its refusal, which `refuse()` sends back to the client. `grantable()` is what the client asked for,
+  holds and the person's roles grant; `allow()` issues the code and answers a
+  `AIC\Controller\Domain\ClientRedirect` (a 303 only to the registered URI) with `code` and `state`.
+  The sign-in redirect of a protected prefix keeps the query, so the request survives signing in.
 
 ## Webhooks
 

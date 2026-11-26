@@ -16,8 +16,9 @@ use const PHP_URL_QUERY;
 /**
  * What one site's run of gate:23 remembers between steps (#42): the session
  * cookie it last set, the CSRF token and the signed envelope its last page
- * carried, the note the capturing step created, and the last Location with
- * its query (#212). Each site gets its own.
+ * carried, the note the capturing step created, the last Location with
+ * its query (#212), and the last OAuth access token and authorization code
+ * the site issued (#331). Each site gets its own.
  */
 final class NativeSiteSession
 {
@@ -49,6 +50,16 @@ final class NativeSiteSession
     private string $location = '/';
 
     /**
+     * The last access token a token endpoint answered (#331), for `{access}`.
+     */
+    private string $access = '';
+
+    /**
+     * The last authorization code a Location carried (#331), for `{code}`.
+     */
+    private string $code = '';
+
+    /**
      * @param string $password The gate user's password, for `{password}` (#9).
      */
     public function __construct(
@@ -69,11 +80,11 @@ final class NativeSiteSession
     /**
      * @param NativeSiteStep $nativeSiteStep A step.
      *
-     * @return string Its form, `{csrf}`, `{envelope}` and `{password}` replaced.
+     * @return string Its form, `{csrf}`, `{envelope}`, `{password}` and `{code}` replaced.
      */
     public function form(NativeSiteStep $nativeSiteStep): string
     {
-        $form = str_replace('{csrf}', $this->token, $nativeSiteStep->form);
+        $form = str_replace(['{csrf}', '{code}'], [$this->token, $this->code], $nativeSiteStep->form);
 
         return str_replace('{password}', $this->password, str_replace('{envelope}', $this->envelope, $form));
     }
@@ -81,13 +92,14 @@ final class NativeSiteSession
     /**
      * @param NativeSiteStep $nativeSiteStep A step.
      *
-     * @return string Its own header lines, `{password}` replaced (#313: a bearer token the console added), then the
+     * @return string Its own header lines, `{password}` (#313: a bearer token the console added) and `{access}` (#331:
+     *                one the site's token endpoint issued) replaced, then the
      *                session cookie unless they set a cookie themselves (#71: a Tessera write needs its headers and its
      *                session); empty for neither.
      */
     public function header(NativeSiteStep $nativeSiteStep): string
     {
-        $header = str_replace('{password}', $this->password, $nativeSiteStep->header);
+        $header = str_replace(['{password}', '{access}'], [$this->password, $this->access], $nativeSiteStep->header);
 
         if ($this->cookie === '' || str_contains($header, 'Cookie:')) {
             return $header;
@@ -100,7 +112,8 @@ final class NativeSiteSession
 
     /**
      * Keeps what the answer carried: a new cookie (a cleared one forgets the
-     * session), the token in its body, and the path a capturing step keeps (its
+     * session), the token in its body, an access token in its body or a code in
+     * its Location (#331), and the path a capturing step keeps (its
      * Location, or the first link under its prefix, #200).
      *
      * @param NativeSiteStep $nativeSiteStep The step.
@@ -117,6 +130,8 @@ final class NativeSiteSession
 
         $this->token = self::captured('/name="aic_csrf" value="([0-9a-f]{64})"/', $httpExchange->body, $this->token);
         $this->envelope = self::captured('/name="aic_envelope" value="([\\w.-]+)"/', $httpExchange->body, $this->envelope);
+        $this->access = self::captured('/"access_token":"([0-9a-f]{64})"/', $httpExchange->body, $this->access);
+        $this->code = self::captured('/[?&]code=([0-9a-f]{64})/', $httpExchange->location, $this->code);
 
         $this->follow($httpExchange->location);
 

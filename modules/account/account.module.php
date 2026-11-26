@@ -10,7 +10,8 @@ declare(strict_types=1);
  * its rules as a factory, which keeps an accepted upload in the app's public
  * and private files and sends the private copy (#213), the bearer token's
  * caller at /api/caller and sign-in through gate:23's stub OIDC provider
- * (#313). The build reads it; nothing reads it at run time.
+ * (#313), and the OAuth authorization endpoint's consent page (#331). The
+ * build reads it; nothing reads it at run time.
  */
 
 use AIC\Auth\Application\PgcryptoPasswordHasher;
@@ -27,6 +28,7 @@ use App\Account\Controller\CallerApi;
 use App\Account\Controller\LoginPage;
 use App\Account\Controller\LoginPost;
 use App\Account\Controller\LogoutPost;
+use App\Account\Controller\OAuthAuthorizePage;
 use App\Account\Controller\OidcCallbackPage;
 use App\Account\Controller\OidcStartPost;
 use App\Account\Controller\UploadDownload;
@@ -67,4 +69,7 @@ return (new ModuleManifest('account'))
     ->permission('account.caller', 'Read who the caller is over the API, with a bearer token.')
     ->route(RouteMethod::Post, '/sign-in/oidc', OidcStartPost::class)
     ->route(RouteMethod::Get, '/sign-in/oidc/callback', OidcCallbackPage::class)
-    ->factory(SignInProviders::class);
+    ->factory(SignInProviders::class)
+    ->route(RouteMethod::Get, '/oauth/authorize', OAuthAuthorizePage::class, needs: 'signed-in')
+    ->route(RouteMethod::Post, '/oauth/authorize', OAuthAuthorizePage::class, needs: 'signed-in')
+    ->protectedPrefix('/oauth/authorize');

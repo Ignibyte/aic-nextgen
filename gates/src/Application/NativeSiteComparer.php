@@ -44,6 +44,8 @@ final readonly class NativeSiteComparer
         '#after=[0-9a-f]{32}#' => 'after=<profile>',
         '#browser=[0-9a-f]{16}#' => 'browser=<browser>',
         '#data-t-props="[\\w.~+/=-]+"#' => 'data-t-props="<props>"',
+        '/"access_token":"[0-9a-f]{64}"/' => '"access_token":"<token>"',
+        '/([?&])code=[0-9a-f]{64}/' => '$1code=<code>',
         '/name="aic_csrf" value="[0-9a-f]{64}"/' => 'name="aic_csrf" value="<token>"',
         '/name="aic_envelope" value="[\\w.-]+"/' => 'name="aic_envelope" value="<envelope>"',
         '/name="tessera-csrf-token" content="[0-9a-f]{64}"/' => 'name="tessera-csrf-token" content="<token>"',

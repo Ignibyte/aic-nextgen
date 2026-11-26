@@ -18,8 +18,11 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use function explode;
 use function hash_equals;
 use function in_array;
+use function strtolower;
+use function trim;
 
 /**
  * Guards every unsafe request before routing (#42): the CSRF token, sent as
@@ -29,7 +32,11 @@ use function in_array;
  * a bearer token (#313) passes: a browser cannot send that header to another
  * site without a CORS preflight, and such a request is judged by its token
  * alone, never by the session's user. So does a webhook delivery whose
- * signature `WebhookSignatureMiddleware` verified (#321).
+ * signature `WebhookSignatureMiddleware` verified (#321), and a JSON body
+ * (#331): no form, link or no-cors fetch can send `application/json` to
+ * another site, only a script the site's own CORS answer allows, and AIC
+ * answers none; so an MCP client with no token yet reaches its route's need
+ * and its 401 challenge.
  */
 final readonly class FormGuardMiddleware implements MiddlewareInterface
 {
@@ -96,7 +103,8 @@ final readonly class FormGuardMiddleware implements MiddlewareInterface
     {
         return in_array($serverRequest->getMethod(), self::UNSAFE, true)
             && !$this->bearerCredential->present($serverRequest)
-            && $serverRequest->getAttribute(Webhook::ATTRIBUTE) === null;
+            && $serverRequest->getAttribute(Webhook::ATTRIBUTE) === null
+            && strtolower(trim(explode(';', $serverRequest->getHeaderLine('Content-Type'))[0])) !== 'application/json';
     }
 
     /**

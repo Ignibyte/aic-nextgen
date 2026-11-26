@@ -50,7 +50,7 @@ final readonly class HandlerContext
      */
     public function page(Page $page, string $need = ''): RequestHandlerInterface
     {
-        $accessGates = new AccessGates($this->webRoots->database, $this->webRoots->responseBuilder);
+        $accessGates = new AccessGates($this->webRoots->database, $this->webRoots->responseBuilder, $this->webRoots->appConfig);
 
         return $accessGates->gate($need, $this->httpHandlers->page($page));
     }
@@ -63,7 +63,7 @@ final readonly class HandlerContext
      */
     public function api(Api $api, string $need = ''): RequestHandlerInterface
     {
-        $accessGates = new AccessGates($this->webRoots->database, $this->webRoots->responseBuilder);
+        $accessGates = new AccessGates($this->webRoots->database, $this->webRoots->responseBuilder, $this->webRoots->appConfig);
 
         return $accessGates->gate($need, $this->httpHandlers->api($api));
     }
@@ -76,7 +76,7 @@ final readonly class HandlerContext
      */
     public function stream(Stream $stream, string $need = ''): RequestHandlerInterface
     {
-        $accessGates = new AccessGates($this->webRoots->database, $this->webRoots->responseBuilder);
+        $accessGates = new AccessGates($this->webRoots->database, $this->webRoots->responseBuilder, $this->webRoots->appConfig);
 
         return $accessGates->gate($need, $this->httpHandlers->stream($stream));
     }

@@ -6,6 +6,19 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **An OAuth 2 authorization server** (#331). With `AppConfig::$oauth` naming an issuer, AIC issues its own short-lived
+  bearer tokens. The operator registers clients with `bin/aic client:add <id> <secret>|- <scope>... [--redirect=<uri>]...`
+  (`client:list`, `client:revoke`). `POST /oauth/token` answers before the session: the client credentials grant for a
+  confidential client, and the authorization code grant with PKCE S256 for an MCP client acting for a signed-in person,
+  whose token holds only the scopes the client asked for, holds and the person's roles grant. Tokens and codes are
+  opaque and kept as SHA-256; a token lasts an hour and is a bearer token on every route. `/.well-known/oauth-authorization-server`
+  (RFC 8414) and `/.well-known/oauth-protected-resource` (RFC 9728) answer the metadata, and a visitor refused a
+  permission need gets 401 with `resource_metadata` instead of 403. `AIC\OAuth\Application\Authorizations` checks an
+  authorization request for a module's consent page and answers a `ClientRedirect`; the fixture's is the account module's
+  `/oauth/authorize`. The form guard spares a JSON body, which a browser cannot send to another site without a
+  preflight; the sign-in redirect keeps the query. Refresh tokens, client registration, revocation, introspection and
+  audience binding are #352.
+
 - **make:mcp-resource and make:mcp-prompt; MCP catalogs of any size** (#334). `bin/aic make:mcp-resource <module>
   <Class>Resource` writes a Markdown resource at `<module>://<name>` and `bin/aic make:mcp-prompt <module> <Class>Prompt`
   a prompt with one argument, each declaring its permission unless `--needs` names one; `make:catalog` lists them with

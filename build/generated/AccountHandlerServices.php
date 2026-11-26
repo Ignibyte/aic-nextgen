@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Access\Application\Actors;
+use AIC\Access\Application\BearerTokens;
+use AIC\Access\Application\PostgresRoles;
 use AIC\Auth\Application\Authenticator;
 use AIC\Auth\Application\OidcSignIn;
 use AIC\Auth\Application\PgcryptoPasswordHasher;
@@ -59,6 +62,14 @@ final readonly class AccountHandlerServices
             new PublicFiles($this->handlerContext->roots()->root()),
             new PrivateFiles($this->handlerContext->roots()->root()),
         );
+    }
+
+    /**
+     * @return Actors A new one, for the part that asked.
+     */
+    public function actors(): Actors
+    {
+        return new Actors(new PostgresRoles($this->handlerContext->database()), new BearerTokens($this->handlerContext->database()));
     }
 
     /**

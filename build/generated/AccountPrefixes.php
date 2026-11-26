@@ -15,6 +15,6 @@ final readonly class AccountPrefixes
      */
     public function all(): array
     {
-        return ['/account'];
+        return ['/account', '/oauth/authorize'];
     }
 }

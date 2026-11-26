@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIC\Access\Application;
 
+use AIC\Config\Domain\AppConfig;
 use AIC\Database\Contracts\Database;
 use AIC\Http\Application\ResponseBuilder;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -17,10 +18,13 @@ final readonly class AccessGates
     /**
      * @param Database        $database        The connection the roles are read through.
      * @param ResponseBuilder $responseBuilder Makes the 403.
+     * @param AppConfig       $appConfig       The app's settings: an authorization server's metadata is named in a
+     *                                         refusal (#331).
      */
     public function __construct(
         private Database $database,
         private ResponseBuilder $responseBuilder,
+        private AppConfig $appConfig,
     ) {
     }
 
@@ -38,6 +42,12 @@ final readonly class AccessGates
 
         $actors = new Actors(new PostgresRoles($this->database), new BearerTokens($this->database));
 
-        return new PermissionGate($need, $requestHandler, $actors, $this->responseBuilder);
+        return new PermissionGate(
+            $need,
+            $requestHandler,
+            $actors,
+            $this->responseBuilder,
+            $this->appConfig->oauth->resourceMetadata(),
+        );
     }
 }
