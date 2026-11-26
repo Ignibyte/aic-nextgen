@@ -12,6 +12,7 @@ use AIC\Module\Contracts\MiddlewarePosition;
 use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\RouteMethod;
 use App\Ledger\Controller\LedgerAccountsApi;
+use App\Ledger\Controller\LedgerAssistantPage;
 use App\Ledger\Controller\LedgerCacheApi;
 use App\Ledger\Controller\LedgerCategoriesApi;
 use App\Ledger\Controller\LedgerFeedPage;
@@ -58,4 +59,6 @@ return (new ModuleManifest('ledger'))
     ->route(RouteMethod::Get, '/ledger/meter', LedgerMeterPage::class)
     ->permission('ledger.mcp', 'Connect an agent to the MCP server at /mcp and read the ledger resources and prompts.')
     ->permission('ledger.split', 'Call the ledger.split tool over MCP.')
-    ->route(RouteMethod::Post, '/mcp', LedgerMcpApi::class, needs: 'ledger.mcp');
+    ->route(RouteMethod::Post, '/mcp', LedgerMcpApi::class, needs: 'ledger.mcp')
+    ->route(RouteMethod::Get, '/ledger/assistant', LedgerAssistantPage::class, needs: 'ledger.split')
+    ->route(RouteMethod::Post, '/ledger/assistant', LedgerAssistantPage::class, needs: 'ledger.split');

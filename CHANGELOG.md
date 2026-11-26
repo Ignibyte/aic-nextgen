@@ -6,6 +6,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **An MCP capability registry: dry runs, call ids and an audit** (#332). Every tool call now goes through
+  `AIC\Mcp\Application\Capabilities`, which an MCP client's `tools/call` and an app's own assistant share.
+  `Actor::within($ceiling, $client)` cuts the signed-in person's permissions to what an assistant is given.
+  `#[ToolInfo(dryRun: true)]` declares a tool whose effects are all in the database: a dry call
+  (`_meta["aic/dryRun"]`) runs it for real in a savepoint and rolls it back, and a tool without the flag refuses one.
+  A call id (`_meta["aic/callId"]`) is applied once per caller: a repeat waits under an advisory lock and answers the
+  first result byte for byte. Every call, replays included, is a row of `aic_mcp_calls`, committed with the tool's
+  writes, and `bin/aic mcp:calls [<limit>]` lists the latest. A refusal answers `isError`, input that does not fit
+  `-32602` and a failure `-32603`. A transaction begun inside an open one is now a savepoint. The ledger fixture's
+  `/ledger/assistant` previews, splits and replays a split.
+
 - **An OAuth 2 authorization server** (#331). With `AppConfig::$oauth` naming an issuer, AIC issues its own short-lived
   bearer tokens. The operator registers clients with `bin/aic client:add <id> <secret>|- <scope>... [--redirect=<uri>]...`
   (`client:list`, `client:revoke`). `POST /oauth/token` answers before the session: the client credentials grant for a

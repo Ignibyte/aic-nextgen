@@ -53,7 +53,9 @@ app meets first.
   `AIC\Mcp\Application\McpServer` answers MCP's JSON-RPC from a module's Api route; the build writes
   each module's `src/Mcp/` into `App\Generated\<Module>Mcp`, whose `catalog()` the route serves,
   with every tool's input and output schema. Access is the route's `needs:` and each entry's own
-  permission. See [mcp.md](mcp.md).
+  permission. Every tool call goes through `AIC\Mcp\Application\Capabilities` (#332), shared with an
+  app's own assistant: a dry run, a call id applied once, a row of `aic_mcp_calls` per call. See
+  [mcp.md](mcp.md).
 
 See [native.md](native.md) for the compiled server and PHP comparison.
 
@@ -73,6 +75,8 @@ The development engine and its guard are described in [workflow.md](workflow.md)
 - `AIC\Database`: `AIC\Database\Contracts\Database`, parameterised queries with `?` placeholders
   over PDO pgsql, typed rows and transactions, and LISTEN with its notifications on the request's own
   connection: `listen(channel)` and `notification(timeoutMs)`, over `Pdo\Pgsql::getNotify()` (#314).
+  A transaction begun inside an open one is a savepoint (#332): its commit releases it and its roll back
+  undoes only its own work, so a write that opens its own transaction nests inside a caller's.
   Postgres is the only database. It is the framework's
   seam: an app's modules and theme never depend on it (gate:9). They read and write tables through
   `AIC\Entity`, and ask the database about itself (whether it answers, its version, a setting)

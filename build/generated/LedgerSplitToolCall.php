@@ -44,6 +44,7 @@ final readonly class LedgerSplitToolCall implements McpToolCall
             'ledger.split',
             (new LedgerSplitInputSchema())->schema(),
             (new LedgerSplitSchema())->schema(),
+            true,
         );
     }
 

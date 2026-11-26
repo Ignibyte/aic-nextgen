@@ -19,11 +19,15 @@ final readonly class ToolInfo
      * @param string $name        The tool's name, lower-case words joined by "." (`ledger.split`), unique in the app.
      * @param string $description What it does and when an agent should call it.
      * @param string $needs       The permission a caller needs to see and call it, declared by some module.
+     * @param bool   $dryRun      Whether a caller may run it dry (#332): the call runs in a savepoint rolled back,
+     *                            so declare it only when every effect is in the database (no outbound request,
+     *                            no stored file).
      */
     public function __construct(
         public string $name,
         public string $description,
         public string $needs,
+        public bool $dryRun = false,
     ) {
     }
 }

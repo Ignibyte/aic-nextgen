@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Access\Application\Actors;
+use AIC\Access\Application\BearerTokens;
+use AIC\Access\Application\PostgresRoles;
+use AIC\Mcp\Application\Capabilities;
+use AIC\Mcp\Application\McpCallLog;
+use AIC\Mcp\Application\McpCalls;
+use AIC\Mcp\Application\McpMethods;
+use AIC\Mcp\Application\ToolRun;
 use AIC\Module\Application\HandlerContext;
 use App\Ledger\Mcp\LedgerCategorizePrompt;
 use App\Ledger\Mcp\LedgerCurrenciesResource;
-use App\Ledger\Mcp\LedgerExplainPrompt;
-use App\Ledger\Mcp\LedgerSplitPrompt;
 use App\Ledger\Mcp\LedgerSplitTool;
 use InvalidArgumentException;
 
@@ -27,14 +33,6 @@ final readonly class LedgerHandlerServicesPart2
     }
 
     /**
-     * @return LedgerMcpPart2 A new one, for the part that asked.
-     */
-    public function ledgerMcpPart2(): LedgerMcpPart2
-    {
-        return new LedgerMcpPart2(new LedgerExplainPrompt(), new LedgerSplitPrompt());
-    }
-
-    /**
      * @throws InvalidArgumentException When a called constructor or service fails.
      *
      * @return LedgerMcp A new one, for the part that asked.
@@ -48,7 +46,43 @@ final readonly class LedgerHandlerServicesPart2
             new LedgerCurrenciesResource(),
             (new LedgerHandlerServices($this->handlerContext))->ledgerStandingResource(),
             new LedgerCategorizePrompt(),
-            $this->ledgerMcpPart2(),
+            (new LedgerHandlerServices($this->handlerContext))->ledgerMcpPart2(),
         );
+    }
+
+    /**
+     * @return Actors A new one, for the part that asked.
+     */
+    public function actors(): Actors
+    {
+        return new Actors(new PostgresRoles($this->handlerContext->database()), new BearerTokens($this->handlerContext->database()));
+    }
+
+    /**
+     * @return Capabilities A new one, for the part that asked.
+     */
+    public function capabilities(): Capabilities
+    {
+        return new Capabilities(
+            new McpCallLog($this->handlerContext->database()),
+            $this->handlerContext->database(),
+            new ToolRun($this->handlerContext->database()),
+        );
+    }
+
+    /**
+     * @return McpCalls A new one, for the part that asked.
+     */
+    public function mcpCalls(): McpCalls
+    {
+        return new McpCalls($this->capabilities());
+    }
+
+    /**
+     * @return McpMethods A new one, for the part that asked.
+     */
+    public function mcpMethods(): McpMethods
+    {
+        return new McpMethods($this->mcpCalls());
     }
 }

@@ -9,12 +9,9 @@ use AIC\Cache\Application\CacheCommands;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
 use AIC\Database\Contracts\Database;
+use AIC\Mcp\Application\McpCommands;
 use AIC\Queue\Application\PostgresQueue;
-use AIC\Queue\Application\QueueFailedCommand;
-use AIC\Queue\Application\QueueRecords;
-use AIC\Queue\Application\QueueRetryCommand;
-use AIC\Queue\Application\QueueWorkCommand;
-use AIC\Queue\Application\QueueWorker;
+use AIC\Queue\Application\QueueCommands;
 use AIC\Schedule\Application\Scheduler;
 use AIC\Schedule\Application\ScheduleRunCommand;
 use AIC\Schedule\Domain\Schedule;
@@ -29,7 +26,8 @@ use AIC\Schema\Contracts\Migration;
  * `migrate:status` over every migration, `queue:work` over every job,
  * `queue:failed` and `queue:retry` over the failed ones (#208),
  * `schedule:run` over every schedule, and `role:grant`, `role:revoke`,
- * `role:assign` and `role:unassign` over the roles (#304).
+ * `role:assign` and `role:unassign` over the roles (#304), and `mcp:calls`
+ * over the capability registry's audit (#332).
  */
 final readonly class FrameworkCommands
 {
@@ -56,12 +54,11 @@ final readonly class FrameworkCommands
         return [
             'migrate' => new MigrateCommand($migrator),
             'migrate:status' => new MigrationStatusCommand($migrator),
-            'queue:failed' => new QueueFailedCommand(new QueueRecords($this->database)),
-            'queue:retry' => new QueueRetryCommand($postgresQueue),
-            'queue:work' => new QueueWorkCommand(new QueueWorker($postgresQueue, $jobs)),
             'schedule:run' => new ScheduleRunCommand(new Scheduler($this->database, $postgresQueue, $schedules)),
+            ...(new QueueCommands($this->database))->byName($jobs),
             ...(new AccessCommands($this->database))->byName(),
             ...(new CacheCommands($this->database))->byName(),
+            ...(new McpCommands($this->database))->byName(),
         ];
     }
 }

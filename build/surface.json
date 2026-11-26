@@ -337,6 +337,22 @@
             "path": "/mcp"
         },
         {
+            "handler": "App\\Ledger\\Controller\\LedgerAssistantPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "ledger.split",
+            "path": "/ledger/assistant"
+        },
+        {
+            "handler": "App\\Ledger\\Controller\\LedgerAssistantPage",
+            "kind": "Page",
+            "method": "POST",
+            "module": "ledger",
+            "needs": "ledger.split",
+            "path": "/ledger/assistant"
+        },
+        {
             "handler": "App\\Note\\Controller\\NoteListPage",
             "kind": "Page",
             "method": "GET",
@@ -613,6 +629,12 @@
             "kind": "Command",
             "module": "site",
             "name": "greet"
+        },
+        {
+            "class": "AIC\\Mcp\\Application\\McpCallsCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "mcp:calls"
         },
         {
             "class": "AIC\\Schema\\Application\\MigrateCommand",

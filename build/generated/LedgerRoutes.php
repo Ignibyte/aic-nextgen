@@ -7,6 +7,7 @@ namespace App\Generated;
 use AIC\Routing\Application\RouteCollector;
 use AIC\Routing\Domain\DuplicateRouteException;
 use App\Ledger\Controller\LedgerAccountsApi;
+use App\Ledger\Controller\LedgerAssistantPage;
 use App\Ledger\Controller\LedgerCacheApi;
 use App\Ledger\Controller\LedgerCategoriesApi;
 use App\Ledger\Controller\LedgerFeedPage;
@@ -46,6 +47,8 @@ final readonly class LedgerRoutes
             ->post('/ledger/feed', LedgerFeedPost::class)
             ->get('/ledger/feed/events', LedgerFeedStream::class)
             ->get('/ledger/meter', LedgerMeterPage::class)
-            ->post('/mcp', LedgerMcpApi::class);
+            ->post('/mcp', LedgerMcpApi::class)
+            ->get('/ledger/assistant', LedgerAssistantPage::class)
+            ->post('/ledger/assistant', LedgerAssistantPage::class);
     }
 }

@@ -5,45 +5,57 @@ declare(strict_types=1);
 namespace AIC\Mcp\Application;
 
 use AIC\Access\Domain\Actor;
+use AIC\Database\Contracts\QueryException;
 use AIC\Mcp\Contracts\McpArgumentException;
 use AIC\Mcp\Contracts\McpArguments;
-use AIC\Mcp\Contracts\ToolRefusedException;
+use AIC\Mcp\Domain\CapabilityCall;
 use AIC\Mcp\Domain\McpCatalog;
 use AIC\Mcp\Domain\McpPromptInfo;
 use AIC\Mcp\Domain\McpPromptResult;
 use AIC\Mcp\Domain\McpProtocolException;
 use AIC\Mcp\Domain\McpReadResult;
 use AIC\Mcp\Domain\McpRequest;
-use AIC\Mcp\Domain\McpToolCall;
 use AIC\Mcp\Domain\McpToolResult;
 
 /**
  * The three calls of an MCP server (#316): `tools/call`, `resources/read` and
  * `prompts/get`, each on an entry the caller may use; any other is unknown to
  * it, so a caller learns nothing of what it may not use. A tool's refusal is its
- * result, with `isError`; the arguments' faults are the server's to answer.
+ * result, with `isError`; the arguments' faults are the server's to answer. A
+ * tool call goes through the capability registry (#332).
  */
 final readonly class McpCalls
 {
     /**
-     * @param McpRequest $mcpRequest The `tools/call`.
+     * @param Capabilities $capabilities The registry, which runs each tool call (#332).
+     */
+    public function __construct(
+        private Capabilities $capabilities,
+    ) {
+    }
+
+    /**
+     * @param McpRequest $mcpRequest The `tools/call`, with `aic/callId` and `aic/dryRun` in its `_meta` (#332).
      * @param McpCatalog $mcpCatalog The tools.
      * @param Actor      $actor      Who calls.
      *
-     * @throws McpProtocolException When it names no tool the caller may call.
+     * @throws McpProtocolException When it names no tool the caller may call, its call id is not one or names
+     *                              another tool's call, or the tool failed.
      * @throws McpArgumentException When the arguments do not fit the tool's input.
+     * @throws QueryException       When the audit or the lock fails.
      *
      * @return McpToolResult The tool's output, or its refusal.
      */
     public function call(McpRequest $mcpRequest, McpCatalog $mcpCatalog, Actor $actor): McpToolResult
     {
-        $mcpToolCall = $this->tool($mcpRequest->param('name'), $mcpCatalog, $actor);
+        $capabilityCall = new CapabilityCall(
+            $mcpRequest->param('name'),
+            $mcpRequest->argumentText(),
+            $mcpRequest->metaText('aic/callId'),
+            $mcpRequest->metaFlag('aic/dryRun'),
+        );
 
-        try {
-            return new McpToolResult($mcpToolCall->callTool($mcpRequest->arguments(), $actor));
-        } catch (ToolRefusedException $toolRefusedException) {
-            return new McpToolResult(null, $toolRefusedException->getMessage());
-        }
+        return new McpToolResult($this->capabilities->call($mcpCatalog, $capabilityCall, $actor));
     }
 
     /**
@@ -122,27 +134,5 @@ final readonly class McpCalls
         $mcpArguments->only($names);
 
         return $mcpArguments;
-    }
-
-    /**
-     * @param string     $name       A tool's name.
-     * @param McpCatalog $mcpCatalog The tools.
-     * @param Actor      $actor      Who calls.
-     *
-     * @throws McpProtocolException When no tool the caller may call has it.
-     *
-     * @return McpToolCall The tool's adapter.
-     */
-    private function tool(string $name, McpCatalog $mcpCatalog, Actor $actor): McpToolCall
-    {
-        foreach ($mcpCatalog->tools as $mcpToolCall) {
-            $mcpToolInfo = $mcpToolCall->toolInfo();
-
-            if ($mcpToolInfo->name === $name && $actor->can($mcpToolInfo->needs)) {
-                return $mcpToolCall;
-            }
-        }
-
-        throw new McpProtocolException('Invalid params: no tool is named "' . $name . '".', McpProtocolException::INVALID_PARAMS);
     }
 }

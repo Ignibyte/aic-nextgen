@@ -39,6 +39,8 @@ final readonly class XmlResponse implements ApiResponse
     #[Override]
     public function writeTo(ResponseWriter $responseWriter): ResponseInterface
     {
-        return $responseWriter->xml($this->status, $this->xmlDocument->serialized(), $this->serverRequest);
+        $document = $this->xmlDocument->serialized();
+
+        return $responseWriter->encoded($this->status, 'application/xml; charset=utf-8', $document, $this->serverRequest);
     }
 }

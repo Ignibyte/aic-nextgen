@@ -128,6 +128,39 @@ output, and, with no `--needs`, declares `<module>.<name>` as the tool's permiss
 named `<module>.<name>` with one argument; each declares `<module>.<name>` as its permission with no
 `--needs` (#334).
 
+## Capabilities: one call path, dry runs, call ids and the audit
+
+Every tool call goes through `AIC\Mcp\Application\Capabilities` (#332), the registry an MCP client's
+`tools/call` and an app's own assistant share, so neither gets around the other's rules:
+
+- `visible(McpCatalog, Actor)` lists the tools the actor may call; `call(McpCatalog, CapabilityCall,
+  Actor)` calls one and answers a `CapabilityResult`: how it ended (`CallOutcome`), the output as encoded
+  JSON, or the refusal, and whether it ran dry or was replayed. A `CapabilityCall` names the tool, its
+  arguments as a JSON object, a call id and the dry flag.
+- **A permission ceiling.** An assistant acting for the signed-in person calls with
+  `$actors->actor($request)->within(['ledger.split'], 'ledger-assistant')`: the person's permissions cut
+  to the ceiling, and its own name for the audit. It can never do more than the person or the ceiling.
+- **A dry run.** `#[ToolInfo(..., dryRun: true)]` lets a caller run the tool with its writes rolled back:
+  the real call in a savepoint, so the preview cannot drift from the call. Declare it only when every
+  effect is in the database (rows, queued jobs, broadcasts); an outbound request or a stored file is not
+  rolled back. The default is false, and such a tool refuses a dry call. `tools/list` shows
+  `_meta: {"aic/dryRun": true}`; an MCP client asks with `params._meta["aic/dryRun"]: true`, and the result
+  carries the same `_meta`.
+- **A call id is applied once.** `params._meta["aic/callId"]` (1 to 64 of `A-Z a-z 0-9 . _ : -`) is the
+  caller's id for the call, scoped to the caller (its client and person). The first call with it runs; a
+  repeat waits for the first under a transaction advisory lock and answers the stored result byte for
+  byte, without running the tool. The same id with another tool is `-32602`. A dry run neither takes nor
+  uses an id. A call that failed or did not fit its input keeps no id, so it can be retried.
+- **Every call is a row** of `aic_mcp_calls`: when, the client, the person, the tool, the call id, whether
+  it ran dry, the outcome (`done`, `refused`, `invalid`, `failed` or `replayed`), the arguments and the
+  output or refusal. The row commits with the tool's own writes; a failure rolls the writes back and
+  keeps the row, and the caller gets `-32603`. `bin/aic mcp:calls [<limit>]` lists the latest, newest
+  first, without arguments or output.
+
+The fixture's `/ledger/assistant` is an in-app assistant: it lists what the signed-in person's assistant
+may call under the ceiling `ledger.split`, previews a split as a dry run, splits, and sends the same call
+again, its call id sealed in the form's envelope.
+
 ## Resources and prompts
 
 A resource implements `AIC\Mcp\Contracts\McpResource`, is marked `#[ResourceInfo]` with its URI,
@@ -154,3 +187,4 @@ every entry's services, would pass PHPMD's coupling of 15, the build makes those
 module's `<Module>HandlerServices` and the handler calls one method for each. A module's `src/Mcp/`
 still holds 15 files at most (gate:26): a tool takes three, a resource or a prompt one. Each list is whole,
 with no cursor, and nothing announces a change to it; a tool reports no progress while it runs (#333).
+The audit keeps every row; there is no retention yet.

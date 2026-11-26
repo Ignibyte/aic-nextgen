@@ -13,12 +13,13 @@ use function intdiv;
 /**
  * The fixture's MCP tool (#316): it splits an amount into equal parts in whole
  * cents. It reads nothing and writes nothing, so gate:23's two passes over one
- * database answer alike.
+ * database answer alike, and it may run dry (#332).
  */
 #[ToolInfo(
     name: 'ledger.split',
     description: 'Split an amount of money into equal parts in whole cents; the first parts take the remainder.',
     needs: 'ledger.split',
+    dryRun: true,
 )]
 final readonly class LedgerSplitTool implements McpTool
 {

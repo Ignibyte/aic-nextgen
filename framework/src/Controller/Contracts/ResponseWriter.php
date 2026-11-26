@@ -99,18 +99,20 @@ interface ResponseWriter
 
     /**
      * @param int                         $status        The status.
-     * @param string                      $document      An `XmlDocument`, serialized (#233). Only `XmlResponse` calls
-     *                                                   this: the response shapes are sealed in `AIC\Controller\Domain`,
-     *                                                   and no module is handed a writer.
+     * @param string                      $mediaType     Its `Content-Type`: `application/xml; charset=utf-8` for an
+     *                                                   `XmlDocument` (#233), `application/json` for encoded JSON (#332).
+     * @param string                      $body          The document, serialized. Only `XmlResponse` and `JsonText`
+     *                                                   call this: the response shapes are sealed in
+     *                                                   `AIC\Controller\Domain`, and no module is handed a writer.
      * @param ServerRequestInterface|null $serverRequest The request whose `If-None-Match` it answers (#269); null for an
      *                                                   answer with no validator.
      *
-     * @return ResponseInterface The response, `application/xml; charset=utf-8`; given a request, a 200 to GET or HEAD
-     *                           tagged, or 304 when it matches.
+     * @return ResponseInterface The response; given a request, a 200 to GET or HEAD tagged, or 304 when it matches.
      */
-    public function xml(
+    public function encoded(
         int $status,
-        string $document,
+        string $mediaType,
+        string $body,
         ?ServerRequestInterface $serverRequest = null,
     ): ResponseInterface;
 

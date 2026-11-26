@@ -51,16 +51,23 @@ interface Database
     public function execute(string $sql, array $params): int;
 
     /**
-     * @throws QueryException When a transaction cannot begin.
+     * Begins a transaction, or, inside an open one, a savepoint (#332), so a write that opens its own transaction
+     * nests inside a caller's and a caller can undo it alone.
+     *
+     * @throws QueryException When a transaction or savepoint cannot begin.
      */
     public function beginTransaction(): void;
 
     /**
+     * Commits the transaction, or releases the innermost savepoint, whose work then commits with the transaction.
+     *
      * @throws QueryException When the transaction cannot commit.
      */
     public function commit(): void;
 
     /**
+     * Rolls the transaction back, or rolls back to the innermost savepoint and leaves the transaction open.
+     *
      * @throws QueryException When the transaction cannot roll back.
      */
     public function rollBack(): void;

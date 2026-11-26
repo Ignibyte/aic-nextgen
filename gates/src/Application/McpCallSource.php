@@ -53,7 +53,7 @@ final readonly class McpCallSource
                     {description},
                     {needs},
                     (new {inputSchema}())->schema(),
-                    (new {outputSchema}())->schema(),
+                    (new {outputSchema}())->schema(),{dryRun}
                 );
             }
 
@@ -102,6 +102,7 @@ final readonly class McpCallSource
             '{body}' => $this->mcpDecodeSource->body($mcpToolSpec),
             '{call}' => $tool . 'Call',
             '{description}' => $this->mcpCode->value($mcpToolSpec->toolInfo->description),
+            '{dryRun}' => $mcpToolSpec->toolInfo->dryRun ? "\n            true," : '',
             '{enums}' => $this->enums($mcpToolSpec),
             '{inputSchema}' => $this->mcpSchemaSource->name($mcpToolSpec->input),
             '{name}' => $this->mcpCode->value($mcpToolSpec->toolInfo->name),

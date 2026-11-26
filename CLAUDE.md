@@ -217,6 +217,10 @@ claims), `Authenticator::signInAs()`; the fixture's `/api/caller` and
 RFC 8414 and RFC 9728 metadata, a visitor's refused need answered 401 with `resource_metadata`, and `Authorizations` behind a
 module's consent page (the account module's `/oauth/authorize`). A JSON body skips the CSRF check. Refresh tokens, DCR,
 revocation, introspection and audience binding are #352.
+#332: `AIC\Mcp\Application\Capabilities`, the one call path for `tools/call` and an app's assistant (`Actor::within(ceiling,
+client)`): `#[ToolInfo(dryRun: true)]` runs a call in a rolled-back savepoint, `_meta["aic/callId"]` applies a call once
+per caller (an advisory lock, the first result replayed), every call a row of `aic_mcp_calls` (`bin/aic mcp:calls`); a
+nested `beginTransaction()` is a savepoint; the fixture's `/ledger/assistant`.
 #314: real-time push: `AIC\Broadcast` (`Broadcaster::publish(Channel, data)` writes `aic_broadcasts` and `pg_notify`s;
 `Broadcasts::stream()` sends a channel's events after `Last-Event-ID` over `Database::listen()|notification()`, ends each
 connection after `holdSeconds`, and caps open streams site-wide at `streams`, below one worker's handlers, default 7);

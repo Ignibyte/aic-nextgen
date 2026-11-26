@@ -14,7 +14,8 @@ use function in_array;
  * client, #331) as its client and its scopes as its permissions; an unknown
  * token is a bearer caller with no client. A token issued by the
  * authorization code grant acts for the person who allowed it and carries
- * their id, but a token never counts as signed in.
+ * their id, but a token never counts as signed in. `within()` narrows any of
+ * them to a ceiling, for an assistant acting for the person (#332).
  */
 final readonly class Actor
 {
@@ -67,5 +68,29 @@ final readonly class Actor
         }
 
         return ($this->signedIn() || $this->client !== '') && in_array($permission, $this->permissions, true);
+    }
+
+    /**
+     * The same caller under a permission ceiling (#332): an assistant acting for a person holds only what the
+     * person holds and the ceiling allows, and its calls are recorded under its own client name.
+     *
+     * @param list<string> $ceiling The most the assistant may do.
+     * @param string       $client  The assistant's name, as the audit records it.
+     *
+     * @return Actor The person's id, the permissions in both lists, the assistant's name.
+     */
+    public function within(array $ceiling, string $client): self
+    {
+        $permissions = [];
+
+        foreach ($this->permissions as $permission) {
+            if (!in_array($permission, $ceiling, true)) {
+                continue;
+            }
+
+            $permissions[] = $permission;
+        }
+
+        return new self($this->userId, $permissions, $client, $this->bearer);
     }
 }

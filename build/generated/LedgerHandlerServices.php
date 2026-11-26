@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
-use AIC\Access\Application\Actors;
-use AIC\Access\Application\BearerTokens;
-use AIC\Access\Application\PostgresRoles;
 use AIC\Entity\Application\AuditTrail;
 use AIC\Entity\Application\EntityStore;
-use AIC\Mcp\Application\McpServer;
 use AIC\Module\Application\HandlerContext;
 use App\Ledger\Entity\LedgerTypes;
 use App\Ledger\Mcp\LedgerAccountsResource;
 use App\Ledger\Mcp\LedgerCategoriesResource;
+use App\Ledger\Mcp\LedgerExplainPrompt;
+use App\Ledger\Mcp\LedgerSplitPrompt;
 use App\Ledger\Mcp\LedgerStandingResource;
 use App\Ledger\Service\LedgerHistory;
 use InvalidArgumentException;
@@ -38,22 +36,6 @@ final readonly class LedgerHandlerServices
     public function ledgerHistory(): LedgerHistory
     {
         return new LedgerHistory(new AuditTrail($this->handlerContext->database()));
-    }
-
-    /**
-     * @return Actors A new one, for the part that asked.
-     */
-    public function actors(): Actors
-    {
-        return new Actors(new PostgresRoles($this->handlerContext->database()), new BearerTokens($this->handlerContext->database()));
-    }
-
-    /**
-     * @return McpServer A new one, for the part that asked.
-     */
-    public function mcpServer(): McpServer
-    {
-        return new McpServer($this->actors(), $this->handlerContext->appConfig());
     }
 
     /**
@@ -84,5 +66,13 @@ final readonly class LedgerHandlerServices
     public function ledgerStandingResource(): LedgerStandingResource
     {
         return new LedgerStandingResource(new LedgerTypes());
+    }
+
+    /**
+     * @return LedgerMcpPart2 A new one, for the part that asked.
+     */
+    public function ledgerMcpPart2(): LedgerMcpPart2
+    {
+        return new LedgerMcpPart2(new LedgerExplainPrompt(), new LedgerSplitPrompt());
     }
 }
