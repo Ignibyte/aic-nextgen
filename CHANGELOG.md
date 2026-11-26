@@ -322,6 +322,12 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Fixed
 
+- **Totals on a soft-deleting type with no condition** (#348). `values()`, `countBy()`, `sumBy()` and `averageBy()`
+  joined their not-null test with ` AND ` only when the caller had added a condition, but the live scope of a
+  soft-deleting type (#309) is a WHERE of its own, so such a query sent two WHEREs and failed. The test now joins to
+  whatever WHERE the conditions wrote. GET /ledger/accounts/round-trip reads both with no condition while its account
+  is deleted and after the restore.
+
 - **05-timeout waits for a killed worker to finish dying** (#345). The probe scenario read the owned workers once, right
   after `LocalProcess::run()` returned. SIGKILL is asynchronous: a killed task closes its pipes, which ends the runner's
   drain, before it becomes a zombie, so on a busy box it was still runnable and read as a survivor, and a full sweep

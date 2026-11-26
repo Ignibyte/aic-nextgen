@@ -11,11 +11,14 @@ use AIC\Entity\Domain\DeletedScope;
 use App\Ledger\Entity\LedgerTypes;
 use InvalidArgumentException;
 
+use function array_key_exists;
 use function count;
+use function in_array;
 
 /**
  * GET /ledger/accounts/round-trip's work (#309): one account opened, renamed,
  * deleted (a stamp), seen only when asked, restored, deleted again and purged,
+ * its name read by the totals with no condition once deleted and once restored (#348),
  * every write credited to `ledger-round-trip`; then its audit trail, which
  * outlives the purge. Opening it queues the listener's job, whose notice
  * GET /ledger/notices reads after the worker.
@@ -23,6 +26,8 @@ use function count;
 final readonly class LedgerAccounts
 {
     private const string ACTOR = 'ledger-round-trip';
+
+    private const string RENAMED = 'Round trip, renamed';
 
     /**
      * @param EntityStore   $entityStore   The entity store.
@@ -48,12 +53,13 @@ final readonly class LedgerAccounts
         $accounts = $this->ledgerTypes->accounts();
         $entityStore = $this->entityStore->withActor(self::ACTOR);
         $key = $entityStore->insert($accounts, ['name' => 'Round trip']);
-        $entityStore->update($accounts, $key, ['name' => 'Round trip, renamed']);
+        $entityStore->update($accounts, $key, ['name' => self::RENAMED]);
         $entityStore->delete($accounts, $key);
 
-        $lines = ['deleted: ' . $this->seen($key)];
+        $lines = ['deleted: ' . $this->seen($key), 'totals: ' . $this->totals()];
         $restored = $entityStore->query($accounts)->withDeleted(DeletedScope::Deleted)->where('id', $key)->changes()->restore();
         $lines[] = 'restored ' . $restored . ': ' . $this->seen($key);
+        $lines[] = 'totals: ' . $this->totals();
         $entityStore->delete($accounts, $key);
         $purged = $entityStore->query($accounts)->withDeleted()->where('id', $key)->changes()->purge();
         $lines[] = 'purged ' . $purged . ': ' . $this->seen($key);
@@ -79,6 +85,34 @@ final readonly class LedgerAccounts
         $deleted = $this->entityStore->query($accounts)->withDeleted(DeletedScope::Deleted)->where('id', $key)->rows()->all();
 
         return 'live ' . count($live) . ', all ' . count($all) . ', deleted ' . count($deleted);
+    }
+
+    /**
+     * @throws InvalidArgumentException When the type has no name field.
+     * @throws QueryException           When a query fails.
+     *
+     * @return string Whether the renamed account's name is among the live names, by `values()` and by
+     *                `countBy()`, each read with no condition, so the WHERE holds the live scope alone (#348).
+     */
+    private function totals(): string
+    {
+        $entityTotals = $this->entityStore->query($this->ledgerTypes->accounts())->totals();
+        $values = $this->answer(in_array(self::RENAMED, $entityTotals->values('name'), true));
+        $countBy = $this->answer(array_key_exists(self::RENAMED, $entityTotals->countBy('name')));
+
+        return 'values ' . $values . ', count-by ' . $countBy;
+    }
+
+    /**
+     * @param bool $held Whether the name was there.
+     *
+     * @return string `yes` or `no`.
+     */
+    private function answer(bool $held): string
+    {
+        return $held
+            ? 'yes'
+            : 'no';
     }
 
     /**

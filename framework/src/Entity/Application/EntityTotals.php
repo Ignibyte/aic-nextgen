@@ -82,8 +82,7 @@ final readonly class EntityTotals
     {
         $column = $this->entityConditions->column($field);
         $sql = 'SELECT DISTINCT ' . $column . ', ' . $column . '::text AS value FROM ' . $this->entityJoins->from()
-            . $this->entityConditions->sql() . ($this->entityConditions->hasAny() ? ' AND ' : ' WHERE ')
-            . $column . ' IS NOT NULL ORDER BY ' . $column;
+            . $this->nonNull($column) . ' ORDER BY ' . $column;
         $values = [];
 
         foreach ($this->database->fetchAll($sql, $this->entityConditions->params()) as $row) {
@@ -175,10 +174,23 @@ final readonly class EntityTotals
     {
         $column = $this->entityConditions->column($group);
         $sql = 'SELECT ' . $column . '::text AS value, (' . $aggregate . ')::text AS total FROM ' . $this->entityJoins->from()
-            . $this->entityConditions->sql() . ($this->entityConditions->hasAny() ? ' AND ' : ' WHERE ') . $column
-            . ' IS NOT NULL GROUP BY ' . $column . ' ORDER BY ' . $aggregate . ' DESC, 1';
+            . $this->nonNull($column) . ' GROUP BY ' . $column . ' ORDER BY ' . $aggregate . ' DESC, 1';
 
         return $this->database->fetchAll($sql, $this->entityConditions->params());
+    }
+
+    /**
+     * @param string $column A qualified column.
+     *
+     * @return string The query's WHERE with the column's not-null test joined to it, or a WHERE of that test alone
+     *                when the conditions wrote none: a soft-deleting type's live scope is a WHERE with no condition
+     *                added (#348).
+     */
+    private function nonNull(string $column): string
+    {
+        $where = $this->entityConditions->sql();
+
+        return $where . ($where === '' ? ' WHERE ' : ' AND ') . $column . ' IS NOT NULL';
     }
 
     /**
