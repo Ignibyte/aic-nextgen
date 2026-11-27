@@ -14,7 +14,7 @@ use PHPat\Test\PHPat;
  * kind's response type is sealed. Classes are named by regex: the
  * architecture layer depends on phpat alone (Deptrac), and Rector turns a
  * plain class-name string back into `::class`. Page, Api, Stream, Command
- * and Job (#46).
+ * and Job (#46). An interpreted worker's only kind is the Job (#335).
  */
 final class KindsArchitectureTest
 {
@@ -28,6 +28,7 @@ final class KindsArchitectureTest
             'testAppEntryPointsAreKinds' => $this->testAppEntryPointsAreKinds(),
             'testNoClassIsTwoKinds' => $this->testNoClassIsTwoKinds(),
             'testResponsesAreSealed' => $this->testResponsesAreSealed(),
+            'testWorkersHoldOnlyJobs' => $this->testWorkersHoldOnlyJobs(),
         ];
     }
 
@@ -89,5 +90,26 @@ final class KindsArchitectureTest
             ->shouldNot()
             ->exist()
             ->because('each kind returns only its own sealed response shapes, so its handler knows every one.');
+    }
+
+    /**
+     * An interpreted worker holds no Page, Api, Stream or Command: it is
+     * never routed or run from the console, only handed queued jobs.
+     *
+     * @return Rule The rule.
+     */
+    private function testWorkersHoldOnlyJobs(): Rule
+    {
+        return PHPat::rule()
+            ->classes(Selector::inNamespace('Worker'))
+            ->shouldNot()
+            ->implement()
+            ->classes(
+                Selector::classname('/^AIC\\\\Controller\\\\Contracts\\\\Page$/', true),
+                Selector::classname('/^AIC\\\\Controller\\\\Contracts\\\\Api$/', true),
+                Selector::classname('/^AIC\\\\Controller\\\\Contracts\\\\Stream$/', true),
+                Selector::classname('/^AIC\\\\Controller\\\\Contracts\\\\Command$/', true),
+            )
+            ->because("a worker runs queued work only: its one kind is the Job, and the site's routes and the console never reach it.");
     }
 }

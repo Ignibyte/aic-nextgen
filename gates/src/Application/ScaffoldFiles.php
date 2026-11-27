@@ -27,7 +27,7 @@ use const GLOB_ONLYDIR;
 
 /**
  * The project as gate:31 lets the make commands see it (#122): every file on
- * disk but `modules/scaffold/`, which starts empty, and every write kept in
+ * disk but `modules/scaffold/` and `workers/scaffold/`, which start empty, and every write kept in
  * memory, so the made module can be compared with the committed one and
  * nothing on disk changes.
  */
@@ -37,6 +37,11 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
      * The folder the overlay hides and holds in memory.
      */
     public const string FOLDER = 'modules/scaffold/';
+
+    /**
+     * The scaffold's interpreted worker (#335), which the overlay hides and holds too.
+     */
+    public const string WORKER = 'workers/scaffold/';
 
     /**
      * The scaffold's components in the theme (#153, #167), which the overlay hides too: every template folder and
@@ -163,7 +168,7 @@ final class ScaffoldFiles implements ModuleFolders, ProjectFiles
     private static function hidden(string $path): bool
     {
         return array_any(
-            [self::FOLDER, ...self::THEME, ...self::LAYOUTS, ...self::SCRIPTS],
+            [self::FOLDER, self::WORKER, ...self::THEME, ...self::LAYOUTS, ...self::SCRIPTS],
             static fn (string $prefix): bool => str_starts_with($path, $prefix),
         );
     }

@@ -9,6 +9,7 @@
 
     <file>modules</file>
     <file>themes</file>
+    <file>workers</file>
     <file>build/generated</file>
     <file>public</file>
     <file>bootstrap</file>

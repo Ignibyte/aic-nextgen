@@ -24,7 +24,8 @@ use const GLOB_ONLYDIR;
  * The root files an app takes from ignibyte/aic-gates (#130): each tool's stub, from the
  * package's `stubs/`, as the project should hold it. phpcs.xml.dist is the one
  * that varies: the stub, with one root namespace per module on disk and the
- * theme's two (#153), the lines the build prints, before the generated wiring's.
+ * theme's two (#153) and one per interpreted worker (#335), the lines the build
+ * and make:worker print, before the generated wiring's.
  */
 final readonly class SuiteStubs
 {
@@ -51,10 +52,12 @@ final readonly class SuiteStubs
     private const string GENERATED = '                <element key="' . BuildPaths::GENERATED . '" value="App\\Generated"/>';
 
     /**
-     * @param string $package ignibyte/aic-gates' directory.
+     * @param string         $package        ignibyte/aic-gates' directory.
+     * @param ProjectProfile $projectProfile The project's workers.
      */
     public function __construct(
         private string $package,
+        private ProjectProfile $projectProfile = new ProjectProfile(),
     ) {
     }
 
@@ -71,7 +74,7 @@ final readonly class SuiteStubs
         return $name === 'phpcs.xml.dist'
             ? str_replace(
                 self::GENERATED,
-                implode('', [...$this->moduleRoots($root), ...$this->themeRoots($root)]) . self::GENERATED,
+                implode('', [...$this->moduleRoots($root), ...$this->themeRoots($root), ...$this->workerRoots($root)]) . self::GENERATED,
                 $stub,
             )
             : $stub;
@@ -110,6 +113,20 @@ final readonly class SuiteStubs
         }
 
         return $roots;
+    }
+
+    /**
+     * @param string $root The project's root.
+     *
+     * @return list<string> Each worker's root namespace line (#335), `Worker\<Studly>`, each with its line break.
+     */
+    private function workerRoots(string $root): array
+    {
+        return array_map(
+            static fn (string $worker): string => '                <element key="' . $worker . '/src" value="Worker\\'
+                . str_replace('_', '', ucwords(basename($worker), '_')) . '"/>' . "\n",
+            $this->projectProfile->workers($root),
+        );
     }
 
     /**

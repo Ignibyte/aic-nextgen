@@ -36,6 +36,7 @@ Read the first three before you plan a change; the rest when the change touches 
 13. [profiler.md](profiler.md): what `AIC_PROFILER=1` records for each request, and where.
 14. [http-client.md](http-client.md): calling upstream APIs: the client, the pool, retries, upstreams in config, make:client.
 15. [mcp.md](mcp.md): serving tools, resources and prompts to agents over MCP: the endpoint, the entries, schemas, access, the make:mcp-* commands.
+16. [workers.md](workers.md): interpreted workers for queued work whose library does not compile: the folder, the gates, the boundary, make:worker.
 
 ## Where things are
 
@@ -44,6 +45,7 @@ Read the first three before you plan a change; the rest when the change touches 
 | Framework source | `vendor/ignibyte/aic-framework/src/`, namespace `AIC\` |
 | These pages | `vendor/ignibyte/aic-framework/docs/` |
 | The app's modules | `modules/<name>/`, namespace `App\<Name>\` |
+| Interpreted workers | `workers/<name>/`, namespace `Worker\<Name>\`, each a Composer project of its own |
 | The generated wiring | `build/generated/`, namespace `App\Generated\`, written by `composer run build` |
 | Every route and command with its kind | `build/surface.json`, written by the same build |
 | Config | `config/`, each file returning a typed object |

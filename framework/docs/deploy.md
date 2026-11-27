@@ -26,6 +26,8 @@ Then, once per release and on a schedule:
 - `bin/aic migrate` applies the migrations.
 - `bin/aic schedule:run` every minute (a systemd timer or cron) queues the schedules due.
 - `bin/aic queue:work`, under a service that restarts it, runs the queued jobs.
+- Each interpreted worker installs from its own folder: `composer install --no-dev` in
+  `workers/<name>/` ([workers.md](workers.md#deploying)).
 
 ## Open streams and workers
 

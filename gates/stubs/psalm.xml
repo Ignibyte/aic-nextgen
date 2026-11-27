@@ -38,13 +38,15 @@
     <projectFiles>
         <directory name="modules"/>
         <directory name="themes"/>
+        <directory name="workers"/>
         <directory name="build/generated"/>
         <directory name="public"/>
         <directory name="bootstrap"/>
         <directory name="config"/>
         <file name="bin/aic"/>
-        <ignoreFiles>
+        <ignoreFiles allowMissingFiles="true">
             <directory name="vendor"/>
+            <directory name="workers/*/vendor"/>
             <directory name=".rector-cache"/>
             <directory name=".psalm-cache"/>
         </ignoreFiles>

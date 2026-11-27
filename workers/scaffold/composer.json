@@ -1,0 +1,18 @@
+{
+    "name": "app/worker-scaffold",
+    "description": "The scaffold worker: queued work that runs interpreted, for libraries that do not compile.",
+    "license": "proprietary",
+    "type": "project",
+    "require": {
+        "php": "^8.5",
+        "ignibyte/aic-framework": "^0.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Worker\\Scaffold\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

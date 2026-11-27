@@ -57,7 +57,7 @@ final readonly class NormalizeAllManifestsGate
             return 1;
         }
 
-        $manifests = $this->projectManifests->paths($root);
+        $manifests = $this->projectManifests->normalized($root);
         $failures = 0;
 
         foreach ($manifests as $manifest) {

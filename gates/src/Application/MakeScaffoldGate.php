@@ -46,7 +46,7 @@ final readonly class MakeScaffoldGate
     /**
      * How to make the module again.
      */
-    private const string REGENERATE = 'to make it again: rm -rf modules/scaffold themes/app/components/Scaffold* '
+    private const string REGENERATE = 'to make it again: rm -rf modules/scaffold workers/scaffold themes/app/components/Scaffold* '
         . 'themes/app/src/Components/Scaffold* themes/app/src/Layouts/Scaffold* themes/app/layouts/page--scaffold* '
         . 'themes/app/layouts/html--scaffold* themes/app/assets/components/scaffold-*; composer run build; '
         . 'run the lines of Gates\\Application\\ScaffoldSequence with bin/aic; composer run build.';
@@ -93,7 +93,8 @@ final readonly class MakeScaffoldGate
             return 1;
         }
 
-        fwrite($stdout, 'gate:31 — modules/scaffold/ and its theme components and layout are what the ' . count(ScaffoldSequence::LINES)
+        fwrite($stdout, 'gate:31 — modules/scaffold/, workers/scaffold/ and their theme files are what the '
+            . count(ScaffoldSequence::LINES)
             . ' make lines make: '
             . count($this->scaffoldFiles->made()) . ' file(s), byte for byte.' . PHP_EOL);
 
@@ -191,7 +192,7 @@ final readonly class MakeScaffoldGate
     private function committed(string $root): array
     {
         $files = $this->layouts($root);
-        $folders = [ScaffoldFiles::FOLDER, ...array_map(
+        $folders = [ScaffoldFiles::FOLDER, ScaffoldFiles::WORKER, ...array_map(
             static fn (string $folder): string => substr($folder, strlen($root) + 1) . '/',
             $this->components($root),
         )];

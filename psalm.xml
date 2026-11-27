@@ -38,6 +38,7 @@
         <directory name="framework/src"/>
         <directory name="modules"/>
         <directory name="themes"/>
+        <directory name="workers"/>
         <directory name="build/generated"/>
         <directory name="public"/>
         <directory name="bootstrap"/>
@@ -52,8 +53,9 @@
         <directory name="workflow/rules"/>
         <directory name="workflow/probes/sweep"/>
         <directory name="scaffold/src"/>
-        <ignoreFiles>
+        <ignoreFiles allowMissingFiles="true">
             <directory name="vendor"/>
+            <directory name="workers/*/vendor"/>
             <directory name=".rector-cache"/>
             <directory name=".psalm-cache"/>
         </ignoreFiles>
