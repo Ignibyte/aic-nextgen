@@ -22,6 +22,7 @@ use function glob;
 use function implode;
 use function is_file;
 use function sort;
+use function str_starts_with;
 use function strlen;
 use function substr;
 
@@ -186,8 +187,8 @@ final readonly class MakeScaffoldGate
     /**
      * @param string $root The project's root.
      *
-     * @return list<string> Every authored module, component and layout file, sorted; compiled classes live under
-     *                      build/generated/.
+     * @return list<string> Every authored module, worker, component and layout file, sorted; compiled classes live
+     *                      under build/generated/ and the worker's src/Generated/.
      */
     private function committed(string $root): array
     {
@@ -203,6 +204,11 @@ final readonly class MakeScaffoldGate
             }
         }
 
+        // The build writes the worker's jobs, not a make (#336).
+        $files = array_values(array_filter(
+            $files,
+            static fn (string $file): bool => !str_starts_with($file, ScaffoldFiles::WORKER . 'src/Generated/'),
+        ));
         sort($files);
 
         return $files;

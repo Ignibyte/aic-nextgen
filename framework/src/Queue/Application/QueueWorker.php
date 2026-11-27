@@ -17,18 +17,21 @@ use Throwable;
 /**
  * Runs due jobs one at a time (#46), each from the registry by name; a job
  * that throws counts as a retry, and on its last attempt fails with the
- * message. A job name the registry lacks fails at once.
+ * message. A job name the registry lacks fails at once. It takes only its own
+ * queue (#336): the site's `default`, or a worker's name.
  */
 final readonly class QueueWorker
 {
     /**
      * @param PostgresQueue      $postgresQueue The queue.
      * @param array<string, Job> $jobs          The registry, by name.
+     * @param string             $queue         The queue it takes from.
      * @param StringMapJson      $stringMapJson Decodes payloads.
      */
     public function __construct(
         private PostgresQueue $postgresQueue,
         private array $jobs,
+        private string $queue = PostgresQueue::DEFAULT,
         private StringMapJson $stringMapJson = new StringMapJson(),
     ) {
     }
@@ -45,7 +48,7 @@ final readonly class QueueWorker
         $ran = 0;
 
         while ($ran < $max) {
-            $reservedJob = $this->postgresQueue->reserve();
+            $reservedJob = $this->postgresQueue->reserve($this->queue);
 
             if (!$reservedJob instanceof ReservedJob) {
                 break;
@@ -85,7 +88,9 @@ final readonly class QueueWorker
     private function outcome(Job $job, ReservedJob $reservedJob): JobResponse
     {
         try {
-            return $job->run(new JobInput($this->stringMapJson->decode($reservedJob->payload), $reservedJob->attempts));
+            return $job->run(
+                new JobInput($this->stringMapJson->decode($reservedJob->payload), $reservedJob->attempts, $reservedJob->id),
+            );
         } catch (Throwable $throwable) {
             return $reservedJob->attempts >= JobRetry::ATTEMPTS
                 ? new JobFailed($throwable->getMessage())

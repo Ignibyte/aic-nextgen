@@ -325,7 +325,12 @@ See [security.md](security.md) for sessions, form guards, uploads, auth and secr
   (#262): `queued()` gives each `QueuedJob` with its `QueueState` (waiting, running or retrying, by
   the ten-minute rule `reserve()` uses) and its due time, and `failed()` each `FailedJob` with its
   reason. Times are ISO 8601 in UTC. `PostgresQueue::retry()` queues a failed job again, and
-  `discard()` drops it.
+  `discard()` drops it. Each job is on a named queue (#336): `dispatch()` puts it on `default`, the
+  site's, which the site's `queue:work` alone takes; `dispatchTo(queue, job, values, delay)` puts it on
+  another, an interpreted worker's ([workers.md](workers.md)), and answers its id. `JobInput::$id`
+  carries the id to the job, and `QueueRecords::state(id)` answers its `JobState`: Queued, Running,
+  Failed, or Done once no record holds it (a done job is deleted, so an id never queued reads Done
+  too). A failed job keeps its id, and a retry puts it back under it on its own queue.
 - `AIC\Schedule`: schedules declared in manifests; `bin/aic schedule:run`, once a minute, queues
   each one that is due, and a ledger keeps a minute from firing twice. Given a UTC minute
   (`schedule:run 2026-10-29T07:00`) it queues what is due then (#208).

@@ -599,6 +599,38 @@
             "module": "scaffold",
             "needs": "",
             "path": "/scaffold-loans"
+        },
+        {
+            "handler": "App\\Statement\\Controller\\StatementPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "statement",
+            "needs": "",
+            "path": "/statements"
+        },
+        {
+            "handler": "App\\Statement\\Controller\\StatementPost",
+            "kind": "Page",
+            "method": "POST",
+            "module": "statement",
+            "needs": "",
+            "path": "/statements"
+        },
+        {
+            "handler": "App\\Statement\\Controller\\StatementShowPage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "statement",
+            "needs": "",
+            "path": "/statements/{id:int}"
+        },
+        {
+            "handler": "App\\Statement\\Controller\\StatementPdf",
+            "kind": "Stream",
+            "method": "GET",
+            "module": "statement",
+            "needs": "",
+            "path": "/statements/{id:int}/pdf"
         }
     ],
     "commands": [
@@ -1036,6 +1068,22 @@
                     "name": "scaffold.scaffold-ask"
                 }
             ],
+            "plugins": [],
+            "prefixes": [],
+            "requires": [
+                "site"
+            ]
+        },
+        {
+            "bindings": [],
+            "blocks": [],
+            "exports": [],
+            "factories": [],
+            "middleware": [],
+            "migrations": [],
+            "name": "statement",
+            "namespace": "App\\Statement\\",
+            "permissions": [],
             "plugins": [],
             "prefixes": [],
             "requires": [

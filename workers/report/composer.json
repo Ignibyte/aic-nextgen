@@ -1,0 +1,19 @@
+{
+    "name": "app/worker-report",
+    "description": "The report worker: statement PDFs made with FPDF, queued by the statement module, run interpreted.",
+    "license": "proprietary",
+    "type": "project",
+    "require": {
+        "php": "^8.5",
+        "ignibyte/aic-framework": "^0.1",
+        "setasign/fpdf": "1.9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Worker\\Report\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

@@ -275,6 +275,12 @@
             </property>
             <property name="allowUseFromRootNamespace" value="true"/>
         </properties>
+        <!--
+            An interpreted worker is where a library that does not compile may
+            be required (#335), so its code imports that library's namespace,
+            whatever it is (#336).
+        -->
+        <exclude-pattern>*/workers/*</exclude-pattern>
     </rule>
 
 

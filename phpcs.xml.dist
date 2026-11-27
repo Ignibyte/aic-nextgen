@@ -43,8 +43,10 @@
                 <element key="modules/note/src" value="App\Note"/>
                 <element key="modules/scaffold/src" value="App\Scaffold"/>
                 <element key="modules/site/src" value="App\Site"/>
+                <element key="modules/statement/src" value="App\Statement"/>
                 <element key="themes/app/src/Components" value="App\Theme\Components"/>
                 <element key="themes/app/src/Layouts" value="App\Theme\Layouts"/>
+                <element key="workers/report/src" value="Worker\Report"/>
                 <element key="workers/scaffold/src" value="Worker\Scaffold"/>
                 <element key="build/generated" value="App\Generated"/>
                 <element key="gates/src" value="Gates"/>

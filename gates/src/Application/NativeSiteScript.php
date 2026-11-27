@@ -35,9 +35,7 @@ use function str_starts_with;
  */
 final readonly class NativeSiteScript
 {
-    /**
-     * The script, relative to the project's root.
-     */
+    /** The script, relative to the project's root. */
     public const string PATH = 'config/native-site.json';
 
     /**
@@ -281,21 +279,25 @@ final readonly class NativeSiteScript
      * @param int      $index The step's place.
      * @param stdClass $step  Its fields.
      *
-     * @throws InvalidArgumentException When `work` is present but not a boolean.
+     * @throws InvalidArgumentException When `work` is present but neither true nor a worker's name.
      *
-     * @return bool Its optional `work` (#209): whether the queue worker runs first; false when absent.
+     * @return string The queue worked first: `default` for `true` (#209), or a worker's name (#336); empty for none.
      */
-    private function works(int $index, stdClass $step): bool
+    private function works(int $index, stdClass $step): string
     {
         $fields = get_object_vars($step);
 
-        if (!array_key_exists('work', $fields)) {
-            return false;
+        if (!array_key_exists('work', $fields) || $fields['work'] === false) {
+            return '';
         }
 
-        return is_bool($fields['work'])
+        if ($fields['work'] === true) {
+            return 'default';
+        }
+
+        return is_string($fields['work']) && preg_match('/^[a-z][a-z0-9_]*$/', $fields['work']) === 1
             ? $fields['work']
-            : throw $this->wrong($index, 'work', 'boolean');
+            : throw $this->wrong($index, 'work', "boolean or a worker's name");
     }
 
     /**

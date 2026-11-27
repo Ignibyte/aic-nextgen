@@ -7,7 +7,6 @@ namespace AIC\Workflow\Infrastructure;
 use AIC\Controller\Contracts\Command;
 use AIC\Workflow\Application\Make\MakeModuleCommand;
 use AIC\Workflow\Application\Make\MakePolicyCommand;
-use AIC\Workflow\Application\Make\MakeWorkerCommand;
 use AIC\Workflow\Application\Make\ModuleFolders;
 use AIC\Workflow\Application\ProjectFiles;
 
@@ -15,7 +14,7 @@ use AIC\Workflow\Application\ProjectFiles;
  * The make commands (#122), dev-only like the rest of the workflow:
  * `make:module`, `make:page`, `make:api`, `make:component`, `make:block`,
  * `make:command`, `make:job`, `make:migration`, `make:theme`, `make:layout`,
- * `make:entity`, `make:policy` (#304), `make:worker` (#335) and the shapes (`make:enum`,
+ * `make:entity`, `make:policy` (#304), `make:worker` (#335), `make:job --worker` (#336) and the shapes (`make:enum`,
  * `make:exception`, `make:interface`, #319), each writing files that pass
  * every gate and editing its module's manifest where it has one, then `make <kind>` and
  * `make:catalog` for the app's own scaffolds (#298). `CodeKernel` merges
@@ -61,8 +60,8 @@ final readonly class MakeKernel
             'make:page' => $themeMakes->page($makeRun),
             'make:policy' => new MakePolicyCommand($makeRun, $projectFiles),
             'make:theme' => $themeMakes->theme($makeRun),
-            'make:worker' => new MakeWorkerCommand($makeRun, $projectFiles),
             ...(new SimpleMakes())->commands($makeRun),
+            ...(new WorkerMakes($projectFiles))->commands($makeRun),
             ...(new VersionedMakes())->commands($makeRun),
             ...(new IntegrationMakes($this->root, $projectFiles))->commands($makeRun),
             ...(new ScaffoldMakes($this->root, $projectFiles, $moduleFolders))->commands($makeRun),

@@ -27,8 +27,9 @@ final readonly class NativeSiteStep
      *                               a record whose page no Location names; empty for none.
      * @param int          $events   For an event stream that stays open, how many events to read before hanging up (#202);
      *                               0 reads it to its end.
-     * @param bool         $work     Whether the app's queue worker runs before it is sent (#209), for a page that exists
-     *                               only after a job runs.
+     * @param string       $work     The queue worked before it is sent, for a page that exists only after a job runs:
+     *                               `default`, the app's own (#209), or an interpreted worker's name (#336); empty
+     *                               for none.
      * @param list<string> $console  An app command and its arguments, run before it is sent and before the worker
      *                               (#210), so each pass starts a record afresh; empty for none.
      */
@@ -42,7 +43,7 @@ final readonly class NativeSiteStep
         public bool $captures,
         public string $capture = '',
         public int $events = 0,
-        public bool $work = false,
+        public string $work = '',
         public array $console = [],
     ) {
     }

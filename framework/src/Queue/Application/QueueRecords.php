@@ -8,6 +8,7 @@ use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
 use AIC\Queue\Domain\FailedJob;
+use AIC\Queue\Domain\JobState;
 use AIC\Queue\Domain\QueuedJob;
 use AIC\Queue\Domain\QueueState;
 
@@ -16,7 +17,8 @@ use function array_map;
 /**
  * The queue as typed records (#262): the jobs waiting, running or retrying,
  * and the failed record, newest first, so an app shows them without SQL of
- * its own. `PostgresQueue` writes both tables.
+ * its own, and one job's state by the id it was queued under (#336).
+ * `PostgresQueue` writes both tables.
  */
 final readonly class QueueRecords
 {
@@ -55,6 +57,31 @@ final readonly class QueueRecords
     }
 
     /**
+     * @param int $id The id `PostgresQueue::dispatchTo()` answered.
+     *
+     * @throws QueryException When the queue cannot be read.
+     *
+     * @return JobState Running while a worker holds it, Queued while it waits, Failed in the failed record, and
+     *                  Done once no record holds it.
+     */
+    public function state(int $id): JobState
+    {
+        $state = $this->database->fetchOne(
+            "SELECT coalesce((SELECT CASE WHEN reserved_at >= now() - interval '10 minutes' THEN 'running'"
+            . " ELSE 'queued' END FROM aic_jobs WHERE id = ?),"
+            . " (SELECT 'failed' FROM aic_failed_jobs WHERE job_id = ? LIMIT 1), 'done') AS state",
+            [$id, $id],
+        )->string('state');
+
+        return match ($state) {
+            'running' => JobState::Running,
+            'queued' => JobState::Queued,
+            'failed' => JobState::Failed,
+            default => JobState::Done,
+        };
+    }
+
+    /**
      * @param int $limit The most to list.
      *
      * @throws QueryException When the record cannot be read.
@@ -87,7 +114,7 @@ final readonly class QueueRecords
             $row->int('id'),
             $row->string('job'),
             $row->string('payload'),
-            self::state($row->string('state')),
+            self::queueState($row->string('state')),
             $row->int('attempts'),
             $row->string('due_at'),
             $row->string('reserved_at'),
@@ -118,7 +145,7 @@ final readonly class QueueRecords
      *
      * @return QueueState Its case.
      */
-    private static function state(string $name): QueueState
+    private static function queueState(string $name): QueueState
     {
         return match ($name) {
             'running' => QueueState::Running,

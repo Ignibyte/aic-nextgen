@@ -119,10 +119,10 @@ Where such a need goes depends on when its answer is needed (#317):
 
 A worker is a Composer project of its own under `workers/<name>/`. Its Jobs run under PHP, outside
 gate:21 and gate:2, and every other gate holds it. It shares only the queue, Postgres and
-`PrivateFiles` with the site, and no site class names a worker class. The worker root and its gates
-(#335) and the way the site queues work for a worker and reads its result (#336) are not built yet.
-Until they are, an app has no sanctioned place for such a library: write the need in your own PHP,
-or wait for the worker.
+`PrivateFiles` with the site, and no site class names a worker class. The site queues a job on the
+worker's queue with `PostgresQueue::dispatchTo()`, the worker's `bin/aic.php queue:work` runs it, and
+the site reads its state with `QueueRecords::state()` and sends what it wrote (#336). See
+[workers.md](workers.md).
 
 ## Whole-site comparison and diagnosis
 

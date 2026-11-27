@@ -118,7 +118,9 @@ run by `bin/aic queue:work`. It answers with one of `AIC\Controller\Domain\JobDo
 `AIC\Controller\Domain\JobRetry` (after a delay in seconds, within the attempts it allows, three by
 default) or `AIC\Controller\Domain\JobFailed` (with a reason). `bin/aic queue:failed` lists the
 failed jobs with their ids, and `bin/aic queue:retry <id>` queues one again (#208). A page that
-shows the queue reads it through `AIC\Queue\Application\QueueRecords`, never SQL of its own (#262). A schedule queues a job on a cron cadence. The manifest names it with `->job(`
+shows the queue reads it through `AIC\Queue\Application\QueueRecords`, never SQL of its own (#262). A job
+queued for an interpreted worker goes on the worker's queue with `PostgresQueue::dispatchTo()`, and the page that
+queued it reads its state by id ([workers.md](workers.md#queueing-work-for-a-worker)). A schedule queues a job on a cron cadence. The manifest names it with `->job(`
 and a schedule with `->schedule(`.
 
 A command or a job may ask for `AIC\Controller\Application\PageDocuments` and

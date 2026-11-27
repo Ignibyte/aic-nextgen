@@ -15,19 +15,24 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 use InvalidArgumentException;
 use Override;
 
+use function array_key_exists;
+
 /**
  * `bin/aic make:job <module> <Class> <name> [--dry-run] [--json]` (#122):
- * a job that is done at once. The manifest names it.
+ * a job that is done at once. The manifest names it. With `--worker` the
+ * first word names an interpreted worker and there is no name (#336).
  */
 final readonly class MakeJobCommand implements Command
 {
     /**
-     * @param MakeRun   $makeRun   The run.
-     * @param MakeNamed $makeNamed The recipe it shares with make:command.
-     * @param JobSource $jobSource Writes the job.
+     * @param MakeRun         $makeRun         The run.
+     * @param WorkerJobRecipe $workerJobRecipe The recipe of a worker's job.
+     * @param MakeNamed       $makeNamed       The recipe it shares with make:command.
+     * @param JobSource       $jobSource       Writes the job.
      */
     public function __construct(
         private MakeRun $makeRun,
+        private WorkerJobRecipe $workerJobRecipe,
         private MakeNamed $makeNamed = new MakeNamed(),
         private JobSource $jobSource = new JobSource(),
     ) {
@@ -45,7 +50,14 @@ final readonly class MakeJobCommand implements Command
     {
         return $this->makeRun->run(
             $commandInput,
-            new CommandUsage('make:job', 'make:job <module> <Class> <name> [--dry-run] [--json]', ['dry-run'], [], 3),
+            new CommandUsage(
+                'make:job',
+                'make:job <module> <Class> <name> | <worker> <Class> --worker [--dry-run] [--json]',
+                ['dry-run', 'worker'],
+                [],
+                2,
+                1,
+            ),
             $this->recipe(...),
         );
     }
@@ -59,6 +71,8 @@ final readonly class MakeJobCommand implements Command
      */
     private function recipe(ParsedArguments $parsedArguments): MakeRecipe
     {
-        return $this->makeNamed->recipe($parsedArguments, 'job', $this->jobSource->source(...));
+        return array_key_exists('worker', $parsedArguments->flags)
+            ? $this->workerJobRecipe->recipe($parsedArguments)
+            : $this->makeNamed->recipe($parsedArguments, 'job', $this->jobSource->source(...));
     }
 }
