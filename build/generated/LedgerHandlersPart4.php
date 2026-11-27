@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
-use AIC\Broadcast\Application\Broadcasts;
-use AIC\Broadcast\Application\StreamSlots;
 use AIC\Container\Exception\ContainerException;
 use AIC\Module\Application\HandlerContext;
-use App\Ledger\Controller\LedgerAssistantPage;
 use App\Ledger\Controller\LedgerFeedStream;
 use App\Ledger\Controller\LedgerMcpApi;
+use App\Ledger\Controller\LedgerMcpStream;
 use App\Ledger\Controller\LedgerMeterPage;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -37,22 +35,21 @@ final readonly class LedgerHandlersPart4
      */
     public function byId(): array
     {
+        $ledgerHandlerServices = new LedgerHandlerServices($this->handlerContext);
         $ledgerHandlerServicesPart2 = new LedgerHandlerServicesPart2($this->handlerContext);
         $ledgerHandlerServicesPart3 = new LedgerHandlerServicesPart3($this->handlerContext);
-        $broadcasts = new Broadcasts(
-            $this->handlerContext->database(),
-            $this->handlerContext->appConfig(),
-            new StreamSlots($this->handlerContext->database()),
-        );
 
         return [
-            LedgerAssistantPage::class => $this->handlerContext->page(
-                new LedgerAssistantPage($ledgerHandlerServicesPart3->ledgerAssistant()),
-                'ledger.split',
+            LedgerFeedStream::class => $this->handlerContext->stream(
+                new LedgerFeedStream($ledgerHandlerServices->broadcasts()),
+                'ledger.feed',
             ),
-            LedgerFeedStream::class => $this->handlerContext->stream(new LedgerFeedStream($broadcasts), 'ledger.feed'),
             LedgerMcpApi::class => $this->handlerContext->api(
                 new LedgerMcpApi($ledgerHandlerServicesPart3->mcpServer(), $ledgerHandlerServicesPart2->ledgerMcp()),
+                'ledger.mcp',
+            ),
+            LedgerMcpStream::class => $this->handlerContext->stream(
+                new LedgerMcpStream($ledgerHandlerServicesPart3->mcpStream(), $ledgerHandlerServicesPart2->ledgerMcp()),
                 'ledger.mcp',
             ),
             LedgerMeterPage::class => $this->handlerContext->page(new LedgerMeterPage($this->handlerContext->documents())),

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Generated;
 
+use AIC\Broadcast\Application\Broadcasts;
+use AIC\Broadcast\Application\StreamSlots;
 use AIC\Entity\Application\AuditTrail;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
 use App\Ledger\Entity\LedgerTypes;
 use App\Ledger\Mcp\LedgerAccountsResource;
 use App\Ledger\Mcp\LedgerCategoriesResource;
+use App\Ledger\Mcp\LedgerCategorizePrompt;
 use App\Ledger\Mcp\LedgerExplainPrompt;
 use App\Ledger\Mcp\LedgerSplitPrompt;
 use App\Ledger\Mcp\LedgerStandingResource;
@@ -36,6 +39,18 @@ final readonly class LedgerHandlerServices
     public function ledgerHistory(): LedgerHistory
     {
         return new LedgerHistory(new AuditTrail($this->handlerContext->database()));
+    }
+
+    /**
+     * @return Broadcasts A new one, for the part that asked.
+     */
+    public function broadcasts(): Broadcasts
+    {
+        return new Broadcasts(
+            $this->handlerContext->database(),
+            $this->handlerContext->appConfig(),
+            new StreamSlots($this->handlerContext->database()),
+        );
     }
 
     /**
@@ -73,6 +88,6 @@ final readonly class LedgerHandlerServices
      */
     public function ledgerMcpPart2(): LedgerMcpPart2
     {
-        return new LedgerMcpPart2(new LedgerExplainPrompt(), new LedgerSplitPrompt());
+        return new LedgerMcpPart2(new LedgerCategorizePrompt(), new LedgerExplainPrompt(), new LedgerSplitPrompt());
     }
 }

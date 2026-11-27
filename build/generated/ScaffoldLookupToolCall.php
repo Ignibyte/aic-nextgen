@@ -7,6 +7,7 @@ namespace App\Generated;
 use AIC\Access\Domain\Actor;
 use AIC\Mcp\Contracts\McpArgumentException;
 use AIC\Mcp\Contracts\McpArguments;
+use AIC\Mcp\Domain\McpSteppedCall;
 use AIC\Mcp\Domain\McpToolCall;
 use AIC\Mcp\Domain\McpToolInfo;
 use App\Scaffold\Mcp\ScaffoldLookupInput;
@@ -54,9 +55,29 @@ final readonly class ScaffoldLookupToolCall implements McpToolCall
     #[Override]
     public function callTool(McpArguments $mcpArguments, Actor $actor): JsonSerializable
     {
-        $mcpArguments->only(['query']);
-        $scaffoldLookupInput = new ScaffoldLookupInput($mcpArguments->string('query'));
+        return new ScaffoldLookupToolResult($this->scaffoldLookupTool->call($this->input($mcpArguments)));
+    }
 
-        return new ScaffoldLookupToolResult($this->scaffoldLookupTool->call($scaffoldLookupInput));
+    /**
+     * @return McpSteppedCall|null Null: the tool runs in no steps.
+     */
+    #[Override]
+    public function stepped(): ?McpSteppedCall
+    {
+        return null;
+    }
+
+    /**
+     * @param McpArguments $mcpArguments The call's arguments.
+     *
+     * @throws McpArgumentException When the arguments do not fit the input.
+     *
+     * @return ScaffoldLookupInput The tool's input, from the arguments.
+     */
+    private function input(McpArguments $mcpArguments): ScaffoldLookupInput
+    {
+        $mcpArguments->only(['query']);
+
+        return new ScaffoldLookupInput($mcpArguments->string('query'));
     }
 }

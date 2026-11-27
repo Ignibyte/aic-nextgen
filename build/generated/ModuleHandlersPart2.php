@@ -35,6 +35,7 @@ final readonly class ModuleHandlersPart2
     {
         return array_merge(
             (new LedgerHandlersPart4($this->handlerContext))->byId(),
+            (new LedgerHandlersPart5($this->handlerContext))->byId(),
             (new NoteHandlers($this->handlerContext))->byId(),
             (new NoteHandlersPart2($this->handlerContext))->byId(),
             (new NoteHandlersPart3($this->handlerContext))->byId(),
@@ -43,7 +44,6 @@ final readonly class ModuleHandlersPart2
             (new NoteHandlersPart6($this->handlerContext))->byId(),
             (new NoteHandlersPart7($this->handlerContext))->byId(),
             (new ScaffoldHandlers($this->handlerContext))->byId(),
-            (new ScaffoldHandlersPart2($this->handlerContext))->byId(),
             (new ModuleHandlersPart3($this->handlerContext))->byId(),
         );
     }

@@ -8,7 +8,8 @@ use AIC\Mcp\Attribute\ToolInfo;
 
 /**
  * One MCP tool as the build read it (#316): its class, its `#[ToolInfo]`, its
- * input and output types and whether its `call()` takes the caller.
+ * input and output types, whether its `call()` takes the caller, and whether
+ * it runs in steps (#333).
  */
 final readonly class McpToolSpec
 {
@@ -19,6 +20,7 @@ final readonly class McpToolSpec
      * @param McpType      $output    Its output class, as an object type.
      * @param bool         $withActor Whether `call()` takes the `Actor` second.
      * @param list<string> $throws    The exceptions its `call()` says it throws, by class.
+     * @param bool         $stepped   Whether it has `steps()` and `step()` (#333).
      */
     public function __construct(
         public string $class,
@@ -27,6 +29,7 @@ final readonly class McpToolSpec
         public McpType $output,
         public bool $withActor,
         public array $throws = [],
+        public bool $stepped = false,
     ) {
     }
 }

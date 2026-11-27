@@ -8,6 +8,7 @@ use AIC\Access\Application\Actors;
 use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Contracts\ApiResponse;
 use AIC\Controller\Domain\ApiAccepted;
+use AIC\Controller\Domain\ApiEvents;
 use AIC\Controller\Domain\JsonResponse;
 use AIC\Controller\Domain\JsonText;
 use AIC\Database\Contracts\QueryException;
@@ -17,14 +18,18 @@ use AIC\Mcp\Domain\McpProtocolException;
 use AIC\Mcp\Domain\McpRequest;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function str_contains;
+
 /**
  * An app's MCP server (#316): MCP 2025-06-18's JSON-RPC over Streamable HTTP,
  * answered as JSON. A module routes `POST /mcp` to its own Api, under the
  * `needs:` that admits a client, and hands each request here with the catalog
  * of the generated `App\Generated\<Module>Mcp`. One message per POST: a request gets its
  * reply, a notification a `202` with no body, a body that is not one JSON-RPC
- * message a `400` with the error. It keeps nothing between requests, so it sends
- * no `Mcp-Session-Id` and offers no GET stream.
+ * message a `400` with the error. A stepped tool's call with a progress token
+ * answers an event stream instead (#333), its progress then its reply. It
+ * keeps nothing between requests, so it sends no `Mcp-Session-Id`; the GET
+ * stream is `McpStream`'s.
  */
 final readonly class McpServer
 {
@@ -46,7 +51,8 @@ final readonly class McpServer
      *
      * @throws QueryException When the caller's roles or token cannot be read.
      *
-     * @return ApiResponse The reply, the `202`, or the `400`.
+     * @return ApiResponse The reply, the `202`, or the `400`; a stepped tool call's events for a client that sends a
+     *                     progress token and reads `text/event-stream` (#333).
      */
     public function answer(ServerRequestInterface $serverRequest, McpCatalog $mcpCatalog): ApiResponse
     {
@@ -63,6 +69,13 @@ final readonly class McpServer
         }
 
         $actor = $this->actors->actor($serverRequest);
+        $toolProgress = str_contains($serverRequest->getHeaderLine('Accept'), 'text/event-stream')
+            ? $this->mcpMethods->events($id, $mcpRequest, $mcpCatalog, $actor)
+            : null;
+
+        if ($toolProgress instanceof ToolProgress) {
+            return new ApiEvents($toolProgress);
+        }
 
         return new JsonText($this->mcpMethods->reply($id, $mcpRequest, $mcpCatalog, $actor, $this->appConfig->name));
     }

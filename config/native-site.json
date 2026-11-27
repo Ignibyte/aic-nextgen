@@ -1457,12 +1457,39 @@
             "captures": false
         },
         {
-            "name": "mcp, no GET stream",
+            "name": "mcp tools/call ledger.tally, progress as an event stream",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":30,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.tally\",\"arguments\":{\"amounts\":[100,250,5]},\"_meta\":{\"progressToken\":\"gate-1\"}}}",
+            "header": "Authorization: Bearer {password}\r\nAccept: application/json, text/event-stream",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call ledger.tally, arguments that do not fit, in the stream",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":31,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.tally\",\"arguments\":{\"amounts\":[\"x\"]},\"_meta\":{\"progressToken\":2}}}",
+            "header": "Authorization: Bearer {password}\r\nAccept: application/json, text/event-stream",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp tools/call ledger.tally, a progress token but JSON only",
+            "method": "POST",
+            "path": "/mcp",
+            "form": "json:{\"jsonrpc\":\"2.0\",\"id\":32,\"method\":\"tools/call\",\"params\":{\"name\":\"ledger.tally\",\"arguments\":{\"amounts\":[1,2]},\"_meta\":{\"progressToken\":3}}}",
+            "header": "Authorization: Bearer {password}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "mcp GET stream, the lists changed since a stale print",
             "method": "GET",
             "path": "/mcp",
             "form": "",
-            "header": "Authorization: Bearer {password}",
-            "status": 405,
+            "header": "Authorization: Bearer {password}\r\nLast-Event-ID: 0:00000000-00000000-00000000",
+            "status": 200,
             "captures": false
         },
         {

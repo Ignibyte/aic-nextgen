@@ -51,7 +51,7 @@ final readonly class McpDecodeSource
     /**
      * @param McpToolSpec $mcpToolSpec The tool.
      *
-     * @return string The body.
+     * @return string The body of the adapter's `input()`: the arguments checked and the tool's input built (#333).
      */
     public function body(McpToolSpec $mcpToolSpec): string
     {
@@ -64,19 +64,12 @@ final readonly class McpDecodeSource
         }
 
         $input = $this->mcpCode->short($mcpToolSpec->input->php);
-        $inputVariable = '$' . $this->mcpCode->variable($input);
-        $tool = $this->mcpCode->short($mcpToolSpec->class);
-        $actor = $mcpToolSpec->withActor
-            ? ', $actor'
-            : '';
-        $call = '$this->' . $this->mcpCode->variable($tool) . '->call(' . $inputVariable . $actor . ')';
 
         return implode("\n", [
             '        $mcpArguments->only(' . $this->mcpCode->list($names) . ');',
             ...$this->defaults($mcpToolSpec),
-            $this->mcpCode->call('new ' . $input, $reads, 8, $inputVariable . ' = ', ';'),
             '',
-            '        return new ' . $tool . 'Result(' . $call . ');',
+            $this->mcpCode->call('return new ' . $input, $reads, 8, '', ';'),
         ]);
     }
 
