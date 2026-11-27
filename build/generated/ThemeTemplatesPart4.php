@@ -8,10 +8,10 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
+use App\Theme\Components\ScaffoldAboutView\ScaffoldAboutView;
 use App\Theme\Components\ScaffoldCard\ScaffoldCard;
 use App\Theme\Components\ScaffoldGauge\ScaffoldGauge;
 use App\Theme\Components\SiteNav\SiteNav;
-use App\Theme\Components\StockLinks\StockLinks;
 use Override;
 
 /**
@@ -40,12 +40,28 @@ final readonly class ThemeTemplatesPart4 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
+            $component instanceof ScaffoldAboutView => $this->renderScaffoldAboutView($component, $renderPass),
             $component instanceof ScaffoldCard => $this->renderScaffoldCard($component, $renderPass),
             $component instanceof ScaffoldGauge => $this->renderScaffoldGauge($component, $renderPass),
             $component instanceof SiteNav => $this->renderSiteNav($component, $renderPass),
-            $component instanceof StockLinks => $this->renderStockLinks($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param ScaffoldAboutView $scaffoldAboutView The component; its template reads it.
+     * @param RenderPass        $renderPass        The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml.
+     */
+    private function renderScaffoldAboutView(ScaffoldAboutView $scaffoldAboutView, RenderPass $renderPass): string
+    {
+        $renderPass->open($scaffoldAboutView);
+        require __DIR__ . '/templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml';
+
+        return $renderPass->close();
     }
 
     /**
@@ -92,22 +108,6 @@ final readonly class ThemeTemplatesPart4 implements ComponentTemplates
     {
         $renderPass->open($siteNav);
         require __DIR__ . '/templates/themes/app/components/SiteNav/site-nav.phtml';
-
-        return $renderPass->close();
-    }
-
-    /**
-     * @param StockLinks $stockLinks The component; its template reads it.
-     * @param RenderPass $renderPass The pass its template writes through.
-     *
-     * @throws UnknownComponent When a child has no template.
-     *
-     * @return string Its markup, from templates/themes/app/components/StockLinks/stock-links.phtml.
-     */
-    private function renderStockLinks(StockLinks $stockLinks, RenderPass $renderPass): string
-    {
-        $renderPass->open($stockLinks);
-        require __DIR__ . '/templates/themes/app/components/StockLinks/stock-links.phtml';
 
         return $renderPass->close();
     }

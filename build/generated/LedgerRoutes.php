@@ -15,9 +15,9 @@ use App\Ledger\Controller\LedgerFeedStream;
 use App\Ledger\Controller\LedgerGuardsApi;
 use App\Ledger\Controller\LedgerLimitedApi;
 use App\Ledger\Controller\LedgerMcpApi;
-use App\Ledger\Controller\LedgerMcpStream;
 use App\Ledger\Controller\LedgerMeterPage;
 use App\Ledger\Controller\LedgerNoticesApi;
+use App\Ledger\Controller\LedgerSanitizePage;
 use App\Ledger\Controller\LedgerStandingApi;
 
 /**
@@ -47,7 +47,8 @@ final readonly class LedgerRoutes
             ->post('/ledger/feed', LedgerFeedPost::class)
             ->get('/ledger/feed/events', LedgerFeedStream::class)
             ->get('/ledger/meter', LedgerMeterPage::class)
-            ->post('/mcp', LedgerMcpApi::class)
-            ->get('/mcp', LedgerMcpStream::class);
+            ->get('/ledger/sanitize', LedgerSanitizePage::class)
+            ->post('/ledger/sanitize', LedgerSanitizePage::class)
+            ->post('/mcp', LedgerMcpApi::class);
     }
 }

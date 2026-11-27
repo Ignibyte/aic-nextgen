@@ -98,3 +98,30 @@ outside the Renderer, markup reads outside the writer and invalid tree inputs; g
 markup under `modules/`;
 gate:9 holds the rendering dependency boundaries. Fix a refusal by moving presentation into data
 and a declared template. A grant does not make untrusted text safe to render.
+
+## Sanitizing HTML a visitor wrote
+
+`AIC\Component\Application\HtmlSanitizer::sanitize(string): SanitizedHtml` turns untrusted HTML
+into markup that is safe to send, inside the request (#337). It is AIC's own PHP, one pass of its
+tokenizer with no DOM, so the compiled site and the PHP reference write the same bytes. Its
+`HtmlPolicy` names each element kept and the attributes it may carry; the default is prose (`p`,
+`br`, `hr`, `strong`, `em`, `b`, `i`, `u`, `s`, `code`, `pre`, `blockquote`, `ul`, `ol`, `li`, `h2`
+to `h4`, and `a` with `href` and `title`), with no `style`, no `on*` and no `src`.
+
+- Every other tag is dropped and its text kept; the content of `script`, `style`, `textarea`,
+  `title`, `iframe` and the other raw text elements is dropped, as are comments, doctypes and
+  processing instructions.
+- Text and values are escaped again. An `&` stays only where `HtmlReferences` keeps a reference: a
+  numeric one for a character a browser reads without a parse error, or a name from a short list
+  (XML's five and the common typographic ones); any other is shown as typed.
+- `href` keeps `http`, `https`, `mailto` and a relative URL, and refuses one with a reference or a
+  control character before its first `:`; a kept link gains `rel="nofollow noopener"`.
+- A start tag closes what a browser would close for it (`HtmlNesting`: a block closes an open
+  paragraph, a list item the one open in its list); an end tag closes back to its element when it is
+  open and is dropped when not, and everything left open closes at the end, so the markup parses
+  without an error.
+
+Only `HtmlSanitizer` makes a `SanitizedHtml` (gate:8 `aic.sanitizedHtml`). A theme shows one through
+a component class that holds the RawHtml grant, as the fixture's `App\Theme\Components\Prose\ProseBuilder`
+does: its grant's reason is the sanitizer, and the value cannot come from anywhere else. A
+component template writes a `RawHtml` inline, with no marks of its own.

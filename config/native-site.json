@@ -1034,6 +1034,123 @@
             "captures": false
         },
         {
+            "name": "ledger sanitize, empty",
+            "method": "GET",
+            "path": "/ledger/sanitize",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, prose kept",
+            "method": "GET",
+            "path": "/ledger/sanitize?html=%3Ch2%3ETitle%3C%2Fh2%3E%3Cp%3EOne%20%3Cstrong%3Ebold%3C%2Fstrong%3E%20%26amp%3B%20%3Cem%3Eem%3C%2Fem%3E%3Cbr%3Eline%3C%2Fp%3E%3Cul%3E%3Cli%3Ea%3Cli%3Eb%3C%2Ful%3E%3Cblockquote%3E%3Cpre%3E%3Ccode%3Ex%20%26lt%3B%20y%3C%2Fcode%3E%3C%2Fpre%3E%3C%2Fblockquote%3E",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, script and style bodies dropped",
+            "method": "GET",
+            "path": "/ledger/sanitize?html=%3Cp%3Ea%3Cscript%3Ealert%281%29%3C%2Fscript%3Eb%3Cstyle%3Ep%7Bcolor%3Ared%7D%3C%2Fstyle%3Ec%3CSCRIPT%20src%3Dx%3E%3C%2FSCRIPT%3Ed%3Ctextarea%3E%3Cb%3Ee%3C%2Fb%3E%3C%2Ftextarea%3Ef%3Ctitle%3Et%3C%2Ftitle%3E%3C%2Fp%3E",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, on* attributes and style dropped",
+            "method": "GET",
+            "path": "/ledger/sanitize?html=%3Cp%20onclick%3D%22alert%281%29%22%20style%3D%22color%3Ared%22%20class%3Dx%3Ea%3C%2Fp%3E%3Cimg%20src%3Dx%20onerror%3Dalert%281%29%3E%3Cb%20onmouseover%3Dalert%281%29%3Eb%3C%2Fb%3E",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, javascript and hidden schemes refused",
+            "method": "GET",
+            "path": "/ledger/sanitize?html=%3Ca%20href%3D%22javascript%3Aalert%281%29%22%3Ea%3C%2Fa%3E%3Ca%20href%3D%22JaVaScRiPt%3Ax%22%3Eb%3C%2Fa%3E%3Ca%20href%3D%22java%26%23x09%3Bscript%3Ax%22%3Ec%3C%2Fa%3E%3Ca%20href%3D%22%26%23106%3Bavascript%3Ax%22%3Ed%3C%2Fa%3E%3Ca%20href%3D%22%20javascript%3Ax%22%3Ee%3C%2Fa%3E%3Ca%20href%3D%22data%3Atext%2Fhtml%2Cx%22%3Ef%3C%2Fa%3E%3Ca%20href%3D%22vbscript%3Ax%22%3Eg%3C%2Fa%3E",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, links kept with rel",
+            "method": "GET",
+            "path": "/ledger/sanitize?html=%3Ca%20href%3D%22https%3A%2F%2Fexample.com%2F%3Fa%3D1%26b%3D2%22%20title%3D%27say%20%22hi%22%27%3Ea%3C%2Fa%3E%3Ca%20href%3D%22mailto%3Aada%40example.com%22%3Eb%3C%2Fa%3E%3Ca%20href%3D%22%2Fnotes%2F1%23top%22%3Ec%3C%2Fa%3E%3Ca%20href%3D%22page%3Fx%3D1%3A2%22%3Ed%3C%2Fa%3E%3Ca%20href%3Dhttp%3A%2F%2Fexample.com%20target%3D_blank%3Ee%3C%2Fa%3E",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, unclosed and stray tags",
+            "method": "GET",
+            "path": "/ledger/sanitize?html=%3Cp%3E%3Cb%3E%3Ci%3Ea%3C%2Fp%3E%3C%2Fdiv%3E%3C%2Fb%3Eb%3C%2Fi%3E%3C%2Fstrong%3E%3Cul%3E%3Cli%3Ec",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, comments, doctypes and instructions dropped",
+            "method": "GET",
+            "path": "/ledger/sanitize?html=%3C%21DOCTYPE%20html%3E%3C%21--%20%3Cscript%3Ex%3C%2Fscript%3E%20--%3Ea%3C%3Fphp%20echo%201%3B%20%3F%3Eb%3C%21%5BCDATA%5Bc%5D%5D%3Ed%3C%21---%3Ee%3C%21--%20unclosed",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, bad references and bare brackets",
+            "method": "GET",
+            "path": "/ledger/sanitize?html=a%20%26%20b%20%26amp%20c%20%26%230%3B%20%26%23x110000%3B%20%26bogus%3B%20%26lt%3B%26gt%3B%201%20%3C%202%20%3E%200%20%3C3%20%3C%2F%20x%3E%20%3C%3E%20%3C%3Da",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, nesting past the policy",
+            "method": "GET",
+            "path": "/ledger/sanitize?html=%3Cdiv%3E%3Csection%3E%3Ch1%3Ea%3C%2Fh1%3E%3Ch5%3Eb%3C%2Fh5%3E%3Ctable%3E%3Ctr%3E%3Ctd%3Ec%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%3Ciframe%20src%3Dx%3Ed%3C%2Fiframe%3E%3Cobject%3Ee%3C%2Fobject%3E%3Csvg%3E%3Ccircle%2F%3E%3C%2Fsvg%3E%3Cmath%3Ef%3C%2Fmath%3E%3C%2Fsection%3E%3C%2Fdiv%3E",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, attribute edge cases",
+            "method": "GET",
+            "path": "/ledger/sanitize?html=%3Ca%20href%20%3D%20%22%2Fx%22%20title%3Da%22b%20title%3Dc%3Ea%3C%2Fa%3E%3Ca%20href%3D%27%2Fy%27%20href%3D%22javascript%3Ax%22%3Eb%3C%2Fa%3E%3Ca%20title%3D%22%26quot%3B%26lt%3B%22%20href%3D%22%2Fz%22%20%2F%20%3Ec%3C%2Fa%3E%3Cp%2F%3E%3Cbr%2F%3E%3Chr%20x%3D1%3Ed%3Ca%20href%3D%22%2Fq%22",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, references and implied end tags",
+            "method": "GET",
+            "path": "/ledger/sanitize?html=caf%26eacute%3B%20%26%23233%3B%20%26%23xE9%3B%20%26copy%3B%20%26%2313%3B%20%26%23xD800%3B%20%26%23x1F600%3B%3Cp%3Ea%3Cul%3E%3Cli%3Ex%3Cli%3E%3Cb%3Ey%3C%2Ful%3E%3Ch2%3Et%3Ch3%3Eu%3C%2Fh3%3E%3Cp%3Ep%3Ca%20href%3D%22%2F1%22%3Eone%3Ca%20href%3D%22%2F2%22%3Etwo%3C%2Fa%3E%3Cp%3Eq%3Cblockquote%3Er%3C%2Fblockquote%3E%3Cpre%3Es%3C%2Fpre%3E",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "ledger sanitize, posted",
+            "method": "POST",
+            "path": "/ledger/sanitize",
+            "form": "html=%3Cp%20onclick%3Dx%3Eposted%20%3Ca%20href%3D%22javascript%3Ax%22%3Elink%3C%2Fa%3E%3C%2Fp%3E&aic_csrf={csrf}",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
             "name": "ledger feed, anonymous",
             "method": "GET",
             "path": "/ledger/feed",

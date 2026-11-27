@@ -329,6 +329,22 @@
             "path": "/ledger/meter"
         },
         {
+            "handler": "App\\Ledger\\Controller\\LedgerSanitizePage",
+            "kind": "Page",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "",
+            "path": "/ledger/sanitize"
+        },
+        {
+            "handler": "App\\Ledger\\Controller\\LedgerSanitizePage",
+            "kind": "Page",
+            "method": "POST",
+            "module": "ledger",
+            "needs": "",
+            "path": "/ledger/sanitize"
+        },
+        {
             "handler": "App\\Ledger\\Controller\\LedgerMcpApi",
             "kind": "Api",
             "method": "POST",
@@ -1189,6 +1205,11 @@
                 "component": "App\\Theme\\Components\\Panel\\Panel",
                 "generated": "build/generated/templates/themes/app/components/Panel/panel.phtml",
                 "source": "themes/app/components/Panel/panel.phtml"
+            },
+            {
+                "component": "App\\Theme\\Components\\Prose\\Prose",
+                "generated": "build/generated/templates/themes/app/components/Prose/prose.phtml",
+                "source": "themes/app/components/Prose/prose.phtml"
             },
             {
                 "component": "App\\Theme\\Components\\ScaffoldAboutView\\ScaffoldAboutView",

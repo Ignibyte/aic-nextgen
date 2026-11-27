@@ -53,8 +53,8 @@ exit($ok ? 0 : 1);
 PHP;
 $grants = new ReplaceStep(
     'config/raw-html.php',
-    '$grants = [];',
-    "\$grants = [new RawHtmlGrant('App\\\\Note\\\\Service\\\\NoteBadge', 1, 'probe')];",
+    "\$grants = [\n",
+    "\$grants = [\n    new RawHtmlGrant('App\\\\Note\\\\Service\\\\NoteBadge', 1, 'probe'),\n",
 );
 $rule = new ReplaceStep(
     'vendor/ignibyte/aic-workflow/rules/gate-suite.php',

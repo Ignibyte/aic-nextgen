@@ -230,6 +230,9 @@ gates 2 to 4, 16, 21 or 23; Deptrac's `Worker` layer and a phpat rule keep it to
 #336: named queues (`aic_jobs.queue`), `PostgresQueue::dispatchTo()` answering the id, `QueueRecords::state()` (`JobState`);
 `make:job <worker> <Class> --worker` writes the job and `workers/<w>/bin/aic.php` (`WorkerKernel`'s `queue:work` on the worker's
 queue); the build writes `workers/<w>/src/Generated/<W>Jobs.php`; gate:23's `"work": "<worker>"`; the fixture `workers/report/` and `statement`.
+#337: `HtmlSanitizer::sanitize()` → `SanitizedHtml` (only it makes one, gate:8 `aic.sanitizedHtml`), AIC's own tokenizer over an
+`HtmlPolicy` allow-list, `HtmlReferences` and `HtmlNesting` so the output parses cleanly; the theme's `ProseBuilder` holds the first
+RawHtml grant; a template writes a `RawHtml` inline; the ledger's `/ledger/sanitize` ([framework/docs/rendering.md](framework/docs/rendering.md#sanitizing-html-a-visitor-wrote)).
 #314: real-time push: `AIC\Broadcast` (`Broadcaster::publish(Channel, data)` writes `aic_broadcasts` and `pg_notify`s;
 `Broadcasts::stream()` sends a channel's events after `Last-Event-ID` over `Database::listen()|notification()`, ends each
 connection after `holdSeconds`, and caps open streams site-wide at `streams`, below one worker's handlers, default 7);

@@ -6,6 +6,18 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **An HTML sanitizer that compiles natively** (#337). `AIC\Component\Application\HtmlSanitizer::sanitize()` turns
+  HTML a visitor wrote into markup that is safe to send, inside the request, with the same bytes under PHP and the
+  compiled site: AIC's own single-pass tokenizer, no DOM. An `HtmlPolicy` allow-list (prose by default) keeps the
+  named elements and attributes; every other tag is dropped and its text kept, raw text elements' content, comments
+  and doctypes are dropped, text and values are escaped again, and an `&` stays only for a reference a browser reads
+  without a parse error (`HtmlReferences`). Links keep `http`, `https`, `mailto` and relative URLs, refuse a hidden
+  scheme, and gain `rel="nofollow noopener"`. Start tags close what a browser would close (`HtmlNesting`) and every
+  element is balanced, so the output parses cleanly. Only the sanitizer makes a `SanitizedHtml` (gate:8
+  `aic.sanitizedHtml`). A component template now writes a `RawHtml` inline. The fixture: the theme's `Prose` and its
+  `ProseBuilder`, which holds the first RawHtml grant, and the ledger's `/ledger/sanitize`, which gate:23 feeds
+  hostile inputs.
+
 - **The worker handoff: named queues and job state** (#336). The site queues work for an interpreted worker and
   reads what became of it. `aic_jobs` and `aic_failed_jobs` gain a `queue` column (`default` for the site's own jobs)
   and a failed record keeps its `job_id`, so a retry goes back to its queue under the same id.

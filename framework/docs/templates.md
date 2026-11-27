@@ -125,7 +125,7 @@ The build's type categories are checked against its actual enum:
 
 Strings are escaped in attribute values as well as text. Escaping is not URL policy: use validated
 paths and appropriate data types for links. Components become child output, Regions become region
-output, and transparent wrappers stay inline. See [rendering.md](rendering.md#escaping-and-deliberate-raw-html)
+output, and transparent wrappers and a `RawHtml` stay inline (#337). See [rendering.md](rendering.md#escaping-and-deliberate-raw-html)
 for RawHtml's explicit grants.
 
 ## Escaped output and failures

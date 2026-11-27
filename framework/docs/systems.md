@@ -242,7 +242,8 @@ The development engine and its guard are described in [workflow.md](workflow.md)
   regions, the catalog atoms in `AIC\Component\Domain` (links, buttons, inputs, forms, alerts and
   the rest), and `AIC\Component\Application\Renderer`, the only class that makes HTML. Every value
   a template writes is escaped by its type; `AIC\Component\Domain\RawHtml` is the one way round
-  that, and each use needs a grant in `config/raw-html.php` (gate:27).
+  that, and each use needs a grant in `config/raw-html.php` (gate:27). `HtmlSanitizer` makes
+  HTML a visitor wrote safe to send as a `SanitizedHtml`, which only it makes (#337).
   The theme's HTML, page and component templates are escaped into `build/generated/templates/` and
   required by the generated lookups; no PHP class holds markup. A generated
   `AIC\Component\Contracts\PageLayouts` implementation constructs the theme's document, in the

@@ -9,6 +9,7 @@ use Gates\PhpStan\HtmlMarkupReadRule;
 use Gates\PhpStan\PolicyShapeRule;
 use Gates\PhpStan\RenderTreeInputRule;
 use Gates\PhpStan\RuleFactory;
+use Gates\PhpStan\SanitizedHtmlRule;
 use Gates\PhpStan\SchemaExpressionRule;
 use Gates\PhpStan\SeedWritesRule;
 use Gates\PhpStan\TaggedServiceTypeRule;
@@ -37,6 +38,7 @@ return [
         HtmlConstructionRule::class,
         ControllerReturnTypeRule::class,
         PolicyShapeRule::class,
+        SanitizedHtmlRule::class,
         SchemaExpressionRule::class,
         SeedWritesRule::class,
     ],

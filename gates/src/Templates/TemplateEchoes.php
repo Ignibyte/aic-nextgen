@@ -7,6 +7,7 @@ namespace Gates\Templates;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Contracts\Keyed;
 use AIC\Component\Contracts\Region;
+use AIC\Component\Domain\RawHtml;
 use Gates\Domain\TemplateNode;
 use Gates\Domain\TemplateNodeKind;
 use Gates\Domain\TemplateRefusal;
@@ -23,8 +24,9 @@ use function preg_match;
  * `Region` is written by the render pass with its markers; a `Keyed`
  * component renders through the pass between markers keyed by its own key,
  * any other component between markers keyed by its place, and a layout's
- * components inline. An `Html` waits for #99's `RawHtml`, and anything else is
- * refused: the template has nothing it can write safely.
+ * components inline. A `RawHtml` is written inline anywhere (#337): it is
+ * markup, not a component with a root to mark. Anything else is refused: the
+ * template has nothing it can write safely.
  */
 final readonly class TemplateEchoes
 {
@@ -92,12 +94,15 @@ final readonly class TemplateEchoes
      *
      * @throws InvalidArgumentException When it is in a loop and has no key of its own.
      *
-     * @return TemplateNode The node that writes it through the render pass.
+     * @return TemplateNode The node that writes it through the render pass: inline in a layout, and for a RawHtml.
      */
     private function component(string $code, string $class, string $key, bool $inLoop): TemplateNode
     {
         return match (true) {
-            $key === '' => new TemplateNode(TemplateNodeKind::Raw, '$renderPass->inline(' . $code . ')'),
+            $key === '' || is_a($class, RawHtml::class, true) => new TemplateNode(
+                TemplateNodeKind::Raw,
+                '$renderPass->inline(' . $code . ')',
+            ),
             is_a($class, Keyed::class, true) => new TemplateNode(
                 TemplateNodeKind::Component,
                 $code,
