@@ -67,6 +67,7 @@ use Gates\Application\ThemeHtmlSource;
 use Gates\Application\ThemeLayoutsSource;
 use Gates\Application\ThemePageSource;
 use Gates\Application\WebPresentationSource;
+use Gates\Application\WorkerBuild;
 use Gates\Domain\BuildPaths;
 use Gates\Domain\GateProfile;
 use Gates\Infrastructure\ProjectConfig;
@@ -159,10 +160,18 @@ try {
     foreach ((new TemplatesSource())->files($lookups, $adapters) as $file => $source) {
         $generated[$root . '/' . BuildPaths::GENERATED . '/' . $file] = $source;
     }
+
+    // Each interpreted worker's jobs (#336), in the worker's own src/Generated/.
+    $workerBuild = new WorkerBuild($root);
+    $generated = [...$generated, ...$workerBuild->files()];
     $buildOutputs = new BuildOutputs($root);
     $orphans = [
         ...$buildOutputs->orphans($root . '/' . BuildPaths::GENERATED, $generated, '*.php', true),
         ...$buildOutputs->orphans($root . '/' . BuildPaths::GENERATED, $generated, '*.phtml', true),
+        ...array_merge(...array_map(
+            static fn (string $folder): array => is_dir($folder) ? $buildOutputs->orphans($folder, $generated, '*.php', true) : [],
+            $workerBuild->folders(),
+        )),
         ...($atoms === [] ? [] : [
             ...$buildOutputs->orphans($root . '/framework/src/Component/Application/Templates', $atoms, '*.php', true),
             ...$buildOutputs->orphans($root . '/framework/src/Component/Application/Templates', $atoms, '*.phtml', true),

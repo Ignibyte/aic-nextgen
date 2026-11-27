@@ -6,6 +6,19 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The worker handoff: named queues and job state** (#336). The site queues work for an interpreted worker and
+  reads what became of it. `aic_jobs` and `aic_failed_jobs` gain a `queue` column (`default` for the site's own jobs)
+  and a failed record keeps its `job_id`, so a retry goes back to its queue under the same id.
+  `PostgresQueue::dispatchTo(queue, job, values, delay)` answers the job's id, `reserve(queue)` takes one queue only,
+  and `QueueRecords::state(id)` answers a `JobState` (Queued, Running, Failed, or Done once no record holds it).
+  `bin/aic make:job <worker> <Class> --worker` writes a worker's job and, with the first, its runner
+  `workers/<w>/bin/aic.php`, which loads the worker's own install and runs `queue:work` on the worker's queue through
+  `WorkerKernel`. The build writes each worker's `src/Generated/<W>Jobs.php`, building every job from its
+  constructor's types (`Database`, `PostgresQueue`, `PrivateFiles`; any other is refused). `JobInput` carries the
+  job's id. Deptrac's `WorkerVendor` layer is open to workers alone, and gate:23's `"work": "<worker>"` step runs a
+  worker between steps. The fixture: `workers/report/` makes a statement PDF with FPDF, and the `statement` module
+  queues it, shows its state and sends the file.
+
 - **Interpreted workers** (#335). A library with no native path that runs as queued work now has a place:
   `workers/<name>/`, a Composer project of its own (`app/worker-<name>`, PSR-4 `Worker\<Name>\` → `src/`) that installs
   in its folder and never compiles. `bin/aic make:worker <name>` writes its composer.json and README and prints the

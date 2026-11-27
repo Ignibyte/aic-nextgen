@@ -53,6 +53,19 @@ deptrac:
       collectors:
         - type: classLike
           value: '^Worker\\'
+    # A library outside every other layer, such as one a worker requires
+    # because it does not compile (#336): only a Worker class may use it.
+    - name: WorkerVendor
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '.*'
+          must_not:
+            - type: classLike
+              value: '^(AIC|App|Gates|Worker|Psr|PHPat|PHPStan|ShipMonk|PhpParser|PHPMD|PDepend|PHP_CodeSniffer|SlevomatCodingStandard|Rector|Composer)\\'
+            - type: php_internal
+              value: '.*'
     # The phpat rule classes (gate:9).
     - name: Architecture
       collectors:
@@ -196,6 +209,7 @@ deptrac:
       - Attribute
       - Application
       - PsrVendor
+      - WorkerVendor
     Architecture:
       - PhpatVendor
     # AIC's own PHPStan rules (gate:8) read the contracts they police and

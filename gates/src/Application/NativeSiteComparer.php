@@ -29,7 +29,7 @@ use const PHP_URL_PATH;
 /**
  * Runs the step script against one site, and compares two sites' answers
  * (gate:23): status, content type, location and body, with what changes from
- * run to run normalised away at comparison: timestamps, note ids, and the host
+ * run to run normalised away at comparison: timestamps, note and statement ids (#336), and the host
  * in a location.
  */
 final readonly class NativeSiteComparer
@@ -39,6 +39,7 @@ final readonly class NativeSiteComparer
      */
     private const array VOLATILE = [
         '#/notes/\\d+#' => '/notes/<id>',
+        '#/statements/\\d+#' => '/statements/<id>',
         '#/_profiler/[0-9a-f]{32}#' => '/_profiler/<profile>',
         '#<(ul|p) id="(waiting|failed|notifications|content-pages|stock)">.*?</\\1>#s' => '<$2-list>',
         '#after=[0-9a-f]{32}#' => 'after=<profile>',

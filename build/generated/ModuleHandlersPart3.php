@@ -35,6 +35,7 @@ final readonly class ModuleHandlersPart3
             (new ScaffoldHandlersPart2($this->handlerContext))->byId(),
             (new ScaffoldHandlersPart3($this->handlerContext))->byId(),
             (new ScaffoldHandlersPart4($this->handlerContext))->byId(),
+            (new StatementHandlers($this->handlerContext))->byId(),
         );
     }
 }

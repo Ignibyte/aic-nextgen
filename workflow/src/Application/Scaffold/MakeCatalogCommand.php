@@ -64,7 +64,10 @@ final readonly class MakeCatalogCommand implements Command
             'a queued CSV export: a POST page queuing it, its job, its download and a daily prune',
         ],
         'make:interface' => ['make:interface <module> <Name>', 'an interface in src/Contracts/'],
-        'make:job' => ['make:job <module> <Class> <name>', 'a queued or scheduled job, done at once'],
+        'make:job' => [
+            'make:job <module> <Class> <name> | <worker> <Class> --worker',
+            "a queued or scheduled job, done at once; in a worker's src/Job/ with --worker",
+        ],
         'make:layout' => ['make:layout <name>', 'a named page layout in the theme'],
         'make:list-page' => [
             'make:list-page <module> <Name>ListPage <table> <path> --fields=<name>:<type>,… --filters=<field>,… [--sort=<field>,…]',

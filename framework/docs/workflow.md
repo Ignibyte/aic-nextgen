@@ -147,7 +147,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:exception` | scaffold a final exception over an SPL root, in `src/Exception/` (#319) |
 | `Command::make:export` | scaffold a queued CSV export: the POST page queuing it, its job, its download and a daily prune (#323) |
 | `Command::make:interface` | scaffold an empty interface in the module's `src/Contracts/` (#319) |
-| `Command::make:job` | scaffold a Job |
+| `Command::make:job` | scaffold a Job; with `--worker`, an interpreted worker's Job and, the first time, its runner |
 | `Command::make:list-page` | scaffold a filtered, sorted and paged list of a table's rows over the framework's list atoms (#324) |
 | `Command::make:layout` | scaffold a named page layout in the theme |
 | `Command::make:mcp-prompt` | scaffold an MCP prompt with one argument, and declare the permission it needs (#334) |

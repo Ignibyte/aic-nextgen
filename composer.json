@@ -16,7 +16,8 @@
         "ignibyte/aic-gates": "0.1.x-dev",
         "ignibyte/aic-scaffold": "0.1.x-dev",
         "ignibyte/aic-workflow": "0.1.x-dev",
-        "roave/security-advisories": "dev-latest"
+        "roave/security-advisories": "dev-latest",
+        "setasign/fpdf": "1.9.0"
     },
     "repositories": [
         {
@@ -70,8 +71,15 @@
             "App\\Note\\": "modules/note/src/",
             "App\\Scaffold\\": "modules/scaffold/src/",
             "App\\Site\\": "modules/site/src/",
+            "App\\Statement\\": "modules/statement/src/",
             "App\\Theme\\Components\\": "themes/app/src/Components/",
             "App\\Theme\\Layouts\\": "themes/app/src/Layouts/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Worker\\Report\\": "workers/report/src/",
+            "Worker\\Scaffold\\": "workers/scaffold/src/"
         }
     },
     "config": {

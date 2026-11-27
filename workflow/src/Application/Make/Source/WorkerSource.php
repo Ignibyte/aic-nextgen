@@ -8,6 +8,7 @@ use AIC\Workflow\Application\Make\MakeTemplates;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function str_replace;
+use function substr;
 
 /**
  * An interpreted worker's files (`make:worker`, #335): its Composer manifest
@@ -51,5 +52,40 @@ final readonly class WorkerSource
     public function readme(string $worker, string $namespace): string
     {
         return $this->makeTemplates->render('worker', 'README.md.tpl', ['worker' => $worker, 'namespace' => $namespace]);
+    }
+
+    /**
+     * @param string $worker    The worker's name.
+     * @param string $namespace Its namespace, without the last `\`.
+     * @param string $class     The job's class.
+     *
+     * @throws WorkflowRefusal When its template is missing.
+     *
+     * @return string The job (#336).
+     */
+    public function job(string $worker, string $namespace, string $class): string
+    {
+        return $this->makeTemplates->render(
+            'worker',
+            'job.php.tpl',
+            ['worker' => $worker, 'namespace' => $namespace, 'class' => $class],
+        );
+    }
+
+    /**
+     * @param string $worker    The worker's name.
+     * @param string $namespace Its namespace, without the last `\`.
+     *
+     * @throws WorkflowRefusal When its template is missing.
+     *
+     * @return string Its runner, `bin/aic.php` (#336).
+     */
+    public function runner(string $worker, string $namespace): string
+    {
+        return $this->makeTemplates->render(
+            'worker',
+            'bin.php.tpl',
+            ['worker' => $worker, 'namespace' => $namespace, 'jobs' => substr($namespace, 7) . 'Jobs'],
+        );
     }
 }

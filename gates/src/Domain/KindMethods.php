@@ -12,6 +12,7 @@ use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\Stream;
 use AIC\Mcp\Domain\McpSteppedCall;
 use AIC\Mcp\Domain\McpToolCall;
+use AIC\Queue\Domain\WorkerJobs;
 
 use function array_any;
 use function in_array;
@@ -41,10 +42,12 @@ final readonly class KindMethods
     ];
 
     /**
-     * The methods an interface that declares several dictates, which are not one kind's method (#333).
+     * The methods an interface dictates that are not one kind's method (#333): a worker's generated jobs take the
+     * database and the root whether or not a job asks for them (#336).
      */
     private const array DICTATED = [
         McpSteppedCall::class => ['callTool', 'step'],
+        WorkerJobs::class => ['byName'],
     ];
 
     /**

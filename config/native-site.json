@@ -1827,6 +1827,79 @@
             "captures": false
         },
         {
+            "name": "statements, the order form",
+            "method": "GET",
+            "path": "/statements",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "statements, an order the worker cannot make",
+            "method": "POST",
+            "path": "/statements",
+            "form": "account=Cash&date=2026-02-30&aic_csrf={csrf}",
+            "header": "",
+            "status": 422,
+            "captures": false
+        },
+        {
+            "name": "statements, queued on the report worker's queue",
+            "method": "POST",
+            "path": "/statements",
+            "form": "account=Cash&date=2026-11-26&aic_csrf={csrf}",
+            "header": "",
+            "status": 303,
+            "captures": true
+        },
+        {
+            "name": "statements, the job queued",
+            "method": "GET",
+            "path": "{location}",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "statements, the PDF not written yet",
+            "method": "GET",
+            "path": "{location}/pdf",
+            "form": "",
+            "header": "",
+            "status": 404,
+            "captures": false
+        },
+        {
+            "name": "statements, the PDF after the report worker ran",
+            "method": "GET",
+            "path": "{location}/pdf",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false,
+            "work": "report"
+        },
+        {
+            "name": "statements, the job done",
+            "method": "GET",
+            "path": "{location}",
+            "form": "",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "statements, not one",
+            "method": "GET",
+            "path": "/statements/2147483000",
+            "form": "",
+            "header": "",
+            "status": 404,
+            "captures": false
+        },
+        {
             "name": "loans list, an entity over an imported table",
             "method": "GET",
             "path": "/scaffold-loans",

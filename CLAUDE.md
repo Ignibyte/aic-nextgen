@@ -167,7 +167,7 @@ operator's `workflow:answer`, the stall rule, the shell's read forms, the php wa
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
 layout (#157), entity (#123), policy (#304), client (#305), relation (#306), state (#308), mcp-tool (#316), mcp-resource and mcp-prompt (#334), enum, exception and interface (#319), seed (#320), webhook (#321), page-action (#322), export (#323), list-page (#324) and detail-page (#341); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the thirty-seven make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319; a seed, #320, whose writes gate:8 `aic.seedWrites` holds to repositories; a signed webhook, #321; an action answering its region, #322; a queued export, #323; a filtered list, #324; a detail page in tabs, #341; a Laravel-typed table import, #339; an entity over an imported table, #338; checks, a composite key and nulls-equal uniques, #344; a reference cycle, #349; an MCP resource and prompt, #334; a worker, #335).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the thirty-eight make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319; a seed, #320, whose writes gate:8 `aic.seedWrites` holds to repositories; a signed webhook, #321; an action answering its region, #322; a queued export, #323; a filtered list, #324; a detail page in tabs, #341; a Laravel-typed table import, #339; an entity over an imported table, #338; checks, a composite key and nulls-equal uniques, #344; a reference cycle, #349; an MCP resource and prompt, #334; a worker, #335; a worker's job and runner, #336).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
@@ -227,6 +227,9 @@ the SSE Accept answers `ApiEvents`, a `notifications/progress` per step inside t
 #335: `workers/<name>/` (`bin/aic make:worker`), an interpreted worker's own Composer project (`Worker\<Name>\`), read by every
 static gate as `modules/` is (each tool skips `workers/*/vendor/`; gate:1 normalizes, gate:0 audits its lock), never by
 gates 2 to 4, 16, 21 or 23; Deptrac's `Worker` layer and a phpat rule keep it to Jobs and off the site ([framework/docs/workers.md](framework/docs/workers.md)).
+#336: named queues (`aic_jobs.queue`), `PostgresQueue::dispatchTo()` answering the id, `QueueRecords::state()` (`JobState`);
+`make:job <worker> <Class> --worker` writes the job and `workers/<w>/bin/aic.php` (`WorkerKernel`'s `queue:work` on the worker's
+queue); the build writes `workers/<w>/src/Generated/<W>Jobs.php`; gate:23's `"work": "<worker>"`; the fixture `workers/report/` and `statement`.
 #314: real-time push: `AIC\Broadcast` (`Broadcaster::publish(Channel, data)` writes `aic_broadcasts` and `pg_notify`s;
 `Broadcasts::stream()` sends a channel's events after `Last-Event-ID` over `Database::listen()|notification()`, ends each
 connection after `holdSeconds`, and caps open streams site-wide at `streams`, below one worker's handlers, default 7);

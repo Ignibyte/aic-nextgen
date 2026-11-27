@@ -15,7 +15,7 @@ use AIC\Notification\Domain\AddNotificationInbox;
 use AIC\Notification\Domain\CreateNotificationsTable;
 use AIC\OAuth\Domain\CreateOAuthTables;
 use AIC\Profiler\Domain\CreateProfilesTable;
-use AIC\Queue\Domain\CreateJobTables;
+use AIC\Queue\Domain\QueueMigrations;
 use AIC\Schedule\Domain\CreateScheduleRuns;
 use AIC\Schema\Contracts\Migration;
 use AIC\Session\Domain\CreateSessionsTable;
@@ -35,7 +35,7 @@ final readonly class FrameworkMigrations
         return [
             new CreateSessionsTable(),
             new EnablePgcrypto(),
-            new CreateJobTables(),
+            ...(new QueueMigrations())->all(),
             new CreateScheduleRuns(),
             new CreateNotificationsTable(),
             new CreateTesseraWritesTable(),

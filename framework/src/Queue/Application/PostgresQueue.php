@@ -13,10 +13,15 @@ use JsonException;
 /**
  * The job queue in Postgres (#46). Workers take jobs with `FOR UPDATE SKIP
  * LOCKED`, so several can share the table; a reservation older than ten
- * minutes belongs to a worker that died, and the job is due again.
+ * minutes belongs to a worker that died, and the job is due again. Each job is
+ * on a named queue (#336): `default` for the site's own, a worker's name for
+ * an interpreted worker's.
  */
 final readonly class PostgresQueue
 {
+    /** The site's own queue. */
+    public const string DEFAULT = 'default';
+
     /**
      * @param Database      $database      The database, with the job tables (CreateJobTables).
      * @param StringMapJson $stringMapJson Encodes payloads.
@@ -39,29 +44,50 @@ final readonly class PostgresQueue
      */
     public function dispatch(string $job, array $values, int $delaySeconds): void
     {
-        $this->database->execute(
-            'INSERT INTO aic_jobs (job, payload, attempts, available_at) VALUES (?, ?, 0, now() + make_interval(secs => ?))',
-            [$job, $this->stringMapJson->encode($values), $delaySeconds],
-        );
+        $this->dispatchTo(self::DEFAULT, $job, $values, $delaySeconds);
     }
 
     /**
-     * Takes the oldest due job and counts the attempt.
+     * @param string                $queue        The queue: a worker's name, or `default`.
+     * @param string                $job          The job's name on that queue.
+     * @param array<string, string> $values       Its payload.
+     * @param int                   $delaySeconds How long it waits before it is due.
+     *
+     * @throws JsonException  When the payload cannot be encoded.
+     * @throws QueryException When the job cannot be stored.
+     *
+     * @return int Its id, which `QueueRecords::state()` reads (#336).
+     *
+     * @psalm-taint-sink client_upload $values
+     */
+    public function dispatchTo(string $queue, string $job, array $values, int $delaySeconds): int
+    {
+        return $this->database->fetchOne(
+            'INSERT INTO aic_jobs (queue, job, payload, attempts, available_at)'
+            . ' VALUES (?, ?, ?, 0, now() + make_interval(secs => ?)) RETURNING id',
+            [$queue, $job, $this->stringMapJson->encode($values), $delaySeconds],
+        )->int('id');
+    }
+
+    /**
+     * Takes the oldest due job on a queue and counts the attempt.
+     *
+     * @param string $queue The queue to take from.
      *
      * @throws QueryException When the queue cannot be read.
      *
      * @return ReservedJob|null The job; null when none is due.
      */
-    public function reserve(): ?ReservedJob
+    public function reserve(string $queue = self::DEFAULT): ?ReservedJob
     {
         $row = $this->database->fetchOne(
             'WITH taken AS (UPDATE aic_jobs SET reserved_at = now(), attempts = attempts + 1 WHERE id = ('
-            . 'SELECT id FROM aic_jobs WHERE available_at <= now()'
+            . 'SELECT id FROM aic_jobs WHERE queue = ? AND available_at <= now()'
             . " AND (reserved_at IS NULL OR reserved_at < now() - interval '10 minutes')"
             . ' ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING id, job, payload, attempts)'
             . " SELECT coalesce(max(id), 0) AS id, coalesce(max(job), '') AS job,"
             . " coalesce(max(payload), '') AS payload, coalesce(max(attempts), 0) AS attempts FROM taken",
-            [],
+            [$queue],
         );
 
         return $row->int('id') === 0
@@ -94,7 +120,8 @@ final readonly class PostgresQueue
     }
 
     /**
-     * Moves a job to the failed record, in one transaction.
+     * Moves a job to the failed record, in one transaction, keeping its queue
+     * and its id.
      *
      * @param ReservedJob $reservedJob The job.
      * @param string      $reason      Why it failed.
@@ -105,8 +132,9 @@ final readonly class PostgresQueue
     {
         $this->database->beginTransaction();
         $this->database->execute(
-            'INSERT INTO aic_failed_jobs (job, payload, attempts, reason, failed_at) VALUES (?, ?, ?, ?, now())',
-            [$reservedJob->job, $reservedJob->payload, $reservedJob->attempts, $reason],
+            'INSERT INTO aic_failed_jobs (queue, job_id, job, payload, attempts, reason, failed_at)'
+            . ' SELECT queue, id, job, payload, ?, ?, now() FROM aic_jobs WHERE id = ?',
+            [$reservedJob->attempts, $reason, $reservedJob->id],
         );
         $this->delete($reservedJob->id);
         $this->database->commit();
@@ -117,13 +145,16 @@ final readonly class PostgresQueue
      *
      * @throws QueryException When the queue cannot be changed.
      *
-     * @return bool Whether it was failed and is queued again now, with its attempts from 0 (#208).
+     * @return bool Whether it was failed and is queued again now, on its queue under its id, with its attempts
+     *              from 0 (#208, #336).
      */
     public function retry(int $id): bool
     {
         $this->database->beginTransaction();
         $queued = $this->database->execute(
-            'INSERT INTO aic_jobs (job, payload, attempts, available_at) SELECT job, payload, 0, now() FROM aic_failed_jobs WHERE id = ?',
+            'INSERT INTO aic_jobs (id, queue, job, payload, attempts, available_at) OVERRIDING SYSTEM VALUE'
+            . " SELECT coalesce(job_id, nextval(pg_get_serial_sequence('aic_jobs', 'id'))), queue, job, payload, 0, now()"
+            . ' FROM aic_failed_jobs WHERE id = ?',
             [$id],
         );
         $this->database->execute('DELETE FROM aic_failed_jobs WHERE id = ?', [$id]);
