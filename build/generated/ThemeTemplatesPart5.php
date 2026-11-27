@@ -9,6 +9,7 @@ use AIC\Component\Application\ComponentTemplates;
 use AIC\Component\Application\RenderPass;
 use AIC\Component\Contracts\Component;
 use AIC\Component\Exception\UnknownComponent;
+use App\Theme\Components\StockLinks\StockLinks;
 use App\Theme\Components\StockListing\StockListing;
 use App\Theme\Components\Tick\Tick;
 use App\Theme\Components\Ticks\Ticks;
@@ -40,11 +41,28 @@ final readonly class ThemeTemplatesPart5 implements ComponentTemplates
     public function compose(Component $component, RenderPass $renderPass): string
     {
         return match (true) {
+            $component instanceof StockLinks => $this->renderStockLinks($component, $renderPass),
             $component instanceof StockListing => $this->renderStockListing($component, $renderPass),
             $component instanceof Tick => $this->renderTick($component, $renderPass),
             $component instanceof Ticks => $this->renderTicks($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
+    }
+
+    /**
+     * @param StockLinks $stockLinks The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
+     *
+     * @throws UnknownComponent When a child has no template.
+     *
+     * @return string Its markup, from templates/themes/app/components/StockLinks/stock-links.phtml.
+     */
+    private function renderStockLinks(StockLinks $stockLinks, RenderPass $renderPass): string
+    {
+        $renderPass->open($stockLinks);
+        require __DIR__ . '/templates/themes/app/components/StockLinks/stock-links.phtml';
+
+        return $renderPass->close();
     }
 
     /**

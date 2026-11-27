@@ -10,6 +10,7 @@ use App\Ledger\Controller\LedgerFeedStream;
 use App\Ledger\Controller\LedgerMcpApi;
 use App\Ledger\Controller\LedgerMcpStream;
 use App\Ledger\Controller\LedgerMeterPage;
+use App\Ledger\Controller\LedgerSanitizePage;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -53,6 +54,7 @@ final readonly class LedgerHandlersPart4
                 'ledger.mcp',
             ),
             LedgerMeterPage::class => $this->handlerContext->page(new LedgerMeterPage($this->handlerContext->documents())),
+            LedgerSanitizePage::class => $this->handlerContext->page(new LedgerSanitizePage($this->handlerContext->documents())),
         ];
     }
 }

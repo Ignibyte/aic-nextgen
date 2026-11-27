@@ -114,7 +114,7 @@ Where such a need goes depends on when its answer is needed (#317):
 
 | Need | Where it runs | How |
 |---|---|---|
-| inside a request: sanitizing HTML, signing or verifying a token | the compiled site | a bridge in the fork or AIC's own PHP |
+| inside a request: sanitizing HTML, signing or verifying a token | the compiled site | a bridge in the fork or AIC's own PHP (`HtmlSanitizer`, [rendering.md](rendering.md#sanitizing-html-a-visitor-wrote)) |
 | queued work: a PDF, a spreadsheet, a word-processor file, an LLM agent run | an interpreted worker | a Job in `workers/<name>/` that uses the library |
 
 A worker is a Composer project of its own under `workers/<name>/`. Its Jobs run under PHP, outside

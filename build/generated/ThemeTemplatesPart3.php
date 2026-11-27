@@ -11,7 +11,7 @@ use AIC\Component\Exception\UnknownComponent;
 use App\Theme\Components\NoteCard\NoteCard;
 use App\Theme\Components\NoteList\NoteList;
 use App\Theme\Components\Panel\Panel;
-use App\Theme\Components\ScaffoldAboutView\ScaffoldAboutView;
+use App\Theme\Components\Prose\Prose;
 use Override;
 
 /**
@@ -43,7 +43,7 @@ final readonly class ThemeTemplatesPart3 implements ComponentTemplates
             $component instanceof NoteCard => $this->renderNoteCard($component, $renderPass),
             $component instanceof NoteList => $this->renderNoteList($component, $renderPass),
             $component instanceof Panel => $this->renderPanel($component, $renderPass),
-            $component instanceof ScaffoldAboutView => $this->renderScaffoldAboutView($component, $renderPass),
+            $component instanceof Prose => $this->renderProse($component, $renderPass),
             default => $this->componentTemplates->compose($component, $renderPass),
         };
     }
@@ -97,17 +97,17 @@ final readonly class ThemeTemplatesPart3 implements ComponentTemplates
     }
 
     /**
-     * @param ScaffoldAboutView $scaffoldAboutView The component; its template reads it.
-     * @param RenderPass        $renderPass        The pass its template writes through.
+     * @param Prose      $prose      The component; its template reads it.
+     * @param RenderPass $renderPass The pass its template writes through.
      *
      * @throws UnknownComponent When a child has no template.
      *
-     * @return string Its markup, from templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml.
+     * @return string Its markup, from templates/themes/app/components/Prose/prose.phtml.
      */
-    private function renderScaffoldAboutView(ScaffoldAboutView $scaffoldAboutView, RenderPass $renderPass): string
+    private function renderProse(Prose $prose, RenderPass $renderPass): string
     {
-        $renderPass->open($scaffoldAboutView);
-        require __DIR__ . '/templates/themes/app/components/ScaffoldAboutView/scaffold-about-view.phtml';
+        $renderPass->open($prose);
+        require __DIR__ . '/templates/themes/app/components/Prose/prose.phtml';
 
         return $renderPass->close();
     }
