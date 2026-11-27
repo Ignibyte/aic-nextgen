@@ -4,6 +4,8 @@
 # vendor / build artifacts
 /vendor/
 /framework/vendor/
+# An interpreted worker's own install (#335)
+/workers/*/vendor/
 /composer.lock
 node_modules/
 /dist/

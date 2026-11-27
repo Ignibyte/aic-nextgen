@@ -7,7 +7,10 @@ deptrac:
   # Templates are checked by gate:25, not the class tools.
   exclude_files:
     - '#\.tpl\.php$#'
+    # An interpreted worker's own install.
+    - '#/workers/[^/]+/vendor/#'
   paths:
     - ./modules
     - ./themes
+    - ./workers
     - ./build/generated

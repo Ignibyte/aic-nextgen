@@ -6,8 +6,13 @@ namespace Gates\Application;
 
 use Gates\Domain\ProcessRunner;
 
+use function array_filter;
+use function array_map;
+use function array_values;
 use function fwrite;
 use function implode;
+use function is_file;
+use function max;
 use function mb_trim;
 use function sprintf;
 use function str_contains;
@@ -23,15 +28,19 @@ use const STDOUT;
  * reports any security advisory. Pairs with `roave/security-advisories` (which
  * blocks at install-time) and Psalm taint analysis (gate:13). Composer 2.9.x's
  * `--abandoned=fail` is unreliable for transitive abandoned deps, so abandoned
- * packages are reported but never block on their own.
+ * packages are reported but never block on their own. Each interpreted
+ * worker with a composer.lock is audited too, by its lock (#335): it installs
+ * on its own.
  */
 final readonly class ComposerAuditGate
 {
     /**
-     * @param ProcessRunner $processRunner Seam wrapping `proc_open`.
+     * @param ProcessRunner  $processRunner  Seam wrapping `proc_open`.
+     * @param ProjectProfile $projectProfile The project's workers.
      */
     public function __construct(
         private ProcessRunner $processRunner,
+        private ProjectProfile $projectProfile = new ProjectProfile(),
     ) {
     }
 
@@ -52,12 +61,42 @@ final readonly class ComposerAuditGate
             return 1;
         }
 
-        $command = $this->buildCommand($composer, $root);
+        $exitCode = $this->audit($this->buildCommand($composer, $root, false), $stdout, $stderr);
+
+        foreach ($this->lockedWorkers($root) as $lockedWorker) {
+            $exitCode = max($exitCode, $this->audit($this->buildCommand($composer, $lockedWorker, true), $stdout, $stderr));
+        }
+
+        return $exitCode;
+    }
+
+    /**
+     * @param list<string> $command The audit.
+     * @param resource     $stdout  Stream its output is written to.
+     * @param resource     $stderr  Stream a failure is written to.
+     *
+     * @return int Its outcome.
+     */
+    private function audit(array $command, mixed $stdout, mixed $stderr): int
+    {
         $processResult = $this->processRunner->run($command);
         $combined = $processResult->stdout . $processResult->stderr;
         fwrite($stdout, sprintf('gate:0 — %s%s%s%s', implode(' ', $command), PHP_EOL, $combined, PHP_EOL));
 
         return $this->classifyOutcome($processResult->exitCode, $combined, $stderr);
+    }
+
+    /**
+     * @param string $root Repo-root absolute path.
+     *
+     * @return list<string> Each worker's folder, absolute, that holds a composer.lock.
+     */
+    private function lockedWorkers(string $root): array
+    {
+        return array_values(array_filter(
+            array_map(static fn (string $worker): string => $root . '/' . $worker, $this->projectProfile->workers($root)),
+            static fn (string $folder): bool => is_file($folder . '/composer.lock'),
+        ));
     }
 
     /**
@@ -73,17 +112,19 @@ final readonly class ComposerAuditGate
     /**
      * Build the array-form command for `proc_open`.
      *
-     * @param string $composer Resolved composer binary path.
-     * @param string $root     Repo-root absolute path.
+     * @param string $composer  Resolved composer binary path.
+     * @param string $directory The project's root, or a worker's folder.
+     * @param bool   $locked    Whether to audit the lock rather than what is installed: a worker's.
      *
      * @return list<string>
      */
-    private function buildCommand(string $composer, string $root): array
+    private function buildCommand(string $composer, string $directory, bool $locked): array
     {
         return [
             $composer,
             'audit',
-            '--working-dir=' . $root,
+            '--working-dir=' . $directory,
+            ...($locked ? ['--locked'] : []),
             '--abandoned=report',
             '--no-cache',
             '--no-interaction',

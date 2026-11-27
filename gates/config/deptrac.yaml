@@ -46,6 +46,13 @@ deptrac:
       collectors:
         - type: classLike
           value: '^App\\Theme\\'
+    # An interpreted worker (#335): queued work for a library that does not
+    # compile. It builds on the framework's seams; no other layer may use it,
+    # so a site class that names a worker class fails here.
+    - name: Worker
+      collectors:
+        - type: classLike
+          value: '^Worker\\'
     # The phpat rule classes (gate:9).
     - name: Architecture
       collectors:
@@ -182,6 +189,13 @@ deptrac:
       - Domain
       - Exception
       - Attribute
+    Worker:
+      - Contracts
+      - Domain
+      - Exception
+      - Attribute
+      - Application
+      - PsrVendor
     Architecture:
       - PhpatVendor
     # AIC's own PHPStan rules (gate:8) read the contracts they police and

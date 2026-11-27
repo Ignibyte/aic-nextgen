@@ -98,6 +98,7 @@ final readonly class MakeCatalogCommand implements Command
             'make:webhook <module> <Name>Webhook <path> [--scheme=hmac-sha256]',
             'a signed POST endpoint that queues a job and answers 202, its delivery value and the job',
         ],
+        'make:worker' => ['make:worker <worker>', 'an interpreted worker: a Composer project for queued work that does not compile'],
     ];
 
     /**

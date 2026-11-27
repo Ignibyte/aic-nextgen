@@ -73,6 +73,10 @@
                 "public/index.php": {
                     "mode": "replace",
                     "path": "scaffold/public/index.php"
+                },
+                "workers/README.md": {
+                    "mode": "add-once",
+                    "path": "scaffold/workers/README.md"
                 }
             }
         },

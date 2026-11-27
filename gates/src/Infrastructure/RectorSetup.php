@@ -49,7 +49,7 @@ final readonly class RectorSetup
     {
         return [
             ...array_map(static fn (string $path): string => $root . '/' . $path, [
-                'vendor', 'storage', 'tools', '.psalm-cache', '.rector-cache',
+                'vendor', 'workers/*/vendor', 'storage', 'tools', '.psalm-cache', '.rector-cache',
             ]),
             // Throwing closures need @throws, which arrow functions cannot carry.
             ClosureToArrowFunctionRector::class,

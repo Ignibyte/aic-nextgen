@@ -137,8 +137,8 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 
 | # | Gate | What it checks | Usual fix |
 |---|---|---|---|
-| 0 | composer audit | the installed packages against the advisory database | update the package |
-| 1 | composer-normalize | `composer.json` in canonical order | `composer normalize` |
+| 0 | composer audit | the installed packages against the advisory database, and each [worker](workers.md)'s lock | update the package |
+| 1 | composer-normalize | `composer.json` in canonical order, and each worker's | `composer normalize` |
 | 2 | require allow-list | runtime `require` holds only `php`, `ext-*`, `psr/*` and `ignibyte/aic-framework` | move a tool to `require-dev`; write the helper instead of requiring a framework |
 | 3 | require-checker | every symbol runtime code uses comes from a declared require | declare the extension or package |
 | 4 | composer-unused | no required package goes unused | drop the require |
@@ -146,10 +146,10 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 6 | Pint | PSR-12 and the house style | `vendor/bin/pint` on the file (never on a template) |
 | 7 | Rector | PHP 8.5 idioms, dead code, type coverage, naming (dry run) | `vendor/bin/rector process` on the file, then read the change |
 | 8 | PHPStan | level 10 with the strict sets, 100% type coverage, cognitive complexity, dead code, AIC's own rules | type the code; split a method; remove what nothing calls |
-| 9 | phpat | the architecture rules: kinds, sealed responses, rendering, and no app class but the generated wiring depends on the raw `Database` | move the dependency or the class; read tables through the entity API, the database's own state through `DatabaseStatus` |
+| 9 | phpat | the architecture rules: kinds, sealed responses, a worker holding Jobs only, rendering, and no app class but the generated wiring depends on the raw `Database` | move the dependency or the class; read tables through the entity API, the database's own state through `DatabaseStatus` |
 | 10 | PHPMD | every ruleset: methods up to 30 lines, classes up to 300, 15 methods, coupling 15; each run with a fresh PDepend cache of its own (#256) | split the class or the method |
 | 11 | PHPCS | PSR-12 and slevomat, lines up to 140 | `vendor/bin/phpcbf` on the file (never on a template) |
-| 12 | Deptrac | the layer ladder in every namespace (see [systems.md](systems.md#the-layer-ladder)) | move the class to the right layer, or depend on a contract |
+| 12 | Deptrac | the layer ladder in every namespace (see [systems.md](systems.md#the-layer-ladder)); a worker uses only the framework, and nothing uses a worker | move the class to the right layer, or depend on a contract |
 | 13 | Psalm | full ordinary error level 1, then full taint analysis; unused code | type the value; validate input before it reaches a sink |
 | 14 | phpcpd | no copy-paste of 4 lines or 50 tokens | extract the shared part |
 | 15 | semgrep | the house ruleset: no env outside config, no static state, no singletons, no eval, no `mixed` in generics, no positional Tessera path (`content/c0`, `Panel.1`) in modules, themes or browser tests, the profiler built only in `bootstrap/serve.php` and never recording a bound value | restructure; state lives in wired objects; anchor the component and target `@NAME` |
@@ -168,7 +168,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 28 | house rules | *AIC only*: the workflow's shipped rules bite on their probes | not run in an app |
 | 29 | architecture docs | *AIC only*: these pages state what the code has | not run in an app |
 | 30 | suite files | root configs match the stubs, composer scripts/plugins match the suite, and custom PHPCS/PHPMD XML matches its writers | `vendor/bin/aic-gate init` for root stubs; rebuild or reinstall a stale package |
-| 31 | make scaffold | *AIC only*: `modules/scaffold/` and its theme components and layout are what the twelve `bin/aic make:*` lines make, byte for byte, and `make:module` prints the lines the build asks for | not run in an app |
+| 31 | make scaffold | *AIC only*: `modules/scaffold/`, `workers/scaffold/` and their theme files are what the twelve `bin/aic make:*` lines make, byte for byte, and `make:module` prints the lines the build asks for | not run in an app |
 | 32 | module markup | no file under `modules/` holds HTML: no template or markup file, no inline output, no tag, markup declaration or character reference in a literal or text file, no HTML function; any `<` in a controller; no XML as text: an `<?` declaration, a `</name>` or a `<name/>` of any name (#233) | move the markup into a theme component, XML into an `XmlDocument`; write a usage placeholder as `{name}` |
 | 33 | app scaffolds | every kind under `scaffolds/`, the app's and the workflow package's, loads, starts from a kind, names every file in its folder and fills every placeholder (each census rule proven on a planted fixture first); each kind, made with its probe values in a copy of the project (in `site`, else the first module), passes gates 6 to 16, 21, 24 to 27 and 32 there; an unchanged kind is cached | fix the scaffold the finding names; when the project fails the same gate on its own, fix the project first |
 

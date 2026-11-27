@@ -8,10 +8,18 @@ use Gates\Domain\BuildPaths;
 use Gates\Domain\GateProfile;
 use Gates\Domain\GateRoots;
 
+use function array_filter;
+use function array_map;
+use function array_values;
+use function dirname;
 use function file_get_contents;
+use function glob;
 use function is_array;
+use function is_dir;
 use function is_file;
 use function json_decode;
+use function strlen;
+use function substr;
 
 /**
  * The project's profile and what its gates read (#130). AIC's own repository
@@ -58,6 +66,8 @@ final readonly class ProjectProfile
         '.ddev/*',
         // Deployment recipes: FrankenPHP's Caddyfile and container (#222).
         'deploy/*',
+        // The interpreted workers, each a Composer project of its own for queued work that does not compile (#335).
+        'workers/*',
         // The root's own files, by exact name, so a stray file at the root fails: the docs, the manifests, and
         // the tools' stubs from ignibyte/aic-gates (#130). AGENTS.md holds the workflow's block (#105).
         'AGENTS.md',
@@ -172,14 +182,17 @@ final readonly class ProjectProfile
     /**
      * @param string $root The project's root.
      *
-     * @return GateRoots What its gates read.
+     * @return GateRoots What its gates read. An interpreted worker's `src/` is a class and source root, never a
+     *                   runtime or site root: it never compiles (#335).
      */
     public function roots(string $root): GateRoots
     {
+        $workers = $this->workerSources($root);
+
         return $this->profile($root) === GateProfile::Aic
             ? new GateRoots(
-                self::AIC_CLASS_ROOTS,
-                self::AIC_SOURCE_ROOTS,
+                [...self::AIC_CLASS_ROOTS, ...$workers],
+                [...self::AIC_SOURCE_ROOTS, ...$workers],
                 ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
                 ['AIC\\' => 'framework/src', 'App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
                 ['composer.json', 'framework/composer.json', 'workflow/composer.json', 'scaffold/composer.json'],
@@ -187,13 +200,41 @@ final readonly class ProjectProfile
                 [...self::APP_SHELL, ...self::AIC_SHELL],
             )
             : new GateRoots(
-                ['modules', 'themes', BuildPaths::GENERATED],
-                ['modules', 'themes', BuildPaths::GENERATED],
+                ['modules', 'themes', BuildPaths::GENERATED, ...$workers],
+                ['modules', 'themes', BuildPaths::GENERATED, ...$workers],
                 ['App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
                 ['AIC\\' => 'vendor/ignibyte/aic-framework/src', 'App\\' => ['modules', 'themes', BuildPaths::GENERATED]],
                 ['composer.json'],
                 ['.claude/hooks', 'bin'],
                 self::APP_SHELL,
             );
+    }
+
+    /**
+     * @param string $root The project's root.
+     *
+     * @return list<string> Each interpreted worker's folder, `workers/<name>`, where its composer.json is, sorted (#335).
+     */
+    public function workers(string $root): array
+    {
+        $manifests = glob($root . '/workers/*/composer.json');
+
+        return array_map(
+            static fn (string $manifest): string => substr(dirname($manifest), strlen($root) + 1),
+            $manifests === false ? [] : $manifests,
+        );
+    }
+
+    /**
+     * @param string $root The project's root.
+     *
+     * @return list<string> Each worker's `src/` that is there.
+     */
+    private function workerSources(string $root): array
+    {
+        return array_values(array_filter(
+            array_map(static fn (string $worker): string => $worker . '/src', $this->workers($root)),
+            static fn (string $source): bool => is_dir($root . '/' . $source),
+        ));
     }
 }

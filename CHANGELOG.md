@@ -6,6 +6,15 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **Interpreted workers** (#335). A library with no native path that runs as queued work now has a place:
+  `workers/<name>/`, a Composer project of its own (`app/worker-<name>`, PSR-4 `Worker\<Name>\` → `src/`) that installs
+  in its folder and never compiles. `bin/aic make:worker <name>` writes its composer.json and README and prints the
+  root's autoload-dev and PHPCS lines. Every static gate reads `workers/` as it reads `modules/`, skipping
+  `workers/*/vendor/`, in AIC and in an app's stub configs; gate:1 normalizes each worker's composer.json and gate:0
+  audits each worker's lock. Gates 2 to 4, 16, 21 and 23 do not read a worker. Deptrac's `Worker` layer may use the
+  framework's seams and no other layer may use it; phpat refuses a worker class that is a Page, Api, Stream or Command.
+  Every app gets `workers/README.md` from the framework's scaffold. The handoff that runs a worker's jobs is #336.
+
 - **The MCP GET stream, list changes and progress over SSE** (#333). A module routes `GET /mcp` to a Stream that
   hands it to `AIC\Mcp\Application\McpStream`: Server-Sent Events of JSON-RPC notifications, held and capped like a
   broadcast stream (#314). At the start and at each keep-alive the stream checks what the caller may see and sends

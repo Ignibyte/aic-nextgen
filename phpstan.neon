@@ -14,6 +14,7 @@ parameters:
         - framework/src
         - modules
         - themes
+        - workers
         - build/generated
         - public
         - bootstrap
@@ -37,6 +38,7 @@ parameters:
         - vendor/squizlabs/php_codesniffer/src/Util/Tokens.php
     excludePaths:
         - vendor
+        - workers/*/vendor/* (?)
         - storage (?)
         - tools (?)
         - .psalm-cache (?)
