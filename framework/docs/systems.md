@@ -54,8 +54,10 @@ app meets first.
   each module's `src/Mcp/` into `App\Generated\<Module>Mcp`, whose `catalog()` the route serves,
   with every tool's input and output schema. Access is the route's `needs:` and each entry's own
   permission. Every tool call goes through `AIC\Mcp\Application\Capabilities` (#332), shared with an
-  app's own assistant: a dry run, a call id applied once, a row of `aic_mcp_calls` per call. See
-  [mcp.md](mcp.md).
+  app's own assistant: a dry run, a call id applied once, a row of `aic_mcp_calls` per call.
+  `AIC\Mcp\Application\McpStream` serves the GET stream, which tells a client when a list it may use
+  changed, and a stepped tool's call reports each step as progress over an event-stream answer
+  (#333). See [mcp.md](mcp.md).
 
 See [native.md](native.md) for the compiled server and PHP comparison.
 
@@ -339,7 +341,8 @@ See [security.md](security.md) for sessions, form guards, uploads, auth and secr
   channel's name, in one statement that also removes rows older than `BroadcastConfig::$keepSeconds`;
   inside an open transaction the streams wake only when it commits. A `Channel` is lower-case letters
   and digits in parts joined by `.` or `-` (`ledger.feed`), a column value and never SQL. A Stream
-  controller answers `Broadcasts::stream(Channel, BroadcastEvents, request)`: `BroadcastSource` listens,
+  controller answers `Broadcasts::stream(Channel, BroadcastEvents, request)`, and a stream that wraps
+  the source takes `Broadcasts::source()` (#333). `BroadcastSource` listens,
   sends each event after the request's `Last-Event-ID` (only new ones without it), each made by the
   module's `BroadcastEvents` with the row's id as its id, waits on the database's notifications while
   idle, sends a keep-alive after `keepAliveSeconds`, and ends the connection as a reconnect after

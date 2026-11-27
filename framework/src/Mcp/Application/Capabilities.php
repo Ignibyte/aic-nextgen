@@ -75,48 +75,96 @@ final readonly class Capabilities
     public function call(McpCatalog $mcpCatalog, CapabilityCall $capabilityCall, Actor $actor): CapabilityResult
     {
         $mcpToolCall = $this->tool($capabilityCall->tool, $mcpCatalog, $actor);
-        $this->database->beginTransaction();
-        $committed = false;
 
         try {
-            $capabilityResult = $this->held($mcpToolCall, $capabilityCall, $actor);
-            $this->database->commit();
-            $committed = true;
+            $capabilityResult = $this->opened($mcpToolCall, $capabilityCall, $actor)
+                ?? $this->closed($mcpToolCall, $capabilityCall, $actor);
         } finally {
-            if (!$committed && $this->database->inTransaction()) {
-                $this->database->rollBack();
-            }
+            $this->abandoned();
         }
 
         return $this->toolRun->answered($capabilityResult);
     }
 
     /**
-     * @param McpToolCall    $mcpToolCall    The tool's adapter.
+     * A call's first phase (#333): the transaction, the call id's lock and stored answer, a dry call's refusal,
+     * or the savepoint the call runs in.
+     *
+     * @param McpToolCall    $mcpToolCall    The tool's adapter, from `tool()`.
      * @param CapabilityCall $capabilityCall The call.
      * @param Actor          $actor          Who calls.
      *
      * @throws McpProtocolException When the id names another tool's call.
-     * @throws QueryException       When the audit or the lock fails.
+     * @throws QueryException       When the audit, the lock or the savepoint fails.
      *
-     * @return CapabilityResult The stored answer, or the call's, recorded.
+     * @return CapabilityResult|null The stored answer or the refusal, recorded and committed; null while the call
+     *                               is open, for its steps and `closed()`.
      */
-    private function held(McpToolCall $mcpToolCall, CapabilityCall $capabilityCall, Actor $actor): CapabilityResult
+    public function opened(McpToolCall $mcpToolCall, CapabilityCall $capabilityCall, Actor $actor): ?CapabilityResult
     {
-        if ($capabilityCall->claims()) {
-            $this->mcpCallLog->lock($actor, $capabilityCall);
+        $this->database->beginTransaction();
+        $capabilityResult = $this->stored($capabilityCall, $actor) ?? $this->toolRun->opened($mcpToolCall, $capabilityCall);
 
-            foreach ($this->mcpCallLog->stored($actor, $capabilityCall) as $stored) {
-                $this->mcpCallLog->record($actor, $capabilityCall, $stored);
-
-                return $stored;
-            }
+        if ($capabilityResult instanceof CapabilityResult) {
+            $this->kept($capabilityCall, $actor, $capabilityResult);
         }
 
-        $capabilityResult = $this->toolRun->run($mcpToolCall, $capabilityCall, $actor);
-        $this->mcpCallLog->record($actor, $capabilityCall, $capabilityResult);
+        return $capabilityResult;
+    }
+
+    /**
+     * @param McpToolCall    $mcpToolCall    The tool's adapter.
+     * @param CapabilityCall $capabilityCall The open call.
+     * @param Actor          $actor          Who calls.
+     * @param int            $step           Which step, from 0.
+     *
+     * @return CapabilityResult Done with the step's message, or how the step ended the call.
+     */
+    public function step(
+        McpToolCall $mcpToolCall,
+        CapabilityCall $capabilityCall,
+        Actor $actor,
+        int $step,
+    ): CapabilityResult {
+        return $this->toolRun->attempt($mcpToolCall, $capabilityCall, $actor, $step);
+    }
+
+    /**
+     * A call's last phase (#333): the call itself, unless a step ended it, the savepoint settled, the audit row
+     * and the commit.
+     *
+     * @param McpToolCall           $mcpToolCall    The tool's adapter.
+     * @param CapabilityCall        $capabilityCall The open call.
+     * @param Actor                 $actor          Who calls.
+     * @param CapabilityResult|null $ended          How a step ended it; null to run the call.
+     *
+     * @throws QueryException When the savepoint, the audit or the commit fails.
+     *
+     * @return CapabilityResult How it ended, recorded and committed.
+     */
+    public function closed(
+        McpToolCall $mcpToolCall,
+        CapabilityCall $capabilityCall,
+        Actor $actor,
+        ?CapabilityResult $ended = null,
+    ): CapabilityResult {
+        $capabilityResult = $this->toolRun->closed($mcpToolCall, $capabilityCall, $actor, $ended);
+        $this->kept($capabilityCall, $actor, $capabilityResult);
 
         return $capabilityResult;
+    }
+
+    /**
+     * @param CapabilityResult $capabilityResult A result, recorded.
+     *
+     * @throws McpArgumentException When the arguments did not fit.
+     * @throws McpProtocolException When the tool failed (-32603).
+     *
+     * @return CapabilityResult It, when it is an answer: done or refused.
+     */
+    public function answered(CapabilityResult $capabilityResult): CapabilityResult
+    {
+        return $this->toolRun->answered($capabilityResult);
     }
 
     /**
@@ -128,7 +176,7 @@ final readonly class Capabilities
      *
      * @return McpToolCall The tool's adapter.
      */
-    private function tool(string $name, McpCatalog $mcpCatalog, Actor $actor): McpToolCall
+    public function tool(string $name, McpCatalog $mcpCatalog, Actor $actor): McpToolCall
     {
         foreach ($mcpCatalog->tools as $mcpToolCall) {
             $mcpToolInfo = $mcpToolCall->toolInfo();
@@ -139,5 +187,57 @@ final readonly class Capabilities
         }
 
         throw new McpProtocolException('Invalid params: no tool is named "' . $name . '".', McpProtocolException::INVALID_PARAMS);
+    }
+
+    /**
+     * Rolls back a call left open by an error.
+     *
+     * @throws QueryException When the roll back fails.
+     */
+    private function abandoned(): void
+    {
+        if (!$this->database->inTransaction()) {
+            return;
+        }
+
+        $this->database->rollBack();
+    }
+
+    /**
+     * @param CapabilityCall $capabilityCall The call.
+     * @param Actor          $actor          Who calls.
+     *
+     * @throws McpProtocolException When the id names another tool's call.
+     * @throws QueryException       When the lock or the read fails.
+     *
+     * @return CapabilityResult|null The answer stored under the call's id, once its lock is held; null for a call
+     *                               that claims no id or a new one.
+     */
+    private function stored(CapabilityCall $capabilityCall, Actor $actor): ?CapabilityResult
+    {
+        if (!$capabilityCall->claims()) {
+            return null;
+        }
+
+        $this->mcpCallLog->lock($actor, $capabilityCall);
+
+        foreach ($this->mcpCallLog->stored($actor, $capabilityCall) as $stored) {
+            return $stored;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param CapabilityCall   $capabilityCall   The call.
+     * @param Actor            $actor            Who calls.
+     * @param CapabilityResult $capabilityResult How it ended.
+     *
+     * @throws QueryException When the audit or the commit fails.
+     */
+    private function kept(CapabilityCall $capabilityCall, Actor $actor, CapabilityResult $capabilityResult): void
+    {
+        $this->mcpCallLog->record($actor, $capabilityCall, $capabilityResult);
+        $this->database->commit();
     }
 }

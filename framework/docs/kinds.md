@@ -68,6 +68,9 @@ A JSON or an XML answer. SOAP is not one of them.
   `>`, `"` and `'` when it writes, and nothing else writes XML: gate:32 refuses XML written as text
   under `modules/`. It is written by hand, not with `XMLWriter`, which would make libxml2 a native
   dependency of every app. The fixture's `/stock.xml` is the stock list as a feed.
+- `AIC\Controller\Domain\ApiEvents` takes an `EventSource` and answers Server-Sent Events (#333),
+  for a protocol whose POST may answer either, as MCP's does; an event stream a page reads is a
+  Stream.
 
 Either answer opts in to revalidation by taking the request it answers as its third argument,
 `new XmlResponse($document, 200, $serverRequest)` (#269). A 200 to a GET or HEAD then carries

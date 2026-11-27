@@ -9,6 +9,7 @@ use AIC\Mcp\Contracts\McpArgumentException;
 use AIC\Mcp\Contracts\McpArguments;
 use AIC\Mcp\Contracts\McpNullableArguments;
 use AIC\Mcp\Contracts\ToolRefusedException;
+use AIC\Mcp\Domain\McpSteppedCall;
 use AIC\Mcp\Domain\McpToolCall;
 use AIC\Mcp\Domain\McpToolInfo;
 use App\Ledger\Enum\LedgerCurrency;
@@ -61,17 +62,38 @@ final readonly class LedgerSplitToolCall implements McpToolCall
     #[Override]
     public function callTool(McpArguments $mcpArguments, Actor $actor): JsonSerializable
     {
+        return new LedgerSplitToolResult($this->ledgerSplitTool->call($this->input($mcpArguments)));
+    }
+
+    /**
+     * @return McpSteppedCall|null Null: the tool runs in no steps.
+     */
+    #[Override]
+    public function stepped(): ?McpSteppedCall
+    {
+        return null;
+    }
+
+    /**
+     * @param McpArguments $mcpArguments The call's arguments.
+     *
+     * @throws McpArgumentException When the arguments do not fit the input.
+     * @throws LogicException       When a checked value is no case of its enum.
+     *
+     * @return LedgerSplitInput The tool's input, from the arguments.
+     */
+    private function input(McpArguments $mcpArguments): LedgerSplitInput
+    {
         $mcpArguments->only(['amount', 'parts', 'currency', 'labels', 'memo']);
         $filled = $mcpArguments->withDefaults('{"parts":2,"currency":"usd","labels":[],"memo":null}');
-        $ledgerSplitInput = new LedgerSplitInput(
+
+        return new LedgerSplitInput(
             $mcpArguments->int('amount'),
             $filled->int('parts'),
             $this->ledgerCurrency($filled->choice('currency', ['usd', 'eur', 'gbp'])),
             $filled->strings('labels'),
             (new McpNullableArguments($filled))->string('memo'),
         );
-
-        return new LedgerSplitToolResult($this->ledgerSplitTool->call($ledgerSplitInput));
     }
 
     /**

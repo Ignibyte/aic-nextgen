@@ -221,6 +221,9 @@ revocation, introspection and audience binding are #352.
 client)`): `#[ToolInfo(dryRun: true)]` runs a call in a rolled-back savepoint, `_meta["aic/callId"]` applies a call once
 per caller (an advisory lock, the first result replayed), every call a row of `aic_mcp_calls` (`bin/aic mcp:calls`); a
 nested `beginTransaction()` is a savepoint; the fixture's `/ledger/assistant`.
+#333: `GET /mcp` (`McpStream`, a module's Stream): list changes per caller as `notifications/<kind>/list_changed`,
+ids carrying the caller's list prints for `Last-Event-ID`; a stepped tool (`steps()`, `step()`) with a progress token and
+the SSE Accept answers `ApiEvents`, a `notifications/progress` per step inside the call's savepoint, then the reply.
 #314: real-time push: `AIC\Broadcast` (`Broadcaster::publish(Channel, data)` writes `aic_broadcasts` and `pg_notify`s;
 `Broadcasts::stream()` sends a channel's events after `Last-Event-ID` over `Database::listen()|notification()`, ends each
 connection after `holdSeconds`, and caps open streams site-wide at `streams`, below one worker's handlers, default 7);

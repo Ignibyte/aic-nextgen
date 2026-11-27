@@ -7,6 +7,7 @@ namespace AIC\Broadcast\Application;
 use AIC\Broadcast\Contracts\BroadcastEvents;
 use AIC\Broadcast\Domain\Channel;
 use AIC\Config\Domain\AppConfig;
+use AIC\Controller\Contracts\EventSource;
 use AIC\Controller\Domain\EventStream;
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
@@ -49,13 +50,28 @@ final readonly class Broadcasts
         BroadcastEvents $broadcastEvents,
         ServerRequestInterface $serverRequest,
     ): EventStream {
+        return new EventStream($this->source($channel, $broadcastEvents, $serverRequest->getHeaderLine('Last-Event-ID')));
+    }
+
+    /**
+     * The channel's events as a source another one can wrap (#333), as MCP's GET stream does.
+     *
+     * @param Channel         $channel         The channel.
+     * @param BroadcastEvents $broadcastEvents Makes each event.
+     * @param string          $seen            The last event id the client saw; empty, or not one, for none.
+     *
+     * @throws QueryException When a slot cannot be asked for.
+     *
+     * @return EventSource The channel's events for one hold, or one reconnect when every slot is held.
+     */
+    public function source(Channel $channel, BroadcastEvents $broadcastEvents, string $seen): EventSource
+    {
         $broadcastConfig = $this->appConfig->broadcast;
         $admitted = $this->streamSlots->claim($broadcastConfig->streams);
-        $seen = $serverRequest->getHeaderLine('Last-Event-ID');
         $after = ctype_digit($seen) && strlen($seen) < 19
             ? (int) $seen
             : -1;
 
-        return new EventStream(new BroadcastSource($this->database, $channel, $broadcastEvents, $broadcastConfig, $admitted, $after));
+        return new BroadcastSource($this->database, $channel, $broadcastEvents, $broadcastConfig, $admitted, $after);
     }
 }

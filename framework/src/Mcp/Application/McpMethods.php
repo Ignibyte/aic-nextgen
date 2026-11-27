@@ -82,6 +82,19 @@ final readonly class McpMethods
     }
 
     /**
+     * @param int|string $id         The request's id.
+     * @param McpRequest $mcpRequest A request from a client that reads an event stream.
+     * @param McpCatalog $mcpCatalog The tools.
+     * @param Actor      $actor      Who asks.
+     *
+     * @return ToolProgress|null A stepped tool call's events, when it asks for progress (#333); null otherwise.
+     */
+    public function events(int|string $id, McpRequest $mcpRequest, McpCatalog $mcpCatalog, Actor $actor): ?ToolProgress
+    {
+        return $this->mcpCalls->progress($id, $mcpRequest, $mcpCatalog, $actor);
+    }
+
+    /**
      * @param McpRequest $mcpRequest The request.
      * @param McpCatalog $mcpCatalog The app's tools, resources and prompts.
      * @param Actor      $actor      Who asks.

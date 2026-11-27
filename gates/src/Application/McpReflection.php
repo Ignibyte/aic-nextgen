@@ -8,6 +8,7 @@ use AIC\Access\Domain\Actor;
 use Gates\Domain\RegexCaptures;
 use InvalidArgumentException;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
@@ -26,7 +27,8 @@ use function substr;
 
 /**
  * Reads what the build needs of an MCP entry's class (#316): its attribute,
- * once and on a readonly class, and a tool's `call()` signature.
+ * once and on a readonly class, a tool's `call()` signature, and whether it
+ * runs in steps (#333).
  */
 final readonly class McpReflection
 {
@@ -85,6 +87,36 @@ final readonly class McpReflection
 
     /**
      * @param class-string $class A tool.
+     * @param string       $input Its input class, as `call()` takes it.
+     *
+     * @throws InvalidArgumentException When it has one of `steps()` and `step()` without the other, or either does
+     *                                  not have its shape.
+     *
+     * @return bool Whether it runs in steps: a public `steps(<Input>): int` and `step(<Input>, int): string`.
+     */
+    public function stepped(string $class, string $input): bool
+    {
+        $reflectionClass = new ReflectionClass($class);
+
+        if (!$reflectionClass->hasMethod('steps') && !$reflectionClass->hasMethod('step')) {
+            return false;
+        }
+
+        if (
+            $this->types($reflectionClass, 'steps') !== [$input, 'int']
+            || $this->types($reflectionClass, 'step') !== [$input, 'int', 'string']
+        ) {
+            throw new InvalidArgumentException(sprintf(
+                '%s: a stepped tool has public steps(<Input> $input): int and step(<Input> $input, int $step): string (#333).',
+                $class,
+            ));
+        }
+
+        return true;
+    }
+
+    /**
+     * @param class-string $class A tool.
      *
      * @throws InvalidArgumentException When it has no public `call()` of one or two parameters.
      *
@@ -127,6 +159,39 @@ final readonly class McpReflection
         }
 
         return $call;
+    }
+
+    /**
+     * @param ReflectionClass<object> $reflectionClass A tool.
+     * @param string                  $name            One of its methods' names.
+     *
+     * @return list<string> The method's parameters' type names, then its return type's; empty names where one is not
+     *                      a named type, and nothing for a method it lacks or that is not public.
+     */
+    private function types(ReflectionClass $reflectionClass, string $name): array
+    {
+        try {
+            $reflectionMethod = $reflectionClass->getMethod($name);
+        } catch (ReflectionException) {
+            return [];
+        }
+
+        if (!$reflectionMethod->isPublic()) {
+            return [];
+        }
+
+        $types = [];
+
+        foreach ($reflectionMethod->getParameters() as $reflectionParameter) {
+            $types[] = $this->named($reflectionParameter);
+        }
+
+        $returned = $reflectionMethod->getReturnType();
+        $types[] = $returned instanceof ReflectionNamedType
+            ? $returned->getName()
+            : '';
+
+        return $types;
     }
 
     /**

@@ -337,6 +337,14 @@
             "path": "/mcp"
         },
         {
+            "handler": "App\\Ledger\\Controller\\LedgerMcpStream",
+            "kind": "Stream",
+            "method": "GET",
+            "module": "ledger",
+            "needs": "ledger.mcp",
+            "path": "/mcp"
+        },
+        {
             "handler": "App\\Ledger\\Controller\\LedgerAssistantPage",
             "kind": "Page",
             "method": "GET",
@@ -939,7 +947,7 @@
                     "name": "ledger.mcp"
                 },
                 {
-                    "description": "Call the ledger.split tool over MCP.",
+                    "description": "Call the ledger.split and ledger.tally tools over MCP.",
                     "name": "ledger.split"
                 }
             ],

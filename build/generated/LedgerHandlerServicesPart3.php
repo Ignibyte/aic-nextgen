@@ -6,6 +6,7 @@ namespace App\Generated;
 
 use AIC\Container\Exception\ContainerException;
 use AIC\Mcp\Application\McpServer;
+use AIC\Mcp\Application\McpStream;
 use AIC\Module\Application\HandlerContext;
 use App\Ledger\Form\AssistantCalls;
 use App\Ledger\Form\AssistantEnvelope;
@@ -35,6 +36,17 @@ final readonly class LedgerHandlerServicesPart3
             (new LedgerHandlerServicesPart2($this->handlerContext))->actors(),
             $this->handlerContext->appConfig(),
             (new LedgerHandlerServicesPart2($this->handlerContext))->mcpMethods(),
+        );
+    }
+
+    /**
+     * @return McpStream A new one, for the part that asked.
+     */
+    public function mcpStream(): McpStream
+    {
+        return new McpStream(
+            (new LedgerHandlerServices($this->handlerContext))->broadcasts(),
+            (new LedgerHandlerServicesPart2($this->handlerContext))->actors(),
         );
     }
 

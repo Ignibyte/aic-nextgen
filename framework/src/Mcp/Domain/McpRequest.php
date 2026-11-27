@@ -127,42 +127,11 @@ final readonly class McpRequest
     }
 
     /**
-     * @param string $name A key of `params._meta`, such as `aic/callId` (#332).
-     *
-     * @return string Its value when it is a string; empty otherwise.
+     * @return McpMeta `params._meta`, read one key at a time (#332, #333).
      */
-    public function metaText(string $name): string
+    public function meta(): McpMeta
     {
-        $params = json_decode($this->params, true);
-
-        if (
-            !is_array($params)
-            || !array_key_exists('_meta', $params)
-            || !is_array($params['_meta'])
-            || !array_key_exists($name, $params['_meta'])
-        ) {
-            return '';
-        }
-
-        return is_string($params['_meta'][$name])
-            ? $params['_meta'][$name]
-            : '';
-    }
-
-    /**
-     * @param string $name A key of `params._meta`, such as `aic/dryRun` (#332).
-     *
-     * @return bool Whether it is `true`.
-     */
-    public function metaFlag(string $name): bool
-    {
-        $params = json_decode($this->params, true);
-
-        if (!is_array($params) || !array_key_exists('_meta', $params) || !is_array($params['_meta'])) {
-            return false;
-        }
-
-        return array_key_exists($name, $params['_meta']) && $params['_meta'][$name] === true;
+        return new McpMeta($this->params);
     }
 
     /**

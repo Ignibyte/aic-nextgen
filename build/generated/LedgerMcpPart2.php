@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Generated;
 
 use AIC\Mcp\Domain\McpCatalog;
+use App\Ledger\Mcp\LedgerCategorizePrompt;
 use App\Ledger\Mcp\LedgerExplainPrompt;
 use App\Ledger\Mcp\LedgerSplitPrompt;
 
@@ -18,10 +19,12 @@ use App\Ledger\Mcp\LedgerSplitPrompt;
 final readonly class LedgerMcpPart2
 {
     /**
-     * @param LedgerExplainPrompt $ledgerExplainPrompt An entry, for its adapter.
-     * @param LedgerSplitPrompt   $ledgerSplitPrompt   An entry, for its adapter.
+     * @param LedgerCategorizePrompt $ledgerCategorizePrompt An entry, for its adapter.
+     * @param LedgerExplainPrompt    $ledgerExplainPrompt    An entry, for its adapter.
+     * @param LedgerSplitPrompt      $ledgerSplitPrompt      An entry, for its adapter.
      */
     public function __construct(
+        private LedgerCategorizePrompt $ledgerCategorizePrompt,
         private LedgerExplainPrompt $ledgerExplainPrompt,
         private LedgerSplitPrompt $ledgerSplitPrompt,
     ) {
@@ -36,6 +39,7 @@ final readonly class LedgerMcpPart2
             [],
             [],
             [
+                new LedgerCategorizePromptGet($this->ledgerCategorizePrompt),
                 new LedgerExplainPromptGet($this->ledgerExplainPrompt),
                 new LedgerSplitPromptGet($this->ledgerSplitPrompt),
             ],

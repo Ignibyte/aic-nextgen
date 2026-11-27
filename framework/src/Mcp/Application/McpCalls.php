@@ -15,6 +15,7 @@ use AIC\Mcp\Domain\McpPromptResult;
 use AIC\Mcp\Domain\McpProtocolException;
 use AIC\Mcp\Domain\McpReadResult;
 use AIC\Mcp\Domain\McpRequest;
+use AIC\Mcp\Domain\McpSteppedCall;
 use AIC\Mcp\Domain\McpToolResult;
 
 /**
@@ -48,14 +49,40 @@ final readonly class McpCalls
      */
     public function call(McpRequest $mcpRequest, McpCatalog $mcpCatalog, Actor $actor): McpToolResult
     {
-        $capabilityCall = new CapabilityCall(
-            $mcpRequest->param('name'),
-            $mcpRequest->argumentText(),
-            $mcpRequest->metaText('aic/callId'),
-            $mcpRequest->metaFlag('aic/dryRun'),
-        );
+        return new McpToolResult($this->capabilities->call($mcpCatalog, $this->capabilityCall($mcpRequest), $actor));
+    }
 
-        return new McpToolResult($this->capabilities->call($mcpCatalog, $capabilityCall, $actor));
+    /**
+     * @param int|string $id         The request's id.
+     * @param McpRequest $mcpRequest A request from a client that reads an event stream.
+     * @param McpCatalog $mcpCatalog The tools.
+     * @param Actor      $actor      Who calls.
+     *
+     * @return ToolProgress|null The call's events (#333) when it is a `tools/call` with a progress token to a stepped
+     *                           tool the caller may call; null for every other request, which `call()` answers.
+     */
+    public function progress(
+        int|string $id,
+        McpRequest $mcpRequest,
+        McpCatalog $mcpCatalog,
+        Actor $actor,
+    ): ?ToolProgress {
+        $progressToken = $mcpRequest->meta()->progressToken();
+
+        if ($mcpRequest->method() !== 'tools/call' || $progressToken === '') {
+            return null;
+        }
+
+        try {
+            $capabilityCall = $this->capabilityCall($mcpRequest);
+            $mcpSteppedCall = $this->capabilities->tool($capabilityCall->tool, $mcpCatalog, $actor)->stepped();
+        } catch (McpProtocolException) {
+            return null;
+        }
+
+        return $mcpSteppedCall instanceof McpSteppedCall
+            ? new ToolProgress($this->capabilities, $mcpSteppedCall, $capabilityCall, $actor, $id, $progressToken)
+            : null;
     }
 
     /**
@@ -107,6 +134,23 @@ final readonly class McpCalls
         }
 
         throw new McpProtocolException('Invalid params: no prompt is named "' . $name . '".', McpProtocolException::INVALID_PARAMS);
+    }
+
+    /**
+     * @param McpRequest $mcpRequest A `tools/call`.
+     *
+     * @throws McpProtocolException When it names no tool, its arguments are not an object, or its call id is not one.
+     *
+     * @return CapabilityCall The call, with `aic/callId` and `aic/dryRun` from its `_meta` (#332).
+     */
+    private function capabilityCall(McpRequest $mcpRequest): CapabilityCall
+    {
+        return new CapabilityCall(
+            $mcpRequest->param('name'),
+            $mcpRequest->argumentText(),
+            $mcpRequest->meta()->text('aic/callId'),
+            $mcpRequest->meta()->flag('aic/dryRun'),
+        );
     }
 
     /**

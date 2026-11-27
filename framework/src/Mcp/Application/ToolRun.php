@@ -14,6 +14,7 @@ use AIC\Mcp\Domain\CapabilityCall;
 use AIC\Mcp\Domain\CapabilityResult;
 use AIC\Mcp\Domain\McpJson;
 use AIC\Mcp\Domain\McpProtocolException;
+use AIC\Mcp\Domain\McpSteppedCall;
 use AIC\Mcp\Domain\McpToolCall;
 use RuntimeException;
 
@@ -21,8 +22,9 @@ use RuntimeException;
  * One capability call (#332), in a savepoint of the registry's transaction:
  * the tool's output encoded once, kept on a call and rolled back on a dry run;
  * a refusal, arguments that do not fit, or a failure roll the tool's writes
- * back, and each ends as the result its audit row records. `answered()` then
- * turns the two that are not answers into the errors the caller gets.
+ * back, and each ends as the result its audit row records. A stepped tool's
+ * steps run in the same savepoint first, one at a time (#333). `answered()`
+ * then turns the two that are not answers into the errors the caller gets.
  */
 final readonly class ToolRun
 {
@@ -39,13 +41,13 @@ final readonly class ToolRun
     /**
      * @param McpToolCall    $mcpToolCall    The tool's adapter.
      * @param CapabilityCall $capabilityCall The call.
-     * @param Actor          $actor          Who calls.
      *
-     * @throws QueryException When the savepoint cannot be set or ended.
+     * @throws QueryException When the savepoint cannot be set.
      *
-     * @return CapabilityResult How it ended.
+     * @return CapabilityResult|null A dry call's refusal when the tool cannot run dry; null with the call's savepoint
+     *                               set otherwise.
      */
-    public function run(McpToolCall $mcpToolCall, CapabilityCall $capabilityCall, Actor $actor): CapabilityResult
+    public function opened(McpToolCall $mcpToolCall, CapabilityCall $capabilityCall): ?CapabilityResult
     {
         if ($capabilityCall->dryRun && !$mcpToolCall->toolInfo()->dryRun) {
             $why = $capabilityCall->tool . ' cannot run dry: it has effects outside the database.';
@@ -54,10 +56,65 @@ final readonly class ToolRun
         }
 
         $this->database->beginTransaction();
+
+        return null;
+    }
+
+    /**
+     * @param McpToolCall    $mcpToolCall    The tool's adapter.
+     * @param CapabilityCall $capabilityCall The call.
+     * @param Actor          $actor          Who calls.
+     * @param int            $step           Which step, from 0; -1 for the call itself.
+     *
+     * @return CapabilityResult Done with the step's message, or the call's output encoded; or how the tool or its
+     *                          arguments ended the call.
+     */
+    public function attempt(
+        McpToolCall $mcpToolCall,
+        CapabilityCall $capabilityCall,
+        Actor $actor,
+        int $step = -1,
+    ): CapabilityResult {
+        $dryRun = $capabilityCall->dryRun;
+
+        try {
+            $output = $step < 0
+                ? $this->mcpJson->encode($mcpToolCall->callTool($capabilityCall->input(), $actor))
+                : $this->stepped($mcpToolCall, $capabilityCall, $actor, $step);
+
+            return new CapabilityResult(CallOutcome::Done, $output, '', $dryRun);
+        } catch (ToolRefusedException $toolRefusedException) {
+            return new CapabilityResult(CallOutcome::Refused, '', $toolRefusedException->getMessage(), $dryRun);
+        } catch (McpArgumentException $mcpArgumentException) {
+            return new CapabilityResult(CallOutcome::Invalid, '', $mcpArgumentException->getMessage(), $dryRun);
+        } catch (RuntimeException $runtimeException) {
+            $why = $runtimeException::class . ': ' . $runtimeException->getMessage();
+
+            return new CapabilityResult(CallOutcome::Failed, '', $why, $dryRun);
+        }
+    }
+
+    /**
+     * @param McpToolCall           $mcpToolCall    The tool's adapter.
+     * @param CapabilityCall        $capabilityCall The call, its savepoint set.
+     * @param Actor                 $actor          Who calls.
+     * @param CapabilityResult|null $ended          How a step ended the call; null to run the call.
+     *
+     * @throws QueryException When the savepoint cannot be ended.
+     *
+     * @return CapabilityResult How it ended: the savepoint released when it is done and not dry, rolled back
+     *                          otherwise.
+     */
+    public function closed(
+        McpToolCall $mcpToolCall,
+        CapabilityCall $capabilityCall,
+        Actor $actor,
+        ?CapabilityResult $ended = null,
+    ): CapabilityResult {
         $kept = false;
 
         try {
-            $capabilityResult = $this->attempt($mcpToolCall, $capabilityCall, $actor);
+            $capabilityResult = $ended ?? $this->attempt($mcpToolCall, $capabilityCall, $actor);
 
             if ($capabilityResult->callOutcome === CallOutcome::Done && !$capabilityCall->dryRun) {
                 $this->database->commit();
@@ -97,25 +154,21 @@ final readonly class ToolRun
      * @param McpToolCall    $mcpToolCall    The tool's adapter.
      * @param CapabilityCall $capabilityCall The call.
      * @param Actor          $actor          Who calls.
+     * @param int            $step           Which step, from 0.
      *
-     * @return CapabilityResult The output, or how the tool or its arguments ended the call.
+     * @throws McpArgumentException When the arguments do not fit the input.
+     * @throws ToolRefusedException When the tool refuses the call or runs in no steps.
+     *
+     * @return string The step's message.
      */
-    private function attempt(McpToolCall $mcpToolCall, CapabilityCall $capabilityCall, Actor $actor): CapabilityResult
+    private function stepped(McpToolCall $mcpToolCall, CapabilityCall $capabilityCall, Actor $actor, int $step): string
     {
-        $dryRun = $capabilityCall->dryRun;
+        $mcpSteppedCall = $mcpToolCall->stepped();
 
-        try {
-            $output = $this->mcpJson->encode($mcpToolCall->callTool($capabilityCall->input(), $actor));
-
-            return new CapabilityResult(CallOutcome::Done, $output, '', $dryRun);
-        } catch (ToolRefusedException $toolRefusedException) {
-            return new CapabilityResult(CallOutcome::Refused, '', $toolRefusedException->getMessage(), $dryRun);
-        } catch (McpArgumentException $mcpArgumentException) {
-            return new CapabilityResult(CallOutcome::Invalid, '', $mcpArgumentException->getMessage(), $dryRun);
-        } catch (RuntimeException $runtimeException) {
-            $why = $runtimeException::class . ': ' . $runtimeException->getMessage();
-
-            return new CapabilityResult(CallOutcome::Failed, '', $why, $dryRun);
+        if (!$mcpSteppedCall instanceof McpSteppedCall) {
+            throw new ToolRefusedException($capabilityCall->tool . ' runs in no steps.');
         }
+
+        return $mcpSteppedCall->step($capabilityCall->input(), $step, $actor);
     }
 }

@@ -13,9 +13,9 @@ use AIC\Mcp\Application\McpCalls;
 use AIC\Mcp\Application\McpMethods;
 use AIC\Mcp\Application\ToolRun;
 use AIC\Module\Application\HandlerContext;
-use App\Ledger\Mcp\LedgerCategorizePrompt;
 use App\Ledger\Mcp\LedgerCurrenciesResource;
 use App\Ledger\Mcp\LedgerSplitTool;
+use App\Ledger\Mcp\LedgerTallyTool;
 use InvalidArgumentException;
 
 /**
@@ -41,11 +41,11 @@ final readonly class LedgerHandlerServicesPart2
     {
         return new LedgerMcp(
             new LedgerSplitTool(),
+            new LedgerTallyTool(),
             (new LedgerHandlerServices($this->handlerContext))->ledgerAccountsResource(),
             (new LedgerHandlerServices($this->handlerContext))->ledgerCategoriesResource(),
             new LedgerCurrenciesResource(),
             (new LedgerHandlerServices($this->handlerContext))->ledgerStandingResource(),
-            new LedgerCategorizePrompt(),
             (new LedgerHandlerServices($this->handlerContext))->ledgerMcpPart2(),
         );
     }

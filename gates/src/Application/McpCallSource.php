@@ -7,6 +7,7 @@ namespace Gates\Application;
 use AIC\Access\Domain\Actor;
 use AIC\Mcp\Contracts\McpArgumentException;
 use AIC\Mcp\Contracts\McpArguments;
+use AIC\Mcp\Domain\McpSteppedCall;
 use AIC\Mcp\Domain\McpToolCall;
 use AIC\Mcp\Domain\McpToolInfo;
 use Gates\Domain\McpToolSpec;
@@ -32,7 +33,7 @@ use function strtr;
 final readonly class McpCallSource
 {
     private const string TEMPLATE = <<<'PHP'
-        final readonly class {call} implements McpToolCall
+        final readonly class {call} implements {implements}
         {
             /**
              * @param {tool} ${toolVariable} The tool.
@@ -53,7 +54,7 @@ final readonly class McpCallSource
                     {description},
                     {needs},
                     (new {inputSchema}())->schema(),
-                    (new {outputSchema}())->schema(),{dryRun}
+                    (new {outputSchema}())->schema(),{flags}
                 );
             }
 
@@ -68,9 +69,80 @@ final readonly class McpCallSource
             #[Override]
             public function callTool(McpArguments $mcpArguments, Actor $actor): JsonSerializable
             {
+                return new {tool}Result($this->{toolVariable}->call($this->input($mcpArguments){actor}));
+            }
+        {stepped}
+
+            /**
+             * @param McpArguments $mcpArguments The call's arguments.
+             *
+        {inputThrows}
+             *
+             * @return {input} The tool's input, from the arguments.
+             */
+            private function input(McpArguments $mcpArguments): {input}
+            {
         {body}
             }{enums}
         }
+        PHP;
+
+    /**
+     * A tool's `stepped()` when it runs in no steps.
+     */
+    private const string UNSTEPPED = <<<'PHP'
+
+            /**
+             * @return McpSteppedCall|null Null: the tool runs in no steps.
+             */
+            #[Override]
+            public function stepped(): ?McpSteppedCall
+            {
+                return null;
+            }
+        PHP;
+
+    /**
+     * A stepped tool's `stepped()`, `steps()` and `step()` (#333).
+     */
+    private const string STEPPED = <<<'PHP'
+
+            /**
+             * @return McpSteppedCall The adapter: the tool runs in steps.
+             */
+            #[Override]
+            public function stepped(): McpSteppedCall
+            {
+                return $this;
+            }
+
+            /**
+             * @param McpArguments $mcpArguments The call's arguments.
+             *
+        {inputThrows}
+             *
+             * @return int How many steps the call runs.
+             */
+            #[Override]
+            public function steps(McpArguments $mcpArguments): int
+            {
+                return $this->{toolVariable}->steps($this->input($mcpArguments));
+            }
+
+            /**
+             * @param McpArguments $mcpArguments The call's arguments.
+             * @param int          $step         Which step, from 0.
+             * @param Actor        $actor        Who calls.
+             *
+        {inputThrows}
+             *
+             * @return string What the step did.
+             */
+            #[Override]
+            public function step(McpArguments $mcpArguments, int $step, Actor $actor): string
+            {
+                return $this->{toolVariable}->step($this->input($mcpArguments), $step);
+            }
         PHP;
 
     /**
@@ -97,21 +169,10 @@ final readonly class McpCallSource
      */
     public function file(McpToolSpec $mcpToolSpec, string $from): string
     {
-        $tool = $this->mcpCode->short($mcpToolSpec->class);
-        $source = strtr(self::TEMPLATE, [
-            '{body}' => $this->mcpDecodeSource->body($mcpToolSpec),
-            '{call}' => $tool . 'Call',
-            '{description}' => $this->mcpCode->value($mcpToolSpec->toolInfo->description),
-            '{dryRun}' => $mcpToolSpec->toolInfo->dryRun ? "\n            true," : '',
-            '{enums}' => $this->enums($mcpToolSpec),
-            '{inputSchema}' => $this->mcpSchemaSource->name($mcpToolSpec->input),
-            '{name}' => $this->mcpCode->value($mcpToolSpec->toolInfo->name),
-            '{needs}' => $this->mcpCode->value($mcpToolSpec->toolInfo->needs),
-            '{outputSchema}' => $this->mcpSchemaSource->name($mcpToolSpec->output),
-            '{throws}' => $this->throws($mcpToolSpec),
-            '{toolVariable}' => $this->mcpCode->variable($tool),
-            '{tool}' => $tool,
-        ]);
+        $stepped = $mcpToolSpec->stepped
+            ? self::STEPPED
+            : self::UNSTEPPED;
+        $source = strtr(strtr(self::TEMPLATE, ['{stepped}' => $stepped]), $this->values($mcpToolSpec));
         $docblock = $this->phpClassFile->generated($from, 'the ' . $mcpToolSpec->toolInfo->name . " tool's adapter (#316).");
 
         return $this->phpClassFile->file('App\\Generated', $this->classes($mcpToolSpec), [], $docblock, $source);
@@ -120,9 +181,58 @@ final readonly class McpCallSource
     /**
      * @param McpToolSpec $mcpToolSpec The tool.
      *
-     * @return string The `@throws` lines of `callTool()`: the arguments', an unknown enum value's, and the tool's own.
+     * @return array<string, string> What each of the template's placeholders stands for.
      */
-    private function throws(McpToolSpec $mcpToolSpec): string
+    private function values(McpToolSpec $mcpToolSpec): array
+    {
+        $tool = $this->mcpCode->short($mcpToolSpec->class);
+
+        return [
+            '{actor}' => $mcpToolSpec->withActor ? ', $actor' : '',
+            '{body}' => $this->mcpDecodeSource->body($mcpToolSpec),
+            '{call}' => $tool . 'Call',
+            '{description}' => $this->mcpCode->value($mcpToolSpec->toolInfo->description),
+            '{enums}' => $this->enums($mcpToolSpec),
+            '{flags}' => $this->flags($mcpToolSpec),
+            '{implements}' => $mcpToolSpec->stepped ? 'McpSteppedCall' : 'McpToolCall',
+            '{inputSchema}' => $this->mcpSchemaSource->name($mcpToolSpec->input),
+            '{inputThrows}' => $this->throws($mcpToolSpec, false),
+            '{input}' => $this->mcpCode->short($mcpToolSpec->input->php),
+            '{name}' => $this->mcpCode->value($mcpToolSpec->toolInfo->name),
+            '{needs}' => $this->mcpCode->value($mcpToolSpec->toolInfo->needs),
+            '{outputSchema}' => $this->mcpSchemaSource->name($mcpToolSpec->output),
+            '{throws}' => $this->throws($mcpToolSpec, true),
+            '{toolVariable}' => $this->mcpCode->variable($tool),
+            '{tool}' => $tool,
+        ];
+    }
+
+    /**
+     * @param McpToolSpec $mcpToolSpec The tool.
+     *
+     * @return string The `McpToolInfo` flags after the schemas: `dryRun` (#332), then `progress` for a stepped tool
+     *                (#333); none when both are false.
+     */
+    private function flags(McpToolSpec $mcpToolSpec): string
+    {
+        $dryRun = $mcpToolSpec->toolInfo->dryRun;
+
+        if ($mcpToolSpec->stepped) {
+            return "\n            " . ($dryRun ? 'true' : 'false') . ",\n            true,";
+        }
+
+        return $dryRun
+            ? "\n            true,"
+            : '';
+    }
+
+    /**
+     * @param McpToolSpec $mcpToolSpec The tool.
+     * @param bool        $calling     Whether they are `callTool()`'s, with the tool's own; `input()`'s otherwise.
+     *
+     * @return string The `@throws` lines: the arguments', an unknown enum value's, and for the call the tool's own.
+     */
+    private function throws(McpToolSpec $mcpToolSpec, bool $calling): string
     {
         $throws = ['McpArgumentException' => 'When the arguments do not fit the input.'];
 
@@ -130,7 +240,7 @@ final readonly class McpCallSource
             $throws['LogicException'] = 'When a checked value is no case of its enum.';
         }
 
-        foreach ($mcpToolSpec->throws as $class) {
+        foreach ($calling ? $mcpToolSpec->throws : [] as $class) {
             $throws[$this->mcpCode->short($class)] ??= 'When the tool throws it.';
         }
 
@@ -167,7 +277,12 @@ final readonly class McpCallSource
      */
     private function classes(McpToolSpec $mcpToolSpec): array
     {
-        $classes = [Actor::class, McpArgumentException::class, McpArguments::class, McpToolCall::class, McpToolInfo::class];
+        $classes = [Actor::class, McpArgumentException::class, McpArguments::class, McpToolInfo::class, McpSteppedCall::class];
+
+        if (!$mcpToolSpec->stepped) {
+            $classes[] = McpToolCall::class;
+        }
+
         $classes = [...$classes, JsonSerializable::class, Override::class, $mcpToolSpec->class, $mcpToolSpec->input->php];
 
         $generated = [$this->mcpSchemaSource->name($mcpToolSpec->input), $this->mcpSchemaSource->name($mcpToolSpec->output)];

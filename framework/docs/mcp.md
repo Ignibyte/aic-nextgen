@@ -42,7 +42,7 @@ One POST carries one message. The server answers:
 
 | Method | Answer |
 |---|---|
-| `initialize` | the protocol version (the client's when it is 2025-06-18, 2025-03-26 or 2024-11-05, else the newest), the three capabilities, the app's name |
+| `initialize` | the protocol version (the client's when it is 2025-06-18, 2025-03-26 or 2024-11-05, else the newest), the three capabilities, each with `listChanged: true` (#333), the app's name |
 | `ping` | `{}` |
 | `tools/list`, `resources/list`, `prompts/list` | the entries the caller has the permission for, each list whole |
 | `tools/call`, `resources/read`, `prompts/get` | the entry's answer |
@@ -52,7 +52,7 @@ A body that is not JSON is `-32700`, and one that is not a single JSON-RPC 2.0 m
 included) is `-32600`, both with a `400`. An unknown method is `-32601`. Arguments that do not fit
 the entry are `-32602` naming the field, and a tool or prompt the caller cannot see is `-32602`
 too; an unknown resource is `-32002`. Anything else a call throws is `-32603`. The server keeps
-nothing between requests: no `Mcp-Session-Id`, and no GET stream (the router answers `405`).
+nothing between requests: no `Mcp-Session-Id`. The GET stream and a tool's progress are below.
 
 ## Access
 
@@ -161,6 +161,45 @@ The fixture's `/ledger/assistant` is an in-app assistant: it lists what the sign
 may call under the ceiling `ledger.split`, previews a split as a dry run, splits, and sends the same call
 again, its call id sealed in the form's envelope.
 
+## The GET stream and progress
+
+A module routes `GET /mcp` to a Stream of its own, under the same `needs:` as its POST, which hands
+the request to `AIC\Mcp\Application\McpStream` with the same catalog (#333):
+
+```php
+public function stream(ServerRequestInterface $serverRequest): StreamResponse
+{
+    return $this->mcpStream->stream($serverRequest, $this->ledgerMcp->catalog());
+}
+```
+
+It is a broadcast stream (#314) on the channel `aic.mcp`, held, capped and resumed as one. Each
+message is a JSON-RPC notification in an `event: message`. At the connection's first event, at each
+keep-alive and at its end, it resolves the caller again and prints the three lists the caller would
+be sent (the first 8 hex digits of each one's SHA-256); for each print that moved it sends
+`notifications/tools/list_changed`, `resources/list_changed` or `prompts/list_changed`. Every id it
+sends carries the prints, `<n>:<tools>-<resources>-<prompts>`, so a client that reconnects with
+`Last-Event-ID` hears what changed while it was away. A role granted or revoked, a token's scopes or
+a deploy that changes the catalog all show this way, at the keep-alive's latency.
+
+A tool runs in steps when it has two methods beside `call()`:
+
+```php
+public function steps(LedgerTallyInput $ledgerTallyInput): int
+public function step(LedgerTallyInput $ledgerTallyInput, int $step): string
+```
+
+The build writes them into the tool's adapter, an `AIC\Mcp\Domain\McpSteppedCall`, and `tools/list`
+shows `_meta: {"aic/progress": true}`. A `tools/call` to such a tool with `params._meta.progressToken`,
+from a client whose `Accept` names `text/event-stream`, is answered as an event stream
+(`AIC\Controller\Domain\ApiEvents`): each step runs as the body is read and leaves as a
+`notifications/progress` (the token, the step's number, the total and the step's message), then the
+reply is the last event. The steps run inside the call's transaction and savepoint, so a dry run, a
+call id and the audit hold as for any call: a repeated id answers the stored reply with no steps,
+and a step that refuses or fails ends the call. Without a token, to a tool with no steps, or to a
+client that reads only JSON, the answer is JSON. The fixture's `ledger.tally` adds amounts one step
+at a time.
+
 ## Resources and prompts
 
 A resource implements `AIC\Mcp\Contracts\McpResource`, is marked `#[ResourceInfo]` with its URI,
@@ -186,5 +225,7 @@ Past seven entries the build writes the catalog in parts (#334): `<Module>Mcp` h
 every entry's services, would pass PHPMD's coupling of 15, the build makes those services in the
 module's `<Module>HandlerServices` and the handler calls one method for each. A module's `src/Mcp/`
 still holds 15 files at most (gate:26): a tool takes three, a resource or a prompt one. Each list is whole,
-with no cursor, and nothing announces a change to it; a tool reports no progress while it runs (#333).
+with no cursor. A list change is heard at the GET stream's next keep-alive, not when it happens, and
+nothing publishes on `aic.mcp` yet. A call with progress holds a site worker for all its steps, and a
+connection lost mid-call rolls the whole call back with the connection, leaving no audit row.
 The audit keeps every row; there is no retention yet.

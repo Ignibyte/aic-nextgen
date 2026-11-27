@@ -6,6 +6,18 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The MCP GET stream, list changes and progress over SSE** (#333). A module routes `GET /mcp` to a Stream that
+  hands it to `AIC\Mcp\Application\McpStream`: Server-Sent Events of JSON-RPC notifications, held and capped like a
+  broadcast stream (#314). At the start and at each keep-alive the stream checks what the caller may see and sends
+  `notifications/tools/list_changed` (or resources, prompts) for each list that moved; each event id carries the
+  caller's list prints, so a reconnect with `Last-Event-ID` hears what changed while it was away. `initialize` announces
+  `listChanged: true`. A stepped tool (`steps(<Input>): int` and `step(<Input>, int): string` beside `call()`, marked
+  `_meta["aic/progress"]` in `tools/list`) called with `_meta.progressToken` by a client accepting `text/event-stream`
+  answers an event stream (`ApiEvents`, a new Api answer): one `notifications/progress` per step as it ends, then the
+  reply. The steps run inside the call's transaction and savepoint, so dry runs, call ids and the audit hold, and a
+  lost connection rolls the call back. Otherwise the answer stays JSON. The ledger fixture's `ledger.tally` and
+  `GET /mcp`.
+
 - **An MCP capability registry: dry runs, call ids and an audit** (#332). Every tool call now goes through
   `AIC\Mcp\Application\Capabilities`, which an MCP client's `tools/call` and an app's own assistant share.
   `Actor::within($ceiling, $client)` cuts the signed-in person's permissions to what an assistant is given.

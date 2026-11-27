@@ -163,6 +163,7 @@ final readonly class McpBuild
             $this->mcpTypes->object($output, true),
             $withActor,
             $this->mcpReflection->throws($class),
+            $this->mcpReflection->stepped($class, $input),
         );
     }
 }

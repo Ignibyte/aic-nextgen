@@ -30,7 +30,7 @@ final readonly class McpInitializeResult implements JsonSerializable
     #[Override]
     public function jsonSerialize(): array
     {
-        $fixed = ['listChanged' => false];
+        $fixed = ['listChanged' => true];
 
         return [
             'capabilities' => ['tools' => $fixed, 'resources' => $fixed, 'prompts' => $fixed],
