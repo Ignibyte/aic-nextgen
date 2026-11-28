@@ -22,8 +22,10 @@ use const PHP_EOL;
 /**
  * Builds the compiled site (gate:23, `composer run native:serve`): the class
  * bundle in place of the autoloader, then `bootstrap/serve.php`, compiled with
- * `elephc --web` into `<work>/main`. The bundle is the union of every runtime
- * class's closure, dependencies first, through gate:21's bundler.
+ * `elephc --web` into `<work>/main`; and the socket server (#32), the same
+ * bundle and `bootstrap/socket.php` compiled as a plain program into
+ * `<work>/socket/main`. The bundle is the union of every runtime class's
+ * closure, dependencies first, through gate:21's bundler.
  */
 final readonly class NativeSiteBuilder
 {
@@ -62,7 +64,7 @@ final readonly class NativeSiteBuilder
             unlink($workDir . '/main');
         }
 
-        $this->writeProgram($root, $workDir);
+        $this->writeProgram($root, $workDir, 'serve.php');
         $processResult = $this->nativeToolchain->installPackages($workDir);
 
         return $processResult->exitCode === 0
@@ -72,11 +74,38 @@ final readonly class NativeSiteBuilder
 
     /**
      * @param string $root    Repo-root absolute path.
+     * @param string $workDir Where the program and the binary go: the site's work directory's `socket/`.
+     *
+     * @throws RuntimeException When the work directory or the program cannot be written.
+     *
+     * @return ProcessResult The package install's failure, or the compile's result.
+     */
+    public function buildSocket(string $root, string $workDir): ProcessResult
+    {
+        if (!is_dir($workDir) && !mkdir($workDir, 0o755, true)) {
+            throw new RuntimeException('native socket server — cannot create ' . $workDir);
+        }
+
+        if (is_file($workDir . '/main')) {
+            unlink($workDir . '/main');
+        }
+
+        $this->writeProgram($root, $workDir, 'socket.php');
+        $processResult = $this->nativeToolchain->installPackages($workDir);
+
+        return $processResult->exitCode === 0
+            ? $this->nativeToolchain->compileCli($workDir)
+            : $processResult;
+    }
+
+    /**
+     * @param string $root    Repo-root absolute path.
      * @param string $workDir The work directory.
+     * @param string $entry   The program under `bootstrap/`: `serve.php` or `socket.php`.
      *
      * @throws RuntimeException When a file cannot be written or copied.
      */
-    private function writeProgram(string $root, string $workDir): void
+    private function writeProgram(string $root, string $workDir, string $entry): void
     {
         $lines = ['<?php', '', 'declare(strict_types=1);', '', '// Every runtime class, dependencies first (gate:23).', ''];
 
@@ -86,7 +115,7 @@ final readonly class NativeSiteBuilder
 
         $main = '<?php' . PHP_EOL . PHP_EOL . 'declare(strict_types=1);' . PHP_EOL . PHP_EOL
             . "require __DIR__ . '/_bundle.php';" . PHP_EOL
-            . 'require ' . var_export($root . '/bootstrap/serve.php', true) . ';' . PHP_EOL;
+            . 'require ' . var_export($root . '/bootstrap/' . $entry, true) . ';' . PHP_EOL;
         $written = file_put_contents($workDir . '/_bundle.php', implode(PHP_EOL, $lines) . PHP_EOL) !== false
             && file_put_contents($workDir . '/main.php', $main) !== false
             && copy($this->package . '/native/elephc.toml', $workDir . '/elephc.toml')

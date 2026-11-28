@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 /**
- * The thirty-eight `bin/aic` make lines that make `modules/scaffold/` (#122),
+ * The thirty-nine `bin/aic` make lines that make `modules/scaffold/` (#122),
  * run in order by gate:31 and by anyone regenerating the module: every
  * writer, a component with a script and a page showing it (#315), a page
  * naming its component, a named layout (#157), a page making its own view in
@@ -23,7 +23,8 @@ namespace Gates\Application;
  * imported loans, its fields read from their migration (#338), two
  * imported tables that reference each other in a cycle (#349), an MCP
  * resource and prompt beside the tool (#334), and an interpreted worker,
- * `workers/scaffold/` (#335), with a job and its runner (#336).
+ * `workers/scaffold/` (#335), with a job and its runner (#336), and a
+ * Socket on one channel (#32).
  */
 final readonly class ScaffoldSequence
 {
@@ -160,5 +161,6 @@ final readonly class ScaffoldSequence
         ['make:mcp-prompt', 'scaffold', 'ScaffoldAskPrompt'],
         ['make:worker', 'scaffold'],
         ['make:job', 'scaffold', 'ScaffoldReportJob', '--worker'],
+        ['make:socket', 'scaffold', 'ScaffoldSocket', '/ws/scaffold'],
     ];
 }

@@ -47,6 +47,34 @@ compiled site (2 workers of 8, the cap out of the way): 14 open streams left `/h
 Stored files live under `var/storage/` ([modules.md](modules.md#assets) covers the public build
 assets). Keep `var/storage/` on a volume that survives a release.
 
+## The socket server
+
+A module's Socket (#32) is served by `bin/aic socket:serve`, never by the site's workers. Run it under
+a service that restarts it, beside the site, with the site's environment, and send the socket paths'
+upgrades to it from the proxy. It listens on `AppConfig::$sockets`, `127.0.0.1:8091` by default.
+Under nginx:
+
+```nginx
+location /ws/ {
+    proxy_pass http://127.0.0.1:8091;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $http_host;
+    proxy_read_timeout 1h;
+}
+```
+
+The `Host` header must reach the server as the browser sent it: an upgrade opens only when its
+`Origin` names that host. Under Caddy, `handle /ws/* { reverse_proxy 127.0.0.1:8091 }` goes before
+the site's `php_server` (`deploy/frankenphp/Caddyfile`). DDEV runs the server as a
+`web_extra_daemons` entry, with `.ddev/nginx/socket.conf` in front.
+
+The compiled socket server is `bootstrap/socket.php` over the site's class bundle
+([native.md](native.md#compiled-socket-server)). gate:23 builds it at `.native-site/socket/main`;
+it takes the same arguments (`--host=`, `--port=`, `--seconds=`) and environment. It is as young as
+the compiled site, so keep `bin/aic socket:serve` in production until you trust it.
+
 ## FrankenPHP
 
 FrankenPHP runs AIC in classic mode with no change to the app: each request runs `public/index.php`

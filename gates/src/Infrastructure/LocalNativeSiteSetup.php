@@ -73,12 +73,13 @@ final readonly class LocalNativeSiteSetup
 
         $reachable = $this->answers($root, $env);
 
-        [$stubPort, $phpPort, $nativePort] = self::freePorts();
-        $env['AIC_UPSTREAM_STUB'] = 'http://127.0.0.1:' . $stubPort;
+        $ports = self::freePorts();
+        $env['AIC_UPSTREAM_STUB'] = 'http://127.0.0.1:' . $ports[0];
         $env['AIC_UPSTREAM_STUB_TOKEN'] = 'stub-token';
         $env['AIC_WEBHOOK_STUB_SECRET'] = 'stub-webhook-secret';
+        $maxBodyBytes = $this->maxBodyBytes($root);
 
-        return new NativeSiteSetup($env, $database, $reachable, $phpPort, $nativePort, $this->maxBodyBytes($root), $stubPort);
+        return new NativeSiteSetup($env, $database, $reachable, $ports[1], $ports[2], $maxBodyBytes, $ports[0], [$ports[3], $ports[4]]);
     }
 
     /**
@@ -121,27 +122,44 @@ final readonly class LocalNativeSiteSetup
     }
 
     /**
-     * Asks the kernel for three free ports at once: every socket stays open
-     * until all three are read, so no two ports are the same (#340). A socket
-     * that cannot open or name itself falls back to 18090, 18091 or 18092.
+     * Asks the kernel for five free ports at once: every socket stays open
+     * until all five are read, so no two ports are the same (#340). A socket
+     * that cannot open or name itself falls back to 18090 to 18094.
      *
-     * @return array{int, int, int} The stub's port, the PHP site's and the native site's.
+     * @return array{int, int, int, int, int} The stub's port, the PHP site's, the native site's, then the PHP socket
+     *                                        server's and the compiled one's (#32).
      */
     private static function freePorts(): array
     {
-        $stub = stream_socket_server('tcp://127.0.0.1:0');
-        $php = stream_socket_server('tcp://127.0.0.1:0');
-        $native = stream_socket_server('tcp://127.0.0.1:0');
-
+        $servers = [
+            stream_socket_server('tcp://127.0.0.1:0'),
+            stream_socket_server('tcp://127.0.0.1:0'),
+            stream_socket_server('tcp://127.0.0.1:0'),
+            stream_socket_server('tcp://127.0.0.1:0'),
+            stream_socket_server('tcp://127.0.0.1:0'),
+        ];
         $ports = [
-            self::portOf(is_resource($stub) ? stream_socket_get_name($stub, false) : false, 18_090),
-            self::portOf(is_resource($php) ? stream_socket_get_name($php, false) : false, 18_091),
-            self::portOf(is_resource($native) ? stream_socket_get_name($native, false) : false, 18_092),
+            self::named($servers[0], 18_090),
+            self::named($servers[1], 18_091),
+            self::named($servers[2], 18_092),
+            self::named($servers[3], 18_093),
+            self::named($servers[4], 18_094),
         ];
 
-        self::closeAll([$stub, $php, $native]);
+        self::closeAll($servers);
 
         return $ports;
+    }
+
+    /**
+     * @param false|resource $server   A socket drawn, or false when it did not open.
+     * @param int            $fallback The port when it names none.
+     *
+     * @return int Its port, or the fallback.
+     */
+    private static function named(mixed $server, int $fallback): int
+    {
+        return self::portOf(is_resource($server) ? stream_socket_get_name($server, false) : false, $fallback);
     }
 
     /**

@@ -42,16 +42,16 @@ final readonly class NativeSiteGate
     private const string NO_COMPILER = 'gate:23 — elephc not found at %s (run vendor/bin/aic-gate tools, or set ELEPHC_BIN).';
 
     /**
-     * @param NativeToolchain        $nativeToolchain        The compiler and host PHP.
-     * @param NativeSiteBuilder      $nativeSiteBuilder      Builds the compiled site.
-     * @param NativeSiteSites        $nativeSiteSites        Starts and stops the two sites.
-     * @param NativeSiteComparer     $nativeSiteComparer     Sends the steps and compares the answers.
-     * @param GateUser               $gateUser               Gives the signed-in steps their user.
-     * @param NativeSiteBrowser      $nativeSiteBrowser      Runs the kept browser tests against the compiled site (#174).
-     * @param NativeSiteProfiledPass $nativeSiteProfiledPass The second pass, with the profiler on (#234).
-     * @param NativeSiteScript       $nativeSiteScript       The steps.
-     * @param NativeSiteHtml         $nativeSiteHtml         Lints the PHP site's HTML answers (#170).
-     * @param NativeSiteCoverage     $nativeSiteCoverage     Finds the GET routes no step reaches (#171).
+     * @param NativeToolchain    $nativeToolchain    The compiler and host PHP.
+     * @param NativeSiteBuilder  $nativeSiteBuilder  Builds the compiled site.
+     * @param NativeSiteSites    $nativeSiteSites    Starts and stops the two sites.
+     * @param NativeSiteComparer $nativeSiteComparer Sends the steps and compares the answers.
+     * @param GateUser           $gateUser           Gives the signed-in steps their user.
+     * @param NativeSiteBrowser  $nativeSiteBrowser  Runs the kept browser tests against the compiled site (#174).
+     * @param NativeSitePasses   $nativeSitePasses   The socket conversations (#32), then the profiled pass (#234).
+     * @param NativeSiteScript   $nativeSiteScript   The steps.
+     * @param NativeSiteHtml     $nativeSiteHtml     Lints the PHP site's HTML answers (#170).
+     * @param NativeSiteCoverage $nativeSiteCoverage Finds the GET routes no step reaches (#171).
      */
     public function __construct(
         private NativeToolchain $nativeToolchain,
@@ -60,7 +60,7 @@ final readonly class NativeSiteGate
         private NativeSiteComparer $nativeSiteComparer,
         private GateUser $gateUser,
         private NativeSiteBrowser $nativeSiteBrowser,
-        private NativeSiteProfiledPass $nativeSiteProfiledPass,
+        private NativeSitePasses $nativeSitePasses,
         private NativeSiteScript $nativeSiteScript = new NativeSiteScript(),
         private NativeSiteHtml $nativeSiteHtml = new NativeSiteHtml(),
         private NativeSiteCoverage $nativeSiteCoverage = new NativeSiteCoverage(),
@@ -202,43 +202,9 @@ final readonly class NativeSiteGate
         $answers = $this->nativeSiteComparer->both($nativeSiteSetup, $steps, $password, $root, $nativeSiteSetup->env);
         $nativeOrigin = 'http://127.0.0.1:' . $nativeSiteSetup->nativePort;
         $browser = $this->nativeSiteBrowser->findings($root, $nativeOrigin, $nativeSiteSetup->env, $password);
-        $this->nativeSiteSites->stop();
-        $profiled = $this->profiled($root, $workDir, $nativeSiteSetup, $password);
+        [$profiled, $sockets] = $this->nativeSitePasses->run($root, $workDir, $nativeSiteSetup, $password, $this->nativeSiteSites);
 
-        return $this->judged($root, $steps, $answers, $browser, $profiled, [$stdout, $stderr]);
-    }
-
-    /**
-     * @param string          $root            Repo-root absolute path.
-     * @param string          $workDir         The native site's work directory.
-     * @param NativeSiteSetup $nativeSiteSetup Where the sites run.
-     * @param string          $password        The gate user's password.
-     *
-     * @return array{int, list<string>, list<string>} The profiled steps run (#234), their differences and their other
-     *                                                findings; nothing when the script names none.
-     */
-    private function profiled(string $root, string $workDir, NativeSiteSetup $nativeSiteSetup, string $password): array
-    {
-        try {
-            $steps = $this->nativeSiteScript->profiled($root);
-        } catch (InvalidArgumentException $invalidArgumentException) {
-            return [0, [], ['PROFILED ' . $invalidArgumentException->getMessage()]];
-        }
-
-        if ($steps === []) {
-            return [0, [], []];
-        }
-
-        [$differences, $findings] = $this->nativeSiteProfiledPass->run(
-            $root,
-            $workDir,
-            $nativeSiteSetup,
-            $steps,
-            $password,
-            $this->nativeSiteSites,
-        );
-
-        return [count($steps), $differences, $findings];
+        return $this->judged($root, $steps, $answers, $browser, $profiled, $sockets, [$stdout, $stderr]);
     }
 
     /**
@@ -250,6 +216,8 @@ final readonly class NativeSiteGate
      *                                                                        failures.
      * @param array{int, list<string>, list<string>}                $profiled The profiled pass (#234): its steps, its
      *                                                                        differences, its other findings.
+     * @param array{int, list<string>, list<string>}                $sockets  The socket pass (#32): its conversations,
+     *                                                                        their differences, its other findings.
      * @param array{resource, resource}                             $streams  Where the summary goes, then the failures.
      *
      * @return int The exit code.
@@ -260,24 +228,19 @@ final readonly class NativeSiteGate
         array $answers,
         array $browser,
         array $profiled,
+        array $sockets,
         array $streams,
     ): int {
         [$php, $native] = $answers;
-        $differences = [...$this->nativeSiteComparer->differences($steps, $php, $native), ...$profiled[1]];
+        $differences = [...$this->nativeSiteComparer->differences($steps, $php, $native), ...$profiled[1], ...$sockets[1]];
         $findings = [
             ...self::prefixed('HTML ', $this->nativeSiteHtml->findings($steps, $php)),
             ...$this->nativeSiteCoverage->unreached($root, $steps, $php),
             ...$browser[1],
             ...$profiled[2],
+            ...$sockets[2],
         ];
-
-        if ($browser[0] > 0 && $browser[1] === []) {
-            fwrite($streams[0], sprintf('gate:23 — browser: %d kept test file(s) pass on the compiled site.%s', $browser[0], PHP_EOL));
-        }
-
-        if ($profiled[0] > 0 && $profiled[1] === [] && $profiled[2] === []) {
-            fwrite($streams[0], sprintf('gate:23 — profiled: %d step(s) record the same profiles on both sites.%s', $profiled[0], PHP_EOL));
-        }
+        self::passed($browser, $profiled, $sockets, $streams[0]);
 
         return $this->report($differences, $findings, count($steps), $streams[0], $streams[1]);
     }
@@ -309,6 +272,31 @@ final readonly class NativeSiteGate
         fwrite($stdout, sprintf($summary, $run, $run) . PHP_EOL);
 
         return 0;
+    }
+
+    /**
+     * Names each pass that ran and held: the kept browser tests, the profiled steps, the socket conversations.
+     *
+     * @param array{int, list<string>}               $browser  The browser tests run, and their failures.
+     * @param array{int, list<string>, list<string>} $profiled The profiled pass.
+     * @param array{int, list<string>, list<string>} $sockets  The socket pass.
+     * @param resource                               $stdout   Where the lines go.
+     */
+    private static function passed(array $browser, array $profiled, array $sockets, mixed $stdout): void
+    {
+        $lines = [
+            [$browser[0], $browser[1], 'browser: %d kept test file(s) pass on the compiled site.'],
+            [$profiled[0], [...$profiled[1], ...$profiled[2]], 'profiled: %d step(s) record the same profiles on both sites.'],
+            [$sockets[0], [...$sockets[1], ...$sockets[2]], 'sockets: %d conversation(s) play alike on both socket servers.'],
+        ];
+
+        foreach ($lines as [$count, $failures, $line]) {
+            if ($count === 0 || $failures !== []) {
+                continue;
+            }
+
+            fwrite($stdout, sprintf('gate:23 — ' . $line . PHP_EOL, $count));
+        }
     }
 
     /**

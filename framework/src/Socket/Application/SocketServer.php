@@ -87,6 +87,9 @@ final readonly class SocketServer
     }
 
     /**
+     * The select set is built by appending, never as a copy of `$listener`: elephc's `stream_select()` compacts the
+     * array it is given in place, so a copy that still shares the listener's storage would empty the listener (#354).
+     *
      * @param list<resource> $listener    The listening socket, in its one-slot list.
      * @param Connections    $connections The connections.
      *
@@ -94,7 +97,11 @@ final readonly class SocketServer
      */
     private function readable(array $listener, Connections $connections): array
     {
-        $read = $listener;
+        $read = [];
+
+        foreach ($listener as $socket) {
+            $read[] = $socket;
+        }
 
         foreach ($connections->streams() as $stream) {
             $read[] = $stream;

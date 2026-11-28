@@ -165,9 +165,9 @@ the gate suite is the dev package `ignibyte/aic-gates`, run by `vendor/bin/aic-g
 profiles, stubs, `aic-gate init`, gate:30 and `config/native-site.json`. #117: modes and holds (agentic or interactive, `workflow:ask` and the
 operator's `workflow:answer`, the stall rule, the shell's read forms, the php wall).
 #122: `bin/aic make:*` (module, page, api, component, block, command, job, migration, theme,
-layout (#157), entity (#123), policy (#304), client (#305), relation (#306), state (#308), mcp-tool (#316), mcp-resource and mcp-prompt (#334), enum, exception and interface (#319), seed (#320), webhook (#321), page-action (#322), export (#323), list-page (#324) and detail-page (#341); dev-only in
+layout (#157), entity (#123), policy (#304), client (#305), relation (#306), state (#308), mcp-tool (#316), mcp-resource and mcp-prompt (#334), enum, exception and interface (#319), seed (#320), webhook (#321), page-action (#322), export (#323), list-page (#324), detail-page (#341) and socket (#32); dev-only in
 `ignibyte/aic-workflow`) write gate-clean classes and add the manifest call, held by the guard while a run
-is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the thirty-eight make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319; a seed, #320, whose writes gate:8 `aic.seedWrites` holds to repositories; a signed webhook, #321; an action answering its region, #322; a queued export, #323; a filtered list, #324; a detail page in tabs, #341; a Laravel-typed table import, #339; an entity over an imported table, #338; checks, a composite key and nulls-equal uniques, #344; a reference cycle, #349; an MCP resource and prompt, #334; a worker, #335; a worker's job and runner, #336).
+is open and recorded as `code.made`; gate:31 holds `modules/scaffold/` to the thirty-nine make lines (a pivot, #306; a state, #308; a component script, #315; an MCP tool, #316; a schema import, #318; an enum, an exception and an interface, #319; a seed, #320, whose writes gate:8 `aic.seedWrites` holds to repositories; a signed webhook, #321; an action answering its region, #322; a queued export, #323; a filtered list, #324; a detail page in tabs, #341; a Laravel-typed table import, #339; an entity over an imported table, #338; checks, a composite key and nulls-equal uniques, #344; a reference cycle, #349; an MCP resource and prompt, #334; a worker, #335; a worker's job and runner, #336; a socket on one channel, #32).
 #298: an app's own kinds, `scaffolds/<kind>/` (a `ScaffoldManifest` and `*.tpl` templates of
 `{placeholder|filter}` text only), made by `bin/aic make <kind> <module> <Name>` through the same run and
 listed with the built-ins by `bin/aic make:catalog`; the root's fixture is `scaffolds/poller/`.
@@ -246,8 +246,11 @@ channel access is the route's `needs:`; the fixture's `/ledger/feed`. The framew
 SocketResponse`, answering `SocketReply(messages, channels)` or `SocketClose`); `bin/aic socket:serve` (`AIC\Socket`, one
 stream_select loop, `AppConfig::$sockets`) upgrades it (same-host `Origin`, the session's user, the route's `needs:`),
 runs RFC 6455 frames, and sends each connection the broadcasts on the channels its last reply named; the build writes
-`<M>Sockets` on the console side, and the surface's `sockets`; the fixture is the `chat` module's `/ws/chat`. Part 2: the
-compiled server, gate:23's socket steps, `make:socket`, the proxy and a chat page.
+`<M>Sockets` on the console side, and the surface's `sockets`; the fixture is the `chat` module's `/ws/chat`. Part 2: `bootstrap/socket.php`
+compiles over the site's bundle as a second program; gate:23 plays `config/native-site.json`'s `sockets` conversations on
+it and on `bin/aic socket:serve` and fails on a difference; `make:socket` (one channel); DDEV and the Caddyfile route `/ws/`.
+elephc's `stream_select()` empties an array still shared with another (carry #354), so the select set is appended. Part 3:
+the origin allow-list, the socket URL setting, a chat page and its two-page browser test.
 #315: component scripts: Tessera 0.4.6's `data-mount="/assets/themes/<theme>/<path>.js"` with `data-mount-data` JSON mounts
 a module on the element (on load, after each patch, again on changed data, unmounted before it goes); the build checks the
 path (`MountScripts`); `make:component --script`; the fixture's `/ledger/meter`.
@@ -559,7 +562,7 @@ The settings of each gate are in `CONSTITUTION.md` §0.
 | 9 | phpat, `gates/architecture/` | 20 | captainhook hooks installed |
 | 10 | PHPMD, every ruleset | 21 | native: elephc compile, link, run, match PHP |
 | | | 22 | pipeline docs: frontmatter, line caps, links |
-| | | 23 | native site: the compiled app answers as PHP does; steps reach every GET route; HTML answers pass the lint; kept browser tests pass |
+| | | 23 | native site: the compiled app answers as PHP does; steps reach every GET route; HTML answers pass the lint; kept browser tests pass; socket conversations play alike on both socket servers |
 | | | 24 | build manifests: `build/surface.json` is fresh |
 | | | 25 | templates: the plain PHP grammar, deny by default; the HTML lint |
 | | | 26 | module boundaries: kind folders, the 15-file cap, exports and requires, the shell |

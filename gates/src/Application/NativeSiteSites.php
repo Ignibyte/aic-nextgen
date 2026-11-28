@@ -58,6 +58,27 @@ final readonly class NativeSiteSites
     }
 
     /**
+     * Starts both socket servers (#32) beside the sites: `bin/aic socket:serve` and the compiled
+     * `<work>/socket/main`, each on its own port, until {@see stop()}.
+     *
+     * @param string          $root            The app's root.
+     * @param string          $workDir         The native site's work directory.
+     * @param NativeSiteSetup $nativeSiteSetup The ports.
+     *
+     * @return bool Whether both answer on their ports.
+     */
+    public function startSockets(string $root, string $workDir, NativeSiteSetup $nativeSiteSetup): bool
+    {
+        [$phpPort, $nativePort] = $nativeSiteSetup->socketPorts;
+        $php = [$this->nativeToolchain->phpPath(), $root . '/bin/aic', 'socket:serve', '--port=' . $phpPort];
+        $native = [$workDir . '/socket/main', '--port=' . $nativePort];
+        $env = $nativeSiteSetup->env;
+
+        return $this->serverLauncher->start($php, $root, $env, $phpPort, $workDir . '/php-socket.log')
+            && $this->serverLauncher->start($native, $root, $env, $nativePort, $workDir . '/native-socket.log');
+    }
+
+    /**
      * Stops every server this gate started.
      */
     public function stop(): void

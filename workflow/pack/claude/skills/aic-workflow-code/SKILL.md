@@ -19,10 +19,11 @@ another file, add its row to the manifest first; the run records it as declared 
   `Job/`, `Block/`, `Component/`, `Migration/`, `Repository/`, `Form/`; plain classes in
   `Entity/`, `Service/` or `Form/`. A gate holds the folders and their size; its message names
   the folder to use.
-- **Five kinds.** Every entry point is a Page (an HTML layout of components, a fragment or a
-  redirect), an Api (JSON or XML), a Stream (events or a download), a Command (a CLI exit code)
-  or a Job (queued or scheduled work). A controller returns its kind's response and nothing
-  else; a helper goes in `src/Service/`.
+- **Six kinds.** Every entry point is a Page (an HTML layout of components, a fragment or a
+  redirect), an Api (JSON or XML), a Stream (events or a download), a Socket (a WebSocket
+  message answered with replies or a close, served by `bin/aic socket:serve`), a Command (a CLI
+  exit code) or a Job (queued or scheduled work). A controller returns its kind's response and
+  nothing else; a helper goes in `src/Service/`.
 - **Components are data, in the theme.** A component's constructor takes the ready values as
   public promoted properties. It lives in the theme `config/app.php` names: its template in
   `themes/<theme>/components/<Name>/<name>.phtml`, its class (and value classes) in

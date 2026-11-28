@@ -1,5 +1,8 @@
 # AIC under FrankenPHP in classic mode: every request runs public/index.php with fresh PHP
 # state, as under php-fpm. SERVER_NAME is a domain (automatic HTTPS) or a bare port (:8080).
+# WebSocket upgrades under /ws/ go to the socket server (#32), `bin/aic socket:serve` or its
+# compiled build, on AppConfig::$sockets' address; Caddy keeps the Host header, which the
+# server's Origin check compares.
 {
 	frankenphp
 }
@@ -7,5 +10,12 @@
 {$SERVER_NAME:localhost} {
 	root * /app/public
 	encode zstd br gzip
-	php_server
+
+	handle /ws/* {
+		reverse_proxy 127.0.0.1:8091
+	}
+
+	handle {
+		php_server
+	}
 }

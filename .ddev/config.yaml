@@ -13,3 +13,7 @@ composer_version: "2"
 corepack_enable: false
 xdebug_enabled: false
 use_dns_when_possible: true
+web_extra_daemons:
+    - name: socket
+      command: bin/aic socket:serve
+      directory: /var/www/html

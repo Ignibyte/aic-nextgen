@@ -101,6 +101,18 @@ final readonly class NativeToolchain
     }
 
     /**
+     * Compile `$dir/main.php` as a plain program, `$dir/main`: the socket server (#32), which holds its own loop.
+     *
+     * @param string $dir The program's work directory.
+     *
+     * @return ProcessResult The compiler's result.
+     */
+    public function compileCli(string $dir): ProcessResult
+    {
+        return $this->processRunner->run([$this->elephc, 'main.php'], $dir, $this->env);
+    }
+
+    /**
      * Compile `$dir/main.php` as a web server, `$dir/main` (gate:23): elephc's
      * prefork server with persistent handler processes (`--web-isolation=pool`),
      * the model its PDO drivers run under.

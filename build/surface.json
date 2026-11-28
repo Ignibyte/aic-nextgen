@@ -876,6 +876,13 @@
             "module": "chat",
             "needs": "",
             "path": "/ws/chat"
+        },
+        {
+            "class": "App\\Scaffold\\Controller\\ScaffoldSocket",
+            "kind": "Socket",
+            "module": "scaffold",
+            "needs": "",
+            "path": "/ws/scaffold"
         }
     ],
     "schedules": [

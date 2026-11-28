@@ -18,6 +18,15 @@ catalog before application factories, sessions and database work. Deploy binary,
 files from the same release root; retain previous release roots for clients with older URLs.
 See [modules.md](modules.md#assets) for asset publication and cache policy.
 
+## Compiled socket server
+
+`bootstrap/socket.php` runs `socket:serve` from the console kernel with the program's arguments (#32):
+under PHP as `bin/aic socket:serve` does, and compiled as a plain elephc program, not `--web`, over the
+same class bundle as the site. gate:23 builds it into `.native-site/socket/main` when
+`config/native-site.json` lists `sockets` ([gates.md](gates.md)). elephc's `stream_select()` compacts
+the array it is given in place even while that array still shares storage with another variable, so
+`SocketServer` builds its select set by appending (#354).
+
 ## The compiler
 
 AIC compiles with its fork of elephc, [Ignibyte/aic_compiler](https://github.com/Ignibyte/aic_compiler),
