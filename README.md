@@ -22,7 +22,7 @@ it and say what breaks.
   are about PHP in general. Running under PHP needs no compiler.
 - **Nothing is discovered at run time.** A module declares what it brings in a manifest, and
   `composer run build` writes the wiring as plain PHP under `build/generated/`. Every entry point is
-  one of five kinds (Page, Api, Stream, Command, Job). Markup lives only in the theme's `.phtml`
+  one of six kinds (Page, Api, Stream, Socket, Command, Job). Markup lives only in the theme's `.phtml`
   templates, never in a PHP class.
 - **Gates, not reviews.** 34 gates hold every change: PHPStan level 10, Psalm with taint analysis,
   Deptrac, PHPMD, a native compile of every class, a whole-site comparison of PHP against the
@@ -136,13 +136,16 @@ aic-nextgen/
 - **`modules/`** is the app. A module is a folder with a manifest, `<name>.module.php`, that
   declares everything the module brings: routes, commands, jobs, schedules, migrations, middleware
   and what it exports to other modules. Its classes sit in `src/`, one folder per kind. Controllers
-  are the five entry kinds (Page, Api, Stream, Command, Job); services, entities, repositories and
+  are the six entry kinds (Page, Api, Stream, Socket, Command, Job); services, entities, repositories and
   forms sit beside them. A module holds no HTML: gate:32 refuses it.
 
-  The fixture app has four modules:
+  The fixture app has seven modules:
   - `site`: the home page, greetings, jobs, schedules, events and downloads;
   - `note`: notes and stock;
   - `account`: sign-in, sessions and uploads;
+  - `ledger`: schema guards, the entity lifecycle, the cache, broadcasts and the MCP server;
+  - `statement`: a statement handed to the interpreted worker in `workers/report/`;
+  - `chat`: a WebSocket chat room, the Socket kind;
   - `scaffold`: what the `bin/aic make:*` commands write.
 
 - **`themes/<theme>/`** owns all markup. Templates are on top and the PHP behind them in `src/`:

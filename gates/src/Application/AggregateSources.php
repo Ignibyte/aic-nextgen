@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
 use AIC\Schedule\Domain\Schedule;
 use AIC\Schema\Contracts\Migration;
+use AIC\Socket\Domain\SocketEntry;
 use Gates\Domain\Aggregate;
 use Gates\Domain\WiringRoots;
 use InvalidArgumentException;
@@ -53,6 +54,14 @@ final readonly class AggregateSources
         'Migrations' => ['ModuleMigrations', 'all', 'list<Migration>', "The modules' migrations, in build order.", [Migration::class], ''],
         'Prefixes' => ['ModulePrefixes', 'all', 'list<string>', "The modules' protected path prefixes.", [], ''],
         'Schedules' => ['ModuleSchedules', 'all', 'list<Schedule>', "The modules' schedules.", [Schedule::class], ''],
+        'Sockets' => [
+            'ModuleSockets',
+            'byPath',
+            'array<string, SocketEntry>',
+            "The modules' sockets by path.",
+            [SocketEntry::class],
+            'console',
+        ],
     ];
 
     /**

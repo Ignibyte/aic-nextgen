@@ -11,6 +11,7 @@ use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
 use AIC\Controller\Contracts\Page;
+use AIC\Controller\Contracts\Socket;
 use AIC\Controller\Contracts\Stream;
 use AIC\Mcp\Contracts\McpPrompt;
 use AIC\Mcp\Contracts\McpResource;
@@ -96,6 +97,7 @@ final readonly class ClassKinds
         Notification::class => ['Notification', 'Notification'],
         Page::class => ['Page', 'Controller'],
         Policy::class => ['Policy', 'Policy'],
+        Socket::class => ['Socket', 'Controller'],
         Stream::class => ['Stream', 'Controller'],
         Throwable::class => ['Exception', 'Exception'],
         UnitEnum::class => ['Enum', 'Enum'],
@@ -117,7 +119,7 @@ final readonly class ClassKinds
     /**
      * The entry kinds, which the surface manifest lists (#26).
      */
-    private const array ENTRY_KINDS = ['Page', 'Api', 'Stream', 'Command', 'Job'];
+    private const array ENTRY_KINDS = ['Page', 'Api', 'Stream', 'Socket', 'Command', 'Job'];
 
     /**
      * @param string $class A class name.

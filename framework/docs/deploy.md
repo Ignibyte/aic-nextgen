@@ -41,8 +41,8 @@ is told to come back after `refusedRetryMs`. Set `streams` below one compiled wo
 page that lands on a worker whose children all hold streams waits until one ends. Measured on AIC's own
 compiled site (2 workers of 8, the cap out of the way): 14 open streams left `/health` answering in
 16 ms; at 15 the page waited past 10 seconds. The default cap is 7. Under php-fpm keep it below
-`pm.max_children`. A site that needs more open streams than that wants the socket server (#32), which
-holds connections without workers.
+`pm.max_children`. A site that needs more open streams than that wants the socket server,
+`bin/aic socket:serve` (#32), which holds connections without workers.
 
 Stored files live under `var/storage/` ([modules.md](modules.md#assets) covers the public build
 assets). Keep `var/storage/` on a volume that survives a release.

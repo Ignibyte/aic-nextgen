@@ -57,7 +57,8 @@ final readonly class ConsoleKernel
     {
         $migrations = array_merge((new FrameworkMigrations())->all(), $this->consoleWiring->migrations());
         $frameworkCommands = (new FrameworkCommands($this->database))->byName($migrations, $this->jobs(), $this->schedules());
-        $commands = array_merge($this->moduleCommands(), $frameworkCommands);
+        $socketCommands = $this->consoleContext->push()->commands($this->consoleContext, $this->consoleWiring);
+        $commands = array_merge($this->moduleCommands(), $frameworkCommands, $socketCommands);
         ksort($commands);
 
         return $commands;

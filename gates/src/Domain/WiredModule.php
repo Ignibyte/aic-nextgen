@@ -18,6 +18,7 @@ final readonly class WiredModule
      * @param array<string, WiredObject> $commands    Its commands by name.
      * @param array<string, WiredObject> $jobs        Its jobs by name.
      * @param list<WiredObject>          $blocks      Its blocks, in declaration order (#203).
+     * @param array<string, WiredObject> $sockets     Its sockets by path (#32), wired on the console side.
      */
     public function __construct(
         public ModuleDefinition $module,
@@ -26,6 +27,7 @@ final readonly class WiredModule
         public array $commands,
         public array $jobs,
         public array $blocks = [],
+        public array $sockets = [],
     ) {
     }
 }

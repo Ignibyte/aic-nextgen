@@ -42,7 +42,7 @@ ordinary code with literal class names.
 |---|---|
 | `->requires('site')` | a module this one uses; only an exported class of a required module may be used |
 | `->export(Foo::class)` | a class other modules may use |
-| `->route(RouteMethod::Get, '/path', Handler::class)` | a route to a Page, Api or Stream; `RouteMethod` is `Get`, `Post`, `Put`, `Patch` or `Delete` (#242; a GET route answers HEAD too, and a path asked with a method it lacks answers 405 with `Allow`); parameters are typed (`{id:int}`) and reach the handler as request attributes. `needs: 'notes.edit'` (a declared permission) or `needs: 'signed-in'` is checked before the handler, 403 otherwise; a route under a protected prefix must say what it needs (#304) |
+| `->route(RouteMethod::Get, '/path', Handler::class)` | a route to a Page, Api, Stream or Socket; `RouteMethod` is `Get`, `Post`, `Put`, `Patch` or `Delete` (#242; a GET route answers HEAD too, and a path asked with a method it lacks answers 405 with `Allow`); parameters are typed (`{id:int}`) and reach the handler as request attributes. `needs: 'notes.edit'` (a declared permission) or `needs: 'signed-in'` is checked before the handler, 403 otherwise; a route under a protected prefix must say what it needs (#304). A route to a Socket (#32) is a GET at a path with no parameter, served by `bin/aic socket:serve` rather than the site; its `needs:` is checked when the connection opens ([kinds.md](kinds.md#socket)) |
 | `->permission('notes.edit', 'Edit any note.')` | a permission a route can need and a role can grant: lower-case words in two or more parts joined by `.`, declared once across the app (#304) |
 | `->binding(Iface::class, Impl::class)` | the readonly class a constructor gets when it asks for the interface |
 | `->plugin(Type::class, Impl::class)` | a plugin of a type; a constructor list parameter marked `#[Tagged(Type::class)]` receives every plugin of that type |
@@ -67,11 +67,11 @@ client, pool, PSR-17 request and stream factories and `Upstreams` (#305; see
 `composer run build` writes everything under `build/` (#167). Under `build/generated/` (namespace
 `App\Generated\`):
 
-- per module, the classes for its routes, handlers, middleware, blocks, commands, jobs, provider
-  (its plugins), migrations, schedules and protected prefixes. Handlers split into parts that fit
-  the gates; a module split so builds each service two of its controllers take, and that is built
-  from another service, once in `<M>HandlerServices` (and its parts), which every part calls, so no
-  two parts repeat its statements (#257);
+- per module, the classes for its routes, handlers, middleware, blocks, commands, jobs, sockets
+  (#32, `<M>Sockets`), provider (its plugins), migrations, schedules and protected prefixes.
+  Handlers split into parts that fit the gates; a module split so builds each service two of its
+  controllers take, and that is built from another service, once in `<M>HandlerServices` (and its
+  parts), which every part calls, so no two parts repeat its statements (#257);
 - the aggregators that join every module's pieces, and the facades `WebModules` and
   `ConsoleModules` that the framework's `AIC\Module\Application\AppKernel` and
   `AIC\Module\Application\ConsoleKernel` take;
@@ -81,7 +81,7 @@ client, pool, PSR-17 request and stream factories and `Upstreams` (#305; see
 - the exact public asset lookup and its data parts, joined with the template lookup by the
   generated `Presentation` factory.
 
-It also writes `build/surface.json` (every route, command and job with its kind),
+It also writes `build/surface.json` (every route, socket, command and job with its kind),
 `build/assets.json` (the private public-asset inventory) and `build/assets/`, the published files
 AIC's asset handler serves at `/assets/`. `public/` holds only `index.php`. Never edit what the
 build writes: change the manifest or the source and build again. gate:24 fails when any of it is
@@ -94,7 +94,7 @@ kinds are described in [kinds.md](kinds.md).
 
 | Folder | Holds |
 |---|---|
-| `src/Controller/` | Page, Api and Stream |
+| `src/Controller/` | Page, Api, Stream and Socket |
 | `src/Command/` | Command |
 | `src/Job/` | Job |
 | `src/Block/` | Block |

@@ -13,6 +13,7 @@ use AIC\HttpClient\Application\OutboundWiring;
 use AIC\HttpClient\Domain\Upstreams;
 use AIC\Notification\Contracts\MailTransport;
 use AIC\Notification\Domain\MailConfig;
+use AIC\Socket\Application\PushRoots;
 use AIC\Storage\Application\PageFiles;
 use LogicException;
 
@@ -117,6 +118,14 @@ final readonly class ConsoleContext
             : new Upstreams();
 
         return (new OutboundWiring())->outbound($upstreams);
+    }
+
+    /**
+     * @return PushRoots The broadcaster, the socket wrap and `socket:serve` (#32).
+     */
+    public function push(): PushRoots
+    {
+        return new PushRoots($this->database, $this->appConfig);
     }
 
     /**

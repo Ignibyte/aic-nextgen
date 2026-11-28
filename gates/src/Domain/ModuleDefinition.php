@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace Gates\Domain;
 
+use AIC\Controller\Contracts\Socket;
 use AIC\Module\Contracts\ModuleDeclaration;
 use AIC\Module\Contracts\ModuleEntry;
 use AIC\Module\Contracts\ModuleManifest;
 use AIC\Module\Contracts\ModuleRoute;
 use AIC\Module\Contracts\ModuleSection;
 
+use function is_a;
 use function str_starts_with;
 use function substr;
 
 /**
  * One module as the build read it (#92): its name, the namespace its classes
- * live in, and its manifest, read by declaration class or by section.
+ * live in, and its manifest, read by declaration class or by section. A route
+ * to a Socket (#32) is no web route: `declared()` leaves it out, and
+ * `sockets()` reads it.
  */
 final readonly class ModuleDefinition
 {
@@ -54,14 +58,14 @@ final readonly class ModuleDefinition
      *
      * @param class-string<T> $type A declaration class.
      *
-     * @return list<T> The manifest's declarations of it, in the order declared.
+     * @return list<T> The manifest's declarations of it, in the order declared; a route to a Socket is not one.
      */
     public function declared(string $type): array
     {
         $declared = [];
 
         foreach ($this->moduleManifest->declarations as $moduleDeclaration) {
-            if (!($moduleDeclaration instanceof $type)) {
+            if (!($moduleDeclaration instanceof $type) || self::socket($moduleDeclaration)) {
                 continue;
             }
 
@@ -103,5 +107,33 @@ final readonly class ModuleDefinition
         }
 
         return $entries;
+    }
+
+    /**
+     * @return list<ModuleRoute> Its routes to a Socket (#32), in the order declared.
+     */
+    public function sockets(): array
+    {
+        $sockets = [];
+
+        foreach ($this->moduleManifest->declarations as $moduleDeclaration) {
+            if (!($moduleDeclaration instanceof ModuleRoute) || !self::socket($moduleDeclaration)) {
+                continue;
+            }
+
+            $sockets[] = $moduleDeclaration;
+        }
+
+        return $sockets;
+    }
+
+    /**
+     * @param ModuleDeclaration $moduleDeclaration A declaration.
+     *
+     * @return bool Whether it is a route whose handler is a Socket.
+     */
+    private static function socket(ModuleDeclaration $moduleDeclaration): bool
+    {
+        return $moduleDeclaration instanceof ModuleRoute && is_a($moduleDeclaration->handler, Socket::class, true);
     }
 }

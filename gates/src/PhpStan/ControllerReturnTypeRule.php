@@ -8,6 +8,8 @@ use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\ApiResponse;
 use AIC\Controller\Contracts\Page;
 use AIC\Controller\Contracts\PageResponse;
+use AIC\Controller\Contracts\Socket;
+use AIC\Controller\Contracts\SocketResponse;
 use AIC\Controller\Contracts\Stream;
 use AIC\Controller\Contracts\StreamResponse;
 use Override;
@@ -40,6 +42,7 @@ final readonly class ControllerReturnTypeRule implements Rule
     private const array RESPONSES = [
         Api::class => ApiResponse::class,
         Page::class => PageResponse::class,
+        Socket::class => SocketResponse::class,
         Stream::class => StreamResponse::class,
     ];
 

@@ -36,7 +36,7 @@ final readonly class SessionMiddleware implements MiddlewareInterface
     /**
      * The cookie: host-only, so Secure, Path=/ and no Domain.
      */
-    private const string COOKIE = '__Host-aic_session';
+    public const string COOKIE = '__Host-aic_session';
 
     /**
      * @param SessionStore    $sessionStore    Where sessions live.

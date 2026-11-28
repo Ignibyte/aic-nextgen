@@ -20,6 +20,8 @@ use AIC\Module\Application\RootlessBlockWiring;
 use AIC\Module\Application\RootlessCommandWiring;
 use AIC\Module\Application\RootlessJobWiring;
 use AIC\Module\Application\RootlessMiddlewareWiring;
+use AIC\Module\Application\SocketWiring;
+use AIC\Socket\Domain\SocketEntry;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -121,6 +123,18 @@ final readonly class FacadeParts
                     (new ModuleProvider())->register($serviceRegistry);
                 }
             PHP, [ServiceRegistry::class]],
+        'ModuleSockets' => [SocketWiring::class, <<<'PHP'
+                /**
+                 * @param ConsoleContext $consoleContext The console's roots.
+                 *
+                 * @return array<string, SocketEntry> The modules' sockets by path.
+                 */
+                #[Override]
+                public function sockets(ConsoleContext $consoleContext): array
+                {
+                    return (new ModuleSockets($consoleContext))->byPath();
+                }
+            PHP, [ConsoleContext::class, SocketEntry::class]],
     ];
 
     /**

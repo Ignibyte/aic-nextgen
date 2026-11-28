@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\Api;
 use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\Job;
 use AIC\Controller\Contracts\Page;
+use AIC\Controller\Contracts\Socket;
 use AIC\Controller\Contracts\Stream;
 use AIC\Mcp\Domain\McpSteppedCall;
 use AIC\Mcp\Domain\McpToolCall;
@@ -38,6 +39,7 @@ final readonly class KindMethods
         Job::class => 'run',
         McpToolCall::class => 'callTool',
         Page::class => 'page',
+        Socket::class => 'socket',
         Stream::class => 'stream',
     ];
 

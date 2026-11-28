@@ -9,6 +9,7 @@ use AIC\Broadcast\Domain\BroadcastConfig;
 use AIC\Http\Domain\Webhooks;
 use AIC\HttpClient\Domain\Upstreams;
 use AIC\OAuth\Domain\OAuthServer;
+use AIC\Socket\Domain\SocketConfig;
 use AIC\Tessera\Domain\TesseraRelease;
 use InvalidArgumentException;
 
@@ -43,6 +44,7 @@ final readonly class AppConfig
      * @param Webhooks        $webhooks     The webhooks the app takes, by path (#321), each secret read from the
      *                                      environment here.
      * @param OAuthServer     $oauth        The app as an OAuth 2 authorization server (#331); off with no issuer.
+     * @param SocketConfig    $sockets      How the socket server listens (#32).
      *
      * @throws InvalidArgumentException When the name is blank or the cap is below one byte.
      */
@@ -56,6 +58,7 @@ final readonly class AppConfig
         public BroadcastConfig $broadcast = new BroadcastConfig(),
         public Webhooks $webhooks = new Webhooks(),
         public OAuthServer $oauth = new OAuthServer(),
+        public SocketConfig $sockets = new SocketConfig(),
     ) {
         if (trim($name) === '') {
             throw new InvalidArgumentException('AppConfig: the application name must not be blank.');

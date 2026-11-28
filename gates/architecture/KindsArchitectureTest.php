@@ -45,12 +45,13 @@ final class KindsArchitectureTest
                 Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\Page$/', true),
                 Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\Api$/', true),
                 Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\Stream$/', true),
+                Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\Socket$/', true),
                 Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\Command$/', true),
                 Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\Job$/', true),
             ))
             ->shouldNot()
             ->exist()
-            ->because('every entry point is exactly one kind (roadmap.md, the five kinds).');
+            ->because('every entry point is exactly one kind (roadmap.md, the six kinds).');
     }
 
     /**
@@ -65,7 +66,8 @@ final class KindsArchitectureTest
             ->shouldNot()
             ->implement()
             ->classes(Selector::classname('/^Psr\\\\Http\\\\Server\\\\RequestHandlerInterface$/', true))
-            ->because("an app entry point is a Page, an Api, a Stream, a Command or a Job; the framework wraps it in its kind's handler.");
+            ->because("an app entry point is a Page, an Api, a Stream, a Socket, a Command or a Job; the framework wraps it in its kind's "
+                . 'handler.');
     }
 
     /**
@@ -82,6 +84,7 @@ final class KindsArchitectureTest
                     Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\PageResponse$/', true),
                     Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\ApiResponse$/', true),
                     Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\StreamResponse$/', true),
+                    Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\SocketResponse$/', true),
                     Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\CommandResponse$/', true),
                     Selector::implements('/^AIC\\\\Controller\\\\Contracts\\\\JobResponse$/', true),
                 ),
@@ -93,7 +96,7 @@ final class KindsArchitectureTest
     }
 
     /**
-     * An interpreted worker holds no Page, Api, Stream or Command: it is
+     * An interpreted worker holds no Page, Api, Stream, Socket or Command: it is
      * never routed or run from the console, only handed queued jobs.
      *
      * @return Rule The rule.
@@ -108,6 +111,7 @@ final class KindsArchitectureTest
                 Selector::classname('/^AIC\\\\Controller\\\\Contracts\\\\Page$/', true),
                 Selector::classname('/^AIC\\\\Controller\\\\Contracts\\\\Api$/', true),
                 Selector::classname('/^AIC\\\\Controller\\\\Contracts\\\\Stream$/', true),
+                Selector::classname('/^AIC\\\\Controller\\\\Contracts\\\\Socket$/', true),
                 Selector::classname('/^AIC\\\\Controller\\\\Contracts\\\\Command$/', true),
             )
             ->because("a worker runs queued work only: its one kind is the Job, and the site's routes and the console never reach it.");

@@ -66,6 +66,7 @@ final readonly class SurfaceManifest
         $owners = $this->surfaceModuleRows->owners($modules);
         $manifest = ['routes' => $this->routes($routes, $modules), 'commands' => $this->classes($commands, $owners['commands'])];
         $manifest['jobs'] = $this->classes($jobs, $owners['jobs']);
+        $manifest['sockets'] = $this->sockets($modules);
         $manifest['schedules'] = [];
 
         foreach ($schedules as $schedule) {
@@ -101,6 +102,30 @@ final readonly class SurfaceManifest
                 'module' => $owners[$name] ?? 'framework',
                 'name' => $name,
             ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param list<ModuleDefinition> $modules The modules, in build order.
+     *
+     * @return list<array<string, string>> One row per socket (#32): its class, kind, module, need and path.
+     */
+    private function sockets(array $modules): array
+    {
+        $rows = [];
+
+        foreach ($modules as $module) {
+            foreach ($module->sockets() as $moduleRoute) {
+                $rows[] = [
+                    'class' => $moduleRoute->handler,
+                    'kind' => $this->classKinds->entryKind($moduleRoute->handler),
+                    'module' => $module->name,
+                    'needs' => $moduleRoute->needs,
+                    'path' => $moduleRoute->path,
+                ];
+            }
         }
 
         return $rows;
