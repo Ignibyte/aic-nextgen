@@ -186,7 +186,11 @@ checked as strings by `FieldFormats`, `Row::dateTime()`, Schema `types()->uuid()
 `TableBuilder::column()`, `make:entity --key=uuid`; gate:31 runs 15 make lines.
 #306: entity relations (`Relation`: HasMany, HasOne, ManyToMany through a pivot, Polymorphic), `EntityQuery::withCount|
 withSum|withExisting|withMissing`, `EntityStore::related()` → `RelatedRows`, `make:relation` (pivot migration and printed
-declarations; in-place edits are #328); gate:31 runs 16 make lines.
+declarations); gate:31 runs 16 make lines.
+#328: a module's entity types have one home the makes own, `src/Entity/<M>Types.php` (public `<entity>()`, private
+`<entity>With(relations)`, edited at php-parser offsets by `AIC\Workflow\Parsing\TypesEditor`); make:entity's repository
+takes it, make:relation adds the pivot and both sides' `ManyToMany` there (printing them only for a table outside it), and a
+make that edits a file restores its old bytes on a failed write (`MadeFile::created()`).
 #310: schema declarations: `Schema::expressions()` (typed `Term`s and `Predicate`s; only `PostgresExpressions` makes one,
 gate:8 `aic.schemaExpression`), `TableConstraints` on both builders (`check`, `indexWhere`, `uniqueWhere`, `indexUsing`
 with an `IndexMethod`), `types()->generated(type, term)`, and the trigger guards `Schema::appendOnly()` and

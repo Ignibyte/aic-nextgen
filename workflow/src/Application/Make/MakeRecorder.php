@@ -15,8 +15,9 @@ use AIC\Workflow\Domain\Phase;
 use AIC\Workflow\Domain\RunState;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
+use function array_filter;
 use function array_map;
-use function in_array;
+use function array_values;
 use function json_encode;
 
 use const JSON_THROW_ON_ERROR;
@@ -49,7 +50,7 @@ final readonly class MakeRecorder
     /**
      * @param string          $command         The make, such as `make:page`.
      * @param ParsedArguments $parsedArguments Its line.
-     * @param MakeRecipe      $makeRecipe      What it made; its files are the ones it created.
+     * @param MakeRecipe      $makeRecipe      What it made; its files it created are the ledger's rows.
      * @param list<MadeFile>  $files           What it wrote, the manifest last.
      *
      * @return string A line for the answer's end when the run could not be read or a record not written; empty when the
@@ -99,12 +100,10 @@ final readonly class MakeRecorder
         array $provenance,
         Phase $phase,
     ): string {
-        $created = array_map(static fn (MadeFile $madeFile): string => $madeFile->path, $makeRecipe->files);
-
         return json_encode([
             'command' => $command,
             'files' => array_map(static fn (MadeFile $madeFile): array => [
-                'created' => in_array($madeFile->path, $created, true),
+                'created' => $madeFile->created(),
                 'hash' => $madeFile->hash(),
                 'path' => $madeFile->path,
             ], $files),
@@ -128,7 +127,7 @@ final readonly class MakeRecorder
 
         return array_map(
             static fn (MadeFile $madeFile): MadeRow => new MadeRow($madeFile->path, $kind, $scaffold, $madeFile->hash(), $runId),
-            $makeRecipe->files,
+            array_values(array_filter($makeRecipe->files, static fn (MadeFile $madeFile): bool => $madeFile->created())),
         );
     }
 }

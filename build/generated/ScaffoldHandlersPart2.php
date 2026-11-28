@@ -7,7 +7,9 @@ namespace App\Generated;
 use AIC\Container\Exception\ContainerException;
 use AIC\Form\Application\FormTokens;
 use AIC\Module\Application\HandlerContext;
+use AIC\Queue\Application\PostgresQueue;
 use AIC\Storage\Application\PrivateFiles;
+use App\Scaffold\Controller\ScaffoldDeliveryWebhook;
 use App\Scaffold\Controller\ScaffoldPinAction;
 use App\Scaffold\Controller\ScaffoldShelfExportDownload;
 use App\Scaffold\Controller\ScaffoldShelfExportPost;
@@ -37,9 +39,11 @@ final readonly class ScaffoldHandlersPart2
     public function byId(): array
     {
         $scaffoldHandlerServices = new ScaffoldHandlerServices($this->handlerContext);
+        $postgresQueue = new PostgresQueue($this->handlerContext->database());
         $scaffoldPinView = new ScaffoldPinView($this->handlerContext->documents(), new FormTokens());
 
         return [
+            ScaffoldDeliveryWebhook::class => $this->handlerContext->api(new ScaffoldDeliveryWebhook($postgresQueue)),
             ScaffoldPinAction::class => $this->handlerContext->page(new ScaffoldPinAction(new ScaffoldPinStep(), $scaffoldPinView)),
             ScaffoldShelfExportDownload::class => $this->handlerContext->stream(
                 new ScaffoldShelfExportDownload(

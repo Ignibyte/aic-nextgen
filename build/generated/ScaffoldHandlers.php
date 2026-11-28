@@ -7,15 +7,14 @@ namespace App\Generated;
 use AIC\Container\Exception\ContainerException;
 use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
-use AIC\Queue\Application\PostgresQueue;
 use App\Scaffold\Controller\ScaffoldAboutPage;
 use App\Scaffold\Controller\ScaffoldApi;
-use App\Scaffold\Controller\ScaffoldDeliveryWebhook;
 use App\Scaffold\Controller\ScaffoldEventListPage;
 use App\Scaffold\Controller\ScaffoldGaugePage;
 use App\Scaffold\Controller\ScaffoldPage;
 use App\Scaffold\Controller\ScaffoldPost;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
+use App\Scaffold\Entity\ScaffoldTypes;
 use App\Scaffold\Repository\ScaffoldEventRepository;
 use App\Scaffold\Repository\ScaffoldTaskRepository;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -42,21 +41,19 @@ final readonly class ScaffoldHandlers
     public function byId(): array
     {
         $entityStore = new EntityStore($this->handlerContext->database());
+        $scaffoldTypes = new ScaffoldTypes();
 
         return [
             ScaffoldAboutPage::class => $this->handlerContext->page(new ScaffoldAboutPage($this->handlerContext->documents())),
             ScaffoldApi::class => $this->handlerContext->api(new ScaffoldApi()),
-            ScaffoldDeliveryWebhook::class => $this->handlerContext->api(
-                new ScaffoldDeliveryWebhook(new PostgresQueue($this->handlerContext->database())),
-            ),
             ScaffoldEventListPage::class => $this->handlerContext->page(
-                new ScaffoldEventListPage($this->handlerContext->documents(), new ScaffoldEventRepository($entityStore)),
+                new ScaffoldEventListPage($this->handlerContext->documents(), new ScaffoldEventRepository($entityStore, $scaffoldTypes)),
             ),
             ScaffoldGaugePage::class => $this->handlerContext->page(new ScaffoldGaugePage($this->handlerContext->documents())),
             ScaffoldPage::class => $this->handlerContext->page(new ScaffoldPage($this->handlerContext->documents())),
             ScaffoldPost::class => $this->handlerContext->page(new ScaffoldPost()),
             ScaffoldTaskListPage::class => $this->handlerContext->page(
-                new ScaffoldTaskListPage($this->handlerContext->documents(), new ScaffoldTaskRepository($entityStore)),
+                new ScaffoldTaskListPage($this->handlerContext->documents(), new ScaffoldTaskRepository($entityStore, $scaffoldTypes)),
             ),
         ];
     }

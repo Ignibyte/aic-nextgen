@@ -8,6 +8,7 @@ use AIC\Workflow\Exception\WorkflowRefusal;
 use PhpParser\Error;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\GroupUse;
+use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\ParserFactory;
 
@@ -22,7 +23,7 @@ use function strrpos;
 use function substr;
 
 /**
- * A manifest's `use` lines, which an edit adds to (#122): each missing class
+ * A manifest's or a types class's `use` lines (#122, #328), which an edit adds to: each missing class
  * goes in at its sorted place, the order Pint's `ordered_imports` keeps, and
  * every other byte stays.
  */
@@ -77,7 +78,7 @@ final readonly class ManifestImports
 
         $statements = [];
 
-        foreach ($stmts as $stmt) {
+        foreach (self::outer($stmts) as $stmt) {
             $statement = $this->statement($stmt);
 
             if ($statement === null) {
@@ -157,5 +158,35 @@ final readonly class ManifestImports
         $same = strcasecmp($use, $statement['name']) === 0;
 
         return ($same && $statement['alias'] !== $short) || (!$same && strcasecmp($statement['alias'], $short) === 0);
+    }
+
+    /**
+     * @param array<Stmt> $stmts A file's statements.
+     *
+     * @return list<Stmt> Them, with a `namespace` block's own in its place (a types class, #328).
+     */
+    private static function outer(array $stmts): array
+    {
+        $outer = [];
+
+        foreach ($stmts as $stmt) {
+            foreach (self::inner($stmt) as $inner) {
+                $outer[] = $inner;
+            }
+        }
+
+        return $outer;
+    }
+
+    /**
+     * @param Stmt $stmt A top-level statement.
+     *
+     * @return array<Stmt> A `namespace` block's own statements, or the statement itself.
+     */
+    private static function inner(Stmt $stmt): array
+    {
+        return $stmt instanceof Namespace_
+            ? $stmt->stmts
+            : [$stmt];
     }
 }

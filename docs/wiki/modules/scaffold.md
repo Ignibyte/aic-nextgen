@@ -140,6 +140,7 @@ none
 | `App\Scaffold\Entity\ScaffoldLoan` | [modules/scaffold/src/Entity/ScaffoldLoan.php](../../../modules/scaffold/src/Entity/ScaffoldLoan.php) |
 | `App\Scaffold\Entity\ScaffoldTask` | [modules/scaffold/src/Entity/ScaffoldTask.php](../../../modules/scaffold/src/Entity/ScaffoldTask.php) |
 | `App\Scaffold\Entity\ScaffoldTaskStageTransitions` | [modules/scaffold/src/Entity/ScaffoldTaskStageTransitions.php](../../../modules/scaffold/src/Entity/ScaffoldTaskStageTransitions.php) |
+| `App\Scaffold\Entity\ScaffoldTypes` | [modules/scaffold/src/Entity/ScaffoldTypes.php](../../../modules/scaffold/src/Entity/ScaffoldTypes.php) |
 
 ### `src/Enum/`
 

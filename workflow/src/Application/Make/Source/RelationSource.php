@@ -9,13 +9,17 @@ use AIC\Workflow\Domain\Make\EntityField;
 use AIC\Workflow\Exception\WorkflowRefusal;
 
 use function implode;
+use function lcfirst;
 use function preg_replace;
 use function sprintf;
+use function str_replace;
+use function ucwords;
 
 /**
  * A pivot table's migration (`make:relation`, #306) and the declarations that
  * relate its two tables through it: the pivot's entity type and a ManyToMany
- * on each side, which the agent adds to each table's entity type.
+ * on each side, as methods and relations for the module's types class (#328),
+ * or as lines the agent adds to a types class the make does not edit.
  */
 final readonly class RelationSource
 {
@@ -83,12 +87,7 @@ final readonly class RelationSource
         $target = $tables['target'] ?? '';
         $ownerKey = self::column($owner);
         $targetKey = self::column($target);
-        $pivotFields = [self::field($ownerKey, $uuid['owner'] ?? false), self::field($targetKey, $uuid['target'] ?? false)];
-
-        foreach ($fields as $field) {
-            $pivotFields[] = $field->field();
-        }
-
+        $pivotFields = self::pivotFields($tables, $uuid, $fields);
         $pivot = sprintf("new EntityType('%s', 'id', [%s])", $tables['pivot'] ?? '', implode(', ', $pivotFields));
 
         return [
@@ -96,6 +95,105 @@ final readonly class RelationSource
             self::relation($owner, $target, $ownerKey, $targetKey),
             self::relation($target, $owner, $targetKey, $ownerKey),
         ];
+    }
+
+    /**
+     * @param array<string, string> $tables The owner's, the target's and the pivot's tables.
+     *
+     * @return string The pivot's accessor in the module's types: `scaffold_tasks_scaffold_events` gives
+     *                `scaffoldTasksScaffoldEvents`.
+     */
+    public function pivotAccessor(array $tables): string
+    {
+        return lcfirst(str_replace('_', '', ucwords($tables['pivot'] ?? '', '_')));
+    }
+
+    /**
+     * @param array<string, string> $tables The owner's, the target's and the pivot's tables.
+     * @param array<string, bool>   $uuid   Whether the owner's and the target's keys are uuids.
+     * @param list<EntityField>     $fields The pivot's own fields.
+     *
+     * @throws WorkflowRefusal When the template is missing.
+     *
+     * @return string The pivot's accessor, each line ending in a newline.
+     */
+    public function pivotType(array $tables, array $uuid, array $fields): string
+    {
+        $lines = '';
+
+        foreach (self::pivotFields($tables, $uuid, $fields) as $field) {
+            $lines .= '            ' . $field . ",\n";
+        }
+
+        return $this->makeTemplates->render('relation', 'pivot-type.php.tpl', [
+            'fields' => $lines,
+            'table' => $tables['pivot'] ?? '',
+            'variable' => $this->pivotAccessor($tables),
+        ]);
+    }
+
+    /**
+     * @param array<string, string> $tables    The owner's, the target's and the pivot's tables.
+     * @param array<string, string> $accessors Each table's accessor in the module's types.
+     *
+     * @throws WorkflowRefusal When the template is missing.
+     *
+     * @return array<string, string> Each side's accessor and the ManyToMany it gains, each line ending in a newline.
+     */
+    public function relations(array $tables, array $accessors): array
+    {
+        $owner = $tables['owner'] ?? '';
+        $target = $tables['target'] ?? '';
+        $ownerAccessor = $accessors[$owner] ?? '';
+        $targetAccessor = $accessors[$target] ?? '';
+        $pivot = $this->pivotAccessor($tables);
+
+        return [
+            $ownerAccessor => $this->manyToMany([$target, $targetAccessor], self::column($owner), $pivot, self::column($target)),
+            $targetAccessor => $this->manyToMany([$owner, $ownerAccessor], self::column($target), $pivot, self::column($owner)),
+        ];
+    }
+
+    /**
+     * @param array{string, string} $other    The table it relates to, which names the relation, and its accessor.
+     * @param string                $key      The pivot's column that holds the side's key.
+     * @param string                $pivot    The pivot's accessor.
+     * @param string                $otherKey The pivot's column that holds the other's key.
+     *
+     * @throws WorkflowRefusal When the template is missing.
+     *
+     * @return string The relation's lines.
+     */
+    private function manyToMany(array $other, string $key, string $pivot, string $otherKey): string
+    {
+        return $this->makeTemplates->render('relation', 'relation.php.tpl', [
+            'key' => $key,
+            'name' => $other[0],
+            'otherKey' => $otherKey,
+            'pivot' => $pivot,
+            'target' => $other[1],
+        ]);
+    }
+
+    /**
+     * @param array<string, string> $tables The owner's, the target's and the pivot's tables.
+     * @param array<string, bool>   $uuid   Whether the owner's and the target's keys are uuids.
+     * @param list<EntityField>     $fields The pivot's own fields.
+     *
+     * @return non-empty-list<string> The pivot's `Field`s: each side's key, then its own.
+     */
+    private static function pivotFields(array $tables, array $uuid, array $fields): array
+    {
+        $pivotFields = [
+            self::field(self::column($tables['owner'] ?? ''), $uuid['owner'] ?? false),
+            self::field(self::column($tables['target'] ?? ''), $uuid['target'] ?? false),
+        ];
+
+        foreach ($fields as $field) {
+            $pivotFields[] = $field->field();
+        }
+
+        return $pivotFields;
     }
 
     /**

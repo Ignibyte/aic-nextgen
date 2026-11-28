@@ -243,8 +243,14 @@ rows, read with a limit), its create-table migration and a list page at the tabl
 becomes `-`) that shows the newest 50 rows in a heading and paragraphs. Types are `text`,
 `numeric`, `date`, `boolean`, `uuid`, `json`, `timestamp` and `choice(a|b)` with its values;
 every table also has `id` and `created_at`, and `--key=uuid` makes `id` a uuid the database
-generates (newest first then by `created_at`). One manifest edit
-routes the page and runs the migration; run `bin/aic migrate` before opening the page.
+generates (newest first then by `created_at`). The entity's type goes in the module's one types
+class, `src/Entity/<Module>Types.php` (#328): the make writes it when the module has none and
+otherwise adds two methods, a public `<entity>(): EntityType` and a private `<entity>With(list<object>
+$relations)` that declares the table, leaving every other byte of the file as it was. The repository
+takes the types class and reads its type there. An edit that would take the class past 15 methods or
+300 lines, or a file that is not one class in a namespace, is refused with nothing written; a failed
+write puts an edited file's old bytes back and removes only the files the make created. One manifest
+edit routes the page and runs the migration; run `bin/aic migrate` before opening the page.
 
 Over a table a module migration already creates (the imported baseline or any other), `bin/aic
 make:entity <module> <Class> <table> --existing` reads the columns from that migration (#338), never
@@ -258,8 +264,12 @@ that alters the table is named in a note, as make:entity reads only the one that
 writes the migration of the pivot `<owner>_<target>`: an `id`, each side's key column (the table's
 singular and `_id`; `--keys` gives each side's key type, owner first), the pivot's own fields as
 make:entity takes them, one link per pair, and foreign keys that delete a link with either row.
-The manifest gains the migration, and the make prints the pivot's entity type and a `ManyToMany`
-for each side's entity type, which the agent adds where the module declares its types.
+The manifest gains the migration. When both tables have accessors in `<Module>Types` (make:entity
+made them), the make edits that class in place (#328): it adds the pivot's accessor and a `ManyToMany`
+to each side's list, whose target is the other side's `<entity>With([])`, and imports `Relation` and
+`RelationKind`. When either table has none, as for a hand-written types class, the make prints the
+pivot's entity type and both relations, with the reason, for the agent to add where the module
+declares its types.
 
 `bin/aic make:state <module> <table> <field> --states=open,closed --transitions=close:open>closed[@permission],…`
 puts a state machine on a field (#308). It writes the backed enum of the states

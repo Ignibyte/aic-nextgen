@@ -7,25 +7,25 @@ namespace App\Scaffold\Repository;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
 use AIC\Entity\Application\EntityStore;
-use AIC\Entity\Domain\EntityType;
-use AIC\Entity\Domain\Field;
-use AIC\Entity\Domain\FieldType;
 use App\Scaffold\Entity\ScaffoldLoan;
+use App\Scaffold\Entity\ScaffoldTypes;
 use InvalidArgumentException;
 
 use function array_map;
 use function array_reverse;
 
 /**
- * The `scaffold_loans` rows over the entity store, made by bin/aic make:entity (#123).
+ * The `scaffold_loans` rows over the entity store, made by bin/aic make:entity (#123); its type is the module's (#328).
  */
 final readonly class ScaffoldLoanRepository
 {
     /**
-     * @param EntityStore $entityStore The entity store.
+     * @param EntityStore   $entityStore   The entity store.
+     * @param ScaffoldTypes $scaffoldTypes The module's entity types.
      */
     public function __construct(
         private EntityStore $entityStore,
+        private ScaffoldTypes $scaffoldTypes,
     ) {
     }
 
@@ -39,29 +39,13 @@ final readonly class ScaffoldLoanRepository
      */
     public function latest(int $count): array
     {
-        $scaffoldLoanRows = $this->entityStore->query($this->scaffoldLoanType())
+        $scaffoldLoanRows = $this->entityStore->query($this->scaffoldTypes->scaffoldLoan())
             ->orderByDescending('id')
             ->limit($count)
             ->rows()
             ->all();
 
         return array_map(self::scaffoldLoan(...), array_reverse($scaffoldLoanRows));
-    }
-
-    /**
-     * @throws InvalidArgumentException When a field is invalid.
-     *
-     * @return EntityType The `scaffold_loans` table.
-     */
-    private function scaffoldLoanType(): EntityType
-    {
-        return new EntityType('scaffold_loans', 'id', [
-            new Field('book_id', FieldType::Uuid),
-            new Field('task_id', FieldType::Reference, nullable: true, references: new EntityType('scaffold_tasks', 'id', [])),
-            new Field('borrower', FieldType::Text),
-            new Field('lent_at', FieldType::Timestamp),
-            new Field('returned_at', FieldType::Timestamp, nullable: true),
-        ]);
     }
 
     /**

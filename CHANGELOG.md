@@ -6,6 +6,16 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **make:relation edits both entity definitions in place** (#328). A module's entity types now have one home the makes
+  own, `src/Entity/<Module>Types.php`: make:entity (with `--fields` or `--existing`) writes it or adds the entity's
+  public `<entity>()` and private `<entity>With(relations)` to it, keeping every other byte, and the made repository
+  takes the class and reads its type there. make:relation adds the pivot's accessor and a `ManyToMany` on each side,
+  with the imports, when both tables are in it, and prints the declarations with the reason only when one is not. An
+  edit past PHPMD's 15 methods or 300 lines, or on a file that is not one class in a namespace, is refused with nothing
+  written; a failed write restores each edited file (the manifest included) and removes only the files the make
+  created, and `code.made` and the made ledger mark an edited file as not created. `modules/scaffold/` gains
+  `ScaffoldTypes`.
+
 - **OAuth refresh tokens, revocation, introspection, client registration and audience binding** (#352). A
   code-flow token answer now carries a `refresh_token` (30 days, `OAuthServer::$refreshSeconds`); `grant_type=refresh_token`
   answers a new pair and spends the old refresh token in one guarded update, and a spent one presented again revokes its

@@ -53,6 +53,7 @@ final readonly class IntegrationMakes
             'make:mcp-prompt' => new MakeMcpEntryCommand($makeRun, McpEntryKind::Prompt),
             'make:mcp-resource' => new MakeMcpEntryCommand($makeRun, McpEntryKind::Resource),
             'make:mcp-tool' => new MakeMcpToolCommand($makeRun),
+            'make:relation' => (new EntityMakes())->relation($makeRun, $makeVersions, $this->projectFiles),
             'schema:import' => new SchemaImportCommand($makeRun, new SchemaImports($this->projectFiles, $moduleTables, $makeVersions)),
         ];
     }

@@ -8,10 +8,8 @@ use AIC\Controller\Contracts\Command;
 use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Workflow\Application\Console\ConsoleArguments;
-use AIC\Workflow\Application\Make\Source\RelationSource;
 use AIC\Workflow\Domain\Console\CommandUsage;
 use AIC\Workflow\Domain\Console\ParsedArguments;
-use AIC\Workflow\Domain\Make\MadeFile;
 use AIC\Workflow\Domain\Make\MakeRecipe;
 use AIC\Workflow\Exception\WorkflowRefusal;
 use InvalidArgumentException;
@@ -25,8 +23,9 @@ use function ucwords;
  * `bin/aic make:relation <module> <owner_table> <target_table> [--keys=int,int] [--fields=…] [--version=<v>]`
  * (#306): the migration of the pivot table `<owner>_<target>` that relates two tables many to many, with each
  * side's key (`--keys`: int or uuid, owner first), the pivot's own fields (as make:entity takes them), a link once
- * per pair and cascading foreign keys. The manifest lists it; the pivot's entity type and the relation on each side
- * are printed, for the agent to add to each table's entity type.
+ * per pair and cascading foreign keys. The manifest lists it. When both tables have an accessor in the module's
+ * `<Module>Types` (#328), the pivot's accessor and a ManyToMany on each side go in there; otherwise they are printed,
+ * for the agent to add where the module declares its types.
  */
 final readonly class MakeRelationCommand implements Command
 {
@@ -37,20 +36,20 @@ final readonly class MakeRelationCommand implements Command
         . ' [--version=<v>] [--dry-run] [--json]';
 
     /**
-     * @param MakeRun        $makeRun        The run.
-     * @param MakeVersions   $makeVersions   The version.
-     * @param MakeNames      $makeNames      The rules.
-     * @param MakeFields     $makeFields     The pivot's fields.
-     * @param MakeCalls      $makeCalls      The migration call.
-     * @param RelationSource $relationSource Writes the migration and the lines.
+     * @param MakeRun       $makeRun       The run.
+     * @param MakeVersions  $makeVersions  The version.
+     * @param MakeRelations $makeRelations Edits the module's types, or prints the declarations.
+     * @param MakeNames     $makeNames     The rules.
+     * @param MakeFields    $makeFields    The pivot's fields.
+     * @param MakeCalls     $makeCalls     The migration call.
      */
     public function __construct(
         private MakeRun $makeRun,
         private MakeVersions $makeVersions,
+        private MakeRelations $makeRelations,
         private MakeNames $makeNames = new MakeNames(),
         private MakeFields $makeFields = new MakeFields(),
         private MakeCalls $makeCalls = new MakeCalls(),
-        private RelationSource $relationSource = new RelationSource(),
     ) {
     }
 
@@ -74,7 +73,8 @@ final readonly class MakeRelationCommand implements Command
      *
      * @throws WorkflowRefusal When a name, a key type or a field breaks a rule.
      *
-     * @return MakeRecipe The pivot's migration, its manifest line, and the declarations to add.
+     * @return MakeRecipe The pivot's migration, its manifest line, and the types with the relation or the declarations to
+     *                    add.
      */
     private function recipe(ParsedArguments $parsedArguments): MakeRecipe
     {
@@ -89,11 +89,11 @@ final readonly class MakeRelationCommand implements Command
             : $this->makeFields->parse($parsedArguments->flag('fields'));
         $uuid = $this->keys($parsedArguments->flag('keys'));
         $version = $this->makeVersions->version($parsedArguments, 'create_' . $tables['pivot'] . '_table');
-        $source = $this->relationSource->migration($namespace, $class, $version, $tables, $uuid, $fields);
-        $madeFile = new MadeFile('modules/' . $module . '/src/Migration/' . $class . '.php', $source);
+        $files = $this->makeRelations->files([$module, $namespace, $class, $version], $tables, $uuid, $fields);
         $manifestCall = $this->makeCalls->classOnly('migration', 'Migration', $class, $namespace);
+        $lines = $this->makeRelations->lines($files, $namespace, $tables, $uuid, $fields);
 
-        return new MakeRecipe($module, $class, [$madeFile], $manifestCall, lines: $this->relationSource->lines($tables, $uuid, $fields));
+        return new MakeRecipe($module, $class, $files, $manifestCall, lines: $lines);
     }
 
     /**

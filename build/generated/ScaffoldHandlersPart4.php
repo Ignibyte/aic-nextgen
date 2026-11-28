@@ -11,6 +11,7 @@ use AIC\Entity\Application\EntityStore;
 use AIC\Module\Application\HandlerContext;
 use App\Scaffold\Controller\ScaffoldLoanListPage;
 use App\Scaffold\Controller\ScaffoldNoteDetailPage;
+use App\Scaffold\Entity\ScaffoldTypes;
 use App\Scaffold\Repository\ScaffoldLoanRepository;
 use App\Scaffold\Repository\ScaffoldNoteDetailRepository;
 use App\Scaffold\Service\ScaffoldNoteDetailView;
@@ -41,10 +42,11 @@ final readonly class ScaffoldHandlersPart4
         $entityStore = new EntityStore($this->handlerContext->database());
         $scaffoldNoteDetailRepository = new ScaffoldNoteDetailRepository(new DetailRows($entityStore));
         $scaffoldNoteDetailView = new ScaffoldNoteDetailView($scaffoldNoteDetailRepository, $detailParts);
+        $scaffoldLoanRepository = new ScaffoldLoanRepository($entityStore, new ScaffoldTypes());
 
         return [
             ScaffoldLoanListPage::class => $this->handlerContext->page(
-                new ScaffoldLoanListPage($this->handlerContext->documents(), new ScaffoldLoanRepository($entityStore)),
+                new ScaffoldLoanListPage($this->handlerContext->documents(), $scaffoldLoanRepository),
             ),
             ScaffoldNoteDetailPage::class => $this->handlerContext->page(
                 new ScaffoldNoteDetailPage($this->handlerContext->documents(), $detailParts, $scaffoldNoteDetailView),
