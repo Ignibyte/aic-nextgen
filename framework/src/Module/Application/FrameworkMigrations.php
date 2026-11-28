@@ -13,7 +13,7 @@ use AIC\Entity\Domain\CreateEntityAuditTable;
 use AIC\Mcp\Domain\CreateMcpCallsTable;
 use AIC\Notification\Domain\AddNotificationInbox;
 use AIC\Notification\Domain\CreateNotificationsTable;
-use AIC\OAuth\Domain\CreateOAuthTables;
+use AIC\OAuth\Domain\OAuthMigrations;
 use AIC\Profiler\Domain\CreateProfilesTable;
 use AIC\Queue\Domain\QueueMigrations;
 use AIC\Schedule\Domain\CreateScheduleRuns;
@@ -46,7 +46,7 @@ final readonly class FrameworkMigrations
             new CreateCacheTables(),
             new CreateTokensTable(),
             new CreateBroadcastTable(),
-            new CreateOAuthTables(),
+            ...(new OAuthMigrations())->all(),
             new CreateMcpCallsTable(),
         ];
     }

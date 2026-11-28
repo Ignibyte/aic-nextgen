@@ -16,8 +16,9 @@ use function implode;
 
 /**
  * `bin/aic client:list` (#331): each OAuth client, one a line: its id,
- * whether it is confidential or public, its scopes, its redirect URIs and
- * when it was added. Never a secret.
+ * whether it is confidential or public, its scopes, its redirect URIs, when
+ * it was added and how many of its access tokens are live (#352). Never a
+ * secret.
  */
 final readonly class ClientListCommand implements Command
 {
@@ -49,7 +50,7 @@ final readonly class ClientListCommand implements Command
         foreach ($this->oauthClients->all() as $oauthClient) {
             $lines[] = $oauthClient->id . "\t" . ($oauthClient->confidential ? 'confidential' : 'public') . "\t"
                 . implode(' ', $oauthClient->scopes) . "\t" . implode(' ', $oauthClient->redirectUris) . "\t"
-                . $oauthClient->createdAt;
+                . $oauthClient->createdAt . "\t" . $oauthClient->liveTokens . ' live tokens';
         }
 
         return new CommandResult($lines === [] ? ['No clients.'] : $lines, 0);

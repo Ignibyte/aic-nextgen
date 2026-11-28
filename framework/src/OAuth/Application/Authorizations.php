@@ -11,11 +11,11 @@ use AIC\Database\Contracts\QueryException;
 use AIC\OAuth\Contracts\OAuthRefusedException;
 use AIC\OAuth\Domain\AuthorizationRequest;
 use AIC\OAuth\Domain\OAuthClient;
+use AIC\OAuth\Domain\TokenAudience;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function in_array;
 use function preg_match;
-use function str_starts_with;
 
 /**
  * The authorization endpoint's checks and answers (#331), for the module
@@ -47,6 +47,7 @@ final readonly class Authorizations
      * @param AuthorizationCodes $authorizationCodes Issues the codes.
      * @param TokenScopes        $tokenScopes        Reads the scopes asked for.
      * @param RequestFields      $requestFields      Reads the request's fields.
+     * @param TokenAudience      $tokenAudience      Reads the path a resource names.
      */
     public function __construct(
         private AppConfig $appConfig,
@@ -54,6 +55,7 @@ final readonly class Authorizations
         private AuthorizationCodes $authorizationCodes,
         private TokenScopes $tokenScopes = new TokenScopes(),
         private RequestFields $requestFields = new RequestFields(),
+        private TokenAudience $tokenAudience = new TokenAudience(),
     ) {
     }
 
@@ -81,7 +83,8 @@ final readonly class Authorizations
             return new AuthorizationRequest($client->id, $redirectUri, [], $state, $challenge, $resource, $oAuthRefusedException->error);
         }
 
-        $refusal = self::refusal($fields, $challenge, $resource, $this->appConfig->oauth->url(''));
+        $bindable = $this->tokenAudience->path($resource, $this->appConfig->oauth) !== null;
+        $refusal = self::refusal($fields, $challenge, $bindable);
 
         return new AuthorizationRequest($client->id, $redirectUri, $scopes, $state, $challenge, $resource, $refusal);
     }
@@ -178,12 +181,11 @@ final readonly class Authorizations
     /**
      * @param array<string, string> $fields    The request's fields.
      * @param string                $challenge Its PKCE challenge.
-     * @param string                $resource  The resource it names; empty for none.
-     * @param string                $issuer    This site's origin.
+     * @param bool                  $bindable  Whether the resource it names, if any, is a path of this site.
      *
      * @return string The first fault's error; empty for none.
      */
-    private static function refusal(array $fields, string $challenge, string $resource, string $issuer): string
+    private static function refusal(array $fields, string $challenge, bool $bindable): string
     {
         if (($fields['response_type'] ?? '') !== 'code') {
             return 'unsupported_response_type';
@@ -193,7 +195,7 @@ final readonly class Authorizations
             return 'invalid_request';
         }
 
-        return $resource === '' || str_starts_with($resource . '/', $issuer . '/')
+        return $bindable
             ? ''
             : 'invalid_target';
     }

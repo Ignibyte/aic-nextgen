@@ -44,7 +44,10 @@ final readonly class Actors
     public function actor(ServerRequestInterface $serverRequest): Actor
     {
         if ($this->bearerCredential->present($serverRequest)) {
-            return $this->bearerTokens->actor($this->bearerCredential->token($serverRequest));
+            return $this->bearerTokens->actor(
+                $this->bearerCredential->token($serverRequest),
+                $serverRequest->getUri()->getPath(),
+            );
         }
 
         $userId = $this->requestSession->read($serverRequest)->get(Authenticator::USER) ?? '';

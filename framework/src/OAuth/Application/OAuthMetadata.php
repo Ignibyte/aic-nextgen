@@ -18,7 +18,9 @@ use const JSON_UNESCAPED_SLASHES;
 
 /**
  * The two documents a client discovers the server by (#331): the
- * authorization server's metadata (RFC 8414) and the protected resource's
+ * authorization server's metadata (RFC 8414; since #352 with the revocation,
+ * introspection and, while it is on, registration endpoints and the refresh
+ * grant) and the protected resource's
  * (RFC 9728), the latter also at a resource's path after the well-known one
  * (`/.well-known/oauth-protected-resource/mcp` for `/mcp`). Both come from
  * the config alone.
@@ -43,13 +45,23 @@ final readonly class OAuthMetadata
     public function server(): ResponseInterface
     {
         $issuer = self::json($this->oauthServer->url(''));
+        $registration = $this->oauthServer->registers()
+            ? ',"registration_endpoint":' . self::json($this->oauthServer->url(OAuthServer::REGISTER_PATH))
+            : '';
+        $clientAuth = '["client_secret_basic","client_secret_post","none"]';
 
         return $this->document(
             '{"issuer":' . $issuer . ',"authorization_endpoint":'
                 . self::json($this->oauthServer->url($this->oauthServer->authorizationPath))
                 . ',"token_endpoint":' . self::json($this->oauthServer->url(OAuthServer::TOKEN_PATH))
-                . ',"response_types_supported":["code"],"grant_types_supported":["authorization_code","client_credentials"]'
-                . ',"token_endpoint_auth_methods_supported":["client_secret_basic","client_secret_post","none"]'
+                . ',"revocation_endpoint":' . self::json($this->oauthServer->url(OAuthServer::REVOKE_PATH))
+                . ',"introspection_endpoint":' . self::json($this->oauthServer->url(OAuthServer::INTROSPECT_PATH))
+                . $registration
+                . ',"response_types_supported":["code"]'
+                . ',"grant_types_supported":["authorization_code","client_credentials","refresh_token"]'
+                . ',"token_endpoint_auth_methods_supported":' . $clientAuth
+                . ',"revocation_endpoint_auth_methods_supported":' . $clientAuth
+                . ',"introspection_endpoint_auth_methods_supported":["client_secret_basic","client_secret_post"]'
                 . ',"code_challenge_methods_supported":["S256"]}',
         );
     }

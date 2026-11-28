@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace AIC\OAuth\Application;
 
+use AIC\Access\Application\BearerTokens;
 use AIC\Database\Contracts\Database;
 use AIC\Http\Application\ResponseBuilder;
 use AIC\OAuth\Domain\OAuthServer;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * Puts the authorization server's paths in front of the app (#331) when the
- * config names an issuer; with none the app is left as it is.
+ * Puts the authorization server's paths in front of the app (#331, #352)
+ * when the config names an issuer; with none the app is left as it is.
  */
 final readonly class OAuthMount
 {
@@ -33,16 +34,17 @@ final readonly class OAuthMount
             return $requestHandler;
         }
 
-        $oauthClients = new OAuthClients($database);
-        $tokenEndpoint = new TokenEndpoint(
-            $oauthServer,
-            new ClientAuthentication($oauthClients),
-            new AuthorizationCodes($database),
-            new AccessTokens($database),
-            new TokenScopes(),
-            $responseBuilder,
-        );
+        $oauthAnswers = new OAuthAnswers($responseBuilder);
+        $oauthEndpoints = new OAuthEndpoints($oauthServer, $database, $oauthAnswers);
 
-        return new OAuthPages($requestHandler, $tokenEndpoint, new OAuthMetadata($oauthServer, $responseBuilder));
+        return new OAuthPages(
+            $requestHandler,
+            $oauthServer,
+            $oauthEndpoints->token(),
+            $oauthEndpoints->revocation(),
+            $oauthEndpoints->introspection(),
+            new ClientRegistrar($oauthServer, new OAuthClients($database), new BearerTokens($database), $oauthAnswers),
+            new OAuthMetadata($oauthServer, $responseBuilder),
+        );
     }
 }

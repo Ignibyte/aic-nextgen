@@ -9,6 +9,7 @@ use AIC\Access\Domain\ApiToken;
 use AIC\Database\Contracts\Database;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
+use AIC\OAuth\Domain\TokenAudience;
 use SensitiveParameter;
 
 use function explode;
@@ -19,41 +20,45 @@ use function implode;
  * Bearer tokens in Postgres (#313): the operator adds one by name with the
  * scopes it holds, and a request's token is found by its SHA-256, the only
  * form of it the table keeps. A token the authorization server issued
- * (#331) is found the same way in `aic_oauth_tokens` until it expires. A
- * scope is a permission a module declares; like a role's grant, the store
- * does not check that it is.
+ * (#331) is found the same way in `aic_oauth_tokens` until it expires, and
+ * only on the paths its audience covers (#352: a token asked for one
+ * `resource` is unknown everywhere else). A scope is a permission a module
+ * declares; like a role's grant, the store does not check that it is.
  */
 final readonly class BearerTokens
 {
     /**
-     * @param Database $database The connection.
+     * @param Database      $database      The connection.
+     * @param TokenAudience $tokenAudience Matches a token's audience with a path.
      */
     public function __construct(
         private Database $database,
+        private TokenAudience $tokenAudience = new TokenAudience(),
     ) {
     }
 
     /**
      * @param string $token A request's bearer token; empty when it sent the scheme with none.
+     * @param string $path  The path the request is for.
      *
      * @throws QueryException When the table cannot be read.
      *
      * @return Actor The token's caller (its name, or its OAuth client and the person it acts for) with its scopes as
-     *               permissions, or a caller with neither for an unknown or expired token.
+     *               permissions, or a caller with neither for an unknown or expired token, or one bound elsewhere.
      */
     public function actor(#[SensitiveParameter]
-        string $token, ): Actor
+        string $token, string $path, ): Actor
     {
         $row = $token === ''
             ? null
             : $this->database->fetchAll(
-                "SELECT name, scopes, created_at::text AS created_at, '' AS user_id FROM aic_api_tokens WHERE token_hash = ?"
-                    . ' UNION ALL SELECT client_id, scopes, expires_at::text, user_id FROM aic_oauth_tokens'
-                    . ' WHERE token_hash = ? AND expires_at > now()',
+                "SELECT name, scopes, created_at::text AS created_at, '' AS user_id, '' AS resource FROM aic_api_tokens"
+                    . ' WHERE token_hash = ? UNION ALL SELECT client_id, scopes, expires_at::text, user_id, resource'
+                    . ' FROM aic_oauth_tokens WHERE token_hash = ? AND expires_at > now()',
                 [hash('sha256', $token), hash('sha256', $token)],
             )->first();
 
-        return $row instanceof Row
+        return $row instanceof Row && $this->tokenAudience->covers($row->string('resource'), $path)
             ? new Actor($row->string('user_id'), self::apiToken($row)->scopes, $row->string('name'), true)
             : new Actor('', [], '', true);
     }

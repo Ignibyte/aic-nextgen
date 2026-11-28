@@ -29,8 +29,8 @@ use const PHP_URL_PATH;
 /**
  * Runs the step script against one site, and compares two sites' answers
  * (gate:23): status, content type, location and body, with what changes from
- * run to run normalised away at comparison: timestamps, note and statement ids (#336), and the host
- * in a location.
+ * run to run normalised away at comparison: timestamps, note and statement ids (#336), OAuth tokens,
+ * codes, secrets and registered client ids (#331, #352), and the host in a location.
  */
 final readonly class NativeSiteComparer
 {
@@ -45,8 +45,12 @@ final readonly class NativeSiteComparer
         '#after=[0-9a-f]{32}#' => 'after=<profile>',
         '#browser=[0-9a-f]{16}#' => 'browser=<browser>',
         '#data-t-props="[\\w.~+/=-]+"#' => 'data-t-props="<props>"',
+        '/"(exp|client_id_issued_at)":\\d+/' => '"$1":<time>',
         '/"access_token":"[0-9a-f]{64}"/' => '"access_token":"<token>"',
+        '/"client_secret":"[0-9a-f]{64}"/' => '"client_secret":"<secret>"',
+        '/"refresh_token":"[0-9a-f]{64}"/' => '"refresh_token":"<token>"',
         '/([?&])code=[0-9a-f]{64}/' => '$1code=<code>',
+        '/dcr-[0-9a-f]{16}/' => 'dcr-<id>',
         '/name="aic_csrf" value="[0-9a-f]{64}"/' => 'name="aic_csrf" value="<token>"',
         '/name="aic_envelope" value="[\\w.-]+"/' => 'name="aic_envelope" value="<envelope>"',
         '/name="tessera-csrf-token" content="[0-9a-f]{64}"/' => 'name="tessera-csrf-token" content="<token>"',

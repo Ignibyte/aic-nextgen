@@ -9,6 +9,7 @@ use AIC\Controller\Contracts\CommandInput;
 use AIC\Controller\Contracts\CommandResponse;
 use AIC\Controller\Domain\CommandResult;
 use AIC\Database\Contracts\QueryException;
+use AIC\OAuth\Domain\RedirectUris;
 use InvalidArgumentException;
 use Override;
 
@@ -18,15 +19,9 @@ use function array_map;
 use function array_slice;
 use function array_values;
 use function implode;
-use function in_array;
-use function parse_url;
 use function preg_match;
-use function str_contains;
 use function str_starts_with;
 use function substr;
-
-use const PHP_URL_HOST;
-use const PHP_URL_SCHEME;
 
 /**
  * `bin/aic client:add <id> <secret>|- <scope>... [--redirect=<uri>]...`
@@ -67,15 +62,12 @@ final readonly class ClientAddCommand implements Command
         . ' URI), a scope a permission (notes.read), a redirect URI https (http on a loopback host) with no fragment.';
 
     /**
-     * The hosts plain http is allowed on.
-     */
-    private const array LOOPBACK = ['127.0.0.1', 'localhost', '[::1]'];
-
-    /**
      * @param OAuthClients $oauthClients The clients.
+     * @param RedirectUris $redirectUris The redirect URI rule.
      */
     public function __construct(
         private OAuthClients $oauthClients,
+        private RedirectUris $redirectUris = new RedirectUris(),
     ) {
     }
 
@@ -126,23 +118,16 @@ final readonly class ClientAddCommand implements Command
             && ($secret === '-' ? $redirectUris !== [] : preg_match(self::VALUE, $secret) === 1)
             && $scopes !== []
             && array_all($scopes, static fn (string $scope): bool => preg_match(self::SCOPE, $scope) === 1)
-            && array_all($redirectUris, static fn (string $uri): bool => self::redirectable($uri));
+            && $this->redirectable($redirectUris);
     }
 
     /**
-     * @param string $uri A redirect URI.
+     * @param list<string> $redirectUris The redirect URIs.
      *
-     * @return bool Whether it is https, or http on a loopback host, with a host and no fragment.
+     * @return bool Whether the rule accepts every one.
      */
-    private static function redirectable(string $uri): bool
+    private function redirectable(array $redirectUris): bool
     {
-        $scheme = parse_url($uri, PHP_URL_SCHEME);
-        $host = parse_url($uri, PHP_URL_HOST);
-
-        return !str_contains($uri, '#')
-            && !str_contains($uri, ' ')
-            && ($scheme === 'https' || ($scheme === 'http' && in_array($host, self::LOOPBACK, true)))
-            && $host !== null
-            && $host !== '';
+        return array_all($redirectUris, fn (string $redirectUri): bool => $this->redirectUris->accepts($redirectUri));
     }
 }

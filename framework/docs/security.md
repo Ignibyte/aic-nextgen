@@ -206,8 +206,9 @@ by the authorization code grant with PKCE.
   it may ever hold; each redirect URI is compared exactly, https or a loopback http. `client:list`
   shows them; `client:revoke <id>` removes the client with its codes and tokens.
 - **The token endpoint answers before the session.** `AIC\OAuth\Application\OAuthMount` sits beside
-  the profiler's mount and takes `POST /oauth/token` (form body, no CSRF: the client authenticates
-  itself) and the two metadata documents; everything else passes on. The client authenticates by
+  the profiler's mount and takes `POST /oauth/token`, `/oauth/revoke` and `/oauth/introspect` (form body, no
+  CSRF: the client authenticates itself), `/oauth/register` while registration is on, and the two metadata
+  documents; everything else passes on. The client authenticates by
   HTTP Basic or by `client_id` and `client_secret` in the body, not both. `client_credentials`
   (confidential clients) grants the scopes asked for, all the client's when none are, refusing any
   it does not hold. `authorization_code` takes the code once, checks the redirect URI and the S256
@@ -215,11 +216,39 @@ by the authorization code grant with PKCE.
   `token_type`, `expires_in`, `scope`) with `Cache-Control: no-store`; a refusal is RFC 6749 §5.2's
   error, `invalid_client` 401 with `WWW-Authenticate: Basic realm="oauth"`.
 - **Tokens and codes are opaque and hashed.** `RandomTokens::fresh()` values, kept as SHA-256 in
-  `aic_oauth_tokens` (`tokenSeconds`, 3600 by default) and `aic_oauth_codes` (`codeSeconds`, 60). No
-  JWT, no refresh token. `BearerTokens` reads both token tables, so an issued token is a bearer
-  token: its actor holds the granted scopes and, for a code-flow token, the person's user id. It never
-  meets `signed-in`, as no token does. An expired one is `invalid_token`.
-- **Discovery.** `GET /.well-known/oauth-authorization-server` is RFC 8414's document and
+  `aic_oauth_tokens` (`tokenSeconds`, 3600 by default), `aic_oauth_codes` (`codeSeconds`, 60) and
+  `aic_oauth_refresh_tokens` (`refreshSeconds`, 30 days). No JWT. `BearerTokens` reads both access token
+  tables, so an issued token is a bearer token: its actor holds the granted scopes and, for a code-flow token,
+  the person's user id. It never meets `signed-in`, as no token does. An expired one is `invalid_token`.
+- **Refresh tokens rotate (#352).** A code exchange starts a family: its answer carries a `refresh_token`.
+  `grant_type=refresh_token` (the same client authenticating as at the code exchange) spends it in one guarded
+  `UPDATE` and answers the next access and refresh tokens in the family; `scope` may narrow the access token,
+  never widen it, and a refused request leaves the refresh token unspent. A spent refresh token presented again
+  means it leaked: its whole family goes, refresh and access tokens, and the answer is `invalid_grant`. Client
+  credentials get no refresh token (RFC 6749 section 4.4.3). `client:revoke` takes a client's refresh tokens too.
+- **Audience (#352).** A `resource` at the authorization request, the code exchange, a refresh or client
+  credentials binds the token to that path of this site (RFC 8707): `https://example.com/mcp` binds it to
+  `/mcp` and the paths below it. `BearerTokens` treats a bound token outside its path as unknown, so it
+  answers `invalid_token`. A resource on another site, with a query or a fragment, or other than the one the
+  code or family is already bound to, is `invalid_target`. A token asked for with no resource holds everywhere.
+- **Revocation and introspection (#352).** `POST /oauth/revoke` (RFC 7009) takes a `token` from the client
+  that holds it (authenticated as at the token endpoint): its own access token goes, its own refresh token
+  takes the family with it, and any other token, unknown or another client's, is the same empty 200.
+  `POST /oauth/introspect` (RFC 7662) answers `{"active":true,…}` (`scope`, `client_id`, `exp`, `iss`,
+  `token_type` for an access token, `sub` and `aud` when it has them) or `{"active":false}`, only to a
+  confidential client holding `oauth.introspect` (`client:add rs <secret> oauth.introspect`); another client
+  is 403 `unauthorized_client`.
+- **Registration (#352).** `OAuthServer::$registration` is `ClientRegistration::Off` by default. `Scoped`
+  mounts `POST /oauth/register` (RFC 7591) for a caller whose bearer token holds `oauth.register` (an initial
+  access token: `token:add`); `Open` lets anyone register, as an MCP client expects of a server it has not
+  met. Registration needs `registrationScopes`, the most a registered client may hold. The JSON body names its
+  redirect URIs (the `client:add` rule), `token_endpoint_auth_method` (`none` for a public client,
+  `client_secret_basic` by default, `client_secret_post`), `grant_types` and `scope`; the client gets an id
+  `dcr-` and 16 hex characters and, unless public, a secret shown once in the 201. Names, logos and contacts
+  are not kept, so nothing a client says about itself reaches the consent page. `client:list` shows every
+  client with its live access-token count.
+- **Discovery.** `GET /.well-known/oauth-authorization-server` is RFC 8414's document (naming the token,
+  revocation, introspection and, while registration is on, registration endpoints) and
   `/.well-known/oauth-protected-resource` RFC 9728's (a path after it names the resource). With
   OAuth on, `PermissionGate` answers a visitor (no session user, no token) refused a permission need
   401 with `WWW-Authenticate: Bearer resource_metadata="…"`, and adds the parameter to
