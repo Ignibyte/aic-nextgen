@@ -7,7 +7,6 @@ namespace AIC\Workflow\Infrastructure;
 use AIC\Controller\Contracts\Command;
 use AIC\Workflow\Application\Make\MakeExportCommand;
 use AIC\Workflow\Application\Make\MakeMigrationCommand;
-use AIC\Workflow\Application\Make\MakeRelationCommand;
 use AIC\Workflow\Application\Make\MakeRun;
 use AIC\Workflow\Application\Make\MakeStateCommand;
 use AIC\Workflow\Application\Make\MakeVersions;
@@ -23,7 +22,7 @@ final readonly class VersionedMakes
     /**
      * @param MakeRun $makeRun The run every make goes through.
      *
-     * @return array<string, Command> `make:export` (#323), `make:migration`, `make:relation` and `make:state`.
+     * @return array<string, Command> `make:export` (#323), `make:migration` and `make:state`.
      */
     public function commands(MakeRun $makeRun): array
     {
@@ -32,7 +31,6 @@ final readonly class VersionedMakes
         return [
             'make:export' => new MakeExportCommand($makeRun, $makeVersions),
             'make:migration' => new MakeMigrationCommand($makeRun, $makeVersions),
-            'make:relation' => new MakeRelationCommand($makeRun, $makeVersions),
             'make:state' => new MakeStateCommand($makeRun, $makeVersions),
         ];
     }

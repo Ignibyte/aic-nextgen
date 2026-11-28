@@ -27,8 +27,9 @@ use function in_array;
  * (exit 2), the module and its collisions read from the manifests on disk,
  * the plan (every target and the edited manifest; a target there already
  * refuses the whole plan), the guard's word on each target, then the files
- * written whole with the manifest last (a failed write removes this make's
- * files), `code.made` while a run is open, and the answer. `--dry-run`
+ * written whole, those it creates first and the manifest last (a failed write
+ * removes the files this make created and writes back those it edited, #328),
+ * `code.made` while a run is open, and the answer. `--dry-run`
  * prints the plan and writes and records nothing. A make runs no process.
  */
 final readonly class MakeRun
@@ -90,8 +91,8 @@ final readonly class MakeRun
         $this->makePlanner->check($makeRecipe);
         $call = $makeRecipe->call;
         $files = $call === null
-            ? $makeRecipe->files
-            : [...$makeRecipe->files, $this->edited($makeRecipe->manifest(), $call)];
+            ? $makeRecipe->ordered()
+            : [...$makeRecipe->ordered(), $this->edited($makeRecipe->manifest(), $call)];
         $dry = array_key_exists('dry-run', $parsedArguments->flags);
         $json = array_key_exists('json', $parsedArguments->flags);
 
@@ -119,14 +120,18 @@ final readonly class MakeRun
      */
     private function edited(string $manifest, ManifestCall $manifestCall): MadeFile
     {
-        return new MadeFile($manifest, $this->manifestEdits->edit($manifest, $manifestCall));
+        return new MadeFile(
+            $manifest,
+            $this->manifestEdits->edit($manifest, $manifestCall),
+            $this->projectFiles->read($manifest) ?? '',
+        );
     }
 
     /**
-     * @param list<MadeFile> $files A make's files, the manifest last.
+     * @param list<MadeFile> $files A make's files, those it creates first, the manifest last.
      *
-     * @throws WorkflowRefusal When a file cannot be written; the files this make wrote are removed first (the manifest is
-     *                         written last, so a failure never leaves it edited).
+     * @throws WorkflowRefusal When a file cannot be written; first each file this make created is removed and each it
+     *                         edited gets its bytes back (#328).
      */
     private function write(array $files): void
     {
@@ -135,14 +140,32 @@ final readonly class MakeRun
         try {
             foreach ($files as $file) {
                 $this->projectFiles->write($file->path, $file->contents);
-                $written[] = $file->path;
+                $written[] = $file;
             }
         } catch (WorkflowRefusal $workflowRefusal) {
-            foreach ($written as $path) {
-                $this->projectFiles->remove($path);
-            }
+            $this->undo($written);
 
             throw $workflowRefusal;
+        }
+    }
+
+    /**
+     * @param list<MadeFile> $written The files this make wrote before one failed.
+     *
+     * @throws WorkflowRefusal When one cannot be removed or written back.
+     */
+    private function undo(array $written): void
+    {
+        foreach ($written as $file) {
+            $original = $file->original;
+
+            if ($original === null) {
+                $this->projectFiles->remove($file->path);
+
+                continue;
+            }
+
+            $this->projectFiles->write($file->path, $original);
         }
     }
 }

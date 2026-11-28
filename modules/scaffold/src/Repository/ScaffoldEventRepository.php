@@ -7,25 +7,25 @@ namespace App\Scaffold\Repository;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
 use AIC\Entity\Application\EntityStore;
-use AIC\Entity\Domain\EntityType;
-use AIC\Entity\Domain\Field;
-use AIC\Entity\Domain\FieldType;
 use App\Scaffold\Entity\ScaffoldEvent;
+use App\Scaffold\Entity\ScaffoldTypes;
 use InvalidArgumentException;
 
 use function array_map;
 use function array_reverse;
 
 /**
- * The `scaffold_events` rows over the entity store, made by bin/aic make:entity (#123).
+ * The `scaffold_events` rows over the entity store, made by bin/aic make:entity (#123); its type is the module's (#328).
  */
 final readonly class ScaffoldEventRepository
 {
     /**
-     * @param EntityStore $entityStore The entity store.
+     * @param EntityStore   $entityStore   The entity store.
+     * @param ScaffoldTypes $scaffoldTypes The module's entity types.
      */
     public function __construct(
         private EntityStore $entityStore,
+        private ScaffoldTypes $scaffoldTypes,
     ) {
     }
 
@@ -39,30 +39,13 @@ final readonly class ScaffoldEventRepository
      */
     public function latest(int $count): array
     {
-        $scaffoldEventRows = $this->entityStore->query($this->scaffoldEventType())
+        $scaffoldEventRows = $this->entityStore->query($this->scaffoldTypes->scaffoldEvent())
             ->orderByDescending('created_at')
             ->limit($count)
             ->rows()
             ->all();
 
         return array_map(self::scaffoldEvent(...), array_reverse($scaffoldEventRows));
-    }
-
-    /**
-     * @throws InvalidArgumentException When a field is invalid.
-     *
-     * @return EntityType The `scaffold_events` table.
-     */
-    private function scaffoldEventType(): EntityType
-    {
-        return new EntityType('scaffold_events', 'id', [
-            new Field('label', FieldType::Text),
-            new Field('state', FieldType::Choice, choices: ['open', 'shut']),
-            new Field('payload', FieldType::Json),
-            new Field('happened_at', FieldType::Timestamp),
-            new Field('source', FieldType::Uuid),
-            new Field('created_at', FieldType::CreatedAt),
-        ], keyType: FieldType::Uuid);
     }
 
     /**

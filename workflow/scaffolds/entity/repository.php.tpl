@@ -7,25 +7,21 @@ namespace {namespace}\Repository;
 use AIC\Database\Contracts\QueryException;
 use AIC\Database\Contracts\Row;
 use AIC\Entity\Application\EntityStore;
-use AIC\Entity\Domain\EntityType;
-use AIC\Entity\Domain\Field;
-use AIC\Entity\Domain\FieldType;
-use {namespace}\Entity\{class};
-use InvalidArgumentException;
+{uses}use InvalidArgumentException;
 
 use function array_map;
 use function array_reverse;
 
 /**
- * The `{table}` rows over the entity store, made by bin/aic make:entity (#123).
+ * The `{table}` rows over the entity store, made by bin/aic make:entity (#123); its type is the module's (#328).
  */
 final readonly class {class}Repository
 {
     /**
-     * @param EntityStore $entityStore The entity store.
-     */
+{params}     */
     public function __construct(
         private EntityStore $entityStore,
+        private {types} ${typesVariable},
     ) {
     }
 
@@ -39,24 +35,13 @@ final readonly class {class}Repository
      */
     public function latest(int $count): array
     {
-        ${variable}Rows = $this->entityStore->query($this->{variable}Type())
+        ${variable}Rows = $this->entityStore->query($this->{typesVariable}->{variable}())
             ->orderByDescending('{order}')
             ->limit($count)
             ->rows()
             ->all();
 
         return array_map(self::{variable}(...), array_reverse(${variable}Rows));
-    }
-
-    /**
-     * @throws InvalidArgumentException When a field is invalid.
-     *
-     * @return EntityType The `{table}` table.
-     */
-    private function {variable}Type(): EntityType
-    {
-        return new EntityType('{table}', 'id', [
-{fields}        ]{keyType});
     }
 
     /**

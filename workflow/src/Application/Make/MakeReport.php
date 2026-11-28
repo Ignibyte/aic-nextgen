@@ -110,7 +110,8 @@ final readonly class MakeReport
      * @param list<MadeFile> $files      Its files, the manifest last.
      * @param bool           $dry        Whether it only planned.
      *
-     * @return list<string> Each file written (each with its bytes, when planning), then the manifest's edit.
+     * @return list<string> Each file written (each with its bytes, when planning), each edited in place (#328), then the
+     *                      manifest's edit.
      */
     private function report(MakeRecipe $makeRecipe, array $files, bool $dry): array
     {
@@ -122,11 +123,7 @@ final readonly class MakeReport
 
         foreach ($files as $file) {
             $edit = $call !== null && $file->path === $makeRecipe->manifest();
-            $lines = match (true) {
-                $edit => [...$lines, ($dry ? 'would edit ' : 'edited ') . $file->path . ': ' . $callText],
-                $dry => [...$lines, 'would write ' . $file->path . ':', ...explode("\n", rtrim($file->contents, "\n"))],
-                default => [...$lines, 'wrote ' . $file->path],
-            };
+            $lines = [...$lines, ...self::fileLines($file, $edit ? ': ' . $callText : '', $dry)];
         }
 
         return $lines;
@@ -179,5 +176,24 @@ final readonly class MakeReport
             'next' => $next,
             'target' => $makeRecipe->target,
         ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * @param MadeFile $madeFile The file.
+     * @param string   $call     `: <call>` for the manifest's edit; empty otherwise.
+     * @param bool     $dry      Whether it only planned.
+     *
+     * @return list<string> Its line: edited (the manifest with its call, a types file in place, #328) or written, a
+     *                      written file's bytes when planning.
+     */
+    private static function fileLines(MadeFile $madeFile, string $call, bool $dry): array
+    {
+        if (!$madeFile->created()) {
+            return [($dry ? 'would edit ' : 'edited ') . $madeFile->path . $call];
+        }
+
+        return $dry
+            ? ['would write ' . $madeFile->path . ':', ...explode("\n", rtrim($madeFile->contents, "\n"))]
+            : ['wrote ' . $madeFile->path];
     }
 }

@@ -19,15 +19,15 @@ final readonly class ExistingEntities
 {
     /**
      * @param MigratedTables $migratedTables The tables the migrations create.
-     * @param ExistingFields $existingFields An existing table's fields.
      * @param MakeEntities   $makeEntities   Writes the files.
+     * @param ExistingFields $existingFields An existing table's fields.
      * @param MakeNames      $makeNames      The rules.
      * @param MakeCalls      $makeCalls      The route call.
      */
     public function __construct(
         private MigratedTables $migratedTables,
+        private MakeEntities $makeEntities,
         private ExistingFields $existingFields = new ExistingFields(),
-        private MakeEntities $makeEntities = new MakeEntities(),
         private MakeNames $makeNames = new MakeNames(),
         private MakeCalls $makeCalls = new MakeCalls(),
     ) {

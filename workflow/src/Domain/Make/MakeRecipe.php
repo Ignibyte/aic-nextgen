@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace AIC\Workflow\Domain\Make;
 
+use function array_filter;
+use function array_values;
+
 /**
  * What one make asks for (#122): the module, what it names for the record,
  * the files it writes, the manifest call (none for `make:module`, which
@@ -51,5 +54,16 @@ final readonly class MakeRecipe
         return $this->module === ''
             ? ''
             : 'modules/' . $this->module . '/' . $this->module . '.module.php';
+    }
+
+    /**
+     * @return list<MadeFile> Its files, those it creates first, then those it edits in place (#328).
+     */
+    public function ordered(): array
+    {
+        return [
+            ...array_values(array_filter($this->files, static fn (MadeFile $madeFile): bool => $madeFile->created())),
+            ...array_values(array_filter($this->files, static fn (MadeFile $madeFile): bool => !$madeFile->created())),
+        ];
     }
 }

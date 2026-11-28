@@ -26,7 +26,7 @@ final readonly class FieldEntities
      */
     public function __construct(
         private MakeVersions $makeVersions,
-        private MakeEntities $makeEntities = new MakeEntities(),
+        private MakeEntities $makeEntities,
         private MakeNames $makeNames = new MakeNames(),
         private MakeFields $makeFields = new MakeFields(),
         private MakeCalls $makeCalls = new MakeCalls(),

@@ -25,7 +25,8 @@ use function substr;
  * already declares, a command the framework (from the surface) or the
  * workflow already has, a page or block in a module that does not require
  * `site`, a `--component` that is not there, a route it needs that no
- * manifest declares (#322), and a target that is there already. Each is a refusal (exit 1), so nothing is written.
+ * manifest declares (#322), and a target it creates that is there already (a file it edits, #328, must be). Each is a
+ * refusal (exit 1), so nothing is written.
  */
 final readonly class MakePlanner
 {
@@ -67,6 +68,10 @@ final readonly class MakePlanner
         $this->layout($makeRecipe->layouts);
 
         foreach ($makeRecipe->files as $madeFile) {
+            if (!$madeFile->created()) {
+                continue;
+            }
+
             $this->free($madeFile->path);
         }
     }

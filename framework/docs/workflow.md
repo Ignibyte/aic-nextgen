@@ -142,7 +142,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:command` | scaffold a Command |
 | `Command::make:component` | scaffold declared Component data and template; `--script` adds a mounted module script |
 | `Command::make:detail-page` | scaffold one row's detail page, its fields in tabs Tessera swaps in place, over the framework's detail atoms (#341) |
-| `Command::make:entity` | scaffold an entity, its repository, migration and list page; `--key=uuid` and every field type (#307); `--existing` over a migrated table (#338) |
+| `Command::make:entity` | scaffold an entity, its repository, migration and list page; `--key=uuid` and every field type (#307); `--existing` over a migrated table (#338); its type in the module's types class (#328) |
 | `Command::make:enum` | scaffold an enum in the module's `src/Enum/`, pure or backed (#319) |
 | `Command::make:exception` | scaffold a final exception over an SPL root, in `src/Exception/` (#319) |
 | `Command::make:export` | scaffold a queued CSV export: the POST page queuing it, its job, its download and a daily prune (#323) |
@@ -158,7 +158,7 @@ verification tooling. Other commands require their applicable config and open-ru
 | `Command::make:page` | scaffold a Page and declared component template |
 | `Command::make:page-action` | scaffold a page's POST action: one call, the region in place or 303, the form again as 422 (#322) |
 | `Command::make:policy` | scaffold an entity's Policy and declare the permission it asks (#304) |
-| `Command::make:relation` | scaffold a many-to-many pivot's migration and print both sides' relations (#306) |
+| `Command::make:relation` | scaffold a many-to-many pivot's migration (#306) and add the pivot and both sides' relations to the module's types class (#328) |
 | `Command::make:state` | scaffold a state machine: its enum, its transitions class and its column's migration (#308) |
 | `Command::make:seed` | scaffold a seed: a command saving fixed rows through its own repository, updated on a rerun (#320) |
 | `Command::make:scaffold` | start an app kind from an existing one, in a run the operator approved (#299) |
