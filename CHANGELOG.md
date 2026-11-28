@@ -6,6 +6,17 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **OAuth refresh tokens, revocation, introspection, client registration and audience binding** (#352). A
+  code-flow token answer now carries a `refresh_token` (30 days, `OAuthServer::$refreshSeconds`); `grant_type=refresh_token`
+  answers a new pair and spends the old refresh token in one guarded update, and a spent one presented again revokes its
+  whole family and answers `invalid_grant`. `POST /oauth/revoke` (RFC 7009) answers 200 for any token and revokes only
+  the calling client's. `POST /oauth/introspect` (RFC 7662) answers a token's standing to a confidential client holding
+  `oauth.introspect`. `POST /oauth/register` (RFC 7591) adds a client with a `dcr-` id when `OAuthServer::$registration`
+  is `Scoped` (a bearer token holding `oauth.register`) or `Open`, within `registrationScopes`; `Off`, the default,
+  answers 404. A `resource` (RFC 8707) at authorize, token or refresh binds a token to a path of the site, and a bound
+  token is `invalid_token` outside it. `client:list` counts each client's live tokens, and the RFC 8414 metadata names
+  the new endpoints, the refresh grant and the auth methods.
+
 - **An HTML sanitizer that compiles natively** (#337). `AIC\Component\Application\HtmlSanitizer::sanitize()` turns
   HTML a visitor wrote into markup that is safe to send, inside the request, with the same bytes under PHP and the
   compiled site: AIC's own single-pass tokenizer, no DOM. An `HtmlPolicy` allow-list (prose by default) keeps the
@@ -73,8 +84,7 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
   permission need gets 401 with `resource_metadata` instead of 403. `AIC\OAuth\Application\Authorizations` checks an
   authorization request for a module's consent page and answers a `ClientRedirect`; the fixture's is the account module's
   `/oauth/authorize`. The form guard spares a JSON body, which a browser cannot send to another site without a
-  preflight; the sign-in redirect keeps the query. Refresh tokens, client registration, revocation, introspection and
-  audience binding are #352.
+  preflight; the sign-in redirect keeps the query.
 
 - **make:mcp-resource and make:mcp-prompt; MCP catalogs of any size** (#334). `bin/aic make:mcp-resource <module>
   <Class>Resource` writes a Markdown resource at `<module>://<name>` and `bin/aic make:mcp-prompt <module> <Class>Prompt`

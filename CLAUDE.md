@@ -215,8 +215,9 @@ claims), `Authenticator::signInAs()`; the fixture's `/api/caller` and
 #331: `AIC\OAuth`, AIC as its own authorization server when `AppConfig::$oauth` names an issuer: `bin/aic client:add|list|revoke`,
 `POST /oauth/token` before the session (client credentials, the code grant with PKCE S256; opaque hashed tokens, an hour),
 RFC 8414 and RFC 9728 metadata, a visitor's refused need answered 401 with `resource_metadata`, and `Authorizations` behind a
-module's consent page (the account module's `/oauth/authorize`). A JSON body skips the CSRF check. Refresh tokens, DCR,
-revocation, introspection and audience binding are #352.
+module's consent page (the account module's `/oauth/authorize`). A JSON body skips the CSRF check.
+#352: refresh tokens (rotated; a reused one revokes its family), `POST /oauth/revoke`, `/oauth/introspect` (`oauth.introspect`)
+and `/oauth/register` (`OAuthServer::$registration` Off, Scoped by `oauth.register`, or Open), and `resource` audience binding.
 #332: `AIC\Mcp\Application\Capabilities`, the one call path for `tools/call` and an app's assistant (`Actor::within(ceiling,
 client)`): `#[ToolInfo(dryRun: true)]` runs a call in a rolled-back savepoint, `_meta["aic/callId"]` applies a call once
 per caller (an advisory lock, the first result replayed), every call a row of `aic_mcp_calls` (`bin/aic mcp:calls`); a

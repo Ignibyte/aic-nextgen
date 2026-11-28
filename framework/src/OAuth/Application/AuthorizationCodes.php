@@ -11,6 +11,7 @@ use AIC\OAuth\Contracts\OAuthRefusedException;
 use AIC\OAuth\Domain\AuthorizationRequest;
 use AIC\OAuth\Domain\CodeGrant;
 use AIC\OAuth\Domain\OAuthServer;
+use AIC\OAuth\Domain\TokenAudience;
 use AIC\Session\Domain\RandomTokens;
 use SensitiveParameter;
 
@@ -27,8 +28,9 @@ use function strtr;
 
 /**
  * Authorization codes in Postgres (#331): one is issued when a person allows
- * a request, kept as its SHA-256 with the client, the redirect URI, the scopes
- * and the PKCE challenge, and lives `codeSeconds`. Redeeming takes it out in
+ * a request, kept as its SHA-256 with the client, the redirect URI, the scopes,
+ * the PKCE challenge and the path the request's `resource` names (#352), and
+ * lives `codeSeconds`. Redeeming takes it out in
  * the same statement that reads it, so a code works once, and then checks the
  * client, the redirect URI, the expiry and the verifier (S256, RFC 7636).
  */
@@ -40,12 +42,14 @@ final readonly class AuthorizationCodes
     private const string VERIFIER = '/^[A-Za-z0-9._~-]{43,128}$/';
 
     /**
-     * @param Database     $database     The connection.
-     * @param RandomTokens $randomTokens Makes the codes.
+     * @param Database      $database      The connection.
+     * @param RandomTokens  $randomTokens  Makes the codes.
+     * @param TokenAudience $tokenAudience Reads the path a resource names.
      */
     public function __construct(
         private Database $database,
         private RandomTokens $randomTokens = new RandomTokens(),
+        private TokenAudience $tokenAudience = new TokenAudience(),
     ) {
     }
 
@@ -68,8 +72,8 @@ final readonly class AuthorizationCodes
         $code = $this->randomTokens->fresh();
         $this->database->execute('DELETE FROM aic_oauth_codes WHERE expires_at < now()', []);
         $this->database->execute(
-            'INSERT INTO aic_oauth_codes (code_hash, client_id, user_id, redirect_uri, scopes, challenge, expires_at)'
-                . " VALUES (?, ?, ?, ?, ?, ?, now() + (? || ' seconds')::interval)",
+            'INSERT INTO aic_oauth_codes (code_hash, client_id, user_id, redirect_uri, scopes, challenge, resource,'
+                . " expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, now() + (? || ' seconds')::interval)",
             [
                 hash('sha256', $code),
                 $authorizationRequest->clientId,
@@ -77,6 +81,7 @@ final readonly class AuthorizationCodes
                 $authorizationRequest->redirectUri,
                 implode(' ', $scopes),
                 $authorizationRequest->challenge,
+                $this->tokenAudience->path($authorizationRequest->resource, $oauthServer) ?? '',
                 (string) $oauthServer->codeSeconds,
             ],
         );
@@ -111,7 +116,7 @@ final readonly class AuthorizationCodes
 
         $scopes = array_filter(explode(' ', $row->string('scopes')), static fn (string $scope): bool => $scope !== '');
 
-        return new CodeGrant($row->string('user_id'), array_values($scopes));
+        return new CodeGrant($row->string('user_id'), array_values($scopes), $row->string('resource'));
     }
 
     /**
@@ -130,6 +135,7 @@ final readonly class AuthorizationCodes
 
         return $this->database->fetchAll(
             'DELETE FROM aic_oauth_codes WHERE code_hash = ? RETURNING client_id, user_id, redirect_uri, scopes, challenge,'
+                . ' resource,'
                 . " CASE WHEN expires_at > now() THEN 'live' ELSE '' END AS live",
             [hash('sha256', $code)],
         )->first();

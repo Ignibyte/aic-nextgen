@@ -21,6 +21,7 @@ final readonly class OAuthClient
      * @param list<string> $scopes       The scopes it may hold.
      * @param list<string> $redirectUris Where an authorization may return to, compared exactly.
      * @param string       $createdAt    When it was added.
+     * @param int          $liveTokens   How many of its access tokens are live (#352).
      */
     public function __construct(
         public string $id,
@@ -28,6 +29,7 @@ final readonly class OAuthClient
         public array $scopes,
         public array $redirectUris,
         public string $createdAt,
+        public int $liveTokens = 0,
     ) {
     }
 

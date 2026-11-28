@@ -311,7 +311,11 @@ See [tessera.md](tessera.md) for markers, requests, replies and streams.
   `/.well-known/oauth-protected-resource` publish the metadata, all before the session. A module
   routes the consent page (`/oauth/authorize`) to its own Page over
   `AIC\OAuth\Application\Authorizations`. An issued token is a bearer token: it reaches routes
-  through `Actors` like an operator's, acting for the person who allowed it.
+  through `Actors` like an operator's, acting for the person who allowed it. A code exchange
+  also answers a rotating refresh token (`aic_oauth_refresh_tokens`; a reused one
+  revokes its family), a `resource` binds a token to one path of the site, `POST /oauth/revoke`
+  and `/oauth/introspect` give a token back and report on one, and `POST /oauth/register` lets a
+  client register itself when `OAuthServer::$registration` allows it (#352).
 
 See [security.md](security.md) for sessions, form guards, uploads, auth and secret handling.
 

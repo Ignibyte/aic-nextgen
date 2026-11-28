@@ -27,7 +27,9 @@ final readonly class OAuthClients
     /**
      * The columns a client is read from.
      */
-    private const string SELECT = 'SELECT id, secret_hash, scopes, redirect_uris, created_at::text AS created_at FROM aic_oauth_clients';
+    private const string SELECT = 'SELECT id, secret_hash, scopes, redirect_uris, created_at::text AS created_at,'
+        . ' (SELECT count(*) FROM aic_oauth_tokens WHERE client_id = aic_oauth_clients.id AND expires_at > now())'
+        . ' AS live_tokens FROM aic_oauth_clients';
 
     /**
      * @param Database $database The connection.
@@ -106,14 +108,15 @@ final readonly class OAuthClients
      *
      * @throws QueryException When the rows cannot be removed.
      *
-     * @return bool Whether a client of that id was there; its codes and tokens go with it.
+     * @return bool Whether a client of that id was there; its codes, tokens and refresh tokens go with it.
      */
     public function revoke(string $clientId): bool
     {
         return $this->database->execute(
             'WITH codes AS (DELETE FROM aic_oauth_codes WHERE client_id = ?), tokens AS (DELETE FROM aic_oauth_tokens WHERE'
-                . ' client_id = ?) DELETE FROM aic_oauth_clients WHERE id = ?',
-            [$clientId, $clientId, $clientId],
+                . ' client_id = ?), refreshes AS (DELETE FROM aic_oauth_refresh_tokens WHERE client_id = ?)'
+                . ' DELETE FROM aic_oauth_clients WHERE id = ?',
+            [$clientId, $clientId, $clientId, $clientId],
         ) > 0;
     }
 
@@ -160,6 +163,7 @@ final readonly class OAuthClients
             self::words($row->string('scopes')),
             self::words($row->string('redirect_uris')),
             $row->string('created_at'),
+            $row->int('live_tokens'),
         );
     }
 

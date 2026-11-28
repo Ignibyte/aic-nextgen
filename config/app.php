@@ -36,7 +36,9 @@ declare(strict_types=1);
  * The authorization server (#331): the site's own origin as the issuer, so
  * /oauth/token and the two metadata documents answer, and a route's need
  * refused to a visitor names the protected resource's metadata. The account
- * module's /oauth/authorize is the consent page.
+ * module's /oauth/authorize is the consent page. Since #352 a client may
+ * register itself at /oauth/register with a bearer token holding
+ * oauth.register, and hold at most account.audit and ledger.mcp.
  */
 
 use AIC\Auth\Domain\OidcProvider;
@@ -47,6 +49,7 @@ use AIC\Http\Domain\Webhook;
 use AIC\Http\Domain\Webhooks;
 use AIC\HttpClient\Domain\Upstream;
 use AIC\HttpClient\Domain\Upstreams;
+use AIC\OAuth\Domain\ClientRegistration;
 use AIC\OAuth\Domain\OAuthServer;
 use AIC\Tessera\Domain\TesseraRelease;
 
@@ -88,5 +91,9 @@ return new AppConfig(
     webhooks: new Webhooks([
         '/scaffold/delivery' => new Webhook('X-Signature', $setting('AIC_WEBHOOK_STUB_SECRET', '')),
     ]),
-    oauth: new OAuthServer('https://aic-nextgen.ddev.site:8843'),
+    oauth: new OAuthServer(
+        'https://aic-nextgen.ddev.site:8843',
+        registration: ClientRegistration::Scoped,
+        registrationScopes: ['account.audit', 'ledger.mcp'],
+    ),
 );

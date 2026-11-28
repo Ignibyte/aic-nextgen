@@ -4,7 +4,7 @@
         "role:grant gate-auditor account.audit",
         "role:assign gate gate-auditor",
         "token:revoke gate-portal",
-        "token:add gate-portal {password} account.caller ledger.mcp ledger.split",
+        "token:add gate-portal {password} account.caller ledger.mcp ledger.split oauth.register",
         "role:grant gate-feed ledger.feed",
         "role:assign gate gate-feed",
         "role:assign stub:ada gate-feed",
@@ -12,6 +12,8 @@
         "client:add gate-service {password} account.caller",
         "client:revoke gate-desk",
         "client:add gate-desk - account.audit ledger.mcp --redirect=http://127.0.0.1:7777/callback",
+        "client:revoke gate-resource",
+        "client:add gate-resource {password} oauth.introspect",
         "role:assign stub:ada gate-auditor",
         "role:grant gate-assistant ledger.split",
         "role:assign gate gate-assistant",
@@ -1841,6 +1843,249 @@
             "form": "json:{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\"}",
             "header": "Authorization: Bearer not-a-known-token",
             "status": 401,
+            "captures": false
+        },
+        {
+            "name": "oauth token, refresh the code-flow token",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=refresh_token&client_id=gate-desk&refresh_token={refresh}",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "audit, the refreshed token acts for the person",
+            "method": "GET",
+            "path": "/audit",
+            "form": "",
+            "header": "Authorization: Bearer {access}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth token, a scope beyond the refresh token's",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=refresh_token&client_id=gate-desk&refresh_token={refresh}&scope=ledger.split",
+            "header": "",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "oauth token, a refresh narrows the scope",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=refresh_token&client_id=gate-desk&refresh_token={refresh}&scope=account.audit",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth token, the spent refresh token again",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=refresh_token&client_id=gate-desk&refresh_token={spent}",
+            "header": "",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "audit, the leaked family's token is gone",
+            "method": "GET",
+            "path": "/audit",
+            "form": "",
+            "header": "Authorization: Bearer {access}",
+            "status": 401,
+            "captures": false
+        },
+        {
+            "name": "oauth token, the leaked family's newest refresh token is gone",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=refresh_token&client_id=gate-desk&refresh_token={refresh}",
+            "header": "",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "oauth token, client credentials bound to /api",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=client_credentials&client_id=gate-service&client_secret={password}&scope=account.caller&resource=https%3A%2F%2Faic-nextgen.ddev.site%3A8843%2Fapi",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "caller, a token bound to /api",
+            "method": "GET",
+            "path": "/api/caller",
+            "form": "",
+            "header": "Authorization: Bearer {access}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "audit, a token bound to /api is unknown there",
+            "method": "GET",
+            "path": "/audit",
+            "form": "",
+            "header": "Authorization: Bearer {access}",
+            "status": 401,
+            "captures": false
+        },
+        {
+            "name": "oauth token, a resource on another site",
+            "method": "POST",
+            "path": "/oauth/token",
+            "form": "grant_type=client_credentials&client_id=gate-service&client_secret={password}&scope=account.caller&resource=https%3A%2F%2Fexample.com%2Fapi",
+            "header": "",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "oauth introspect, a live token",
+            "method": "POST",
+            "path": "/oauth/introspect",
+            "form": "client_id=gate-resource&client_secret={password}&token={access}",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth introspect, a client without oauth.introspect",
+            "method": "POST",
+            "path": "/oauth/introspect",
+            "form": "client_id=gate-service&client_secret={password}&token={access}",
+            "header": "",
+            "status": 403,
+            "captures": false
+        },
+        {
+            "name": "oauth introspect, an unknown token",
+            "method": "POST",
+            "path": "/oauth/introspect",
+            "form": "client_id=gate-resource&client_secret={password}&token=not-a-token",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth introspect, GET",
+            "method": "GET",
+            "path": "/oauth/introspect",
+            "form": "",
+            "header": "",
+            "status": 405,
+            "captures": false
+        },
+        {
+            "name": "oauth revoke, another client's token stays",
+            "method": "POST",
+            "path": "/oauth/revoke",
+            "form": "client_id=gate-desk&token={access}",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "caller, the token survives another client's revocation",
+            "method": "GET",
+            "path": "/api/caller",
+            "form": "",
+            "header": "Authorization: Bearer {access}",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "oauth revoke, the client's own token",
+            "method": "POST",
+            "path": "/oauth/revoke",
+            "form": "client_id=gate-service&client_secret={password}&token={access}",
+            "header": "",
+            "status": 200,
+            "captures": false
+        },
+        {
+            "name": "caller, a revoked token",
+            "method": "GET",
+            "path": "/api/caller",
+            "form": "",
+            "header": "Authorization: Bearer {access}",
+            "status": 401,
+            "captures": false
+        },
+        {
+            "name": "oauth revoke, a wrong secret",
+            "method": "POST",
+            "path": "/oauth/revoke",
+            "form": "client_id=gate-service&client_secret=not-the-secret&token={access}",
+            "header": "",
+            "status": 401,
+            "captures": false
+        },
+        {
+            "name": "oauth revoke, no token",
+            "method": "POST",
+            "path": "/oauth/revoke",
+            "form": "client_id=gate-service&client_secret={password}",
+            "header": "",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "oauth register, no initial access token",
+            "method": "POST",
+            "path": "/oauth/register",
+            "form": "json:{\"redirect_uris\":[\"http://127.0.0.1:7777/callback\"],\"token_endpoint_auth_method\":\"none\"}",
+            "header": "",
+            "status": 401,
+            "captures": false
+        },
+        {
+            "name": "oauth register, a redirect URI over plain http elsewhere",
+            "method": "POST",
+            "path": "/oauth/register",
+            "form": "json:{\"redirect_uris\":[\"http://example.com/callback\"],\"token_endpoint_auth_method\":\"none\"}",
+            "header": "Authorization: Bearer {password}",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "oauth register, a scope beyond what registration gives",
+            "method": "POST",
+            "path": "/oauth/register",
+            "form": "json:{\"redirect_uris\":[\"http://127.0.0.1:7777/callback\"],\"scope\":\"ledger.split\"}",
+            "header": "Authorization: Bearer {password}",
+            "status": 400,
+            "captures": false
+        },
+        {
+            "name": "oauth register, a confidential client",
+            "method": "POST",
+            "path": "/oauth/register",
+            "form": "json:{\"redirect_uris\":[\"http://127.0.0.1:7777/callback\"],\"scope\":\"ledger.mcp\"}",
+            "header": "Authorization: Bearer {password}",
+            "status": 201,
+            "captures": false
+        },
+        {
+            "name": "oauth register, a public client",
+            "method": "POST",
+            "path": "/oauth/register",
+            "form": "json:{\"redirect_uris\":[\"http://127.0.0.1:7777/callback\"],\"token_endpoint_auth_method\":\"none\",\"grant_types\":[\"authorization_code\",\"refresh_token\"]}",
+            "header": "Authorization: Bearer {password}",
+            "status": 201,
+            "captures": false
+        },
+        {
+            "name": "oauth authorize, the registered client's consent page",
+            "method": "GET",
+            "path": "/oauth/authorize?response_type=code&client_id={client}&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&scope=account.audit&state=s1&code_challenge=OekZVEnXsRH8TiRdRr-KPbTynr0gqxNTfKHLLvy5b6M&code_challenge_method=S256",
+            "form": "",
+            "header": "",
+            "status": 200,
             "captures": false
         },
         {

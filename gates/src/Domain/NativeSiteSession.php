@@ -17,8 +17,9 @@ use const PHP_URL_QUERY;
  * What one site's run of gate:23 remembers between steps (#42): the session
  * cookie it last set, the CSRF token and the signed envelope its last page
  * carried, the note the capturing step created, the last Location with
- * its query (#212), and the last OAuth access token and authorization code
- * the site issued (#331). Each site gets its own.
+ * its query (#212), the last OAuth access token and authorization code
+ * the site issued (#331), and its last two refresh tokens and the last
+ * client id its registration endpoint gave (#352). Each site gets its own.
  */
 final class NativeSiteSession
 {
@@ -60,6 +61,21 @@ final class NativeSiteSession
     private string $code = '';
 
     /**
+     * The last refresh token a token endpoint answered (#352), for `{refresh}`.
+     */
+    private string $refresh = '';
+
+    /**
+     * The refresh token before it, spent by the refresh that answered the last (#352), for `{spent}`.
+     */
+    private string $spent = '';
+
+    /**
+     * The last client id the registration endpoint answered (#352), for `{client}`.
+     */
+    private string $client = '';
+
+    /**
      * @param string $password The gate user's password, for `{password}` (#9).
      */
     public function __construct(
@@ -70,21 +86,30 @@ final class NativeSiteSession
     /**
      * @param NativeSiteStep $nativeSiteStep A step.
      *
-     * @return string Its path, `{note}` and `{location}` replaced.
+     * @return string Its path, `{note}`, `{location}` and `{client}` (#352) replaced.
      */
     public function path(NativeSiteStep $nativeSiteStep): string
     {
-        return str_replace(['{note}', '{location}'], [$this->note, $this->location], $nativeSiteStep->path);
+        return str_replace(
+            ['{note}', '{location}', '{client}'],
+            [$this->note, $this->location, $this->client],
+            $nativeSiteStep->path,
+        );
     }
 
     /**
      * @param NativeSiteStep $nativeSiteStep A step.
      *
-     * @return string Its form, `{csrf}`, `{envelope}`, `{password}` and `{code}` replaced.
+     * @return string Its form, `{csrf}`, `{envelope}`, `{password}`, `{code}`, and `{access}`, `{refresh}`, `{spent}` and
+     *                `{client}` (#352) replaced.
      */
     public function form(NativeSiteStep $nativeSiteStep): string
     {
-        $form = str_replace(['{csrf}', '{code}'], [$this->token, $this->code], $nativeSiteStep->form);
+        $form = str_replace(
+            ['{csrf}', '{code}', '{access}', '{refresh}', '{spent}', '{client}'],
+            [$this->token, $this->code, $this->access, $this->refresh, $this->spent, $this->client],
+            $nativeSiteStep->form,
+        );
 
         return str_replace('{password}', $this->password, str_replace('{envelope}', $this->envelope, $form));
     }
@@ -113,8 +138,9 @@ final class NativeSiteSession
     /**
      * Keeps what the answer carried: a new cookie (a cleared one forgets the
      * session), the token in its body, an access token in its body or a code in
-     * its Location (#331), and the path a capturing step keeps (its
-     * Location, or the first link under its prefix, #200).
+     * its Location (#331), a refresh token or a registered client id in its
+     * body (#352), and the path a capturing step keeps (its Location, or the
+     * first link under its prefix, #200).
      *
      * @param NativeSiteStep $nativeSiteStep The step.
      * @param HttpExchange   $httpExchange   Its answer.
@@ -132,6 +158,8 @@ final class NativeSiteSession
         $this->envelope = self::captured('/name="aic_envelope" value="([\\w.-]+)"/', $httpExchange->body, $this->envelope);
         $this->access = self::captured('/"access_token":"([0-9a-f]{64})"/', $httpExchange->body, $this->access);
         $this->code = self::captured('/[?&]code=([0-9a-f]{64})/', $httpExchange->location, $this->code);
+        $this->client = self::captured('/"client_id":"(dcr-[0-9a-f]{16})"/', $httpExchange->body, $this->client);
+        $this->refreshed(self::captured('/"refresh_token":"([0-9a-f]{64})"/', $httpExchange->body, $this->refresh));
 
         $this->follow($httpExchange->location);
 
@@ -140,6 +168,19 @@ final class NativeSiteSession
         }
 
         $this->note = $nativeSiteStep->captured($location, $httpExchange->body);
+    }
+
+    /**
+     * @param string $refresh The refresh token the answer carried, or the one kept so far.
+     */
+    private function refreshed(string $refresh): void
+    {
+        if ($refresh === $this->refresh) {
+            return;
+        }
+
+        $this->spent = $this->refresh;
+        $this->refresh = $refresh;
     }
 
     /**
