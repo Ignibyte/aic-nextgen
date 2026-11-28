@@ -6,6 +6,16 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The compiled socket server, gate:23's socket conversations and make:socket: WebSockets, part 2** (#32).
+  `bootstrap/socket.php` (shipped by ignibyte/aic-framework's scaffold) runs `socket:serve` from the console kernel,
+  under PHP and compiled over the site's bundle as a second native program. gate:23 builds that program when
+  `config/native-site.json` lists `sockets`, serves it beside `bin/aic socket:serve`, plays each conversation (the
+  upgrade, then frames sent and read) on both and fails on a difference, on an upgrade status other than the one named,
+  and on a declared socket no conversation opens. `bin/aic make:socket <module> <Class> <path>` writes a Socket that
+  listens and publishes on one channel; gate:31 holds a 39th line. DDEV proxies `/ws/` to a `socket:serve` daemon and
+  the Caddyfile routes `/ws/*`; deploy.md says how to run it. The server builds its select set by appending, since
+  elephc's `stream_select()` empties an array still shared with another (#354). Part 3 is the chat page.
+
 - **The Socket kind: WebSockets, part 1** (#32). A sixth entry kind, `AIC\Controller\Contracts\Socket`, answers each
   text message a connection sends with `SocketReply` (messages back and the broadcast channels the connection hears
   from then on) or `SocketClose`. A module routes it as a GET at a fixed path; the build wires it on the console side

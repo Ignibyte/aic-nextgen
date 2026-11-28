@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use stdClass;
 
 use function array_is_list;
+use function array_key_exists;
 use function array_keys;
 use function get_object_vars;
 use function is_array;
@@ -46,7 +47,7 @@ final readonly class NativeSiteRoutes
     {
         $gets = [];
 
-        foreach ($this->rows($root) as $row) {
+        foreach ($this->rows($root, 'routes') as $row) {
             $route = $this->get($row);
 
             if (!$route instanceof Route) {
@@ -62,13 +63,35 @@ final readonly class NativeSiteRoutes
     /**
      * @param string $root The project's root.
      *
-     * @throws InvalidArgumentException When the manifest is not an object with a list of routes.
+     * @throws InvalidArgumentException When the manifest has no list of sockets, or a socket row has no path.
      *
-     * @return list<stdClass> Its route rows; a row that is not an object stands as an empty one.
+     * @return list<string> The path of every declared socket (#32), which a conversation must open.
      */
-    private function rows(string $root): array
+    public function sockets(string $root): array
     {
-        $routes = get_object_vars($this->surface($root))['routes'] ?? null;
+        $paths = [];
+
+        foreach ($this->rows($root, 'sockets') as $row) {
+            $fields = get_object_vars($row);
+            $paths[] = array_key_exists('path', $fields) && is_string($fields['path'])
+                ? $fields['path']
+                : throw new InvalidArgumentException(self::UNREADABLE);
+        }
+
+        return $paths;
+    }
+
+    /**
+     * @param string $root    The project's root.
+     * @param string $section The surface's list: `routes` or `sockets`.
+     *
+     * @throws InvalidArgumentException When the manifest is not an object with that list.
+     *
+     * @return list<stdClass> Its rows; a row that is not an object stands as an empty one.
+     */
+    private function rows(string $root, string $section): array
+    {
+        $routes = get_object_vars($this->surface($root))[$section] ?? null;
 
         if (!is_array($routes) || !array_is_list($routes)) {
             throw new InvalidArgumentException(self::UNREADABLE);

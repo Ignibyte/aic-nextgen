@@ -50,6 +50,10 @@
                     "mode": "replace",
                     "path": "scaffold/bootstrap/serve.php"
                 },
+                "bootstrap/socket.php": {
+                    "mode": "replace",
+                    "path": "scaffold/bootstrap/socket.php"
+                },
                 "config/app.php": {
                     "mode": "add-once",
                     "path": "scaffold/config/app.php"

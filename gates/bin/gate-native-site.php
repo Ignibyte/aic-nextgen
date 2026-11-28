@@ -11,9 +11,11 @@ use Gates\Application\NativeSiteBrowser;
 use Gates\Application\NativeSiteBuilder;
 use Gates\Application\NativeSiteComparer;
 use Gates\Application\NativeSiteGate;
+use Gates\Application\NativeSitePasses;
 use Gates\Application\NativeSiteProfiledPass;
 use Gates\Application\NativeSiteServe;
 use Gates\Application\NativeSiteSites;
+use Gates\Application\NativeSiteSocketPass;
 use Gates\Application\NativeToolchain;
 use Gates\Infrastructure\ElephcLocation;
 use Gates\Infrastructure\GatesPackage;
@@ -22,6 +24,7 @@ use Gates\Infrastructure\ProcServerLauncher;
 use Gates\Infrastructure\ProjectRoot;
 use Gates\Infrastructure\StreamHttpClient;
 use Gates\Infrastructure\SystemProcessRunner;
+use Gates\Infrastructure\WebSocketPlayer;
 
 require __DIR__ . '/project.php';
 
@@ -68,14 +71,18 @@ if (($arguments[1] ?? '') !== 'serve') {
         new GateConsole($processRunner, $toolchain->phpPath()),
     );
     $browser = new NativeSiteBrowser($browserTests);
+    $sites = new NativeSiteSites($toolchain, new ProcServerLauncher(), $package);
     $gate = new NativeSiteGate(
         $toolchain,
         $builder,
-        new NativeSiteSites($toolchain, new ProcServerLauncher(), $package),
+        $sites,
         $comparer,
         $gateUser,
         $browser,
-        new NativeSiteProfiledPass($comparer, $browser),
+        new NativeSitePasses(
+            new NativeSiteProfiledPass($comparer, $browser),
+            new NativeSiteSocketPass($builder, $sites, new WebSocketPlayer()),
+        ),
     );
 
     exit($gate->run($root, $setup));

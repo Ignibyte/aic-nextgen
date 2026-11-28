@@ -92,6 +92,7 @@ final readonly class MakeCatalogCommand implements Command
             'make:seed <module> <Name>Seed <table> --unique=<field> --fields=<name>:<type>,…',
             'a command saving fixed rows into a table through its own repository, updated on a rerun',
         ],
+        'make:socket' => ['make:socket <module> <Class> <path>', 'a Socket on one broadcast channel, served by socket:serve'],
         'make:state' => [
             'make:state <module> <table> <field> --states=<a>,<b>,… --transitions=<name>:<a>|<b>><c>[@<permission>],…',
             'a state machine on a field: its enum, its transitions and its migration',

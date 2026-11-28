@@ -25,6 +25,7 @@ use App\Scaffold\Controller\ScaffoldPinAction;
 use App\Scaffold\Controller\ScaffoldPost;
 use App\Scaffold\Controller\ScaffoldShelfExportDownload;
 use App\Scaffold\Controller\ScaffoldShelfExportPost;
+use App\Scaffold\Controller\ScaffoldSocket;
 use App\Scaffold\Controller\ScaffoldTaskListPage;
 use App\Scaffold\Job\ScaffoldDeliveryWebhookJob;
 use App\Scaffold\Job\ScaffoldHelloJob;
@@ -86,4 +87,5 @@ return (new ModuleManifest('scaffold'))
     ->migration(CreateScaffoldCrewsTable::class)
     ->migration(CreateScaffoldShiftsTable::class)
     ->permission('scaffold.scaffold-guide', 'Read the scaffold://scaffold-guide resource over MCP.')
-    ->permission('scaffold.scaffold-ask', 'Get the scaffold.scaffold-ask prompt over MCP.');
+    ->permission('scaffold.scaffold-ask', 'Get the scaffold.scaffold-ask prompt over MCP.')
+    ->route(RouteMethod::Get, '/ws/scaffold', ScaffoldSocket::class);

@@ -129,6 +129,7 @@ none
 | `App\Scaffold\Controller\ScaffoldPost` | [modules/scaffold/src/Controller/ScaffoldPost.php](../../../modules/scaffold/src/Controller/ScaffoldPost.php) |
 | `App\Scaffold\Controller\ScaffoldShelfExportDownload` | [modules/scaffold/src/Controller/ScaffoldShelfExportDownload.php](../../../modules/scaffold/src/Controller/ScaffoldShelfExportDownload.php) |
 | `App\Scaffold\Controller\ScaffoldShelfExportPost` | [modules/scaffold/src/Controller/ScaffoldShelfExportPost.php](../../../modules/scaffold/src/Controller/ScaffoldShelfExportPost.php) |
+| `App\Scaffold\Controller\ScaffoldSocket` | [modules/scaffold/src/Controller/ScaffoldSocket.php](../../../modules/scaffold/src/Controller/ScaffoldSocket.php) |
 | `App\Scaffold\Controller\ScaffoldTaskListPage` | [modules/scaffold/src/Controller/ScaffoldTaskListPage.php](../../../modules/scaffold/src/Controller/ScaffoldTaskListPage.php) |
 
 ### `src/Entity/`
@@ -237,6 +238,7 @@ none
 
 - [AIC\Access](../../../framework/docs/systems.md#9-auth)
 - [AIC\Block](../../../framework/docs/systems.md#6-blocks)
+- [AIC\Broadcast](../../../framework/docs/systems.md#10-background-work)
 - [AIC\Component](../../../framework/docs/systems.md#4-components)
 - [AIC\Controller](../../../framework/docs/systems.md#1-http-routing-and-the-kinds)
 - [AIC\Database](../../../framework/docs/systems.md#3-data)

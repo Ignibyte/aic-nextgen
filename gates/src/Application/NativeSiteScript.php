@@ -21,7 +21,6 @@ use function is_array;
 use function is_bool;
 use function is_int;
 use function is_string;
-use function json_decode;
 use function preg_match;
 use function str_starts_with;
 
@@ -39,11 +38,11 @@ final readonly class NativeSiteScript
     public const string PATH = 'config/native-site.json';
 
     /**
-     * @param QuietFileReader  $quietFileReader  Reads the script.
-     * @param NativeSiteAssets $nativeSiteAssets Resolves a step's `{asset:<name>}` (#251).
+     * @param NativeSiteDocument $nativeSiteDocument Reads the script.
+     * @param NativeSiteAssets   $nativeSiteAssets   Resolves a step's `{asset:<name>}` (#251).
      */
     public function __construct(
-        private QuietFileReader $quietFileReader = new QuietFileReader(),
+        private NativeSiteDocument $nativeSiteDocument = new NativeSiteDocument(),
         private NativeSiteAssets $nativeSiteAssets = new NativeSiteAssets(),
     ) {
     }
@@ -89,7 +88,7 @@ final readonly class NativeSiteScript
      */
     public function console(string $root): array
     {
-        $lines = [get_object_vars($this->script($root))['console'] ?? []];
+        $lines = [get_object_vars($this->nativeSiteDocument->read($root))['console'] ?? []];
         $strings = is_array($lines[0]) && array_is_list($lines[0])
             ? array_values(array_filter($lines[0], is_string(...)))
             : null;
@@ -112,7 +111,7 @@ final readonly class NativeSiteScript
      */
     private function listed(string $root, string $key): array
     {
-        $fields = get_object_vars($this->script($root));
+        $fields = get_object_vars($this->nativeSiteDocument->read($root));
 
         if (!array_key_exists($key, $fields)) {
             return [];
@@ -134,23 +133,6 @@ final readonly class NativeSiteScript
             ),
             array_keys($steps),
         );
-    }
-
-    /**
-     * @param string $root The project's root.
-     *
-     * @throws InvalidArgumentException When the script is not an `aic.native-site/1` object.
-     *
-     * @return stdClass The script, decoded.
-     */
-    private function script(string $root): stdClass
-    {
-        $decoded = [json_decode($this->quietFileReader->read($root . '/' . self::PATH) ?? '')];
-
-        return $decoded[0] instanceof stdClass
-            && (get_object_vars($decoded[0])['schema'] ?? null) === 'aic.native-site/1'
-            ? $decoded[0]
-            : throw new InvalidArgumentException(self::PATH . ' is not an aic.native-site/1 object.');
     }
 
     /**

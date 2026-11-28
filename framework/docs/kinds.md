@@ -124,7 +124,9 @@ What goes to the other connections is a broadcast: the Socket, a Page, a Job or 
 publishes with `Broadcaster::publish(Channel, data)` (#314), and every connection hearing the channel
 gets the data as a text frame, as every open broadcast stream does. A connection opens only when its
 `Origin` is the host it was sent to and the route's `needs:` holds for its session's user; a bearer
-token is not read. See [systems.md](systems.md#10-background-work).
+token is not read. See [systems.md](systems.md#10-background-work) and, for the proxy in front,
+[deploy.md](deploy.md#the-socket-server). `bin/aic make:socket <module> <Class> <path>` writes one
+that listens and publishes on one channel.
 
 ### Command
 

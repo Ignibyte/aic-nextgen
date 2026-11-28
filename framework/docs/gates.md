@@ -91,6 +91,17 @@ first member that differs, prefixed `PROFILED`. Browser specs whose file name st
 in this pass only, and skip themselves without `AIC_PROFILER`. With no `profiled` steps there is no
 second pass.
 
+`config/native-site.json` may also hold `sockets`, WebSocket conversations (#32). gate:23 then
+compiles the socket server (`bootstrap/socket.php` over the site's bundle) into
+`.native-site/socket/main`, starts it and `bin/aic socket:serve` on two more free ports, and plays each
+conversation on PHP's, then, two ticks later, on the compiled one. A conversation is one connection:
+the upgrade to its `path` with the site's own `Origin` (another site's with `"origin": "other"`), then
+each `send` (`frame` text, binary or ping, its `data`, and `read`, the frames to wait for). A
+transcript is the status line, then `text:`, `pong:` and `close:<code>:<reason>` entries, `timeout`
+and `eof`; two transcripts that differ fail, prefixed `SOCKET`. So does a PHP upgrade answering
+another status than the conversation's `status`, and a socket in `build/surface.json` that no
+conversation opens with 101 (`UNOPENED`).
+
 The base NEON files include PHP configs that register the actual PHPStan rules and tagged
 architecture services. PHPat's attributed callables return every named architecture rule. PHPCS
 and PHPMD read custom XML generated from their custom classes. AIC's source build writes those
@@ -169,7 +180,7 @@ Gates marked *AIC only* check the framework's own repository and do not run in a
 | 28 | house rules | *AIC only*: the workflow's shipped rules bite on their probes | not run in an app |
 | 29 | architecture docs | *AIC only*: these pages state what the code has | not run in an app |
 | 30 | suite files | root configs match the stubs, composer scripts/plugins match the suite, and custom PHPCS/PHPMD XML matches its writers | `vendor/bin/aic-gate init` for root stubs; rebuild or reinstall a stale package |
-| 31 | make scaffold | *AIC only*: `modules/scaffold/`, `workers/scaffold/` (but its generated jobs) and their theme files are what the thirty-eight `bin/aic make:*` lines make, byte for byte, and `make:module` prints the lines the build asks for | not run in an app |
+| 31 | make scaffold | *AIC only*: `modules/scaffold/`, `workers/scaffold/` (but its generated jobs) and their theme files are what the thirty-nine `bin/aic make:*` lines make, byte for byte, and `make:module` prints the lines the build asks for | not run in an app |
 | 32 | module markup | no file under `modules/` holds HTML: no template or markup file, no inline output, no tag, markup declaration or character reference in a literal or text file, no HTML function; any `<` in a controller; no XML as text: an `<?` declaration, a `</name>` or a `<name/>` of any name (#233) | move the markup into a theme component, XML into an `XmlDocument`; write a usage placeholder as `{name}` |
 | 33 | app scaffolds | every kind under `scaffolds/`, the app's and the workflow package's, loads, starts from a kind, names every file in its folder and fills every placeholder (each census rule proven on a planted fixture first); each kind, made with its probe values in a copy of the project (in `site`, else the first module), passes gates 6 to 16, 21, 24 to 27 and 32 there; an unchanged kind is cached | fix the scaffold the finding names; when the project fails the same gate on its own, fix the project first |
 

@@ -2920,5 +2920,55 @@
             "status": 200,
             "captures": false
         }
+    ],
+    "sockets": [
+        {
+            "name": "socket at an unknown path",
+            "path": "/ws/none",
+            "origin": true,
+            "status": 404,
+            "send": []
+        },
+        {
+            "name": "chat socket from another site",
+            "path": "/ws/chat",
+            "origin": false,
+            "status": 403,
+            "send": []
+        },
+        {
+            "name": "chat room: join, say, ping, unknown, bye",
+            "path": "/ws/chat",
+            "origin": true,
+            "status": 101,
+            "send": [
+                {"frame": "text", "data": "join gateroom", "read": 1},
+                {"frame": "text", "data": "say gateroom hello from the gate", "read": 1},
+                {"frame": "ping", "data": "gate", "read": 1},
+                {"frame": "text", "data": "dance", "read": 1},
+                {"frame": "text", "data": "bye", "read": 2}
+            ]
+        },
+        {
+            "name": "made socket: listen, send, bye",
+            "path": "/ws/scaffold",
+            "origin": true,
+            "status": 101,
+            "send": [
+                {"frame": "text", "data": "listen", "read": 1},
+                {"frame": "text", "data": "send made by make:socket", "read": 1},
+                {"frame": "text", "data": "send", "read": 1},
+                {"frame": "text", "data": "bye", "read": 2}
+            ]
+        },
+        {
+            "name": "chat socket refuses a binary frame",
+            "path": "/ws/chat",
+            "origin": true,
+            "status": 101,
+            "send": [
+                {"frame": "binary", "data": "raw", "read": 2}
+            ]
+        }
     ]
 }
