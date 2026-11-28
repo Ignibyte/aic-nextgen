@@ -97,6 +97,7 @@ final readonly class ModuleClassSource
             ...$this->moduleLayerClasses->blocks($wiredModule),
             ...$this->byName($wiredModule, 'Commands', $wiredModule->commands, Command::class),
             ...$this->byName($wiredModule, 'Jobs', $wiredModule->jobs, Job::class),
+            ...$this->moduleLayerClasses->sockets($wiredModule),
         ];
     }
 

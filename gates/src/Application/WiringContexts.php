@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gates\Application;
 
+use AIC\Broadcast\Application\Broadcaster;
 use AIC\Config\Domain\AppConfig;
 use AIC\Controller\Application\PageDocuments;
 use AIC\Database\Contracts\Database;
@@ -69,6 +70,7 @@ final readonly class WiringContexts
             ConsoleContext::class,
             'consoleContext',
             [
+                Broadcaster::class => 'push()->broadcaster',
                 Database::class => 'database',
                 MailConfig::class => 'mailConfig',
                 MailTransport::class => 'mailTransport',

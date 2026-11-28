@@ -12,6 +12,7 @@ use AIC\Module\Contracts\Binding;
 use AIC\Module\Contracts\ModuleRoute;
 use AIC\Module\Contracts\ModuleSection;
 use AIC\Module\Contracts\PluginTag;
+use AIC\Module\Contracts\RouteMethod;
 use AIC\Schema\Contracts\Migration;
 use Gates\Domain\ModuleDefinition;
 use InvalidArgumentException;
@@ -23,12 +24,13 @@ use function enum_exists;
 use function interface_exists;
 use function is_a;
 use function sprintf;
+use function str_contains;
 use function str_starts_with;
 
 /**
  * The checks on what a manifest declares (#92): every class sits in the
  * module's own namespace and is what it is declared as. A route is exactly one
- * of Page, Api or Stream; a binding's class is a readonly class implementing
+ * of Page, Api or Stream, or a Socket by GET at a fixed path (#32); a binding's class is a readonly class implementing
  * its interface; a block, plugin or migration has no required constructor
  * parameter, so the generated wiring builds it with `new X()`; a migration
  * lives under `src/Migration/`.
@@ -44,6 +46,10 @@ final readonly class DeclarationChecks
     {
         foreach ($moduleDefinition->declared(ModuleRoute::class) as $moduleRoute) {
             $this->checkRoute($moduleDefinition, $moduleRoute->handler);
+        }
+
+        foreach ($moduleDefinition->sockets() as $moduleRoute) {
+            $this->checkSocket($moduleDefinition, $moduleRoute);
         }
 
         foreach ($moduleDefinition->declared(Binding::class) as $binding) {
@@ -132,6 +138,25 @@ final readonly class DeclarationChecks
 
         if ($kinds !== 1) {
             throw $this->refusal($moduleDefinition, 'route ' . $class . ' must be exactly one of Page, Api or Stream');
+        }
+    }
+
+    /**
+     * @param ModuleDefinition $moduleDefinition The module.
+     * @param ModuleRoute      $moduleRoute      A route to a Socket (#32).
+     *
+     * @throws InvalidArgumentException When it is not the module's, not a GET, has a path parameter, or its class is
+     *                                  another kind too.
+     */
+    private function checkSocket(ModuleDefinition $moduleDefinition, ModuleRoute $moduleRoute): void
+    {
+        $class = $moduleRoute->handler;
+        $this->checkOwned($moduleDefinition, $class, 'socket');
+        $other = is_a($class, Page::class, true) || is_a($class, Api::class, true) || is_a($class, Stream::class, true);
+
+        if ($other || $moduleRoute->method !== RouteMethod::Get || str_contains($moduleRoute->path, '{')) {
+            throw $this->refusal($moduleDefinition, 'socket ' . $class . ' must be routed by GET, at a path with no parameter, '
+                . 'and be no other kind');
         }
     }
 

@@ -777,6 +777,12 @@
             "name": "schedule:run"
         },
         {
+            "class": "AIC\\Socket\\Application\\SocketServeCommand",
+            "kind": "Command",
+            "module": "framework",
+            "name": "socket:serve"
+        },
+        {
             "class": "App\\Note\\Command\\StockSample",
             "kind": "Command",
             "module": "note",
@@ -861,6 +867,15 @@
             "kind": "Job",
             "module": "scaffold",
             "name": "scaffold-shelf-export-prune"
+        }
+    ],
+    "sockets": [
+        {
+            "class": "App\\Chat\\Controller\\ChatSocket",
+            "kind": "Socket",
+            "module": "chat",
+            "needs": "",
+            "path": "/ws/chat"
         }
     ],
     "schedules": [
@@ -954,6 +969,22 @@
                 "/account",
                 "/oauth/authorize"
             ],
+            "requires": [
+                "site"
+            ]
+        },
+        {
+            "bindings": [],
+            "blocks": [],
+            "exports": [],
+            "factories": [],
+            "middleware": [],
+            "migrations": [],
+            "name": "chat",
+            "namespace": "App\\Chat\\",
+            "permissions": [],
+            "plugins": [],
+            "prefixes": [],
             "requires": [
                 "site"
             ]
@@ -1323,6 +1354,14 @@
             "kind": "Stream",
             "method": "stream",
             "response": "AIC\\Controller\\Contracts\\StreamResponse"
+        },
+        {
+            "contract": "AIC\\Controller\\Contracts\\Socket",
+            "entry": true,
+            "folder": "Controller",
+            "kind": "Socket",
+            "method": "socket",
+            "response": "AIC\\Controller\\Contracts\\SocketResponse"
         },
         {
             "contract": "AIC\\Controller\\Contracts\\Command",

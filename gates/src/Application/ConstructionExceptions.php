@@ -8,7 +8,14 @@ use Gates\Domain\ContextClass;
 use Gates\Domain\WiredObject;
 use Gates\Domain\WiringRoots;
 use InvalidArgumentException;
+use ReflectionMethod;
+use ReflectionNamedType;
 use Throwable;
+
+use function class_exists;
+use function explode;
+use function interface_exists;
+use function method_exists;
 
 /**
  * Follows the same constructor, factory and context calls as the wiring
@@ -41,7 +48,7 @@ final readonly class ConstructionExceptions
                 continue;
             }
 
-            $types = [...$types, ...$this->exceptionDocs->method($contextClass->roots->context, $entry->wrap)];
+            $types = [...$types, ...$this->chain($contextClass->roots->context, $entry->wrap)];
         }
 
         return $this->exceptionDocs->normalized($types);
@@ -58,7 +65,7 @@ final readonly class ConstructionExceptions
     private function object(WiredObject $wiredObject, WiringRoots $wiringRoots): array
     {
         if ($wiredObject->root !== '') {
-            return $this->exceptionDocs->method($wiringRoots->context, $wiredObject->root);
+            return $this->chain($wiringRoots->context, $wiredObject->root);
         }
 
         $factory = $wiredObject->arguments[0] ?? null;
@@ -71,5 +78,45 @@ final readonly class ConstructionExceptions
         }
 
         return $this->exceptionDocs->normalized($types);
+    }
+
+    /**
+     * @param string $class The context class.
+     * @param string $path  A root's accessor or a wrap: one method, or a chain of them (`push()->broadcaster`,
+     *                      #32), each step on the class the step before returns.
+     *
+     * @throws InvalidArgumentException When a called method's exception contract is invalid.
+     *
+     * @return list<class-string<Throwable>> What every step documents.
+     */
+    private function chain(string $class, string $path): array
+    {
+        $types = [];
+        $owner = $class;
+
+        foreach (explode('()->', $path) as $method) {
+            $types = [...$types, ...$this->exceptionDocs->method($owner, $method)];
+            $owner = $this->returned($owner, $method);
+        }
+
+        return $types;
+    }
+
+    /**
+     * @param string $class  A class.
+     * @param string $method One of its methods.
+     *
+     * @return string The class it returns; the class itself when it returns none, which the next step then misses.
+     */
+    private function returned(string $class, string $method): string
+    {
+        $known = class_exists($class) || interface_exists($class);
+        $returnType = $known && method_exists($class, $method)
+            ? (new ReflectionMethod($class, $method))->getReturnType()
+            : null;
+
+        return $returnType instanceof ReflectionNamedType && !$returnType->isBuiltin()
+            ? $returnType->getName()
+            : $class;
     }
 }

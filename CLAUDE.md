@@ -9,7 +9,7 @@ trimming. This repo, `Ignibyte/aic-nextgen` (private), is where AIC lives: there
 cutover (Chad, 2026-10-20; #11 closed). Old AIC (`Ignibyte/aic`) is the archive and the reference,
 pinned at main `e0778896`.
 
-**Read `docs/planning/handoff.md` first**, then `roadmap.md` (the standing rules, the five kinds,
+**Read `docs/planning/handoff.md` first**, then `roadmap.md` (the standing rules, the six kinds,
 the ten systems, the milestones) and `plan.md` (the decisions and the port map from old wards).
 The architecture set an app's agent reads, shipped in `ignibyte/aic-framework`, is
 [framework/docs/README.md](framework/docs/README.md); gate:29 holds it to the code.
@@ -242,6 +242,12 @@ RawHtml grant; a template writes a `RawHtml` inline; the ledger's `/ledger/sanit
 `Broadcasts::stream()` sends a channel's events after `Last-Event-ID` over `Database::listen()|notification()`, ends each
 connection after `holdSeconds`, and caps open streams site-wide at `streams`, below one worker's handlers, default 7);
 channel access is the route's `needs:`; the fixture's `/ledger/feed`. The framework requires `ext-pdo_pgsql`.
+#32 (part 1): the Socket kind, two-way push: a module routes a GET at a fixed path to a `Socket` (`socket(SocketFrame):
+SocketResponse`, answering `SocketReply(messages, channels)` or `SocketClose`); `bin/aic socket:serve` (`AIC\Socket`, one
+stream_select loop, `AppConfig::$sockets`) upgrades it (same-host `Origin`, the session's user, the route's `needs:`),
+runs RFC 6455 frames, and sends each connection the broadcasts on the channels its last reply named; the build writes
+`<M>Sockets` on the console side, and the surface's `sockets`; the fixture is the `chat` module's `/ws/chat`. Part 2: the
+compiled server, gate:23's socket steps, `make:socket`, the proxy and a chat page.
 #315: component scripts: Tessera 0.4.6's `data-mount="/assets/themes/<theme>/<path>.js"` with `data-mount-data` JSON mounts
 a module on the element (on load, after each patch, again on changed data, unmounted before it goes); the build checks the
 path (`MountScripts`); `make:component --script`; the fixture's `/ledger/meter`.
@@ -292,14 +298,15 @@ Code of every ticket that changes `workflow/`, the gate runner, the gate list, a
 or a tool config naming `workflow/`, and paste its summary in the notes** (about 25 minutes; while coding, run the
 scenarios the change touches by name).
 
-## Five kinds
+## Six kinds
 
-Every entry point is one of five kinds, each one interface with one method and one sealed
+Every entry point is one of six kinds, each one interface with one method and one sealed
 response type: **Page** (HTML document, region fragments or a redirect; form controllers are
-Pages), **Api** (JSON or XML; no SOAP), **Stream** (SSE, file downloads), **Command** (CLI, exit code)
-and **Job** (queued or scheduled work: done, retry, fail). A static guard makes every entry-point
-class implement exactly one, and the build writes a manifest of every entry point with its kind.
-Background work is a job; the HTTP server's processes are its workers.
+Pages), **Api** (JSON or XML; no SOAP), **Stream** (SSE, file downloads), **Socket** (a WebSocket
+message answered with replies or a close, #32), **Command** (CLI, exit code) and **Job** (queued or
+scheduled work: done, retry, fail). A static guard makes every entry-point class implement exactly
+one, and the build writes a manifest of every entry point with its kind. Background work is a job;
+the HTTP server's processes are its workers; a Socket's connections are held by `bin/aic socket:serve`.
 
 ## Stack
 

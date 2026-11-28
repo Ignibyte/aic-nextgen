@@ -47,6 +47,7 @@ final readonly class SurfaceViewJson
             self::kinds($jsonReader),
             $stale,
             $jsonReader->isNull('theme') ? null : self::theme($jsonReader->object('theme')),
+            self::rows($jsonReader, 'sockets', self::socket(...)),
         );
     }
 
@@ -162,6 +163,23 @@ final readonly class SurfaceViewJson
         }
 
         return $rows;
+    }
+
+    /**
+     * @param JsonReader $jsonReader One row.
+     *
+     * @throws WorkflowRefusal When a required string field is absent or has another type.
+     *
+     * @return array{class: string, kind: string, module: string, path: string} Its checked fields in surface order.
+     */
+    private static function socket(JsonReader $jsonReader): array
+    {
+        return [
+            'class' => $jsonReader->string('class'),
+            'kind' => $jsonReader->string('kind'),
+            'module' => $jsonReader->string('module'),
+            'path' => $jsonReader->string('path'),
+        ];
     }
 
     /**

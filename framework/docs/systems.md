@@ -15,7 +15,7 @@ app meets first.
 | 7. The browser runtime | Tessera |
 | 8. Form security | Form, Session, Secret |
 | 9. Auth | Auth, Access, OAuth |
-| 10. Background work | Queue, Schedule, Notification, Broadcast |
+| 10. Background work | Queue, Schedule, Notification, Broadcast, Socket |
 
 ## 1. HTTP, routing and the kinds
 
@@ -364,8 +364,25 @@ See [security.md](security.md) for sessions, form guards, uploads, auth and secr
   at once, and its hold's reconnect names the last id, so a quiet channel resumes where it began. `AppConfig::$broadcast` holds the five settings. Who may read a
   channel is its Stream route's `needs:` (#304), a person's role or a token's scope (#313). An event
   whose transaction commits after a later one's can be missed by a stream that already sent the
-  later one; a module that must never miss one reads its own table on reconnect. Presence and
-  two-way traffic wait on the socket server (#32).
+  later one; a module that must never miss one reads its own table on reconnect. Two-way traffic is
+  the socket server's (#32).
+- `AIC\Socket`: the socket server (#32), the one process that holds every WebSocket, so no site
+  worker is held by one. `bin/aic socket:serve [--host=] [--port=] [--seconds=]` (`SocketServeCommand`,
+  built by `PushRoots`, which `ConsoleContext::push()` gives) listens on `AppConfig::$sockets`
+  (`SocketConfig`: address, `maxFrameBytes`, `maxConnections`, `tickMs`) and runs `SocketServer`, one
+  `stream_select` loop over the listener and every connection, written in AIC's PHP so it compiles
+  as the site does. `SocketUpgrade` reads an upgrade (`UpgradeParser`, `UpgradeHead`) and
+  `SocketAdmission` answers it: 101 by RFC 6455's accept key (`Handshake`) when the path is a
+  declared socket, the `Origin` is the `Host`, and the route's `needs:` holds for the user the
+  `__Host-aic_session` cookie's session holds, read once; 400, 403, 404 or 503 otherwise.
+  `FrameDispatch` reads each frame (`FrameCodec`, `WireFrame`): masked client frames of 7, 16 or
+  64-bit lengths, fragments joined, ping answered, close echoed; a binary frame closes 1003, a
+  malformed one 1002, one past `maxFrameBytes` 1009. `SocketCall` hands a whole text message to the
+  socket (1007 for text that is not UTF-8, 1011 when the socket throws) and writes its answer through
+  `ConnectionWriter`; `Connections` is the one table the loop changes. `SocketFanout` listens on
+  `aic_broadcasts` and after each notification sends every newer row to the connections hearing its
+  channel, so one `Broadcaster::publish()` reaches broadcast streams and sockets alike. The generated
+  `<M>Sockets` and `ModuleSockets` wire each socket on the console side (`SocketWiring`).
 
 ## The layer ladder
 

@@ -105,12 +105,12 @@ final readonly class KindListCommand implements Command
      * @param SurfaceView $surfaceView The surface.
      * @param string      $kind        An entry kind.
      *
-     * @return int How many routes, commands and jobs of that kind the app has.
+     * @return int How many routes, sockets, commands and jobs of that kind the app has.
      */
     private static function count(SurfaceView $surfaceView, string $kind): int
     {
         return count(array_filter(
-            [...$surfaceView->routes, ...$surfaceView->commands, ...$surfaceView->jobs],
+            [...$surfaceView->routes, ...$surfaceView->sockets, ...$surfaceView->commands, ...$surfaceView->jobs],
             static fn (array $entry): bool => $entry['kind'] === $kind,
         ));
     }

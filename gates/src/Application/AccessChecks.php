@@ -49,7 +49,7 @@ final readonly class AccessChecks
         $needs = [];
 
         foreach ($modules as $module) {
-            foreach ($module->declared(ModuleRoute::class) as $moduleRoute) {
+            foreach ([...$module->declared(ModuleRoute::class), ...$module->sockets()] as $moduleRoute) {
                 $this->route($module, $moduleRoute, $permissions, $prefixes);
                 $needs = $this->once($module, $moduleRoute, $needs);
             }

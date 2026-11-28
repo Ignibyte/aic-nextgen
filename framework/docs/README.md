@@ -15,7 +15,7 @@ class (`AIC\Module\Contracts\ModuleManifest`), which sits under `vendor/ignibyte
 
 Read the first three before you plan a change; the rest when the change touches them.
 
-1. [kinds.md](kinds.md): the five entry kinds (Page, Api, Stream, Command, Job), each one
+1. [kinds.md](kinds.md): the six entry kinds (Page, Api, Stream, Socket, Command, Job), each one
    interface with one method and one sealed response, and the other kinds a module holds.
 2. [modules.md](modules.md): a module's folder, its manifest and every declaration, the build and
    what it writes, the folder each kind lives in, exports and requires, assets.

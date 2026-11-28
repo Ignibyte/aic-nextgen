@@ -86,7 +86,7 @@ A worker shares only the queue, Postgres and private files with the site.
 - `WorkerVendor` holds every class in no other layer and no PHP built-in: a worker's library.
   Only `Worker` may use it, so a module that names FPDF fails gate:12.
 - PHPCS's allowed-namespace rule skips `workers/`, which imports its libraries' namespaces.
-- phpat (gate:9) refuses a `Worker\` class that implements Page, Api, Stream or Command: a worker is
+- phpat (gate:9) refuses a `Worker\` class that implements Page, Api, Stream, Socket or Command: a worker is
   never routed and never run from the console, so its one kind is the Job.
 - gate:26 admits `workers/` beside `modules/` and the theme.
 

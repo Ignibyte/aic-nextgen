@@ -139,7 +139,7 @@ Every PHP file:
 11. No `env()` outside `config/`; no `getenv()` in runtime code.
 12. No `global`, no `$GLOBALS`, no superglobals outside the SAPI entry point (`bootstrap/serve.php`).
 13. No suppression annotations (`@phpstan-ignore`, `@psalm-suppress`, `@phpcs:ignore`, `@phpmd:*`).
-14. Every entry point is one of the five kinds: Page, Api, Stream, Command or Job.
+14. Every entry point is one of the six kinds: Page, Api, Stream, Socket, Command or Job.
 
 ---
 

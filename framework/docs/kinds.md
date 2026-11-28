@@ -1,8 +1,8 @@
 # Kinds
 
 Every class in a module is of one kind, and its kind decides the folder it lives in (see
-[modules.md](modules.md#folders)). Five kinds are entry points: something outside the app reaches
-them, over HTTP, from the console or from the queue. The rest are the pieces those entry points are
+[modules.md](modules.md#folders)). Six kinds are entry points: something outside the app reaches
+them, over HTTP, over a WebSocket, from the console or from the queue. The rest are the pieces those entry points are
 built from.
 
 ## Entry kinds
@@ -16,6 +16,7 @@ controller can answer only in the ways the table lists, and the framework writes
 | Page | `AIC\Controller\Contracts\Page` | `page(ServerRequestInterface)` | `PageResponse` | `src/Controller/` |
 | Api | `AIC\Controller\Contracts\Api` | `api(ServerRequestInterface)` | `ApiResponse` | `src/Controller/` |
 | Stream | `AIC\Controller\Contracts\Stream` | `stream(ServerRequestInterface)` | `StreamResponse` | `src/Controller/` |
+| Socket | `AIC\Controller\Contracts\Socket` | `socket(SocketFrame)` | `SocketResponse` | `src/Controller/` |
 | Command | `AIC\Controller\Contracts\Command` | `command(CommandInput)` | `CommandResponse` | `src/Command/` |
 | Job | `AIC\Controller\Contracts\Job` | `run(JobInput)` | `JobResponse` | `src/Job/` |
 
@@ -28,7 +29,7 @@ What holds the kinds:
 - gate:26 refuses a kind outside its folder.
 - A Page answers a document from `AIC\Controller\Application\PageDocuments`, naming its title and
   optionally a theme layout (`ThemeLayoutName::Focus`); see [rendering.md](rendering.md).
-- `composer run build` lists every route and command with its kind in `build/surface.json`, and
+- `composer run build` lists every route, socket and command with its kind in `build/surface.json`, and
   gate:24 fails when that file is stale.
 
 ### Page
@@ -104,6 +105,26 @@ An answer sent over time or in pieces:
   spreadsheet never runs it as a formula; a plain number such as `-12` stays a number. A job (or a
   Stream) writes `text()` to a file outside `public/`, through `tempnam()` and `rename()` so a
   download never reads half a file, and a Stream sends it as a `FileDownload`.
+
+### Socket
+
+A two-way connection (#32): a WebSocket a browser opens, held by the socket server, `bin/aic
+socket:serve`, never by the site's workers. The manifest routes it as a GET, `->route(RouteMethod::Get,
+'/ws/chat', ChatSocket::class, needs: …)`, at a path with no parameter; the build wires it on the
+console side, and a proxy in front sends the path's upgrades to the server. The server calls
+`socket(SocketFrame)` with each text message a connection sends: its `text`, its `connection` id and
+the `user` its session held when it opened. The Socket answers with one of:
+
+- `AIC\Controller\Domain\SocketReply`: messages back to that connection, each a text frame, and,
+  when given, the broadcast channels (`AIC\Broadcast\Domain\Channel`) it hears from then on, in
+  place of the ones before, so a Socket moves a connection between rooms.
+- `AIC\Controller\Domain\SocketClose`: a close code and reason, and the connection ends.
+
+What goes to the other connections is a broadcast: the Socket, a Page, a Job or another process
+publishes with `Broadcaster::publish(Channel, data)` (#314), and every connection hearing the channel
+gets the data as a text frame, as every open broadcast stream does. A connection opens only when its
+`Origin` is the host it was sent to and the route's `needs:` holds for its session's user; a bearer
+token is not read. See [systems.md](systems.md#10-background-work).
 
 ### Command
 

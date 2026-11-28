@@ -6,6 +6,15 @@ Every delivered pipeline adds an entry here with its ticket number (`/pipeline:c
 
 ### Added
 
+- **The Socket kind: WebSockets, part 1** (#32). A sixth entry kind, `AIC\Controller\Contracts\Socket`, answers each
+  text message a connection sends with `SocketReply` (messages back and the broadcast channels the connection hears
+  from then on) or `SocketClose`. A module routes it as a GET at a fixed path; the build wires it on the console side
+  (`<M>Sockets`) and lists it in `build/surface.json`'s `sockets`. `bin/aic socket:serve` (`AIC\Socket`) holds the
+  connections in one loop: it upgrades a request (a same-host `Origin`, the session's user, the route's `needs:`),
+  speaks RFC 6455 frames with the protocol's close codes, and delivers #314's broadcasts to every connection on their
+  channel. `AppConfig::$sockets` sets its address and caps. The fixture `chat` module's `/ws/chat` is a chat room
+  (`join`, `say`, `who`, `bye`). The compiled server, gate:23's socket steps, `make:socket` and the proxy are part 2.
+
 - **make:relation edits both entity definitions in place** (#328). A module's entity types now have one home the makes
   own, `src/Entity/<Module>Types.php`: make:entity (with `--fields` or `--existing`) writes it or adds the entity's
   public `<entity>()` and private `<entity>With(relations)` to it, keeping every other byte, and the made repository

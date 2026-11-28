@@ -68,7 +68,7 @@ final readonly class ModuleWirer
     private function module(ModuleDefinition $moduleDefinition, array $modules): WiredModule
     {
         $wiringScope = $this->wiringScopes->scope($moduleDefinition, $modules, $this->wiringContexts->web());
-        [$commands, $jobs] = $this->console($moduleDefinition, $modules);
+        [$commands, $jobs, $sockets] = $this->console($moduleDefinition, $modules);
         $controllers = $this->controllers($moduleDefinition, $wiringScope);
         $middleware = [];
 
@@ -88,7 +88,7 @@ final readonly class ModuleWirer
             $blocks[] = $this->autowirer->wire($block, $wiringScope);
         }
 
-        return new WiredModule($moduleDefinition, $controllers, $middleware, $commands, $jobs, $blocks);
+        return new WiredModule($moduleDefinition, $controllers, $middleware, $commands, $jobs, $blocks, $sockets);
     }
 
     /**
@@ -120,9 +120,13 @@ final readonly class ModuleWirer
      * @param ModuleDefinition       $moduleDefinition A module.
      * @param list<ModuleDefinition> $modules          Every module.
      *
-     * @throws InvalidArgumentException When a command or job cannot be wired.
+     * @throws InvalidArgumentException When a command, job or socket cannot be wired.
      *
-     * @return array{array<string, WiredObject>, array<string, WiredObject>} Its commands and its jobs, wired, by name.
+     * @return array{array<string, WiredObject>, array<string, WiredObject>, array<string, WiredObject>} Its commands
+     *                                                                                                   and jobs by
+     *                                                                                                   name, its
+     *                                                                                                   sockets by
+     *                                                                                                   path (#32).
      */
     private function console(ModuleDefinition $moduleDefinition, array $modules): array
     {
@@ -138,6 +142,12 @@ final readonly class ModuleWirer
             $jobs[$moduleJob->name] = $this->autowirer->wire($moduleJob->job, $wiringScope);
         }
 
-        return [$commands, $jobs];
+        $sockets = [];
+
+        foreach ($moduleDefinition->sockets() as $moduleRoute) {
+            $sockets[$moduleRoute->path] = $this->autowirer->wire($moduleRoute->handler, $wiringScope);
+        }
+
+        return [$commands, $jobs, $sockets];
     }
 }

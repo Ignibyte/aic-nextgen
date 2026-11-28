@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gates\Application;
 
 use AIC\Block\Contracts\Block;
+use AIC\Socket\Domain\SocketEntry;
 use Gates\Domain\ContextClass;
 use Gates\Domain\ContextEntry;
 use Gates\Domain\WiredModule;
@@ -12,6 +13,7 @@ use Gates\Domain\WiredObject;
 use Psr\Http\Server\MiddlewareInterface;
 
 use function array_map;
+use function var_export;
 
 /**
  * A module's generated layer classes, apart from `ModuleClassSource` so each
@@ -74,5 +76,40 @@ final readonly class ModuleLayerClasses
         );
 
         return ['Blocks' => $contextClass];
+    }
+
+    /**
+     * @param WiredModule $wiredModule A module, wired.
+     *
+     * @return array<string, ContextClass> Its `<M>Sockets` (#32), each socket wrapped in its entry with its need,
+     *                                     when it has some.
+     */
+    public function sockets(WiredModule $wiredModule): array
+    {
+        if ($wiredModule->sockets === []) {
+            return [];
+        }
+
+        $needs = [];
+
+        foreach ($wiredModule->module->sockets() as $moduleRoute) {
+            $needs[$moduleRoute->path] = $moduleRoute->needs;
+        }
+
+        $entries = [];
+
+        foreach ($wiredModule->sockets as $path => $wiredObject) {
+            $entries[] = new ContextEntry(var_export($path, true), $wiredObject, 'push()->socket', $needs[$path] ?? '');
+        }
+
+        return ['Sockets' => new ContextClass(
+            $wiredModule->module->studlyName() . 'Sockets',
+            $this->wiringContexts->console(),
+            'byPath',
+            'array<string, SocketEntry>',
+            "The module's sockets by path.",
+            [SocketEntry::class],
+            $entries,
+        )];
     }
 }

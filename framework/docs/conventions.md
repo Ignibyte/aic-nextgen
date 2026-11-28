@@ -41,7 +41,7 @@ Every PHP file in a module follows these rules. Each names the gate that refuses
 
 ## Entry points and markup
 
-- **Every entry point is one of the five kinds.** See [kinds.md](kinds.md). gate:9 holds it.
+- **Every entry point is one of the six kinds.** See [kinds.md](kinds.md). gate:9 holds it.
 - **A module holds no markup.** No template or markup file, no inline output, and no HTML tag,
   markup declaration or character reference in any string or text file under `modules/`; in
   `src/Controller/` no string holds `<` at all. Markup lives in the theme. gate:32 holds it.

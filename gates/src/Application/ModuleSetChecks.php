@@ -6,6 +6,7 @@ namespace Gates\Application;
 
 use AIC\Module\Contracts\ModuleCommand;
 use AIC\Module\Contracts\ModuleJob;
+use AIC\Module\Contracts\ModuleRoute;
 use AIC\Module\Contracts\ModuleSchedule;
 use AIC\Notification\Application\Notifier;
 use AIC\Schedule\Domain\Cadence;
@@ -30,8 +31,8 @@ final readonly class ModuleSetChecks
      */
     private const array FRAMEWORK_COMMANDS = [
         'client:add', 'client:list', 'client:revoke', 'mcp:calls', 'migrate', 'migrate:status', 'queue:failed', 'queue:retry',
-        'queue:work', 'role:assign', 'role:grant', 'role:revoke', 'role:unassign', 'schedule:run', 'token:add', 'token:list',
-        'token:revoke',
+        'queue:work', 'role:assign', 'role:grant', 'role:revoke', 'role:unassign', 'schedule:run', 'socket:serve', 'token:add',
+        'token:list', 'token:revoke',
     ];
 
     /**
@@ -52,6 +53,7 @@ final readonly class ModuleSetChecks
     {
         $this->claimAll($modules, 'command', self::FRAMEWORK_COMMANDS);
         $this->claimAll($modules, 'schedule', []);
+        $this->claimAll($modules, 'socket', []);
         $jobs = $this->claimAll($modules, 'job', [Notifier::JOB]);
 
         foreach ($modules as $module) {
@@ -63,7 +65,7 @@ final readonly class ModuleSetChecks
 
     /**
      * @param list<ModuleDefinition> $modules   The modules.
-     * @param string                 $what      `command`, `job` or `schedule`.
+     * @param string                 $what      `command`, `job`, `schedule` or `socket` (its path, #32).
      * @param list<string>           $framework The framework's own names of that kind.
      *
      * @throws InvalidArgumentException When a name is empty or taken twice.
@@ -85,7 +87,7 @@ final readonly class ModuleSetChecks
 
     /**
      * @param ModuleDefinition $moduleDefinition A module.
-     * @param string           $what             `command`, `job` or `schedule`.
+     * @param string           $what             `command`, `job`, `schedule` or `socket`.
      *
      * @return list<string> The names it declares of that kind.
      */
@@ -97,6 +99,7 @@ final readonly class ModuleSetChecks
                 $moduleDefinition->declared(ModuleCommand::class),
             ),
             'job' => array_map(static fn (ModuleJob $moduleJob): string => $moduleJob->name, $moduleDefinition->declared(ModuleJob::class)),
+            'socket' => array_map(static fn (ModuleRoute $moduleRoute): string => $moduleRoute->path, $moduleDefinition->sockets()),
             default => array_map(
                 static fn (ModuleSchedule $moduleSchedule): string => $moduleSchedule->name,
                 $moduleDefinition->declared(ModuleSchedule::class),
